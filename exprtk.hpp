@@ -2091,12 +2091,12 @@ namespace exprtk
          clear_short_symbol_luts();
       }
 
-      inline std::size_t variable_count()
+      inline std::size_t variable_count() const
       {
          return variable_count_;
       }
 
-      inline std::size_t function_count()
+      inline std::size_t function_count() const
       {
          return function_count_;
       }
@@ -2422,7 +2422,6 @@ namespace exprtk
    private:
 
       typedef details::expression_node<T>* expression_ptr;
-      typedef T type;
 
       struct expression_holder
       {
