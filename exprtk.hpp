@@ -955,14 +955,14 @@ namespace exprtk
             }
          }
 
-         template<typename T>
+         template <typename T>
          inline T process(const operator_type operation, const T& arg)
          {
             typename details::number_type<T>::type num_type;
             return details::process_impl<T>(operation,arg,num_type);
          }
 
-         template<typename T>
+         template <typename T>
          inline T process(const operator_type operation, const T& arg0, const T& arg1)
          {
             typename details::number_type<T>::type num_type;
@@ -1008,7 +1008,7 @@ namespace exprtk
          }
       };
 
-      template<typename T>
+      template <typename T>
       inline bool branch_deletable(expression_node<T>* expr)
       {
          return expression_node<T>::e_variable != expr->type();
@@ -1656,8 +1656,7 @@ namespace exprtk
             cleanup_branches<N>(branch_);
          }
 
-
-         template<std::size_t NumBranches>
+         template <std::size_t NumBranches>
          void init_branches(expression_ptr (&b)[NumBranches])
          {
             for (std::size_t i = 0; i < NumBranches; ++i)
@@ -1951,7 +1950,7 @@ namespace exprtk
 
    } // namespace details
 
-   template<typename T>
+   template <typename T>
    class ifunction
    {
    public:
@@ -2324,8 +2323,8 @@ namespace exprtk
          add_variable("inf",infinity,true);
       }
 
-      template<typename Allocator,
-               template<typename,typename> class Sequence>
+      template <typename Allocator,
+                template <typename,typename> class Sequence>
       inline std::size_t get_variable_list(Sequence<std::pair<std::string,T>,Allocator>& vlist)
       {
          std::size_t count = 0;
@@ -2788,6 +2787,7 @@ namespace exprtk
          ptr_t* p_;
 
       private:
+
          scoped_delete<Type,N>& operator=(const scoped_delete<Type,N>&);
       };
 
@@ -3253,7 +3253,7 @@ namespace exprtk
             return synthesize_expression<sf4_node_t,4>(operation,branch);
          }
 
-         template<std::size_t N>
+         template <std::size_t N>
          inline expression_node_ptr function(typename function_node_t::ifunction* f, expression_node_ptr (&b)[N])
          {
             expression_node_ptr result = synthesize_expression<function_node_t,N>(f,b);

@@ -784,6 +784,7 @@ inline bool run_test1()
       std::cout << "run_test1() - Error: " << parser.error() << "\tExpression: " << expression_string << std::endl;
       return false;
    }
+   expression.value();
    return true;
 }
 
@@ -997,6 +998,22 @@ inline bool run_test6()
                                  "x", "y", "z", "w", "u",
                                  "x + y + z + w + u",
                                  "x + y / z * w ^ u",
+                                 "x:=1.1", "y:=2.2", "z:=3.3", "w:=4.4", "u:=5.5",
+                                 "x<-1.1", "y<-2.2", "z<-3.3", "w<-4.4", "u<-5.5",
+                                 "x:=x+1.1", "y:=y+2.2", "z:=z+3.3", "w:=w+4.4", "u:=u+5.5",
+                                 "x<-x+1.1", "y<-y+2.2", "z<-z+3.3", "w<-w+4.4", "u<-u+5.5",
+                                 "x:=1.1+x", "y:=2.2+y", "z:=3.3+z", "w:=4.4+w", "u:=5.5+u",
+                                 "x<-1.1+x", "y<-2.2+y", "z<-3.3+z", "w<-4.4+w", "u<-5.5+u",
+                                 "x:=(x <= 1.1)",
+                                 "y:=(2.2 >= y)",
+                                 "z:=(3.3 and z)",
+                                 "w:=(4.4 or w)",
+                                 "u:=(u xor 5.5)",
+                                 "x<-(x <= 1.1)",
+                                 "y<-(2.2 >= y)",
+                                 "z<-(3.3 and z)",
+                                 "w<-(4.4 or w)",
+                                 "u<-(u xor 5.5)",
                                  "min(x,y) + min(x,y,z) + min(x,y,z,w) + min(x,y,z,w,y)",
                                  "max(x,y) + max(x,y,z) + max(x,y,z,w) + max(x,y,z,w,y)",
                                  "avg(x,y)",
@@ -1144,12 +1161,24 @@ inline bool run_test7()
          std::cout << "run_test7() - Error: " << parser.error() << "\tExpression: " << expression_string << std::endl;
          return false;
       }
-      T result = expression.value();
       const T pi = T(3.14159265358979323846);
-      if (not_equal<T>(result,(T(1)+(std::sin(x*pi)*(y/T(2)))/T(3)) * 10.0,0.000001))
+
+      T result = expression.value();
+      T expected = mf(sin(x*pi),y/2) +
+                   mf(sin(x*pi),y/2) +
+                   mf(sin(x*pi),y/2) +
+                   mf(sin(x*pi),y/2) +
+                   mf(sin(x*pi),y/2) +
+                   mf(sin(x*pi),y/2) +
+                   mf(sin(x*pi),y/2) +
+                   mf(sin(x*pi),y/2) +
+                   mf(sin(x*pi),y/2) +
+                   mf(sin(x*pi),y/2);
+
+      if (not_equal<T>(result,expected,0.0000001))
       {
          printf("run_test7() - Error Expected: %19.15f\tResult: %19.15f\n",
-                T(1)+(std::sin(x*pi)*(y/T(2)))/T(3),
+                expected,
                 result);
          return false;
       }
@@ -1170,4 +1199,4 @@ int main()
              run_test7<double>()
           )
           ? 0 : 1;
- }
+}
