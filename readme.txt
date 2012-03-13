@@ -46,3 +46,4 @@ Expression Library can be found at:
 (01) readme.txt
 (02) exprtk.hpp
 (03) exprtk_test.cpp
+(04) exprtk_benchmark.cpp

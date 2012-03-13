@@ -27,6 +27,8 @@ typedef std::pair<std::string,double> test_t;
 
 static const test_t test_list[] =
                         {
+                           // Note: The each of following tests should
+                           // all compile down to a single literal node.
                            test_t("0",0.0),
                            test_t("1",1.0),
                            test_t("2",2.0),
@@ -37,6 +39,11 @@ static const test_t test_list[] =
                            test_t("7",7.0),
                            test_t("8",8.0),
                            test_t("9",9.0),
+                           test_t("12.12",12.12),
+                           test_t("123.123",123.123),
+                           test_t("1234.1234",1234.1234),
+                           test_t("12345.12345",12345.12345),
+                           test_t("123456.123456",123456.123456),
                            test_t("0.0",0.0),
                            test_t("1.0",1.0),
                            test_t("2.0",2.0),
@@ -666,7 +673,7 @@ static const test_t test_list[] =
 
 static const std::size_t test_list_size = sizeof(test_list) / sizeof(test_t);
 
-template<typename T>
+template <typename T>
 inline bool not_equal(const T& t1,
                       const T& t2,
                       const T& epsilon = 0.0000000001/*std::numeric_limits<T>::epsilon()*/)
@@ -676,7 +683,7 @@ inline bool not_equal(const T& t1,
    return std::abs(t1 - t2) > (std::max(T(1.0),std::max(std::abs(t1),std::abs(t2))) * epsilon);
 }
 
-template<typename T>
+template <typename T>
 inline bool test_expression(const std::string& expression_string, const T& expected_result)
 {
    exprtk::expression<T> expression;
@@ -707,10 +714,10 @@ inline bool test_expression(const std::string& expression_string, const T& expec
    return true;
 }
 
-template<typename T>
+template <typename T>
 inline bool run_test0()
 {
-   const std::size_t rounds = 10000;
+   const std::size_t rounds = 100;
    for (std::size_t r = 0; r < rounds; ++r)
    {
       for (std::size_t i = 0; i < test_list_size; ++i)
@@ -722,8 +729,112 @@ inline bool run_test0()
    return true;
 }
 
+
 template<typename T>
+struct test_xy
+{
+   test_xy(std::string e, const T& v0, const T& v1, const T& r)
+   : expr(e),
+     x(v0),
+     y(v1),
+     result(r)
+   {}
+
+   std::string expr;
+   T x;
+   T y;
+   T result;
+};
+
+template <typename T>
 inline bool run_test1()
+{
+   static const test_xy<T> test_list[] =
+                           {
+                              test_xy<T>("x + y"             ,T(2.2),T(3.3),T(5.5  )),
+                              test_xy<T>("x - y"             ,T(3.3),T(2.2),T(1.1  )),
+                              test_xy<T>("x * y"             ,T(3.3),T(2.2),T(7.26 )),
+                              test_xy<T>("x / y"             ,T(3.3),T(2.2),T(1.5  )),
+                              test_xy<T>("(x + y) * (x + y)" ,T(2.2),T(3.3),T(30.25)),
+                              test_xy<T>("(x + y) / (x + y)" ,T(2.2),T(3.3),T(1.0  )),
+                              test_xy<T>("x + y > x and  x + y > y" ,T(2.2),T(3.3),T(1.0)),
+                              test_xy<T>("1 + (x + y)"       ,T(2.2),T(3.3),T(6.5  )),
+                              test_xy<T>("(x + y) - 1"       ,T(2.2),T(3.3),T(4.5  )),
+                              test_xy<T>("1 + (x + y) * 2"   ,T(2.2),T(3.3),T(12.0  )),
+                              test_xy<T>("2 * (x + y) - 1"   ,T(2.2),T(3.3),T(10.0  )),
+                              test_xy<T>("y + (x + 1)"       ,T(2.2),T(3.3),T(6.5  )),
+                              test_xy<T>("(x + 1) + y"       ,T(2.2),T(3.3),T(6.5  )),
+                              test_xy<T>("2 * x"  ,T(2.2),T(0.0),T(4.4)),
+                              test_xy<T>("x * 2"  ,T(2.2),T(0.0),T(4.4)),
+                              test_xy<T>("1.1 + x",T(2.2),T(0.0),T(3.3)),
+                              test_xy<T>("x + 1.1",T(2.2),T(0.0),T(3.3)),
+                              test_xy<T>("x * 1 == x"    ,T(2.0),T(3.0),T(1.0)),
+                              test_xy<T>("1 * x == x"    ,T(2.0),T(3.0),T(1.0)),
+                              test_xy<T>("y * 1 == y"    ,T(2.0),T(3.0),T(1.0)),
+                              test_xy<T>("1 * y == y"    ,T(2.0),T(3.0),T(1.0)),
+                              test_xy<T>("x * 0 == 0"    ,T(2.0),T(3.0),T(1.0)),
+                              test_xy<T>("0 * x == 0"    ,T(2.0),T(3.0),T(1.0)),
+                              test_xy<T>("y * 0 == 0"    ,T(2.0),T(3.0),T(1.0)),
+                              test_xy<T>("0 * y == 0"    ,T(2.0),T(3.0),T(1.0)),
+                              test_xy<T>("x + 1 == 1 + x",T(2.0),T(3.0),T(1.0)),
+                              test_xy<T>("y + 1 == 1 + y",T(2.0),T(3.0),T(1.0)),
+                              test_xy<T>("x + y == y + x",T(2.0),T(3.0),T(1.0)),
+                              test_xy<T>("x * y == y * x",T(2.0),T(3.0),T(1.0)),
+                              test_xy<T>("x < y"         ,T(2.0),T(3.0),T(1.0)),
+                              test_xy<T>("y > x"         ,T(2.0),T(3.0),T(1.0)),
+                              test_xy<T>("x <= y"        ,T(2.0),T(3.0),T(1.0)),
+                              test_xy<T>("y >= x"        ,T(2.0),T(3.0),T(1.0)),
+                              test_xy<T>("x + y > y"     ,T(2.0),T(3.0),T(1.0)),
+                              test_xy<T>("x + y > x"     ,T(2.0),T(3.0),T(1.0)),
+                              test_xy<T>("x * y > y"     ,T(2.0),T(3.0),T(1.0)),
+                              test_xy<T>("x * y > x"     ,T(2.0),T(3.0),T(1.0)),
+                              test_xy<T>("(x + y) > y"   ,T(2.0),T(3.0),T(1.0)),
+                              test_xy<T>("(x + y) > x"   ,T(2.0),T(3.0),T(1.0)),
+                              test_xy<T>("(x * y) > y"   ,T(2.0),T(3.0),T(1.0)),
+                              test_xy<T>("(x * y) > x"   ,T(2.0),T(3.0),T(1.0))
+                           };
+
+   static const std::size_t test_list_size = sizeof(test_list) / sizeof(test_xy<T>);
+
+   const std::size_t rounds = 10000;
+   for (std::size_t r = 0; r < rounds; ++r)
+   {
+      for (std::size_t i = 0; i < test_list_size; ++i)
+      {
+         test_xy<T>& test = const_cast<test_xy<T>&>(test_list[i]);
+
+         exprtk::symbol_table<T> symbol_table;
+         symbol_table.add_variable("x",test.x);
+         symbol_table.add_variable("y",test.y);
+
+         exprtk::expression<T> expression;
+         expression.register_symbol_table(symbol_table);
+
+         {
+            exprtk::parser<T> parser;
+            if (!parser.compile(test.expr,expression))
+            {
+               std::cout << "test_expression() - Error: " << parser.error() << "\tExpression: " << test.expr << std::endl;
+               return false;
+            }
+         }
+
+         T result = expression.value();
+         if (not_equal<T>(result,test.result))
+         {
+            printf("Computation Error:  Expression: [%s]\tExpected: %19.15f\tResult: %19.15f\n",
+                   test.expr.c_str(),
+                   test.result,
+                   result);
+            return false;
+         }
+      }
+   }
+   return true;
+}
+
+template <typename T>
+inline bool run_test2()
 {
    std::string expression_string = "a+b+c+d+e+f+g+h+i+j+k+l+m+n+o+p+q+r+s+t+u+v+w+x+y+z+"
                                    "A+B+C+D+E+F+G+H+I+J+K+L+M+N+O+P+Q+R+S+T+U+V+W+X+Y+Z+"
@@ -761,41 +872,46 @@ inline bool run_test1()
 
    static const std::size_t variable_list_size = sizeof(variable_list) / sizeof(std::string);
 
-   exprtk::expression<T> expression;
-   exprtk::symbol_table<T> symbol_table;
+   static const std::size_t rounds = 10000;
 
-   std::vector<T> v;
-   v.resize(variable_list_size);
-
-   for (std::size_t i = 0; i < variable_list_size; ++i)
+   for (std::size_t r = 0; r < rounds; ++r)
    {
-      v[i] = i;
-      symbol_table.add_variable(variable_list[i],v[i]);
+      exprtk::expression<T> expression;
+      exprtk::symbol_table<T> symbol_table;
+
+      std::vector<T> v;
+      v.resize(variable_list_size);
+
+      for (std::size_t i = 0; i < variable_list_size; ++i)
+      {
+         v[i] = i;
+         symbol_table.add_variable(variable_list[i],v[i]);
+      }
+
+      symbol_table.add_constants();
+
+      expression.register_symbol_table(symbol_table);
+
+      exprtk::parser<T> parser;
+
+      if (!parser.compile(expression_string,expression))
+      {
+         std::cout << "run_test1() - Error: " << parser.error() << "\tExpression: " << expression_string << std::endl;
+         return false;
+      }
+      expression.value();
    }
-
-   symbol_table.add_constants();
-
-   expression.register_symbol_table(symbol_table);
-
-   exprtk::parser<T> parser;
-
-   if (!parser.compile(expression_string,expression))
-   {
-      std::cout << "run_test1() - Error: " << parser.error() << "\tExpression: " << expression_string << std::endl;
-      return false;
-   }
-   expression.value();
    return true;
 }
 
-template<typename T>
+template <typename T>
 inline T clamp(const T& l, const T& v, const T& u)
 {
    return (v < l) ? l : ((v > u) ? u : v);
 }
 
-template<typename T>
-inline bool run_test2()
+template <typename T>
+inline bool run_test3()
 {
    std::string expression_string = "clamp(-1.0,sin(2 * pi * x) + cos(y / 2 * pi),+1.0)";
 
@@ -822,6 +938,7 @@ inline bool run_test2()
    }
 
    const T pi = T(3.14159265358979323846);
+   const T increment = T(0.0001);
 
    while ((x <= T(+1000.0)) && (y <= T(+1000.0)))
    {
@@ -837,14 +954,14 @@ inline bool run_test2()
                 y);
          return false;
       }
-      x += 0.001;
-      y += 0.001;
+      x += increment;
+      y += increment;
    }
    return true;
 }
 
-template<typename T>
-inline bool run_test3()
+template <typename T>
+inline bool run_test4()
 {
    typedef exprtk::expression<T> expression_t;
    std::string expression_string = "clamp(-1.0,sin(2 * pi * x_var123) + cos(y_var123 / 2 * pi),+1.0)";
@@ -875,6 +992,7 @@ inline bool run_test3()
    }
 
    const T pi = T(3.14159265358979323846);
+   const T increment = T(0.0001);
 
    while ((x <= T(+1000.0)) && (y <= T(+1000.0)))
    {
@@ -896,14 +1014,14 @@ inline bool run_test3()
             return false;
          }
       }
-      x += 0.001;
-      y += 0.001;
+      x += increment;
+      y += increment;
    }
    return true;
 }
 
-template<typename T>
-inline bool run_test4()
+template <typename T>
+inline bool run_test5()
 {
    typedef exprtk::expression<T> expression_t;
    std::string expression_string = "sqrt(1 - (x^2))";
@@ -944,11 +1062,11 @@ inline bool run_test4()
    return true;
 }
 
-template<typename T>
-inline bool run_test5()
+template <typename T>
+inline bool run_test6()
 {
    typedef exprtk::expression<T> expression_t;
-   std::string expression_string = "sin(2*x)";
+   std::string expression_string = "sin(2x+1/3)";
 
    T x = T(0.0);
 
@@ -970,7 +1088,7 @@ inline bool run_test5()
    {
       T result1 = exprtk::derivative(expression,x);
       T result2 = exprtk::derivative(expression,"x");
-      T real_result = T(2.0) * std::cos(T(2.0) * x);
+      T real_result = T(2.0) * std::cos(T(2.0) * x + T(1.0/3.0));
 
       if (not_equal<T>(result1,result2,0.000000001))
       {
@@ -989,8 +1107,8 @@ inline bool run_test5()
    return true;
 }
 
-template<typename T>
-inline bool run_test6()
+template <typename T>
+inline bool run_test7()
 {
 
    static const std::string expr_str[] =
@@ -1021,6 +1139,13 @@ inline bool run_test6()
                                  "avg(x,y,z,w)",
                                  "avg(x,y,z,w,u)",
                                  "(u := u <- min(x:=1,y:=2,z:=3)) == 1",
+                                 "(2x+3y+4z+5w)==(2*x+3*y+4*z+5*w)",
+                                 "(3(x+y)/2+1)==(3*(x+y)/2+1)",
+                                 "((x+y)3+1/4)==((x+y)*3+1/4)",
+                                 "((x+y)z+1/2)==((x+y)*z+1/2)",
+                                 "(3min(x,y))==(3*min(x,y))",
+                                 "(sin(x)y)==(sin(x)*y)",
+                                 "(sin(x)cos(y)+1)==(sin(x)*cos(y)+1)",
                                  "equal($f00(x,y,z),((x+y)/z))",
                                  "equal($f01(x,y,z),((x+y)*z))",
                                  "equal($f02(x,y,z),((x-y)/z))",
@@ -1103,7 +1228,7 @@ inline bool run_test6()
    return true;
 }
 
-template<typename T>
+template <typename T>
 struct myfunc : public exprtk::ifunction<T>
 {
    myfunc() : exprtk::ifunction<T>(2) {}
@@ -1114,8 +1239,8 @@ struct myfunc : public exprtk::ifunction<T>
    }
 };
 
-template<typename T>
-inline bool run_test7()
+template <typename T>
+inline bool run_test8()
 {
    static const std::size_t rounds = 100000;
    for (std::size_t i = 0; i < rounds; ++i)
@@ -1164,16 +1289,16 @@ inline bool run_test7()
       const T pi = T(3.14159265358979323846);
 
       T result = expression.value();
-      T expected = mf(sin(x*pi),y/2) +
-                   mf(sin(x*pi),y/2) +
-                   mf(sin(x*pi),y/2) +
-                   mf(sin(x*pi),y/2) +
-                   mf(sin(x*pi),y/2) +
-                   mf(sin(x*pi),y/2) +
-                   mf(sin(x*pi),y/2) +
-                   mf(sin(x*pi),y/2) +
-                   mf(sin(x*pi),y/2) +
-                   mf(sin(x*pi),y/2);
+      T expected = mf(sin(x*pi),y/2.0) +
+                   mf(sin(x*pi),y/2.0) +
+                   mf(sin(x*pi),y/2.0) +
+                   mf(sin(x*pi),y/2.0) +
+                   mf(sin(x*pi),y/2.0) +
+                   mf(sin(x*pi),y/2.0) +
+                   mf(sin(x*pi),y/2.0) +
+                   mf(sin(x*pi),y/2.0) +
+                   mf(sin(x*pi),y/2.0) +
+                   mf(sin(x*pi),y/2.0);
 
       if (not_equal<T>(result,expected,0.0000001))
       {
@@ -1196,7 +1321,8 @@ int main()
              run_test4<double>() &&
              run_test5<double>() &&
              run_test6<double>() &&
-             run_test7<double>()
+             run_test7<double>() &&
+             run_test8<double>()
           )
           ? 0 : 1;
 }

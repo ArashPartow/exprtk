@@ -23,15 +23,23 @@ OPTIONS          = $(BASE_OPTIONS) $(OPTIMIZATION_OPT) -o
 LINKER_OPT       = -L/usr/lib -lstdc++
 
 BUILD_LIST+=exprtk_test
+BUILD_LIST+=exprtk_benchmark
 
 all: $(BUILD_LIST)
 
 exprtk_test: exprtk_test.cpp exprtk.hpp
 	$(COMPILER) $(OPTIONS) exprtk_test exprtk_test.cpp $(LINKER_OPT)
 
+exprtk_benchmark: exprtk_benchmark.cpp exprtk.hpp
+	$(COMPILER) $(OPTIONS) exprtk_benchmark exprtk_benchmark.cpp $(LINKER_OPT)
 
-pgo: exprtk_test.cpp exprtk.hpp
+pgo: exprtk_test.cpp exprtk_benchmark.cpp exprtk.hpp
 	$(COMPILER) $(BASE_OPTIONS) -O3 -march=native -fprofile-generate -o exprtk_test exprtk_test.cpp $(LINKER_OPT)
+	$(COMPILER) $(BASE_OPTIONS) -O3 -march=native -fprofile-generate -o exprtk_benchmark exprtk_benchmark.cpp $(LINKER_OPT)
+	./exprtk_test
+	./exprtk_benchmark
+	$(COMPILER) $(BASE_OPTIONS) -O3 -march=native -fprofile-use -o exprtk_test exprtk_test.cpp $(LINKER_OPT)
+	$(COMPILER) $(BASE_OPTIONS) -O3 -march=native -fprofile-use -o exprtk_benchmark exprtk_benchmark.cpp $(LINKER_OPT)
 
 strip_bin:
 	strip -s exprtk_test
