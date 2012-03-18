@@ -833,8 +833,121 @@ inline bool run_test1()
    return true;
 }
 
+template<typename T>
+struct test_ab
+{
+   test_ab(std::string e, const std::string& v0, const std::string& v1, const T& r)
+   : expr(e),
+     a(v0),
+     b(v1),
+     result(r)
+   {}
+
+   std::string expr;
+   std::string a;
+   std::string b;
+   T result;
+};
+
 template <typename T>
 inline bool run_test2()
+{
+   static const test_ab<T> test_list[] =
+                           {
+                              test_ab<T>("'aaa' == 'aaa'"              ,"","",T(1.0)),
+                              test_ab<T>("'aaa'  < 'bbb'"              ,"","",T(1.0)),
+                              test_ab<T>("'aaa' <= 'bbb'"              ,"","",T(1.0)),
+                              test_ab<T>("'bbb' >  'aaa'"              ,"","",T(1.0)),
+                              test_ab<T>("'bbb' >= 'aaa'"              ,"","",T(1.0)),
+                              test_ab<T>("'aaa' != 'aaa'"              ,"","",T(0.0)),
+                              test_ab<T>("'aaa' != 'bbb'"              ,"","",T(1.0)),
+                              test_ab<T>("'aaa' + '123' == 'aaa123'"   ,"","",T(1.0)),
+                              test_ab<T>("'aaa123' == 'aaa' + '123'"   ,"","",T(1.0)),
+                              test_ab<T>("('aaa' + '123') == 'aaa123'" ,"","",T(1.0)),
+                              test_ab<T>("'aaa123' == ('aaa' + '123')" ,"","",T(1.0)),
+                              test_ab<T>("'aaa' in 'aaa123'"           ,"","",T(1.0)),
+                              test_ab<T>("'123' in 'aaa123'"           ,"","",T(1.0)),
+                              test_ab<T>("'a123b' like '*123*'"        ,"","",T(1.0)),
+                              test_ab<T>("'a123b' like '*123?'"        ,"","",T(1.0)),
+                              test_ab<T>("'1XYZ2' ilike '*xyz*'"       ,"","",T(1.0)),
+                              test_ab<T>("'1XYZ2' ilike '*xyz?'"       ,"","",T(1.0)),
+                              test_ab<T>("a == b"                      ,"aaa","aaa",T(1.0)),
+                              test_ab<T>("a != b"                      ,"aaa","bbb",T(1.0)),
+                              test_ab<T>("a <  b"                      ,"aaa","bbb",T(1.0)),
+                              test_ab<T>("a <= b"                      ,"aaa","bbb",T(1.0)),
+                              test_ab<T>("b >  a"                      ,"aaa","bbb",T(1.0)),
+                              test_ab<T>("b >= a"                      ,"aaa","bbb",T(1.0)),
+                              test_ab<T>("a in b"                      ,"aaa","aaa123",T(1.0)),
+                              test_ab<T>("a in b"                      ,"123","aaa123",T(1.0)),
+                              test_ab<T>("a == 'aaa'"                  ,"aaa","aaa",T(1.0)),
+                              test_ab<T>("'aaa' == a"                  ,"aaa","aaa",T(1.0)),
+                              test_ab<T>("a != 'bbb'"                  ,"aaa","bbb",T(1.0)),
+                              test_ab<T>("'bbb' != a"                  ,"aaa","bbb",T(1.0)),
+                              test_ab<T>("a <  'bbb'"                  ,"aaa","bbb",T(1.0)),
+                              test_ab<T>("a <= 'bbb'"                  ,"aaa","bbb",T(1.0)),
+                              test_ab<T>("'bbb' >  a"                  ,"aaa","bbb",T(1.0)),
+                              test_ab<T>("'bbb' >= a"                  ,"aaa","bbb",T(1.0)),
+                              test_ab<T>("a in 'aaa123'"               ,"aaa","aaa123",T(1.0)),
+                              test_ab<T>("a in 'aaa123'"               ,"123","aaa123",T(1.0)),
+                              test_ab<T>("'aaa' in b"                  ,"aaa","aaa123",T(1.0)),
+                              test_ab<T>("'123' in b"                  ,"aaa","aaa123",T(1.0)),
+                              test_ab<T>("(a < b) or (a == b)"         ,"aaa","bbb",T(1.0)),
+                              test_ab<T>("(a == b) or (a < b)"         ,"aaa","bbb",T(1.0)),
+                              test_ab<T>("(b > a) or (b == a)"         ,"aaa","bbb",T(1.0)),
+                              test_ab<T>("(b == a) or (b > a)"         ,"aaa","bbb",T(1.0)),
+                              test_ab<T>("(a < b) and (b > a)"         ,"aaa","bbb",T(1.0)),
+                              test_ab<T>("a like '*123*'"              ,"a123b","",T(1.0)),
+                              test_ab<T>("a like '*123?'"              ,"a123b","",T(1.0)),
+                              test_ab<T>("'a123b' like b"              ,"a123b","*123*",T(1.0)),
+                              test_ab<T>("'a123b' like b"              ,"a123b","*123?",T(1.0)),
+                              test_ab<T>("a ilike '*xyz*'"             ,"1XYZ2","",T(1.0)),
+                              test_ab<T>("a ilike '*xyz?'"             ,"1XYZ2","",T(1.0)),
+                              test_ab<T>("'1XYZ2' ilike b"             ,"","*xyz*",T(1.0)),
+                              test_ab<T>("'1XYZ2' ilike b"             ,"","*xyz?",T(1.0)),
+                           };
+
+
+   static const std::size_t test_list_size = sizeof(test_list) / sizeof(test_ab<T>);
+
+   const std::size_t rounds = 10000;
+   for (std::size_t r = 0; r < rounds; ++r)
+   {
+      for (std::size_t i = 0; i < test_list_size; ++i)
+      {
+         test_ab<T>& test = const_cast<test_ab<T>&>(test_list[i]);
+
+         exprtk::symbol_table<T> symbol_table;
+         symbol_table.add_stringvar("a",test.a);
+         symbol_table.add_stringvar("b",test.b);
+
+         exprtk::expression<T> expression;
+         expression.register_symbol_table(symbol_table);
+
+         {
+            exprtk::parser<T> parser;
+            if (!parser.compile(test.expr,expression))
+            {
+               std::cout << "test_expression() - Error: " << parser.error() << "\tExpression: " << test.expr << std::endl;
+               return false;
+            }
+         }
+
+         T result = expression.value();
+         if (not_equal<T>(result,test.result))
+         {
+            printf("Computation Error:  Expression: [%s]\tExpected: %19.15f\tResult: %19.15f\n",
+                   test.expr.c_str(),
+                   test.result,
+                   result);
+            return false;
+         }
+      }
+   }
+   return true;
+}
+
+template <typename T>
+inline bool run_test3()
 {
    std::string expression_string = "a+b+c+d+e+f+g+h+i+j+k+l+m+n+o+p+q+r+s+t+u+v+w+x+y+z+"
                                    "A+B+C+D+E+F+G+H+I+J+K+L+M+N+O+P+Q+R+S+T+U+V+W+X+Y+Z+"
@@ -911,7 +1024,7 @@ inline T clamp(const T& l, const T& v, const T& u)
 }
 
 template <typename T>
-inline bool run_test3()
+inline bool run_test4()
 {
    std::string expression_string = "clamp(-1.0,sin(2 * pi * x) + cos(y / 2 * pi),+1.0)";
 
@@ -961,7 +1074,7 @@ inline bool run_test3()
 }
 
 template <typename T>
-inline bool run_test4()
+inline bool run_test5()
 {
    typedef exprtk::expression<T> expression_t;
    std::string expression_string = "clamp(-1.0,sin(2 * pi * x_var123) + cos(y_var123 / 2 * pi),+1.0)";
@@ -1021,7 +1134,7 @@ inline bool run_test4()
 }
 
 template <typename T>
-inline bool run_test5()
+inline bool run_test6()
 {
    typedef exprtk::expression<T> expression_t;
    std::string expression_string = "sqrt(1 - (x^2))";
@@ -1063,7 +1176,7 @@ inline bool run_test5()
 }
 
 template <typename T>
-inline bool run_test6()
+inline bool run_test7()
 {
    typedef exprtk::expression<T> expression_t;
    std::string expression_string = "sin(2x+1/3)";
@@ -1108,7 +1221,7 @@ inline bool run_test6()
 }
 
 template <typename T>
-inline bool run_test7()
+inline bool run_test8()
 {
 
    static const std::string expr_str[] =
@@ -1240,7 +1353,7 @@ struct myfunc : public exprtk::ifunction<T>
 };
 
 template <typename T>
-inline bool run_test8()
+inline bool run_test9()
 {
    static const std::size_t rounds = 100000;
    for (std::size_t i = 0; i < rounds; ++i)
@@ -1322,7 +1435,8 @@ int main()
              run_test5<double>() &&
              run_test6<double>() &&
              run_test7<double>() &&
-             run_test8<double>()
+             run_test8<double>() &&
+             run_test9<double>()
           )
           ? 0 : 1;
 }
