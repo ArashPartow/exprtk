@@ -715,7 +715,7 @@ inline bool test_expression(const std::string& expression_string, const T& expec
 }
 
 template <typename T>
-inline bool run_test0()
+inline bool run_test00()
 {
    const std::size_t rounds = 100;
    for (std::size_t r = 0; r < rounds; ++r)
@@ -747,7 +747,7 @@ struct test_xy
 };
 
 template <typename T>
-inline bool run_test1()
+inline bool run_test01()
 {
    static const test_xy<T> test_list[] =
                            {
@@ -791,7 +791,13 @@ inline bool run_test1()
                               test_xy<T>("(x + y) > y"   ,T(2.0),T(3.0),T(1.0)),
                               test_xy<T>("(x + y) > x"   ,T(2.0),T(3.0),T(1.0)),
                               test_xy<T>("(x * y) > y"   ,T(2.0),T(3.0),T(1.0)),
-                              test_xy<T>("(x * y) > x"   ,T(2.0),T(3.0),T(1.0))
+                              test_xy<T>("(x * y) > x"   ,T(2.0),T(3.0),T(1.0)),
+                              test_xy<T>("(2x + 3y)  == (2*x + 3*y)" ,T(2.0),T(3.0),T(1.0)),
+                              test_xy<T>("2(x +  y)  == (2*x + 2*y)" ,T(2.0),T(3.0),T(1.0)),
+                              test_xy<T>(" (x +  y)3 == (3*x + 3*y)" ,T(2.0),T(3.0),T(1.0)),
+                              test_xy<T>("2x + 3y    ==   2*x + 3*y" ,T(2.0),T(3.0),T(1.0)),
+                              test_xy<T>("2(x +  y)  ==   2*x + 2*y" ,T(2.0),T(3.0),T(1.0)),
+                              test_xy<T>(" (x +  y)3 ==   3*x + 3*y" ,T(2.0),T(3.0),T(1.0))
                            };
 
    static const std::size_t test_list_size = sizeof(test_list) / sizeof(test_xy<T>);
@@ -850,7 +856,7 @@ struct test_ab
 };
 
 template <typename T>
-inline bool run_test2()
+inline bool run_test02()
 {
    static const test_ab<T> test_list[] =
                            {
@@ -947,7 +953,7 @@ inline bool run_test2()
 }
 
 template <typename T>
-inline bool run_test3()
+inline bool run_test03()
 {
    std::string expression_string = "a+b+c+d+e+f+g+h+i+j+k+l+m+n+o+p+q+r+s+t+u+v+w+x+y+z+"
                                    "A+B+C+D+E+F+G+H+I+J+K+L+M+N+O+P+Q+R+S+T+U+V+W+X+Y+Z+"
@@ -1009,7 +1015,7 @@ inline bool run_test3()
 
       if (!parser.compile(expression_string,expression))
       {
-         std::cout << "run_test1() - Error: " << parser.error() << "\tExpression: " << expression_string << std::endl;
+         std::cout << "run_test01() - Error: " << parser.error() << "\tExpression: " << expression_string << std::endl;
          return false;
       }
       expression.value();
@@ -1024,7 +1030,7 @@ inline T clamp(const T& l, const T& v, const T& u)
 }
 
 template <typename T>
-inline bool run_test4()
+inline bool run_test04()
 {
    std::string expression_string = "clamp(-1.0,sin(2 * pi * x) + cos(y / 2 * pi),+1.0)";
 
@@ -1045,7 +1051,7 @@ inline bool run_test4()
 
       if (!parser.compile(expression_string,expression))
       {
-         std::cout << "run_test2() - Error: " << parser.error() << "\tExpression: " << expression_string << std::endl;
+         std::cout << "run_test02() - Error: " << parser.error() << "\tExpression: " << expression_string << std::endl;
          return false;
       }
    }
@@ -1059,7 +1065,7 @@ inline bool run_test4()
       T result2 = clamp<T>(-1.0,std::sin(2 * pi * x) + std::cos(y / 2 * pi),+1.0);
       if (not_equal<T>(result1,result2))
       {
-         printf("run_test2() - Computation Error:  Expression: [%s]\tExpected: %19.15f\tResult: %19.15f x:%19.15f\ty:%19.15f\n",
+         printf("run_test02() - Computation Error:  Expression: [%s]\tExpected: %19.15f\tResult: %19.15f x:%19.15f\ty:%19.15f\n",
                 expression_string.c_str(),
                 result1,
                 result2,
@@ -1074,7 +1080,7 @@ inline bool run_test4()
 }
 
 template <typename T>
-inline bool run_test5()
+inline bool run_test05()
 {
    typedef exprtk::expression<T> expression_t;
    std::string expression_string = "clamp(-1.0,sin(2 * pi * x_var123) + cos(y_var123 / 2 * pi),+1.0)";
@@ -1098,7 +1104,7 @@ inline bool run_test5()
 
       if (!parser.compile(expression_string,e))
       {
-         std::cout << "run_test3() - Error: " << parser.error() << "\tExpression: " << expression_string << std::endl;
+         std::cout << "run_test03() - Error: " << parser.error() << "\tExpression: " << expression_string << std::endl;
          return false;
       }
       expression_list.push_back(e);
@@ -1117,7 +1123,7 @@ inline bool run_test5()
          T result = expr.value();
          if (not_equal<T>(result,real_result))
          {
-            printf("run_test3() - Computation Error:  Expression: [%s]\tExpected: %19.15f\tResult: %19.15f x:%19.15f\ty:%19.15f\tIndex:%d\n",
+            printf("run_test03() - Computation Error:  Expression: [%s]\tExpected: %19.15f\tResult: %19.15f x:%19.15f\ty:%19.15f\tIndex:%d\n",
                    expression_string.c_str(),
                    real_result,
                    result,
@@ -1134,7 +1140,7 @@ inline bool run_test5()
 }
 
 template <typename T>
-inline bool run_test6()
+inline bool run_test06()
 {
    typedef exprtk::expression<T> expression_t;
    std::string expression_string = "sqrt(1 - (x^2))";
@@ -1151,7 +1157,7 @@ inline bool run_test6()
 
    if (!parser.compile(expression_string,expression))
    {
-      std::cout << "run_test4() - Error: " << parser.error() << "\tExpression: " << expression_string << std::endl;
+      std::cout << "run_test06() - Error: " << parser.error() << "\tExpression: " << expression_string << std::endl;
       return false;
    }
 
@@ -1161,13 +1167,13 @@ inline bool run_test6()
 
    if (not_equal<T>(total_area1,total_area2,0.000001))
    {
-      printf("run_test4() - Integration Error:  area1 != area2\n");
+      printf("run_test06() - Integration Error:  area1 != area2\n");
       return false;
    }
 
    if (not_equal<T>(total_area1,pi/T(2.0),0.000001))
    {
-      printf("run_test4() - Integration Error:  Expected: %19.15f\tResult: %19.15f\n",
+      printf("run_test06() - Integration Error:  Expected: %19.15f\tResult: %19.15f\n",
              pi/T(2.0),
              total_area1);
       return false;
@@ -1176,7 +1182,7 @@ inline bool run_test6()
 }
 
 template <typename T>
-inline bool run_test7()
+inline bool run_test07()
 {
    typedef exprtk::expression<T> expression_t;
    std::string expression_string = "sin(2x+1/3)";
@@ -1193,7 +1199,7 @@ inline bool run_test7()
 
    if (!parser.compile(expression_string,expression))
    {
-      std::cout << "run_test5() - Error: " << parser.error() << "\tExpression: " << expression_string << std::endl;
+      std::cout << "run_test07() - Error: " << parser.error() << "\tExpression: " << expression_string << std::endl;
       return false;
    }
 
@@ -1205,12 +1211,12 @@ inline bool run_test7()
 
       if (not_equal<T>(result1,result2,0.000000001))
       {
-         printf("run_test5() - Derivative Error:  result1 != result2\n");
+         printf("run_test07() - Derivative Error:  result1 != result2\n");
          return false;
       }
       if (not_equal<T>(result1,real_result,0.000000001))
       {
-         printf("run_test5() - Derivative Error:  x: %19.15f\tExpected: %19.15f\tResult: %19.15f\n",
+         printf("run_test05() - Derivative Error:  x: %19.15f\tExpected: %19.15f\tResult: %19.15f\n",
                 x,
                 real_result,
                 result1);
@@ -1221,7 +1227,7 @@ inline bool run_test7()
 }
 
 template <typename T>
-inline bool run_test8()
+inline bool run_test08()
 {
 
    static const std::string expr_str[] =
@@ -1332,7 +1338,7 @@ inline bool run_test8()
 
          if (!parser.compile(expr_str[j],expression))
          {
-            std::cout << "run_test6() - Error: " << parser.error() << "\tExpression: " << expr_str[j] << std::endl;
+            std::cout << "run_test08() - Error: " << parser.error() << "\tExpression: " << expr_str[j] << std::endl;
             return false;
          }
          expression.value();
@@ -1353,7 +1359,7 @@ struct myfunc : public exprtk::ifunction<T>
 };
 
 template <typename T>
-inline bool run_test9()
+inline bool run_test09()
 {
    static const std::size_t rounds = 100000;
    for (std::size_t i = 0; i < rounds; ++i)
@@ -1396,7 +1402,7 @@ inline bool run_test9()
 
       if (!parser.compile(expression_string,expression))
       {
-         std::cout << "run_test7() - Error: " << parser.error() << "\tExpression: " << expression_string << std::endl;
+         std::cout << "run_test09() - Error: " << parser.error() << "\tExpression: " << expression_string << std::endl;
          return false;
       }
       const T pi = T(3.14159265358979323846);
@@ -1415,7 +1421,7 @@ inline bool run_test9()
 
       if (not_equal<T>(result,expected,0.0000001))
       {
-         printf("run_test7() - Error Expected: %19.15f\tResult: %19.15f\n",
+         printf("run_test09() - Error Expected: %19.15f\tResult: %19.15f\n",
                 expected,
                 result);
          return false;
@@ -1424,19 +1430,116 @@ inline bool run_test9()
    return true;
 }
 
+template <typename T>
+inline bool run_test10()
+{
+   T  x = T(1.1);
+   T  y = T(2.2);
+   T xx = T(3.3);
+   T yy = T(4.4);
+
+   exprtk::symbol_table<T> symbol_table;
+
+   {
+      symbol_table.add_variable("x",  x);
+      symbol_table.add_variable("y",  y);
+      symbol_table.add_variable("xx",xx);
+      symbol_table.add_variable("yy",yy);
+
+      if (!symbol_table.symbol_exists("x"))
+      {
+         std::cout << "run_test10() - Symbol 'x' does not exist!\n";
+         return false;
+      }
+      else if (!symbol_table.symbol_exists("y"))
+      {
+         std::cout << "run_test10() - Symbol 'y' does not exist!\n";
+         return false;
+      }
+      else if (!symbol_table.symbol_exists("xx"))
+      {
+         std::cout << "run_test10() - Symbol 'xx' does not exist!\n";
+         return false;
+      }
+      else if (!symbol_table.symbol_exists("yy"))
+      {
+         std::cout << "run_test10() - Symbol 'yy' does not exist!\n";
+         return false;
+      }
+
+      struct test
+      {
+         static inline bool variable(exprtk::symbol_table<T>& symbol_table, const std::string& variable_name, const T& value)
+         {
+            exprtk::details::variable_node<T>* var = symbol_table.get_variable(variable_name);
+            if (var)
+            {
+               return (!not_equal<T>(var->ref(),value));
+            }
+            else
+               return false;
+         }
+      };
+
+      if (!test::variable(symbol_table,"x",x))
+      {
+         std::cout << "run_test10() - Symbol 'x' value failure!\n";
+         return false;
+      }
+      else if (!test::variable(symbol_table,"y",y))
+      {
+         std::cout << "run_test10() - Symbol 'y' value failure!\n";
+         return false;
+      }
+      else if (!test::variable(symbol_table,"xx",xx))
+      {
+         std::cout << "run_test10() - Symbol 'xx' value failure!\n";
+         return false;
+      }
+      else if (!test::variable(symbol_table,"yy",yy))
+      {
+         std::cout << "run_test10() - Symbol 'yy' value failure!\n";
+         return false;
+      }
+
+      if (symbol_table.remove_variable("x"))
+      {
+         return false;
+      }
+      else if (symbol_table.remove_variable("y"))
+      {
+         return false;
+      }
+      else if (symbol_table.remove_variable("xx"))
+      {
+         return false;
+      }
+      else if (symbol_table.remove_variable("yy"))
+      {
+         return false;
+      }
+   }
+
+   {
+   }
+
+   return true;
+}
+
 int main()
 {
    return (
-             run_test0<double>() &&
-             run_test1<double>() &&
-             run_test2<double>() &&
-             run_test3<double>() &&
-             run_test4<double>() &&
-             run_test5<double>() &&
-             run_test6<double>() &&
-             run_test7<double>() &&
-             run_test8<double>() &&
-             run_test9<double>()
+             run_test00<double>() &&
+             run_test01<double>() &&
+             run_test02<double>() &&
+             run_test03<double>() &&
+             run_test04<double>() &&
+             run_test05<double>() &&
+             run_test06<double>() &&
+             run_test07<double>() &&
+             run_test08<double>() &&
+             run_test09<double>() &&
+             run_test10<double>()
           )
           ? 0 : 1;
 }

@@ -44,8 +44,6 @@
 #include <stack>
 
 
-#define exprtk_enable_string_capabilities
-
 namespace exprtk
 {
    namespace details
@@ -141,10 +139,11 @@ namespace exprtk
                                   {
                                      "abs", "acos", "and", "asin", "atan", "atan2", "avg", "ceil", "clamp",
                                      "cos", "cosh", "cot", "csc", "deg2grad", "deg2rad", "equal", "exp",
-                                     "floor", "for", "grad2deg", "hyp", "if", "ilike", "in", "inrange", "like", "log",
-                                     "log10", "logn", "max", "min", "mod", "mul", "nand", "nor", "not",
-                                     "not_equal", "or", "rad2deg", "root", "round", "roundn", "sec", "shl",
-                                     "shr", "sin", "sinh", "sqrt", "sum", "tan", "tanh", "while", "xor"
+                                     "floor", "for", "grad2deg", "hyp", "if", "ilike", "in", "inrange",
+                                     "like", "log", "log10", "logn", "max", "min", "mod", "mul", "nand",
+                                     "nor", "not", "not_equal", "or", "rad2deg", "root", "round", "roundn",
+                                     "sec", "shl", "shr", "sin", "sinh", "sqrt", "sum", "tan", "tanh",
+                                     "while", "xor"
                                   };
       static const std::size_t reserved_symbols_size = sizeof(reserved_symbols) / sizeof(std::string);
 
@@ -269,6 +268,7 @@ namespace exprtk
                                        10000000000000.0,
                                        100000000000000.0,
                                        1000000000000000.0,
+                                       10000000000000000.0,
                                     };
 
       namespace numeric
@@ -1717,7 +1717,6 @@ namespace exprtk
          const std::string value_;
       };
 
-
       template <typename T>
       class unary_node : public expression_node<T>
       {
@@ -2223,7 +2222,6 @@ namespace exprtk
 
       template <typename T>
       T variable_node<T>::null_value = T(std::numeric_limits<T>::quiet_NaN());
-
 
       template <typename T>
       class stringvar_node : public expression_node<T>
@@ -3820,7 +3818,7 @@ namespace exprtk
             vm_itr_t itr = variable_map_.find(variable_name);
             if (variable_map_.end() != itr)
             {
-               delete itr->second;
+               delete (*itr).second.second;
                variable_map_.erase(itr);
                --variable_count_;
                return true;
@@ -3892,7 +3890,7 @@ namespace exprtk
             const variable_pair_t& vp = short_variable_lut_[static_cast<std::size_t>(i)];
             if (0 != vp.second)
             {
-               vlist.push_back(std::make_pair(std::string("")+static_cast<char>(i),vp.second->value()));
+               vlist.push_back(std::make_pair(std::string("") + static_cast<char>(i),vp.second->value()));
                ++count;
             }
          }
@@ -3950,7 +3948,7 @@ namespace exprtk
                if (
                    (!details::is_letter(symbol[i])) &&
                    (!details:: is_digit(symbol[i])) &&
-                   ('_' !=  symbol[i])
+                   ('_' != symbol[i])
                   )
                   return false;
             }
@@ -4231,7 +4229,7 @@ namespace exprtk
                 template <typename,typename> class Sequence>
       inline std::size_t expression_symbols(Sequence<std::string,Allocator>& symbols_list)
       {
-         if (!symbol_name_caching_)
+         if (!symbol_name_cache_)
             return 0;
          if (symbol_name_cache_.empty())
             return 0;
@@ -4667,7 +4665,7 @@ namespace exprtk
                return variable;
             }
 
-            #ifdef exprtk_enable_string_capabilities
+            #ifndef exprtk_disable_string_capabilities
             //Are we dealing with a string variable?
             variable = symbol_table_->get_stringvar(symbol);
             if (variable)
@@ -4742,7 +4740,7 @@ namespace exprtk
 
             case token_t::symbol : return parse_symbol();
 
-            #ifdef exprtk_enable_string_capabilities
+            #ifndef exprtk_disable_string_capabilities
             case token_t::string :
                                  {
                                     expression_node_ptr literal_exp = expression_generator_(current_token_.value);
@@ -4850,7 +4848,7 @@ namespace exprtk
                return error_node();
          }
 
-         #ifdef exprtk_enable_string_capabilities
+         #ifndef exprtk_disable_string_capabilities
          inline bool valid_string_operation(const details::operator_type& operation) const
          {
             return (details::e_add   == operation) ||
@@ -4997,16 +4995,16 @@ namespace exprtk
          // When using older C++ compilers due to the large number of type instantiations
          // required by the extended optimisations the compiler may crash or not be able
          // to compile this file properly.
-         #define exprtk_no_extended_optimisations
+         #define exprtk_disable_extended_optimisations
          #if defined(_WIN32) || defined(__WIN32__) || defined(WIN32)
             #if (defined(_MSC_VER) && (_MSC_VER <= 1400))
-               #ifndef exprtk_no_extended_optimisations
-                  #define exprtk_no_extended_optimisations
+               #ifndef exprtk_disable_extended_optimisations
+                  #define exprtk_disable_extended_optimisations
                #endif
             #endif
          #endif
 
-         #ifndef exprtk_no_extended_optimisations
+         #ifndef exprtk_disable_extended_optimisations
          inline bool vovovov_optimizable(const details::operator_type& operation, expression_node_ptr (&branch)[2]) const
          {
             if (!operation_optimizable(operation))
@@ -5084,30 +5082,8 @@ namespace exprtk
             expression_node_ptr branch[2] = { b0, b1 };
             if ((0 == b0) || (0 == b1))
                return error_node();
-            else if (is_invalid_string_op(operation,branch))
-               return error_node();
-            else if (details::e_assign == operation)
-               return synthesize_assignment_expression(operation,branch);
-            else if (is_string_operation(operation,branch))
-               return synthesize_string_expression(operation,branch);
-            else if (cov_optimizable(operation,branch))
-               return synthesize_cov_expression(operation,branch);
-            else if (voc_optimizable(operation,branch))
-               return synthesize_voc_expression(operation,branch);
-            else if (vov_optimizable(operation,branch))
-               return synthesize_vov_expression(operation,branch);
-            else if (vovov1_optimizable(operation,branch))
-               return synthesize_vovov1_expression(operation,branch);
-            else if (vovov2_optimizable(operation,branch))
-               return synthesize_vovov2_expression(operation,branch);
-            else if (covov1_optimizable(operation,branch))
-               return synthesize_covov1_expression(operation,branch);
-            else if (covov2_optimizable(operation,branch))
-               return synthesize_covov2_expression(operation,branch);
-            else if (vovovov_optimizable(operation,branch))
-               return synthesize_vovovov_expression(operation,branch);
             else
-               return synthesize_expression<binary_node_t,2>(operation,branch);
+               return expression_generator<Type>::operator()(operation,branch);
          }
 
          inline expression_node_ptr conditional(expression_node_ptr condition,
@@ -5150,25 +5126,27 @@ namespace exprtk
                return error_node();
             switch (operation)
             {
-               case details::e_sf00 : return node_allocator_->allocate<details::sf3_node<Type,details::sf00_op<Type> > >(operation,branch);
-               case details::e_sf01 : return node_allocator_->allocate<details::sf3_node<Type,details::sf01_op<Type> > >(operation,branch);
-               case details::e_sf02 : return node_allocator_->allocate<details::sf3_node<Type,details::sf02_op<Type> > >(operation,branch);
-               case details::e_sf03 : return node_allocator_->allocate<details::sf3_node<Type,details::sf03_op<Type> > >(operation,branch);
-               case details::e_sf04 : return node_allocator_->allocate<details::sf3_node<Type,details::sf04_op<Type> > >(operation,branch);
-               case details::e_sf05 : return node_allocator_->allocate<details::sf3_node<Type,details::sf05_op<Type> > >(operation,branch);
-               case details::e_sf06 : return node_allocator_->allocate<details::sf3_node<Type,details::sf06_op<Type> > >(operation,branch);
-               case details::e_sf07 : return node_allocator_->allocate<details::sf3_node<Type,details::sf07_op<Type> > >(operation,branch);
-               case details::e_sf08 : return node_allocator_->allocate<details::sf3_node<Type,details::sf08_op<Type> > >(operation,branch);
-               case details::e_sf09 : return node_allocator_->allocate<details::sf3_node<Type,details::sf09_op<Type> > >(operation,branch);
-               case details::e_sf10 : return node_allocator_->allocate<details::sf3_node<Type,details::sf10_op<Type> > >(operation,branch);
-               case details::e_sf11 : return node_allocator_->allocate<details::sf3_node<Type,details::sf11_op<Type> > >(operation,branch);
-               case details::e_sf12 : return node_allocator_->allocate<details::sf3_node<Type,details::sf12_op<Type> > >(operation,branch);
-               case details::e_sf13 : return node_allocator_->allocate<details::sf3_node<Type,details::sf13_op<Type> > >(operation,branch);
-               case details::e_sf14 : return node_allocator_->allocate<details::sf3_node<Type,details::sf14_op<Type> > >(operation,branch);
-               case details::e_sf15 : return node_allocator_->allocate<details::sf3_node<Type,details::sf15_op<Type> > >(operation,branch);
-               case details::e_sf16 : return node_allocator_->allocate<details::sf3_node<Type,details::sf16_op<Type> > >(operation,branch);
-               case details::e_sf17 : return node_allocator_->allocate<details::sf3_node<Type,details::sf17_op<Type> > >(operation,branch);
-               default              : return error_node();
+               #define case_stmt(op0,op1) case op0 : return node_allocator_->allocate<details::sf3_node<Type,op1<Type> > >(operation,branch);
+               case_stmt(details::e_sf00,details::sf00_op)
+               case_stmt(details::e_sf01,details::sf01_op)
+               case_stmt(details::e_sf02,details::sf02_op)
+               case_stmt(details::e_sf03,details::sf03_op)
+               case_stmt(details::e_sf04,details::sf04_op)
+               case_stmt(details::e_sf05,details::sf05_op)
+               case_stmt(details::e_sf06,details::sf06_op)
+               case_stmt(details::e_sf07,details::sf07_op)
+               case_stmt(details::e_sf08,details::sf08_op)
+               case_stmt(details::e_sf09,details::sf09_op)
+               case_stmt(details::e_sf10,details::sf10_op)
+               case_stmt(details::e_sf11,details::sf11_op)
+               case_stmt(details::e_sf12,details::sf12_op)
+               case_stmt(details::e_sf13,details::sf13_op)
+               case_stmt(details::e_sf14,details::sf14_op)
+               case_stmt(details::e_sf15,details::sf15_op)
+               case_stmt(details::e_sf16,details::sf16_op)
+               case_stmt(details::e_sf17,details::sf17_op)
+               default : return error_node();
+               #undef case_stmt
             }
          }
 
@@ -5178,32 +5156,34 @@ namespace exprtk
                return error_node();
             switch (operation)
             {
-               case details::e_sf18 : return node_allocator_->allocate<details::sf4_node<Type,details::sf18_op<Type> > >(operation,branch);
-               case details::e_sf19 : return node_allocator_->allocate<details::sf4_node<Type,details::sf19_op<Type> > >(operation,branch);
-               case details::e_sf20 : return node_allocator_->allocate<details::sf4_node<Type,details::sf20_op<Type> > >(operation,branch);
-               case details::e_sf21 : return node_allocator_->allocate<details::sf4_node<Type,details::sf21_op<Type> > >(operation,branch);
-               case details::e_sf22 : return node_allocator_->allocate<details::sf4_node<Type,details::sf22_op<Type> > >(operation,branch);
-               case details::e_sf23 : return node_allocator_->allocate<details::sf4_node<Type,details::sf23_op<Type> > >(operation,branch);
-               case details::e_sf24 : return node_allocator_->allocate<details::sf4_node<Type,details::sf24_op<Type> > >(operation,branch);
-               case details::e_sf25 : return node_allocator_->allocate<details::sf4_node<Type,details::sf25_op<Type> > >(operation,branch);
-               case details::e_sf26 : return node_allocator_->allocate<details::sf4_node<Type,details::sf26_op<Type> > >(operation,branch);
-               case details::e_sf27 : return node_allocator_->allocate<details::sf4_node<Type,details::sf27_op<Type> > >(operation,branch);
-               case details::e_sf28 : return node_allocator_->allocate<details::sf4_node<Type,details::sf28_op<Type> > >(operation,branch);
-               case details::e_sf29 : return node_allocator_->allocate<details::sf4_node<Type,details::sf29_op<Type> > >(operation,branch);
-               case details::e_sf30 : return node_allocator_->allocate<details::sf4_node<Type,details::sf30_op<Type> > >(operation,branch);
-               case details::e_sf31 : return node_allocator_->allocate<details::sf4_node<Type,details::sf31_op<Type> > >(operation,branch);
-               case details::e_sf32 : return node_allocator_->allocate<details::sf4_node<Type,details::sf32_op<Type> > >(operation,branch);
-               case details::e_sf33 : return node_allocator_->allocate<details::sf4_node<Type,details::sf33_op<Type> > >(operation,branch);
-               case details::e_sf34 : return node_allocator_->allocate<details::sf4_node<Type,details::sf34_op<Type> > >(operation,branch);
-               case details::e_sf35 : return node_allocator_->allocate<details::sf4_node<Type,details::sf35_op<Type> > >(operation,branch);
-               case details::e_sf36 : return node_allocator_->allocate<details::sf4_node<Type,details::sf36_op<Type> > >(operation,branch);
-               case details::e_sf37 : return node_allocator_->allocate<details::sf4_node<Type,details::sf37_op<Type> > >(operation,branch);
-               case details::e_sf38 : return node_allocator_->allocate<details::sf4_node<Type,details::sf38_op<Type> > >(operation,branch);
-               case details::e_sf39 : return node_allocator_->allocate<details::sf4_node<Type,details::sf39_op<Type> > >(operation,branch);
-               case details::e_sf40 : return node_allocator_->allocate<details::sf4_node<Type,details::sf40_op<Type> > >(operation,branch);
-               case details::e_sf41 : return node_allocator_->allocate<details::sf4_node<Type,details::sf41_op<Type> > >(operation,branch);
-               case details::e_sf42 : return node_allocator_->allocate<details::sf4_node<Type,details::sf42_op<Type> > >(operation,branch);
-               default              : return error_node();
+               #define case_stmt(op0,op1) case op0 : return node_allocator_->allocate<details::sf4_node<Type,op1<Type> > >(operation,branch);
+               case_stmt(details::e_sf18,details::sf18_op)
+               case_stmt(details::e_sf19,details::sf19_op)
+               case_stmt(details::e_sf20,details::sf20_op)
+               case_stmt(details::e_sf21,details::sf21_op)
+               case_stmt(details::e_sf22,details::sf22_op)
+               case_stmt(details::e_sf23,details::sf23_op)
+               case_stmt(details::e_sf24,details::sf24_op)
+               case_stmt(details::e_sf25,details::sf25_op)
+               case_stmt(details::e_sf26,details::sf26_op)
+               case_stmt(details::e_sf27,details::sf27_op)
+               case_stmt(details::e_sf28,details::sf28_op)
+               case_stmt(details::e_sf29,details::sf29_op)
+               case_stmt(details::e_sf30,details::sf30_op)
+               case_stmt(details::e_sf31,details::sf31_op)
+               case_stmt(details::e_sf32,details::sf32_op)
+               case_stmt(details::e_sf33,details::sf33_op)
+               case_stmt(details::e_sf34,details::sf34_op)
+               case_stmt(details::e_sf35,details::sf35_op)
+               case_stmt(details::e_sf36,details::sf36_op)
+               case_stmt(details::e_sf37,details::sf37_op)
+               case_stmt(details::e_sf38,details::sf38_op)
+               case_stmt(details::e_sf39,details::sf39_op)
+               case_stmt(details::e_sf40,details::sf40_op)
+               case_stmt(details::e_sf41,details::sf41_op)
+               case_stmt(details::e_sf42,details::sf42_op)
+               default : return error_node();
+               #undef case_stmt
             }
          }
 
@@ -5277,24 +5257,26 @@ namespace exprtk
             node_allocator_->free(branch[0]);
             switch (operation)
             {
-               case details::e_add  : return node_allocator_->allocate_cr<typename details::cov_node<Type,details:: add_op<Type> > >(c,v);
-               case details::e_sub  : return node_allocator_->allocate_cr<typename details::cov_node<Type,details:: sub_op<Type> > >(c,v);
-               case details::e_mul  : return node_allocator_->allocate_cr<typename details::cov_node<Type,details:: mul_op<Type> > >(c,v);
-               case details::e_div  : return node_allocator_->allocate_cr<typename details::cov_node<Type,details:: div_op<Type> > >(c,v);
-               case details::e_mod  : return node_allocator_->allocate_cr<typename details::cov_node<Type,details:: mod_op<Type> > >(c,v);
-               case details::e_pow  : return node_allocator_->allocate_cr<typename details::cov_node<Type,details:: pow_op<Type> > >(c,v);
-               case details::e_lt   : return node_allocator_->allocate_cr<typename details::cov_node<Type,details::  lt_op<Type> > >(c,v);
-               case details::e_lte  : return node_allocator_->allocate_cr<typename details::cov_node<Type,details:: lte_op<Type> > >(c,v);
-               case details::e_gt   : return node_allocator_->allocate_cr<typename details::cov_node<Type,details::  gt_op<Type> > >(c,v);
-               case details::e_gte  : return node_allocator_->allocate_cr<typename details::cov_node<Type,details:: gte_op<Type> > >(c,v);
-               case details::e_eq   : return node_allocator_->allocate_cr<typename details::cov_node<Type,details::  eq_op<Type> > >(c,v);
-               case details::e_ne   : return node_allocator_->allocate_cr<typename details::cov_node<Type,details::  ne_op<Type> > >(c,v);
-               case details::e_and  : return node_allocator_->allocate_cr<typename details::cov_node<Type,details:: and_op<Type> > >(c,v);
-               case details::e_nand : return node_allocator_->allocate_cr<typename details::cov_node<Type,details::nand_op<Type> > >(c,v);
-               case details::e_or   : return node_allocator_->allocate_cr<typename details::cov_node<Type,details::  or_op<Type> > >(c,v);
-               case details::e_nor  : return node_allocator_->allocate_cr<typename details::cov_node<Type,details:: nor_op<Type> > >(c,v);
-               case details::e_xor  : return node_allocator_->allocate_cr<typename details::cov_node<Type,details:: xor_op<Type> > >(c,v);
-               default              : return error_node();
+               #define case_stmt(op0,op1) case op0 : return node_allocator_->allocate_cr<typename details::cov_node<Type,op1<Type> > >(c,v);
+               case_stmt(details:: e_add,details:: add_op)
+               case_stmt(details:: e_sub,details:: sub_op)
+               case_stmt(details:: e_mul,details:: mul_op)
+               case_stmt(details:: e_div,details:: div_op)
+               case_stmt(details:: e_mod,details:: mod_op)
+               case_stmt(details:: e_pow,details:: pow_op)
+               case_stmt(details::  e_lt,details::  lt_op)
+               case_stmt(details:: e_lte,details:: lte_op)
+               case_stmt(details::  e_gt,details::  gt_op)
+               case_stmt(details:: e_gte,details:: gte_op)
+               case_stmt(details::  e_eq,details::  eq_op)
+               case_stmt(details::  e_ne,details::  ne_op)
+               case_stmt(details:: e_and,details:: and_op)
+               case_stmt(details::e_nand,details::nand_op)
+               case_stmt(details::  e_or,details::  or_op)
+               case_stmt(details:: e_nor,details:: nor_op)
+               case_stmt(details:: e_xor,details:: xor_op)
+               default : return error_node();
+               #undef case_stmt
             }
          }
 
@@ -5305,24 +5287,26 @@ namespace exprtk
             node_allocator_->free(branch[1]);
             switch (operation)
             {
-               case details::e_add  : return node_allocator_->allocate_rc<typename details::voc_node<Type,details:: add_op<Type> > >(v,c);
-               case details::e_sub  : return node_allocator_->allocate_rc<typename details::voc_node<Type,details:: sub_op<Type> > >(v,c);
-               case details::e_mul  : return node_allocator_->allocate_rc<typename details::voc_node<Type,details:: mul_op<Type> > >(v,c);
-               case details::e_div  : return node_allocator_->allocate_rc<typename details::voc_node<Type,details:: div_op<Type> > >(v,c);
-               case details::e_mod  : return node_allocator_->allocate_rc<typename details::voc_node<Type,details:: mod_op<Type> > >(v,c);
-               case details::e_pow  : return node_allocator_->allocate_rc<typename details::voc_node<Type,details:: pow_op<Type> > >(v,c);
-               case details::e_lt   : return node_allocator_->allocate_rc<typename details::voc_node<Type,details::  lt_op<Type> > >(v,c);
-               case details::e_lte  : return node_allocator_->allocate_rc<typename details::voc_node<Type,details:: lte_op<Type> > >(v,c);
-               case details::e_gt   : return node_allocator_->allocate_rc<typename details::voc_node<Type,details::  gt_op<Type> > >(v,c);
-               case details::e_gte  : return node_allocator_->allocate_rc<typename details::voc_node<Type,details:: gte_op<Type> > >(v,c);
-               case details::e_eq   : return node_allocator_->allocate_rc<typename details::voc_node<Type,details::  eq_op<Type> > >(v,c);
-               case details::e_ne   : return node_allocator_->allocate_rc<typename details::voc_node<Type,details::  ne_op<Type> > >(v,c);
-               case details::e_and  : return node_allocator_->allocate_rc<typename details::voc_node<Type,details:: and_op<Type> > >(v,c);
-               case details::e_nand : return node_allocator_->allocate_rc<typename details::voc_node<Type,details::nand_op<Type> > >(v,c);
-               case details::e_or   : return node_allocator_->allocate_rc<typename details::voc_node<Type,details::  or_op<Type> > >(v,c);
-               case details::e_nor  : return node_allocator_->allocate_rc<typename details::voc_node<Type,details:: nor_op<Type> > >(v,c);
-               case details::e_xor  : return node_allocator_->allocate_rc<typename details::voc_node<Type,details:: xor_op<Type> > >(v,c);
-               default              : return error_node();
+               #define case_stmt(op0,op1) case op0 : return node_allocator_->allocate_rc<typename details::voc_node<Type,op1<Type> > >(v,c);
+               case_stmt(details:: e_add,details:: add_op)
+               case_stmt(details:: e_sub,details:: sub_op)
+               case_stmt(details:: e_mul,details:: mul_op)
+               case_stmt(details:: e_div,details:: div_op)
+               case_stmt(details:: e_mod,details:: mod_op)
+               case_stmt(details:: e_pow,details:: pow_op)
+               case_stmt(details::  e_lt,details::  lt_op)
+               case_stmt(details:: e_lte,details:: lte_op)
+               case_stmt(details::  e_gt,details::  gt_op)
+               case_stmt(details:: e_gte,details:: gte_op)
+               case_stmt(details::  e_eq,details::  eq_op)
+               case_stmt(details::  e_ne,details::  ne_op)
+               case_stmt(details:: e_and,details:: and_op)
+               case_stmt(details::e_nand,details::nand_op)
+               case_stmt(details::  e_or,details::  or_op)
+               case_stmt(details:: e_nor,details:: nor_op)
+               case_stmt(details:: e_xor,details:: xor_op)
+               default : return error_node();
+               #undef case_stmt
             }
          }
 
@@ -5332,24 +5316,26 @@ namespace exprtk
             Type& v2 = dynamic_cast<details::variable_node<Type>*>(branch[1])->ref();
             switch (operation)
             {
-               case details::e_add  : return node_allocator_->allocate_rr<typename details::vov_node<Type,details:: add_op<Type> > >(v1,v2);
-               case details::e_sub  : return node_allocator_->allocate_rr<typename details::vov_node<Type,details:: sub_op<Type> > >(v1,v2);
-               case details::e_mul  : return node_allocator_->allocate_rr<typename details::vov_node<Type,details:: mul_op<Type> > >(v1,v2);
-               case details::e_div  : return node_allocator_->allocate_rr<typename details::vov_node<Type,details:: div_op<Type> > >(v1,v2);
-               case details::e_mod  : return node_allocator_->allocate_rr<typename details::vov_node<Type,details:: mod_op<Type> > >(v1,v2);
-               case details::e_pow  : return node_allocator_->allocate_rr<typename details::vov_node<Type,details:: pow_op<Type> > >(v1,v2);
-               case details::e_lt   : return node_allocator_->allocate_rr<typename details::vov_node<Type,details::  lt_op<Type> > >(v1,v2);
-               case details::e_lte  : return node_allocator_->allocate_rr<typename details::vov_node<Type,details:: lte_op<Type> > >(v1,v2);
-               case details::e_gt   : return node_allocator_->allocate_rr<typename details::vov_node<Type,details::  gt_op<Type> > >(v1,v2);
-               case details::e_gte  : return node_allocator_->allocate_rr<typename details::vov_node<Type,details:: gte_op<Type> > >(v1,v2);
-               case details::e_eq   : return node_allocator_->allocate_rr<typename details::vov_node<Type,details::  eq_op<Type> > >(v1,v2);
-               case details::e_ne   : return node_allocator_->allocate_rr<typename details::vov_node<Type,details::  ne_op<Type> > >(v1,v2);
-               case details::e_and  : return node_allocator_->allocate_rr<typename details::vov_node<Type,details:: and_op<Type> > >(v1,v2);
-               case details::e_nand : return node_allocator_->allocate_rr<typename details::vov_node<Type,details::nand_op<Type> > >(v1,v2);
-               case details::e_or   : return node_allocator_->allocate_rr<typename details::vov_node<Type,details::  or_op<Type> > >(v1,v2);
-               case details::e_nor  : return node_allocator_->allocate_rr<typename details::vov_node<Type,details:: nor_op<Type> > >(v1,v2);
-               case details::e_xor  : return node_allocator_->allocate_rr<typename details::vov_node<Type,details:: xor_op<Type> > >(v1,v2);
-               default              : return error_node();
+               #define case_stmt(op0,op1) case op0 : return node_allocator_->allocate_rr<typename details::vov_node<Type,op1<Type> > >(v1,v2);
+               case_stmt(details:: e_add,details:: add_op)
+               case_stmt(details:: e_sub,details:: sub_op)
+               case_stmt(details:: e_mul,details:: mul_op)
+               case_stmt(details:: e_div,details:: div_op)
+               case_stmt(details:: e_mod,details:: mod_op)
+               case_stmt(details:: e_pow,details:: pow_op)
+               case_stmt(details::  e_lt,details::  lt_op)
+               case_stmt(details:: e_lte,details:: lte_op)
+               case_stmt(details::  e_gt,details::  gt_op)
+               case_stmt(details:: e_gte,details:: gte_op)
+               case_stmt(details::  e_eq,details::  eq_op)
+               case_stmt(details::  e_ne,details::  ne_op)
+               case_stmt(details:: e_and,details:: and_op)
+               case_stmt(details::e_nand,details::nand_op)
+               case_stmt(details::  e_or,details::  or_op)
+               case_stmt(details:: e_nor,details:: nor_op)
+               case_stmt(details:: e_xor,details:: xor_op)
+               default : return error_node();
+               #undef case_stmt
             }
          }
 
@@ -5359,24 +5345,26 @@ namespace exprtk
             details::operator_type op = dynamic_cast<details::vov_base_node<Type>*>(node)->operation();
             switch (op)
             {
-               case details::e_add  : return node_allocator_->allocate_rr<typename details::vovov1_node<Type,Operation1,details:: add_op<Type> > >(v0,(*dynamic_cast<details::vov_node<T,details:: add_op<Type> >*>(node)));
-               case details::e_sub  : return node_allocator_->allocate_rr<typename details::vovov1_node<Type,Operation1,details:: sub_op<Type> > >(v0,(*dynamic_cast<details::vov_node<T,details:: sub_op<Type> >*>(node)));
-               case details::e_mul  : return node_allocator_->allocate_rr<typename details::vovov1_node<Type,Operation1,details:: mul_op<Type> > >(v0,(*dynamic_cast<details::vov_node<T,details:: mul_op<Type> >*>(node)));
-               case details::e_div  : return node_allocator_->allocate_rr<typename details::vovov1_node<Type,Operation1,details:: div_op<Type> > >(v0,(*dynamic_cast<details::vov_node<T,details:: div_op<Type> >*>(node)));
-               case details::e_mod  : return node_allocator_->allocate_rr<typename details::vovov1_node<Type,Operation1,details:: mod_op<Type> > >(v0,(*dynamic_cast<details::vov_node<T,details:: mod_op<Type> >*>(node)));
-               case details::e_pow  : return node_allocator_->allocate_rr<typename details::vovov1_node<Type,Operation1,details:: pow_op<Type> > >(v0,(*dynamic_cast<details::vov_node<T,details:: pow_op<Type> >*>(node)));
-               case details::e_lt   : return node_allocator_->allocate_rr<typename details::vovov1_node<Type,Operation1,details::  lt_op<Type> > >(v0,(*dynamic_cast<details::vov_node<T,details::  lt_op<Type> >*>(node)));
-               case details::e_lte  : return node_allocator_->allocate_rr<typename details::vovov1_node<Type,Operation1,details:: lte_op<Type> > >(v0,(*dynamic_cast<details::vov_node<T,details:: lte_op<Type> >*>(node)));
-               case details::e_gt   : return node_allocator_->allocate_rr<typename details::vovov1_node<Type,Operation1,details::  gt_op<Type> > >(v0,(*dynamic_cast<details::vov_node<T,details::  gt_op<Type> >*>(node)));
-               case details::e_gte  : return node_allocator_->allocate_rr<typename details::vovov1_node<Type,Operation1,details:: gte_op<Type> > >(v0,(*dynamic_cast<details::vov_node<T,details:: gte_op<Type> >*>(node)));
-               case details::e_eq   : return node_allocator_->allocate_rr<typename details::vovov1_node<Type,Operation1,details::  eq_op<Type> > >(v0,(*dynamic_cast<details::vov_node<T,details::  eq_op<Type> >*>(node)));
-               case details::e_ne   : return node_allocator_->allocate_rr<typename details::vovov1_node<Type,Operation1,details::  ne_op<Type> > >(v0,(*dynamic_cast<details::vov_node<T,details::  ne_op<Type> >*>(node)));
-               case details::e_and  : return node_allocator_->allocate_rr<typename details::vovov1_node<Type,Operation1,details:: and_op<Type> > >(v0,(*dynamic_cast<details::vov_node<T,details:: and_op<Type> >*>(node)));
-               case details::e_nand : return node_allocator_->allocate_rr<typename details::vovov1_node<Type,Operation1,details::nand_op<Type> > >(v0,(*dynamic_cast<details::vov_node<T,details::nand_op<Type> >*>(node)));
-               case details::e_or   : return node_allocator_->allocate_rr<typename details::vovov1_node<Type,Operation1,details::  or_op<Type> > >(v0,(*dynamic_cast<details::vov_node<T,details::  or_op<Type> >*>(node)));
-               case details::e_nor  : return node_allocator_->allocate_rr<typename details::vovov1_node<Type,Operation1,details:: nor_op<Type> > >(v0,(*dynamic_cast<details::vov_node<T,details:: nor_op<Type> >*>(node)));
-               case details::e_xor  : return node_allocator_->allocate_rr<typename details::vovov1_node<Type,Operation1,details:: xor_op<Type> > >(v0,(*dynamic_cast<details::vov_node<T,details:: xor_op<Type> >*>(node)));
-               default              : return error_node();
+               #define case_stmt(op0,op1) case op0 : return node_allocator_->allocate_rr<typename details::vovov1_node<Type,Operation1,op1<Type> > >(v0,(*dynamic_cast<details::vov_node<T,op1<Type> >*>(node)));
+               case_stmt(details:: e_add,details:: add_op)
+               case_stmt(details:: e_sub,details:: sub_op)
+               case_stmt(details:: e_mul,details:: mul_op)
+               case_stmt(details:: e_div,details:: div_op)
+               case_stmt(details:: e_mod,details:: mod_op)
+               case_stmt(details:: e_pow,details:: pow_op)
+               case_stmt(details::  e_lt,details::  lt_op)
+               case_stmt(details:: e_lte,details:: lte_op)
+               case_stmt(details::  e_gt,details::  gt_op)
+               case_stmt(details:: e_gte,details:: gte_op)
+               case_stmt(details::  e_eq,details::  eq_op)
+               case_stmt(details::  e_ne,details::  ne_op)
+               case_stmt(details:: e_and,details:: and_op)
+               case_stmt(details::e_nand,details::nand_op)
+               case_stmt(details::  e_or,details::  or_op)
+               case_stmt(details:: e_nor,details:: nor_op)
+               case_stmt(details:: e_xor,details:: xor_op)
+               default : return error_node();
+               #undef case_stmt
             }
          }
 
@@ -5386,24 +5374,26 @@ namespace exprtk
             expression_node_ptr result = error_node();
             switch (operation)
             {
-               case details::e_add  : result = synthesize_vovov1_expression_impl<details:: add_op<Type> >(v0,branch[1]); break;
-               case details::e_sub  : result = synthesize_vovov1_expression_impl<details:: sub_op<Type> >(v0,branch[1]); break;
-               case details::e_mul  : result = synthesize_vovov1_expression_impl<details:: mul_op<Type> >(v0,branch[1]); break;
-               case details::e_div  : result = synthesize_vovov1_expression_impl<details:: div_op<Type> >(v0,branch[1]); break;
-               case details::e_mod  : result = synthesize_vovov1_expression_impl<details:: mod_op<Type> >(v0,branch[1]); break;
-               case details::e_pow  : result = synthesize_vovov1_expression_impl<details:: pow_op<Type> >(v0,branch[1]); break;
-               case details::e_lt   : result = synthesize_vovov1_expression_impl<details::  lt_op<Type> >(v0,branch[1]); break;
-               case details::e_lte  : result = synthesize_vovov1_expression_impl<details:: lte_op<Type> >(v0,branch[1]); break;
-               case details::e_gt   : result = synthesize_vovov1_expression_impl<details::  gt_op<Type> >(v0,branch[1]); break;
-               case details::e_gte  : result = synthesize_vovov1_expression_impl<details:: gte_op<Type> >(v0,branch[1]); break;
-               case details::e_eq   : result = synthesize_vovov1_expression_impl<details::  eq_op<Type> >(v0,branch[1]); break;
-               case details::e_ne   : result = synthesize_vovov1_expression_impl<details::  ne_op<Type> >(v0,branch[1]); break;
-               case details::e_and  : result = synthesize_vovov1_expression_impl<details:: and_op<Type> >(v0,branch[1]); break;
-               case details::e_nand : result = synthesize_vovov1_expression_impl<details::nand_op<Type> >(v0,branch[1]); break;
-               case details::e_or   : result = synthesize_vovov1_expression_impl<details::  or_op<Type> >(v0,branch[1]); break;
-               case details::e_nor  : result = synthesize_vovov1_expression_impl<details:: nor_op<Type> >(v0,branch[1]); break;
-               case details::e_xor  : result = synthesize_vovov1_expression_impl<details:: xor_op<Type> >(v0,branch[1]); break;
-               default              : return error_node();
+               #define case_stmt(op0,op1) case op0 : result = synthesize_vovov1_expression_impl<op1<Type> >(v0,branch[1]); break;
+               case_stmt(details:: e_add,details:: add_op)
+               case_stmt(details:: e_sub,details:: sub_op)
+               case_stmt(details:: e_mul,details:: mul_op)
+               case_stmt(details:: e_div,details:: div_op)
+               case_stmt(details:: e_mod,details:: mod_op)
+               case_stmt(details:: e_pow,details:: pow_op)
+               case_stmt(details::  e_lt,details::  lt_op)
+               case_stmt(details:: e_lte,details:: lte_op)
+               case_stmt(details::  e_gt,details::  gt_op)
+               case_stmt(details:: e_gte,details:: gte_op)
+               case_stmt(details::  e_eq,details::  eq_op)
+               case_stmt(details::  e_ne,details::  ne_op)
+               case_stmt(details:: e_and,details:: and_op)
+               case_stmt(details::e_nand,details::nand_op)
+               case_stmt(details::  e_or,details::  or_op)
+               case_stmt(details:: e_nor,details:: nor_op)
+               case_stmt(details:: e_xor,details:: xor_op)
+               default : return error_node();
+               #undef case_stmt
             }
             node_allocator_->free(branch[1]);
             return result;
@@ -5415,24 +5405,26 @@ namespace exprtk
             details::operator_type op = dynamic_cast<details::vov_base_node<T>*>(node)->operation();
             switch (op)
             {
-               case details::e_add  : return node_allocator_->allocate_rr<typename details::vovov2_node<T,details:: add_op<T>,Operation1> >((*dynamic_cast<details::vov_node<T,details:: add_op<T> >*>(node)),v0);
-               case details::e_sub  : return node_allocator_->allocate_rr<typename details::vovov2_node<T,details:: sub_op<T>,Operation1> >((*dynamic_cast<details::vov_node<T,details:: sub_op<T> >*>(node)),v0);
-               case details::e_mul  : return node_allocator_->allocate_rr<typename details::vovov2_node<T,details:: mul_op<T>,Operation1> >((*dynamic_cast<details::vov_node<T,details:: mul_op<T> >*>(node)),v0);
-               case details::e_div  : return node_allocator_->allocate_rr<typename details::vovov2_node<T,details:: div_op<T>,Operation1> >((*dynamic_cast<details::vov_node<T,details:: div_op<T> >*>(node)),v0);
-               case details::e_mod  : return node_allocator_->allocate_rr<typename details::vovov2_node<T,details:: mod_op<T>,Operation1> >((*dynamic_cast<details::vov_node<T,details:: mod_op<T> >*>(node)),v0);
-               case details::e_pow  : return node_allocator_->allocate_rr<typename details::vovov2_node<T,details:: pow_op<T>,Operation1> >((*dynamic_cast<details::vov_node<T,details:: pow_op<T> >*>(node)),v0);
-               case details::e_lt   : return node_allocator_->allocate_rr<typename details::vovov2_node<T,details::  lt_op<T>,Operation1> >((*dynamic_cast<details::vov_node<T,details::  lt_op<T> >*>(node)),v0);
-               case details::e_lte  : return node_allocator_->allocate_rr<typename details::vovov2_node<T,details:: lte_op<T>,Operation1> >((*dynamic_cast<details::vov_node<T,details:: lte_op<T> >*>(node)),v0);
-               case details::e_gt   : return node_allocator_->allocate_rr<typename details::vovov2_node<T,details::  gt_op<T>,Operation1> >((*dynamic_cast<details::vov_node<T,details::  gt_op<T> >*>(node)),v0);
-               case details::e_gte  : return node_allocator_->allocate_rr<typename details::vovov2_node<T,details:: gte_op<T>,Operation1> >((*dynamic_cast<details::vov_node<T,details:: gte_op<T> >*>(node)),v0);
-               case details::e_eq   : return node_allocator_->allocate_rr<typename details::vovov2_node<T,details::  eq_op<T>,Operation1> >((*dynamic_cast<details::vov_node<T,details::  eq_op<T> >*>(node)),v0);
-               case details::e_ne   : return node_allocator_->allocate_rr<typename details::vovov2_node<T,details::  ne_op<T>,Operation1> >((*dynamic_cast<details::vov_node<T,details::  ne_op<T> >*>(node)),v0);
-               case details::e_and  : return node_allocator_->allocate_rr<typename details::vovov2_node<T,details:: and_op<T>,Operation1> >((*dynamic_cast<details::vov_node<T,details:: and_op<T> >*>(node)),v0);
-               case details::e_nand : return node_allocator_->allocate_rr<typename details::vovov2_node<T,details::nand_op<T>,Operation1> >((*dynamic_cast<details::vov_node<T,details::nand_op<T> >*>(node)),v0);
-               case details::e_or   : return node_allocator_->allocate_rr<typename details::vovov2_node<T,details::  or_op<T>,Operation1> >((*dynamic_cast<details::vov_node<T,details::  or_op<T> >*>(node)),v0);
-               case details::e_nor  : return node_allocator_->allocate_rr<typename details::vovov2_node<T,details:: nor_op<T>,Operation1> >((*dynamic_cast<details::vov_node<T,details:: nor_op<T> >*>(node)),v0);
-               case details::e_xor  : return node_allocator_->allocate_rr<typename details::vovov2_node<T,details:: xor_op<T>,Operation1> >((*dynamic_cast<details::vov_node<T,details:: xor_op<T> >*>(node)),v0);
-               default              : return error_node();
+               #define case_stmt(op0,op1) case op0 : return node_allocator_->allocate_rr<typename details::vovov2_node<T,op1<T>,Operation1> >((*dynamic_cast<details::vov_node<T,op1<T> >*>(node)),v0);
+               case_stmt(details:: e_add,details:: add_op)
+               case_stmt(details:: e_sub,details:: sub_op)
+               case_stmt(details:: e_mul,details:: mul_op)
+               case_stmt(details:: e_div,details:: div_op)
+               case_stmt(details:: e_mod,details:: mod_op)
+               case_stmt(details:: e_pow,details:: pow_op)
+               case_stmt(details::  e_lt,details::  lt_op)
+               case_stmt(details:: e_lte,details:: lte_op)
+               case_stmt(details::  e_gt,details::  gt_op)
+               case_stmt(details:: e_gte,details:: gte_op)
+               case_stmt(details::  e_eq,details::  eq_op)
+               case_stmt(details::  e_ne,details::  ne_op)
+               case_stmt(details:: e_and,details:: and_op)
+               case_stmt(details::e_nand,details::nand_op)
+               case_stmt(details::  e_or,details::  or_op)
+               case_stmt(details:: e_nor,details:: nor_op)
+               case_stmt(details:: e_xor,details:: xor_op)
+               default : return error_node();
+               #undef case_stmt
             }
          }
 
@@ -5442,24 +5434,26 @@ namespace exprtk
             expression_node_ptr result = error_node();
             switch (operation)
             {
-               case details::e_add  : result = synthesize_vovov2_expression_impl<details:: add_op<Type> >(v0,branch[0]); break;
-               case details::e_sub  : result = synthesize_vovov2_expression_impl<details:: sub_op<Type> >(v0,branch[0]); break;
-               case details::e_mul  : result = synthesize_vovov2_expression_impl<details:: mul_op<Type> >(v0,branch[0]); break;
-               case details::e_div  : result = synthesize_vovov2_expression_impl<details:: div_op<Type> >(v0,branch[0]); break;
-               case details::e_mod  : result = synthesize_vovov2_expression_impl<details:: mod_op<Type> >(v0,branch[0]); break;
-               case details::e_pow  : result = synthesize_vovov2_expression_impl<details:: pow_op<Type> >(v0,branch[0]); break;
-               case details::e_lt   : result = synthesize_vovov2_expression_impl<details::  lt_op<Type> >(v0,branch[0]); break;
-               case details::e_lte  : result = synthesize_vovov2_expression_impl<details:: lte_op<Type> >(v0,branch[0]); break;
-               case details::e_gt   : result = synthesize_vovov2_expression_impl<details::  gt_op<Type> >(v0,branch[0]); break;
-               case details::e_gte  : result = synthesize_vovov2_expression_impl<details:: gte_op<Type> >(v0,branch[0]); break;
-               case details::e_eq   : result = synthesize_vovov2_expression_impl<details::  eq_op<Type> >(v0,branch[0]); break;
-               case details::e_ne   : result = synthesize_vovov2_expression_impl<details::  ne_op<Type> >(v0,branch[0]); break;
-               case details::e_and  : result = synthesize_vovov2_expression_impl<details:: and_op<Type> >(v0,branch[0]); break;
-               case details::e_nand : result = synthesize_vovov2_expression_impl<details::nand_op<Type> >(v0,branch[0]); break;
-               case details::e_or   : result = synthesize_vovov2_expression_impl<details::  or_op<Type> >(v0,branch[0]); break;
-               case details::e_nor  : result = synthesize_vovov2_expression_impl<details:: nor_op<Type> >(v0,branch[0]); break;
-               case details::e_xor  : result = synthesize_vovov2_expression_impl<details:: xor_op<Type> >(v0,branch[0]); break;
-               default              : return error_node();
+               #define case_stmt(op0,op1) case op0 : result = synthesize_vovov2_expression_impl<op1<Type> >(v0,branch[0]); break;
+               case_stmt(details:: e_add,details:: add_op)
+               case_stmt(details:: e_sub,details:: sub_op)
+               case_stmt(details:: e_mul,details:: mul_op)
+               case_stmt(details:: e_div,details:: div_op)
+               case_stmt(details:: e_mod,details:: mod_op)
+               case_stmt(details:: e_pow,details:: pow_op)
+               case_stmt(details::  e_lt,details::  lt_op)
+               case_stmt(details:: e_lte,details:: lte_op)
+               case_stmt(details::  e_gt,details::  gt_op)
+               case_stmt(details:: e_gte,details:: gte_op)
+               case_stmt(details::  e_eq,details::  eq_op)
+               case_stmt(details::  e_ne,details::  ne_op)
+               case_stmt(details:: e_and,details:: and_op)
+               case_stmt(details::e_nand,details::nand_op)
+               case_stmt(details::  e_or,details::  or_op)
+               case_stmt(details:: e_nor,details:: nor_op)
+               case_stmt(details:: e_xor,details:: xor_op)
+               default : return error_node();
+               #undef case_stmt
             }
             node_allocator_->free(branch[0]);
             return result;
@@ -5471,24 +5465,26 @@ namespace exprtk
             details::operator_type op = dynamic_cast<details::vov_base_node<T>*>(node)->operation();
             switch (op)
             {
-               case details::e_add  : return node_allocator_->allocate_rr<typename details::covov1_node<Type,Operation1,details:: add_op<Type> > >(c,(*dynamic_cast<details::vov_node<T,details:: add_op<T> >*>(node)));
-               case details::e_sub  : return node_allocator_->allocate_rr<typename details::covov1_node<Type,Operation1,details:: sub_op<Type> > >(c,(*dynamic_cast<details::vov_node<T,details:: sub_op<T> >*>(node)));
-               case details::e_mul  : return node_allocator_->allocate_rr<typename details::covov1_node<Type,Operation1,details:: mul_op<Type> > >(c,(*dynamic_cast<details::vov_node<T,details:: mul_op<T> >*>(node)));
-               case details::e_div  : return node_allocator_->allocate_rr<typename details::covov1_node<Type,Operation1,details:: div_op<Type> > >(c,(*dynamic_cast<details::vov_node<T,details:: div_op<T> >*>(node)));
-               case details::e_mod  : return node_allocator_->allocate_rr<typename details::covov1_node<Type,Operation1,details:: mod_op<Type> > >(c,(*dynamic_cast<details::vov_node<T,details:: mod_op<T> >*>(node)));
-               case details::e_pow  : return node_allocator_->allocate_rr<typename details::covov1_node<Type,Operation1,details:: pow_op<Type> > >(c,(*dynamic_cast<details::vov_node<T,details:: pow_op<T> >*>(node)));
-               case details::e_lt   : return node_allocator_->allocate_rr<typename details::covov1_node<Type,Operation1,details::  lt_op<Type> > >(c,(*dynamic_cast<details::vov_node<T,details::  lt_op<T> >*>(node)));
-               case details::e_lte  : return node_allocator_->allocate_rr<typename details::covov1_node<Type,Operation1,details:: lte_op<Type> > >(c,(*dynamic_cast<details::vov_node<T,details:: lte_op<T> >*>(node)));
-               case details::e_gt   : return node_allocator_->allocate_rr<typename details::covov1_node<Type,Operation1,details::  gt_op<Type> > >(c,(*dynamic_cast<details::vov_node<T,details::  gt_op<T> >*>(node)));
-               case details::e_gte  : return node_allocator_->allocate_rr<typename details::covov1_node<Type,Operation1,details:: gte_op<Type> > >(c,(*dynamic_cast<details::vov_node<T,details:: gte_op<T> >*>(node)));
-               case details::e_eq   : return node_allocator_->allocate_rr<typename details::covov1_node<Type,Operation1,details::  eq_op<Type> > >(c,(*dynamic_cast<details::vov_node<T,details::  eq_op<T> >*>(node)));
-               case details::e_ne   : return node_allocator_->allocate_rr<typename details::covov1_node<Type,Operation1,details::  ne_op<Type> > >(c,(*dynamic_cast<details::vov_node<T,details::  ne_op<T> >*>(node)));
-               case details::e_and  : return node_allocator_->allocate_rr<typename details::covov1_node<Type,Operation1,details:: and_op<Type> > >(c,(*dynamic_cast<details::vov_node<T,details:: and_op<T> >*>(node)));
-               case details::e_nand : return node_allocator_->allocate_rr<typename details::covov1_node<Type,Operation1,details::nand_op<Type> > >(c,(*dynamic_cast<details::vov_node<T,details::nand_op<T> >*>(node)));
-               case details::e_or   : return node_allocator_->allocate_rr<typename details::covov1_node<Type,Operation1,details::  or_op<Type> > >(c,(*dynamic_cast<details::vov_node<T,details::  or_op<T> >*>(node)));
-               case details::e_nor  : return node_allocator_->allocate_rr<typename details::covov1_node<Type,Operation1,details:: nor_op<Type> > >(c,(*dynamic_cast<details::vov_node<T,details:: nor_op<T> >*>(node)));
-               case details::e_xor  : return node_allocator_->allocate_rr<typename details::covov1_node<Type,Operation1,details:: xor_op<Type> > >(c,(*dynamic_cast<details::vov_node<T,details:: xor_op<T> >*>(node)));
-               default              : return error_node();
+               #define case_stmt(op0,op1) case op0 : return node_allocator_->allocate_rr<typename details::covov1_node<Type,Operation1,op1<Type> > >(c,(*dynamic_cast<details::vov_node<T,op1<T> >*>(node)));
+               case_stmt(details:: e_add,details:: add_op)
+               case_stmt(details:: e_sub,details:: sub_op)
+               case_stmt(details:: e_mul,details:: mul_op)
+               case_stmt(details:: e_div,details:: div_op)
+               case_stmt(details:: e_mod,details:: mod_op)
+               case_stmt(details:: e_pow,details:: pow_op)
+               case_stmt(details::  e_lt,details::  lt_op)
+               case_stmt(details:: e_lte,details:: lte_op)
+               case_stmt(details::  e_gt,details::  gt_op)
+               case_stmt(details:: e_gte,details:: gte_op)
+               case_stmt(details::  e_eq,details::  eq_op)
+               case_stmt(details::  e_ne,details::  ne_op)
+               case_stmt(details:: e_and,details:: and_op)
+               case_stmt(details::e_nand,details::nand_op)
+               case_stmt(details::  e_or,details::  or_op)
+               case_stmt(details:: e_nor,details:: nor_op)
+               case_stmt(details:: e_xor,details:: xor_op)
+               default : return error_node();
+               #undef case_stmt
             }
          }
 
@@ -5498,24 +5494,26 @@ namespace exprtk
             expression_node_ptr result = error_node();
             switch (operation)
             {
-               case details::e_add  : result = synthesize_covov1_expression_impl<details:: add_op<Type> >(c,branch[1]); break;
-               case details::e_sub  : result = synthesize_covov1_expression_impl<details:: sub_op<Type> >(c,branch[1]); break;
-               case details::e_mul  : result = synthesize_covov1_expression_impl<details:: mul_op<Type> >(c,branch[1]); break;
-               case details::e_div  : result = synthesize_covov1_expression_impl<details:: div_op<Type> >(c,branch[1]); break;
-               case details::e_mod  : result = synthesize_covov1_expression_impl<details:: mod_op<Type> >(c,branch[1]); break;
-               case details::e_pow  : result = synthesize_covov1_expression_impl<details:: pow_op<Type> >(c,branch[1]); break;
-               case details::e_lt   : result = synthesize_covov1_expression_impl<details::  lt_op<Type> >(c,branch[1]); break;
-               case details::e_lte  : result = synthesize_covov1_expression_impl<details:: lte_op<Type> >(c,branch[1]); break;
-               case details::e_gt   : result = synthesize_covov1_expression_impl<details::  gt_op<Type> >(c,branch[1]); break;
-               case details::e_gte  : result = synthesize_covov1_expression_impl<details:: gte_op<Type> >(c,branch[1]); break;
-               case details::e_eq   : result = synthesize_covov1_expression_impl<details::  eq_op<Type> >(c,branch[1]); break;
-               case details::e_ne   : result = synthesize_covov1_expression_impl<details::  ne_op<Type> >(c,branch[1]); break;
-               case details::e_and  : result = synthesize_covov1_expression_impl<details:: and_op<Type> >(c,branch[1]); break;
-               case details::e_nand : result = synthesize_covov1_expression_impl<details::nand_op<Type> >(c,branch[1]); break;
-               case details::e_or   : result = synthesize_covov1_expression_impl<details::  or_op<Type> >(c,branch[1]); break;
-               case details::e_nor  : result = synthesize_covov1_expression_impl<details:: nor_op<Type> >(c,branch[1]); break;
-               case details::e_xor  : result = synthesize_covov1_expression_impl<details:: xor_op<Type> >(c,branch[1]); break;
-               default              : return error_node();
+               #define case_stmt(op0,op1) case op0 : result = synthesize_covov1_expression_impl<op1<Type> >(c,branch[1]); break;
+               case_stmt(details:: e_add,details:: add_op)
+               case_stmt(details:: e_sub,details:: sub_op)
+               case_stmt(details:: e_mul,details:: mul_op)
+               case_stmt(details:: e_div,details:: div_op)
+               case_stmt(details:: e_mod,details:: mod_op)
+               case_stmt(details:: e_pow,details:: pow_op)
+               case_stmt(details::  e_lt,details::  lt_op)
+               case_stmt(details:: e_lte,details:: lte_op)
+               case_stmt(details::  e_gt,details::  gt_op)
+               case_stmt(details:: e_gte,details:: gte_op)
+               case_stmt(details::  e_eq,details::  eq_op)
+               case_stmt(details::  e_ne,details::  ne_op)
+               case_stmt(details:: e_and,details:: and_op)
+               case_stmt(details::e_nand,details::nand_op)
+               case_stmt(details::  e_or,details::  or_op)
+               case_stmt(details:: e_nor,details:: nor_op)
+               case_stmt(details:: e_xor,details:: xor_op)
+               default : return error_node();
+               #undef case_stmt
             }
             node_allocator_->free(branch[1]);
             return result;
@@ -5527,24 +5525,26 @@ namespace exprtk
             details::operator_type op = dynamic_cast<details::cov_base_node<T>*>(node)->operation();
             switch (op)
             {
-               case details::e_add  : return node_allocator_->allocate_rr<typename details::covov2_node<Type,details:: add_op<T>,Operation2> >((*dynamic_cast<details::cov_node<T,details:: add_op<T> >*>(node)),v);
-               case details::e_sub  : return node_allocator_->allocate_rr<typename details::covov2_node<Type,details:: sub_op<T>,Operation2> >((*dynamic_cast<details::cov_node<T,details:: sub_op<T> >*>(node)),v);
-               case details::e_mul  : return node_allocator_->allocate_rr<typename details::covov2_node<Type,details:: mul_op<T>,Operation2> >((*dynamic_cast<details::cov_node<T,details:: mul_op<T> >*>(node)),v);
-               case details::e_div  : return node_allocator_->allocate_rr<typename details::covov2_node<Type,details:: div_op<T>,Operation2> >((*dynamic_cast<details::cov_node<T,details:: div_op<T> >*>(node)),v);
-               case details::e_mod  : return node_allocator_->allocate_rr<typename details::covov2_node<Type,details:: mod_op<T>,Operation2> >((*dynamic_cast<details::cov_node<T,details:: mod_op<T> >*>(node)),v);
-               case details::e_pow  : return node_allocator_->allocate_rr<typename details::covov2_node<Type,details:: pow_op<T>,Operation2> >((*dynamic_cast<details::cov_node<T,details:: pow_op<T> >*>(node)),v);
-               case details::e_lt   : return node_allocator_->allocate_rr<typename details::covov2_node<Type,details::  lt_op<T>,Operation2> >((*dynamic_cast<details::cov_node<T,details::  lt_op<T> >*>(node)),v);
-               case details::e_lte  : return node_allocator_->allocate_rr<typename details::covov2_node<Type,details:: lte_op<T>,Operation2> >((*dynamic_cast<details::cov_node<T,details:: lte_op<T> >*>(node)),v);
-               case details::e_gt   : return node_allocator_->allocate_rr<typename details::covov2_node<Type,details::  gt_op<T>,Operation2> >((*dynamic_cast<details::cov_node<T,details::  gt_op<T> >*>(node)),v);
-               case details::e_gte  : return node_allocator_->allocate_rr<typename details::covov2_node<Type,details:: gte_op<T>,Operation2> >((*dynamic_cast<details::cov_node<T,details:: gte_op<T> >*>(node)),v);
-               case details::e_eq   : return node_allocator_->allocate_rr<typename details::covov2_node<Type,details::  eq_op<T>,Operation2> >((*dynamic_cast<details::cov_node<T,details::  eq_op<T> >*>(node)),v);
-               case details::e_ne   : return node_allocator_->allocate_rr<typename details::covov2_node<Type,details::  ne_op<T>,Operation2> >((*dynamic_cast<details::cov_node<T,details::  ne_op<T> >*>(node)),v);
-               case details::e_and  : return node_allocator_->allocate_rr<typename details::covov2_node<Type,details:: and_op<T>,Operation2> >((*dynamic_cast<details::cov_node<T,details:: and_op<T> >*>(node)),v);
-               case details::e_nand : return node_allocator_->allocate_rr<typename details::covov2_node<Type,details::nand_op<T>,Operation2> >((*dynamic_cast<details::cov_node<T,details::nand_op<T> >*>(node)),v);
-               case details::e_or   : return node_allocator_->allocate_rr<typename details::covov2_node<Type,details::  or_op<T>,Operation2> >((*dynamic_cast<details::cov_node<T,details::  or_op<T> >*>(node)),v);
-               case details::e_nor  : return node_allocator_->allocate_rr<typename details::covov2_node<Type,details:: nor_op<T>,Operation2> >((*dynamic_cast<details::cov_node<T,details:: nor_op<T> >*>(node)),v);
-               case details::e_xor  : return node_allocator_->allocate_rr<typename details::covov2_node<Type,details:: xor_op<T>,Operation2> >((*dynamic_cast<details::cov_node<T,details:: xor_op<T> >*>(node)),v);
-               default              : return error_node();
+               #define case_stmt(op0,op1) case op0 : return node_allocator_->allocate_rr<typename details::covov2_node<Type,op1<T>,Operation2> >((*dynamic_cast<details::cov_node<T,op1<T> >*>(node)),v);
+               case_stmt(details:: e_add,details:: add_op)
+               case_stmt(details:: e_sub,details:: sub_op)
+               case_stmt(details:: e_mul,details:: mul_op)
+               case_stmt(details:: e_div,details:: div_op)
+               case_stmt(details:: e_mod,details:: mod_op)
+               case_stmt(details:: e_pow,details:: pow_op)
+               case_stmt(details::  e_lt,details::  lt_op)
+               case_stmt(details:: e_lte,details:: lte_op)
+               case_stmt(details::  e_gt,details::  gt_op)
+               case_stmt(details:: e_gte,details:: gte_op)
+               case_stmt(details::  e_eq,details::  eq_op)
+               case_stmt(details::  e_ne,details::  ne_op)
+               case_stmt(details:: e_and,details:: and_op)
+               case_stmt(details::e_nand,details::nand_op)
+               case_stmt(details::  e_or,details::  or_op)
+               case_stmt(details:: e_nor,details:: nor_op)
+               case_stmt(details:: e_xor,details:: xor_op)
+               default : return error_node();
+               #undef case_stmt
             }
          }
 
@@ -5554,54 +5554,58 @@ namespace exprtk
             expression_node_ptr result = error_node();
             switch (operation)
             {
-               case details::e_add  : result = synthesize_covov2_expression_impl<details:: add_op<Type> >(branch[0],v); break;
-               case details::e_sub  : result = synthesize_covov2_expression_impl<details:: sub_op<Type> >(branch[0],v); break;
-               case details::e_mul  : result = synthesize_covov2_expression_impl<details:: mul_op<Type> >(branch[0],v); break;
-               case details::e_div  : result = synthesize_covov2_expression_impl<details:: div_op<Type> >(branch[0],v); break;
-               case details::e_mod  : result = synthesize_covov2_expression_impl<details:: mod_op<Type> >(branch[0],v); break;
-               case details::e_pow  : result = synthesize_covov2_expression_impl<details:: pow_op<Type> >(branch[0],v); break;
-               case details::e_lt   : result = synthesize_covov2_expression_impl<details::  lt_op<Type> >(branch[0],v); break;
-               case details::e_lte  : result = synthesize_covov2_expression_impl<details:: lte_op<Type> >(branch[0],v); break;
-               case details::e_gt   : result = synthesize_covov2_expression_impl<details::  gt_op<Type> >(branch[0],v); break;
-               case details::e_gte  : result = synthesize_covov2_expression_impl<details:: gte_op<Type> >(branch[0],v); break;
-               case details::e_eq   : result = synthesize_covov2_expression_impl<details::  eq_op<Type> >(branch[0],v); break;
-               case details::e_ne   : result = synthesize_covov2_expression_impl<details::  ne_op<Type> >(branch[0],v); break;
-               case details::e_and  : result = synthesize_covov2_expression_impl<details:: and_op<Type> >(branch[0],v); break;
-               case details::e_nand : result = synthesize_covov2_expression_impl<details::nand_op<Type> >(branch[0],v); break;
-               case details::e_or   : result = synthesize_covov2_expression_impl<details::  or_op<Type> >(branch[0],v); break;
-               case details::e_nor  : result = synthesize_covov2_expression_impl<details:: nor_op<Type> >(branch[0],v); break;
-               case details::e_xor  : result = synthesize_covov2_expression_impl<details:: xor_op<Type> >(branch[0],v); break;
-               default              : return error_node();
+               #define case_stmt(op0,op1) case op0 : result = synthesize_covov2_expression_impl<op1<Type> >(branch[0],v); break;
+               case_stmt(details:: e_add,details:: add_op)
+               case_stmt(details:: e_sub,details:: sub_op)
+               case_stmt(details:: e_mul,details:: mul_op)
+               case_stmt(details:: e_div,details:: div_op)
+               case_stmt(details:: e_mod,details:: mod_op)
+               case_stmt(details:: e_pow,details:: pow_op)
+               case_stmt(details::  e_lt,details::  lt_op)
+               case_stmt(details:: e_lte,details:: lte_op)
+               case_stmt(details::  e_gt,details::  gt_op)
+               case_stmt(details:: e_gte,details:: gte_op)
+               case_stmt(details::  e_eq,details::  eq_op)
+               case_stmt(details::  e_ne,details::  ne_op)
+               case_stmt(details:: e_and,details:: and_op)
+               case_stmt(details::e_nand,details::nand_op)
+               case_stmt(details::  e_or,details::  or_op)
+               case_stmt(details:: e_nor,details:: nor_op)
+               case_stmt(details:: e_xor,details:: xor_op)
+               default : return error_node();
+               #undef case_stmt
             }
             node_allocator_->free(branch[0]);
             return result;
          }
 
-         #ifndef exprtk_no_extended_optimisations
+         #ifndef exprtk_disable_extended_optimisations
          template <typename Op1, typename Op2>
          inline expression_node_ptr synthesize_vovovov_expression_impl2(expression_node_ptr (&node)[2])
          {
             details::operator_type op = dynamic_cast<details::vov_base_node<T>*>(node[1])->operation();
             switch (op)
             {
-               case details::e_add  : return node_allocator_->allocate_rr<typename details::vovovov_node<Type,Op1,Op2,details:: add_op<T> > >((*dynamic_cast<details::vov_node<T,Op1>*>(node[0])),(*dynamic_cast<details::vov_node<T,details:: add_op<T> >*>(node[1])));
-               case details::e_sub  : return node_allocator_->allocate_rr<typename details::vovovov_node<Type,Op1,Op2,details:: sub_op<T> > >((*dynamic_cast<details::vov_node<T,Op1>*>(node[0])),(*dynamic_cast<details::vov_node<T,details:: sub_op<T> >*>(node[1])));
-               case details::e_mul  : return node_allocator_->allocate_rr<typename details::vovovov_node<Type,Op1,Op2,details:: mul_op<T> > >((*dynamic_cast<details::vov_node<T,Op1>*>(node[0])),(*dynamic_cast<details::vov_node<T,details:: mul_op<T> >*>(node[1])));
-               case details::e_div  : return node_allocator_->allocate_rr<typename details::vovovov_node<Type,Op1,Op2,details:: div_op<T> > >((*dynamic_cast<details::vov_node<T,Op1>*>(node[0])),(*dynamic_cast<details::vov_node<T,details:: div_op<T> >*>(node[1])));
-               case details::e_mod  : return node_allocator_->allocate_rr<typename details::vovovov_node<Type,Op1,Op2,details:: mod_op<T> > >((*dynamic_cast<details::vov_node<T,Op1>*>(node[0])),(*dynamic_cast<details::vov_node<T,details:: mod_op<T> >*>(node[1])));
-               case details::e_pow  : return node_allocator_->allocate_rr<typename details::vovovov_node<Type,Op1,Op2,details:: pow_op<T> > >((*dynamic_cast<details::vov_node<T,Op1>*>(node[0])),(*dynamic_cast<details::vov_node<T,details:: pow_op<T> >*>(node[1])));
-               case details::e_lt   : return node_allocator_->allocate_rr<typename details::vovovov_node<Type,Op1,Op2,details::  lt_op<T> > >((*dynamic_cast<details::vov_node<T,Op1>*>(node[0])),(*dynamic_cast<details::vov_node<T,details::  lt_op<T> >*>(node[1])));
-               case details::e_lte  : return node_allocator_->allocate_rr<typename details::vovovov_node<Type,Op1,Op2,details:: lte_op<T> > >((*dynamic_cast<details::vov_node<T,Op1>*>(node[0])),(*dynamic_cast<details::vov_node<T,details:: lte_op<T> >*>(node[1])));
-               case details::e_gt   : return node_allocator_->allocate_rr<typename details::vovovov_node<Type,Op1,Op2,details::  gt_op<T> > >((*dynamic_cast<details::vov_node<T,Op1>*>(node[0])),(*dynamic_cast<details::vov_node<T,details::  gt_op<T> >*>(node[1])));
-               case details::e_gte  : return node_allocator_->allocate_rr<typename details::vovovov_node<Type,Op1,Op2,details:: gte_op<T> > >((*dynamic_cast<details::vov_node<T,Op1>*>(node[0])),(*dynamic_cast<details::vov_node<T,details:: gte_op<T> >*>(node[1])));
-               case details::e_eq   : return node_allocator_->allocate_rr<typename details::vovovov_node<Type,Op1,Op2,details::  eq_op<T> > >((*dynamic_cast<details::vov_node<T,Op1>*>(node[0])),(*dynamic_cast<details::vov_node<T,details::  eq_op<T> >*>(node[1])));
-               case details::e_ne   : return node_allocator_->allocate_rr<typename details::vovovov_node<Type,Op1,Op2,details::  ne_op<T> > >((*dynamic_cast<details::vov_node<T,Op1>*>(node[0])),(*dynamic_cast<details::vov_node<T,details::  ne_op<T> >*>(node[1])));
-               case details::e_and  : return node_allocator_->allocate_rr<typename details::vovovov_node<Type,Op1,Op2,details:: and_op<T> > >((*dynamic_cast<details::vov_node<T,Op1>*>(node[0])),(*dynamic_cast<details::vov_node<T,details:: and_op<T> >*>(node[1])));
-               case details::e_nand : return node_allocator_->allocate_rr<typename details::vovovov_node<Type,Op1,Op2,details::nand_op<T> > >((*dynamic_cast<details::vov_node<T,Op1>*>(node[0])),(*dynamic_cast<details::vov_node<T,details::nand_op<T> >*>(node[1])));
-               case details::e_or   : return node_allocator_->allocate_rr<typename details::vovovov_node<Type,Op1,Op2,details::  or_op<T> > >((*dynamic_cast<details::vov_node<T,Op1>*>(node[0])),(*dynamic_cast<details::vov_node<T,details::  or_op<T> >*>(node[1])));
-               case details::e_nor  : return node_allocator_->allocate_rr<typename details::vovovov_node<Type,Op1,Op2,details:: nor_op<T> > >((*dynamic_cast<details::vov_node<T,Op1>*>(node[0])),(*dynamic_cast<details::vov_node<T,details:: nor_op<T> >*>(node[1])));
-               case details::e_xor  : return node_allocator_->allocate_rr<typename details::vovovov_node<Type,Op1,Op2,details:: xor_op<T> > >((*dynamic_cast<details::vov_node<T,Op1>*>(node[0])),(*dynamic_cast<details::vov_node<T,details:: xor_op<T> >*>(node[1])));
-               default              : return error_node();
+               #define case_stmt(op0,op1) case op0 : return node_allocator_->allocate_rr<typename details::vovovov_node<Type,Op1,Op2,op1<T> > >((*dynamic_cast<details::vov_node<T,Op1>*>(node[0])),(*dynamic_cast<details::vov_node<T,op1<T> >*>(node[1])));
+               case_stmt(details:: e_add,details:: add_op)
+               case_stmt(details:: e_sub,details:: sub_op)
+               case_stmt(details:: e_mul,details:: mul_op)
+               case_stmt(details:: e_div,details:: div_op)
+               case_stmt(details:: e_mod,details:: mod_op)
+               case_stmt(details:: e_pow,details:: pow_op)
+               case_stmt(details::  e_lt,details::  lt_op)
+               case_stmt(details:: e_lte,details:: lte_op)
+               case_stmt(details::  e_gt,details::  gt_op)
+               case_stmt(details:: e_gte,details:: gte_op)
+               case_stmt(details::  e_eq,details::  eq_op)
+               case_stmt(details::  e_ne,details::  ne_op)
+               case_stmt(details:: e_and,details:: and_op)
+               case_stmt(details::e_nand,details::nand_op)
+               case_stmt(details::  e_or,details::  or_op)
+               case_stmt(details:: e_nor,details:: nor_op)
+               case_stmt(details:: e_xor,details:: xor_op)
+               default : return error_node();
+               #undef case_stmt
             }
          #else
          template <typename Op1, typename Op2>
@@ -5611,64 +5615,69 @@ namespace exprtk
          #endif
          }
 
-         #ifndef exprtk_no_extended_optimisations
+         #ifndef exprtk_disable_extended_optimisations
          template <typename Operation2>
          inline expression_node_ptr synthesize_vovovov_expression_impl1(expression_node_ptr (&node)[2])
          {
             details::operator_type op = dynamic_cast<details::vov_base_node<T>*>(node[0])->operation();
             switch (op)
             {
-               case details::e_add  : return synthesize_vovovov_expression_impl2<details:: add_op<T>, Operation2>(node); break;
-               case details::e_sub  : return synthesize_vovovov_expression_impl2<details:: sub_op<T>, Operation2>(node); break;
-               case details::e_mul  : return synthesize_vovovov_expression_impl2<details:: mul_op<T>, Operation2>(node); break;
-               case details::e_div  : return synthesize_vovovov_expression_impl2<details:: div_op<T>, Operation2>(node); break;
-               case details::e_mod  : return synthesize_vovovov_expression_impl2<details:: mod_op<T>, Operation2>(node); break;
-               case details::e_pow  : return synthesize_vovovov_expression_impl2<details:: pow_op<T>, Operation2>(node); break;
-               case details::e_lt   : return synthesize_vovovov_expression_impl2<details::  lt_op<T>, Operation2>(node); break;
-               case details::e_lte  : return synthesize_vovovov_expression_impl2<details:: lte_op<T>, Operation2>(node); break;
-               case details::e_gt   : return synthesize_vovovov_expression_impl2<details::  gt_op<T>, Operation2>(node); break;
-               case details::e_gte  : return synthesize_vovovov_expression_impl2<details:: gte_op<T>, Operation2>(node); break;
-               case details::e_eq   : return synthesize_vovovov_expression_impl2<details::  eq_op<T>, Operation2>(node); break;
-               case details::e_ne   : return synthesize_vovovov_expression_impl2<details::  ne_op<T>, Operation2>(node); break;
-               case details::e_and  : return synthesize_vovovov_expression_impl2<details:: and_op<T>, Operation2>(node); break;
-               case details::e_nand : return synthesize_vovovov_expression_impl2<details::nand_op<T>, Operation2>(node); break;
-               case details::e_or   : return synthesize_vovovov_expression_impl2<details::  or_op<T>, Operation2>(node); break;
-               case details::e_nor  : return synthesize_vovovov_expression_impl2<details:: nor_op<T>, Operation2>(node); break;
-               case details::e_xor  : return synthesize_vovovov_expression_impl2<details:: xor_op<T>, Operation2>(node); break;
-               default              : return error_node();
+               #define case_stmt(op0,op1) case op0 : return synthesize_vovovov_expression_impl2<op1<T>,Operation2>(node); break;
+               case_stmt(details:: e_add,details:: add_op)
+               case_stmt(details:: e_sub,details:: sub_op)
+               case_stmt(details:: e_mul,details:: mul_op)
+               case_stmt(details:: e_div,details:: div_op)
+               case_stmt(details:: e_mod,details:: mod_op)
+               case_stmt(details:: e_pow,details:: pow_op)
+               case_stmt(details::  e_lt,details::  lt_op)
+               case_stmt(details:: e_lte,details:: lte_op)
+               case_stmt(details::  e_gt,details::  gt_op)
+               case_stmt(details:: e_gte,details:: gte_op)
+               case_stmt(details::  e_eq,details::  eq_op)
+               case_stmt(details::  e_ne,details::  ne_op)
+               case_stmt(details:: e_and,details:: and_op)
+               case_stmt(details::e_nand,details::nand_op)
+               case_stmt(details::  e_or,details::  or_op)
+               case_stmt(details:: e_nor,details:: nor_op)
+               case_stmt(details:: e_xor,details:: xor_op)
+               default : return error_node();
+               #undef case_stmt
             }
+         }
          #else
          template <typename Operation2>
          inline expression_node_ptr synthesize_vovovov_expression_impl1(expression_node_ptr (&)[2])
          {
             return error_node();
-         #endif
          }
+         #endif
 
-         #ifndef exprtk_no_extended_optimisations
+         #ifndef exprtk_disable_extended_optimisations
          inline expression_node_ptr synthesize_vovovov_expression(const details::operator_type& opr, expression_node_ptr (&branch)[2])
          {
             expression_node_ptr result = error_node();
             switch (opr)
             {
-               case details::e_add  : result = synthesize_vovovov_expression_impl1<details:: add_op<T> >(branch); break;
-               case details::e_sub  : result = synthesize_vovovov_expression_impl1<details:: sub_op<T> >(branch); break;
-               case details::e_mul  : result = synthesize_vovovov_expression_impl1<details:: mul_op<T> >(branch); break;
-               case details::e_div  : result = synthesize_vovovov_expression_impl1<details:: div_op<T> >(branch); break;
-               case details::e_mod  : result = synthesize_vovovov_expression_impl1<details:: mod_op<T> >(branch); break;
-               case details::e_pow  : result = synthesize_vovovov_expression_impl1<details:: pow_op<T> >(branch); break;
-               case details::e_lt   : result = synthesize_vovovov_expression_impl1<details::  lt_op<T> >(branch); break;
-               case details::e_lte  : result = synthesize_vovovov_expression_impl1<details:: lte_op<T> >(branch); break;
-               case details::e_gt   : result = synthesize_vovovov_expression_impl1<details::  gt_op<T> >(branch); break;
-               case details::e_gte  : result = synthesize_vovovov_expression_impl1<details:: gte_op<T> >(branch); break;
-               case details::e_eq   : result = synthesize_vovovov_expression_impl1<details::  eq_op<T> >(branch); break;
-               case details::e_ne   : result = synthesize_vovovov_expression_impl1<details::  ne_op<T> >(branch); break;
-               case details::e_and  : result = synthesize_vovovov_expression_impl1<details:: and_op<T> >(branch); break;
-               case details::e_nand : result = synthesize_vovovov_expression_impl1<details::nand_op<T> >(branch); break;
-               case details::e_or   : result = synthesize_vovovov_expression_impl1<details::  or_op<T> >(branch); break;
-               case details::e_nor  : result = synthesize_vovovov_expression_impl1<details:: nor_op<T> >(branch); break;
-               case details::e_xor  : result = synthesize_vovovov_expression_impl1<details:: xor_op<T> >(branch); break;
-               default              : return error_node();
+               #define case_stmt(op0,op1) case op0 : result = synthesize_vovovov_expression_impl1<op1<T> >(branch); break;
+               case_stmt(details:: e_add,details:: add_op)
+               case_stmt(details:: e_sub,details:: sub_op)
+               case_stmt(details:: e_mul,details:: mul_op)
+               case_stmt(details:: e_div,details:: div_op)
+               case_stmt(details:: e_mod,details:: mod_op)
+               case_stmt(details:: e_pow,details:: pow_op)
+               case_stmt(details::  e_lt,details::  lt_op)
+               case_stmt(details:: e_lte,details:: lte_op)
+               case_stmt(details::  e_gt,details::  gt_op)
+               case_stmt(details:: e_gte,details:: gte_op)
+               case_stmt(details::  e_eq,details::  eq_op)
+               case_stmt(details::  e_ne,details::  ne_op)
+               case_stmt(details:: e_and,details:: and_op)
+               case_stmt(details::e_nand,details::nand_op)
+               case_stmt(details::  e_or,details::  or_op)
+               case_stmt(details:: e_nor,details:: nor_op)
+               case_stmt(details:: e_xor,details:: xor_op)
+               default : return error_node();
+               #undef case_stmt
             }
             node_allocator_->free(branch[0]);
             node_allocator_->free(branch[1]);
@@ -5686,16 +5695,18 @@ namespace exprtk
          {
             switch (opr)
             {
-               case details::e_lt   : return node_allocator_->allocate_tt<typename details::sos_node<Type,T0,T1,details::   lt_op<Type> >,T0,T1>(s0,s1);
-               case details::e_lte  : return node_allocator_->allocate_tt<typename details::sos_node<Type,T0,T1,details::  lte_op<Type> >,T0,T1>(s0,s1);
-               case details::e_gt   : return node_allocator_->allocate_tt<typename details::sos_node<Type,T0,T1,details::   gt_op<Type> >,T0,T1>(s0,s1);
-               case details::e_gte  : return node_allocator_->allocate_tt<typename details::sos_node<Type,T0,T1,details::  gte_op<Type> >,T0,T1>(s0,s1);
-               case details::e_eq   : return node_allocator_->allocate_tt<typename details::sos_node<Type,T0,T1,details::   eq_op<Type> >,T0,T1>(s0,s1);
-               case details::e_ne   : return node_allocator_->allocate_tt<typename details::sos_node<Type,T0,T1,details::   ne_op<Type> >,T0,T1>(s0,s1);
-               case details::e_in   : return node_allocator_->allocate_tt<typename details::sos_node<Type,T0,T1,details::   in_op<Type> >,T0,T1>(s0,s1);
-               case details::e_like : return node_allocator_->allocate_tt<typename details::sos_node<Type,T0,T1,details:: like_op<Type> >,T0,T1>(s0,s1);
-               case details::e_ilike: return node_allocator_->allocate_tt<typename details::sos_node<Type,T0,T1,details::ilike_op<Type> >,T0,T1>(s0,s1);
-               default              : return error_node();
+               #define case_stmt(op0,op1) case op0 : return node_allocator_->allocate_tt<typename details::sos_node<Type,T0,T1,op1<Type> >,T0,T1>(s0,s1);
+               case_stmt(details::e_lt   ,details::   lt_op)
+               case_stmt(details::e_lte  ,details::  lte_op)
+               case_stmt(details::e_gt   ,details::   gt_op)
+               case_stmt(details::e_gte  ,details::  gte_op)
+               case_stmt(details::e_eq   ,details::   eq_op)
+               case_stmt(details::e_ne   ,details::   ne_op)
+               case_stmt(details::e_in   ,details::   in_op)
+               case_stmt(details::e_like ,details:: like_op)
+               case_stmt(details::e_ilike,details::ilike_op)
+               default : return error_node();
+               #undef case_stmt
             }
          }
 
@@ -5747,7 +5758,7 @@ namespace exprtk
             return result;
          }
 
-         #ifdef exprtk_enable_string_capabilities
+         #ifndef exprtk_disable_string_capabilities
          inline expression_node_ptr synthesize_string_expression(const details::operator_type& opr, expression_node_ptr (&branch)[2])
          {
             if (details::is_string_node(branch[0]))
@@ -5879,15 +5890,16 @@ namespace exprtk
             const details::binary_node<Type>* node = dynamic_cast<const details::binary_node<Type>*>(expr);
             if (0 == node)
                return false;
-            if (!operation_optimizable(node->operation()))
+            else if (!operation_optimizable(node->operation()))
                return false;
             expression_node_ptr b0 = node->branch(0);
             expression_node_ptr b1 = node->branch(1);
             if (details::is_variable_node(b0) && (details::is_variable_node(b1) || details::is_constant_node(b1)))
                return true;
-            if (details::is_constant_node(b0) && (details::is_variable_node(b1) || details::is_constant_node(b1)))
+            else if (details::is_constant_node(b0) && (details::is_variable_node(b1) || details::is_constant_node(b1)))
                return true;
-            return false;
+            else
+               return false;
          }
 
          inline void perform_bn_type0_optimization(const expression_node_ptr)
@@ -6100,6 +6112,125 @@ namespace exprtk
       else
          return std::numeric_limits<T>::quiet_NaN();
    }
+
+   template <typename T>
+   inline bool pgo_primer()
+   {
+      static const std::string expression_list[]
+                                        = {
+                                             "(y + x)",
+                                             "2 * (y + x)",
+                                             "(2 * y + 2 * x)",
+                                             "(y + x / y) * (x - y / x)",
+                                             "x / ((x + y) * (x - y)) / y",
+                                             "1 - ((x * y) + (y / x)) - 3",
+                                             "sin(2 * x) + cos(pi / y)",
+                                             "1 - sin(2 * x) + cos(pi / y)",
+                                             "sqrt(1 - sin(2 * x) + cos(pi / y) / 3)",
+                                             "(x^2 / sin(2 * pi / y)) -x / 2",
+                                             "clamp(-1.0, sin(2 * pi * x) + cos(y / 2 * pi), +1.0)",
+                                             "max(3.33, min(sqrt(1 - sin(2 * x) + cos(pi / y) / 3), 1.11))",
+                                             "if(avg(x,y) <= x + y, x - y, x * y) + 2 * pi / x",
+                                             "(yy + xx)",
+                                             "2 * (yy + xx)",
+                                             "(2 * yy + 2 * xx)",
+                                             "(yy + xx / yy) * (xx - yy / xx)",
+                                             "xx / ((xx + yy) * (xx - yy)) / yy",
+                                             "1 - ((xx * yy) + (yy / xx)) - 3",
+                                             "sin(2 * xx) + cos(pi / yy)",
+                                             "1 - sin(2 * xx) + cos(pi / yy)",
+                                             "sqrt(1 - sin(2 * xx) + cos(pi / yy) / 3)",
+                                             "(xx^2 / sin(2 * pi / yy)) -xx / 2",
+                                             "clamp(-1.0, sin(2 * pi * xx) + cos(yy / 2 * pi), +1.0)",
+                                             "max(3.33, min(sqrt(1 - sin(2 * xx) + cos(pi / yy) / 3), 1.11))",
+                                             "if(avg(xx,yy) <= xx + yy, xx - yy, xx * yy) + 2 * pi / xx"
+                                          };
+      static const std::size_t expression_list_size = sizeof(expression_list) / sizeof(std::string);
+
+      T  x = T(0);
+      T  y = T(0);
+      T xx = T(0);
+      T yy = T(0);
+
+      exprtk::symbol_table<T> symbol_table;
+      symbol_table.add_constants();
+      symbol_table.add_variable( "x", x);
+      symbol_table.add_variable( "y", y);
+      symbol_table.add_variable("xx",xx);
+      symbol_table.add_variable("yy",yy);
+
+      typedef typename std::deque<exprtk::expression<T> > expr_list_t;
+      expr_list_t optimized_expr_list;
+      expr_list_t unoptimized_expr_list;
+
+      const std::size_t rounds = 100;
+
+      //Generate optimised expressions
+      {
+         for (std::size_t r = 0; r < rounds; ++r)
+         {
+            optimized_expr_list.clear();
+            exprtk::parser<T> parser;
+            for (std::size_t i = 0; i < expression_list_size; ++i)
+            {
+               exprtk::expression<T> expression;
+               expression.register_symbol_table(symbol_table);
+               if (!parser.compile(expression_list[i],expression,exprtk::parser<T>::e_all))
+               {
+                  return false;
+               }
+               optimized_expr_list.push_back(expression);
+            }
+         }
+      }
+
+      //Generate unoptimised expressions
+      {
+         for (std::size_t r = 0; r < rounds; ++r)
+         {
+            unoptimized_expr_list.clear();
+            exprtk::parser<T> parser;
+            for (std::size_t i = 0; i < expression_list_size; ++i)
+            {
+               exprtk::expression<T> expression;
+               expression.register_symbol_table(symbol_table);
+               if (!parser.compile(expression_list[i],expression,exprtk::parser<T>::e_none))
+               {
+                  return false;
+               }
+               unoptimized_expr_list.push_back(expression);
+            }
+         }
+      }
+
+      struct execute
+      {
+         static inline T process(T& x, T& y, expression<T>& expression)
+         {
+            static const T lower_bound = T(-20.0);
+            static const T upper_bound = T(+20.0);
+            T delta = T(0.1);
+            T total = T(0.0);
+            for (x = lower_bound; x <= upper_bound; x += delta)
+            {
+               for (y = lower_bound; y <= upper_bound; y += delta)
+               {
+                  total += expression.value();
+               }
+            }
+            return total;
+         }
+      };
+      for (std::size_t i = 0; i < optimized_expr_list.size(); ++i)
+      {
+         execute::process( x, y,  optimized_expr_list[i]);
+         execute::process(xx,yy,  optimized_expr_list[i]);
+         execute::process( x, y,unoptimized_expr_list[i]);
+         execute::process(xx,yy,unoptimized_expr_list[i]);
+      }
+      return true;
+   }
+
 }
 
 #ifdef WIN32
