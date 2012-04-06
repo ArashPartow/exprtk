@@ -933,7 +933,7 @@ inline bool run_test02()
             exprtk::parser<T> parser;
             if (!parser.compile(test.expr,expression))
             {
-               std::cout << "test_expression() - Error: " << parser.error() << "\tExpression: " << test.expr << std::endl;
+               std::cout << "run_test02() - Error: " << parser.error() << "\tExpression: " << test.expr << std::endl;
                return false;
             }
          }
@@ -941,7 +941,7 @@ inline bool run_test02()
          T result = expression.value();
          if (not_equal<T>(result,test.result))
          {
-            printf("Computation Error:  Expression: [%s]\tExpected: %19.15f\tResult: %19.15f\n",
+            printf("run_test02() - Computation Error:  Expression: [%s]\tExpected: %19.15f\tResult: %19.15f\n",
                    test.expr.c_str(),
                    test.result,
                    result);
@@ -1015,7 +1015,7 @@ inline bool run_test03()
 
       if (!parser.compile(expression_string,expression))
       {
-         std::cout << "run_test01() - Error: " << parser.error() << "\tExpression: " << expression_string << std::endl;
+         std::cout << "run_test03() - Error: " << parser.error() << "\tExpression: " << expression_string << std::endl;
          return false;
       }
       expression.value();
@@ -1051,7 +1051,7 @@ inline bool run_test04()
 
       if (!parser.compile(expression_string,expression))
       {
-         std::cout << "run_test02() - Error: " << parser.error() << "\tExpression: " << expression_string << std::endl;
+         std::cout << "run_test04() - Error: " << parser.error() << "\tExpression: " << expression_string << std::endl;
          return false;
       }
    }
@@ -1065,7 +1065,7 @@ inline bool run_test04()
       T result2 = clamp<T>(-1.0,std::sin(2 * pi * x) + std::cos(y / 2 * pi),+1.0);
       if (not_equal<T>(result1,result2))
       {
-         printf("run_test02() - Computation Error:  Expression: [%s]\tExpected: %19.15f\tResult: %19.15f x:%19.15f\ty:%19.15f\n",
+         printf("run_test04() - Computation Error:  Expression: [%s]\tExpected: %19.15f\tResult: %19.15f x:%19.15f\ty:%19.15f\n",
                 expression_string.c_str(),
                 result1,
                 result2,
@@ -1104,7 +1104,7 @@ inline bool run_test05()
 
       if (!parser.compile(expression_string,e))
       {
-         std::cout << "run_test03() - Error: " << parser.error() << "\tExpression: " << expression_string << std::endl;
+         std::cout << "run_test05() - Error: " << parser.error() << "\tExpression: " << expression_string << std::endl;
          return false;
       }
       expression_list.push_back(e);
@@ -1123,7 +1123,7 @@ inline bool run_test05()
          T result = expr.value();
          if (not_equal<T>(result,real_result))
          {
-            printf("run_test03() - Computation Error:  Expression: [%s]\tExpected: %19.15f\tResult: %19.15f x:%19.15f\ty:%19.15f\tIndex:%d\n",
+            printf("run_test05() - Computation Error:  Expression: [%s]\tExpected: %19.15f\tResult: %19.15f x:%19.15f\ty:%19.15f\tIndex:%d\n",
                    expression_string.c_str(),
                    real_result,
                    result,
@@ -1216,7 +1216,7 @@ inline bool run_test07()
       }
       if (not_equal<T>(result1,real_result,0.000000001))
       {
-         printf("run_test05() - Derivative Error:  x: %19.15f\tExpected: %19.15f\tResult: %19.15f\n",
+         printf("run_test07() - Derivative Error:  x: %19.15f\tExpected: %19.15f\tResult: %19.15f\n",
                 x,
                 real_result,
                 result1);
@@ -1440,6 +1440,27 @@ inline bool run_test10()
 
    exprtk::symbol_table<T> symbol_table;
 
+   struct test
+   {
+      static inline bool variable(exprtk::symbol_table<T>& symbol_table, const std::string& variable_name, const T& value)
+      {
+         exprtk::details::variable_node<T>* var = symbol_table.get_variable(variable_name);
+         if (var)
+            return (!not_equal<T>(var->ref(),value));
+         else
+            return false;
+      }
+
+      static inline bool string(exprtk::symbol_table<T>& symbol_table, const std::string& string_name, const std::string& str)
+      {
+         exprtk::details::stringvar_node<T>* str_node = symbol_table.get_stringvar(string_name);
+         if (str_node)
+            return (str_node->ref() == str);
+         else
+            return false;
+      }
+   };
+
    {
       symbol_table.add_variable("x",  x);
       symbol_table.add_variable("y",  y);
@@ -1466,22 +1487,7 @@ inline bool run_test10()
          std::cout << "run_test10() - Symbol 'yy' does not exist!\n";
          return false;
       }
-
-      struct test
-      {
-         static inline bool variable(exprtk::symbol_table<T>& symbol_table, const std::string& variable_name, const T& value)
-         {
-            exprtk::details::variable_node<T>* var = symbol_table.get_variable(variable_name);
-            if (var)
-            {
-               return (!not_equal<T>(var->ref(),value));
-            }
-            else
-               return false;
-         }
-      };
-
-      if (!test::variable(symbol_table,"x",x))
+      else if (!test::variable(symbol_table,"x",x))
       {
          std::cout << "run_test10() - Symbol 'x' value failure!\n";
          return false;
@@ -1502,25 +1508,130 @@ inline bool run_test10()
          return false;
       }
 
-      if (symbol_table.remove_variable("x"))
+      if (!symbol_table.remove_variable("x"))
       {
+         std::cout << "run_test10() - Failed to remove symbol 'x'!\n";
          return false;
       }
-      else if (symbol_table.remove_variable("y"))
+      else if (!symbol_table.remove_variable("y"))
       {
+         std::cout << "run_test10() - Failed to remove symbol 'y'!\n";
          return false;
       }
-      else if (symbol_table.remove_variable("xx"))
+      else if (!symbol_table.remove_variable("xx"))
       {
+         std::cout << "run_test10() - Failed to remove symbol 'xx'!\n";
          return false;
       }
-      else if (symbol_table.remove_variable("yy"))
+      else if (!symbol_table.remove_variable("yy"))
       {
+         std::cout << "run_test10() - Failed to remove symbol 'yy'!\n";
          return false;
       }
    }
 
    {
+      myfunc<T> mf;
+
+      symbol_table.add_function("f",mf);
+      symbol_table.add_function("f1",mf);
+
+      if (!symbol_table.symbol_exists("f"))
+      {
+         std::cout << "run_test10() - function 'f' does not exist!\n";
+         return false;
+      }
+      else if (!symbol_table.symbol_exists("f1"))
+      {
+         std::cout << "run_test10() - function 'f1' does not exist!\n";
+         return false;
+      }
+
+      if (!symbol_table.remove_function("f"))
+      {
+         std::cout << "run_test10() - Failed to remove function 'f'!\n";
+         return false;
+      }
+      else if (!symbol_table.remove_function("f1"))
+      {
+         std::cout << "run_test10() - Failed to remove function 'f1'!\n";
+         return false;
+      }
+   }
+
+   {
+      std::string i = "A String";
+      std::string j = "Another String";
+
+      std::string ii = "A String";
+      std::string jj = "Another String";
+
+      symbol_table.add_stringvar("i",i);
+      symbol_table.add_stringvar("j",j);
+
+      symbol_table.add_stringvar("ii",ii);
+      symbol_table.add_stringvar("jj",jj);
+
+      if (!symbol_table.symbol_exists("i"))
+      {
+         std::cout << "run_test10() - String 'i' does not exist!\n";
+         return false;
+      }
+      else if (!symbol_table.symbol_exists("j"))
+      {
+         std::cout << "run_test10() - String 'j' does not exist!\n";
+         return false;
+      }
+      else if (!symbol_table.symbol_exists("ii"))
+      {
+         std::cout << "run_test10() - String 'ii' does not exist!\n";
+         return false;
+      }
+      else if (!symbol_table.symbol_exists("jj"))
+      {
+         std::cout << "run_test10() - String 'jj' does not exist!\n";
+         return false;
+      }
+      else if (!test::string(symbol_table,"i",i))
+      {
+         std::cout << "run_test10() - String 'i' value failure!\n";
+         return false;
+      }
+      else if (!test::string(symbol_table,"j",j))
+      {
+         std::cout << "run_test10() - String 'j' value failure!\n";
+         return false;
+      }
+      else if (!test::string(symbol_table,"ii",ii))
+      {
+         std::cout << "run_test10() - String 'ii' value failure!\n";
+         return false;
+      }
+      else if (!test::string(symbol_table,"jj",jj))
+      {
+         std::cout << "run_test10() - String 'jj' value failure!\n";
+         return false;
+      }
+      else if (!symbol_table.remove_stringvar("i"))
+      {
+         std::cout << "run_test10() - Failed to remove String 'i'!\n";
+         return false;
+      }
+      else if (!symbol_table.remove_stringvar("j"))
+      {
+         std::cout << "run_test10() - Failed to remove String 'j'!\n";
+         return false;
+      }
+      else if (!symbol_table.remove_stringvar("ii"))
+      {
+         std::cout << "run_test10() - Failed to remove String 'ii'!\n";
+         return false;
+      }
+      else if (!symbol_table.remove_stringvar("jj"))
+      {
+         std::cout << "run_test10() - Failed to remove String 'jj'!\n";
+         return false;
+      }
    }
 
    return true;

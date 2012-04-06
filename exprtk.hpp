@@ -3843,11 +3843,39 @@ namespace exprtk
          }
          else
          {
-            vm_itr_t itr = function_map_.find(function_name);
+            fm_itr_t itr = function_map_.find(function_name);
             if (function_map_.end() != itr)
             {
                function_map_.erase(itr);
                --function_count_;
+               return true;
+            }
+            else
+               return false;
+         }
+      }
+
+      inline bool remove_stringvar(const std::string& string_name)
+      {
+         if (1 == string_name.size())
+         {
+            stringvar_pair_t& svp = short_stringvar_lut_[static_cast<std::size_t>(string_name[0])];
+            if (0 == svp.second)
+               return false;
+            delete svp.second;
+            svp.first = false;
+            svp.second = 0;
+            --stringvar_count_;
+            return true;
+         }
+         else
+         {
+            svm_itr_t itr = stringvar_map_.find(string_name);
+            if (stringvar_map_.end() != itr)
+            {
+               delete (*itr).second.second;
+               stringvar_map_.erase(itr);
+               --stringvar_count_;
                return true;
             }
             else
@@ -4229,7 +4257,7 @@ namespace exprtk
                 template <typename,typename> class Sequence>
       inline std::size_t expression_symbols(Sequence<std::string,Allocator>& symbols_list)
       {
-         if (!symbol_name_cache_)
+         if (!symbol_name_caching_)
             return 0;
          if (symbol_name_cache_.empty())
             return 0;
@@ -6345,7 +6373,7 @@ namespace exprtk
    namespace information
    {
       static const char* library = "Mathematical Expression Toolkit";
-      static const char* version = "2.718281828459";
+      static const char* version = "2.718281828459045235";
       static const char* date    = "20111111";
 
       static inline std::string data()
