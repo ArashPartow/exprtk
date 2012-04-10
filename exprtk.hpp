@@ -311,7 +311,7 @@ namespace exprtk
             exprtk_register_int_type_tag(unsigned long long int)
 
             #undef exprtk_register_real_type_tag
-            #undef exprtk_register_real_type_tag
+            #undef exprtk_register_int_type_tag
 
             template <typename T>
             inline T equal_impl(const T& v0, const T& v1, real_type_tag)
@@ -3661,6 +3661,29 @@ namespace exprtk
          }
       }
 
+      inline std::string& stringvar_ref(const std::string& symbol_name)
+      {
+         static std::string null_stringvar;
+         if (!valid_symbol(symbol_name))
+            return null_var;
+         else if (1 == symbol_name.size())
+         {
+            stringvar_pair_t& svp = short_stringvar_lut_[static_cast<std::size_t>(symbol_name[0])];
+            if (svp.second)
+               return svp->second.ref();
+            else
+               return null_stringvar;
+         }
+         else
+         {
+            svm_const_itr_t itr = stringvar_map_.find(symbol_name);
+            if (stringvar_map_.end() == itr)
+               return null_var;
+            else
+               return itr->second.second->ref();
+         }
+      }
+
       inline bool is_constant_node(const std::string& symbol_name) const
       {
          if (1 == symbol_name.size())
@@ -3702,6 +3725,17 @@ namespace exprtk
          local_symbol_list_.push_back(value);
          T& t = local_symbol_list_.back();
          return add_variable(variable_name,t);
+      }
+
+      inline bool create_stringvar(const std::string& stringvar_name, const std::string& value = std::string(""))
+      {
+         if (!valid_symbol(stringvar_name))
+            return false;
+         else if (symbol_exists(stringvar_name))
+            return false;
+         local_stringvar_list_.push_back(value);
+         std::string& s = local_stringvar_list_.back();
+         return add_stringvar(stringvar_name,s);
       }
 
       inline bool add_variable(const std::string& variable_name, T& t, const bool is_constant = false)
@@ -3936,6 +3970,90 @@ namespace exprtk
          return count;
       }
 
+      template <typename Allocator,
+                template <typename, typename> class Sequence>
+      inline std::size_t get_variable_list(Sequence<std::string,Allocator>& vlist) const
+      {
+         std::size_t count = 0;
+         for (std::size_t i = 0; i < lut_size; ++i)
+         {
+            const variable_pair_t& vp = short_variable_lut_[static_cast<std::size_t>(i)];
+            if (0 != vp.second)
+            {
+               vlist.push_back(std::string("") + static_cast<char>(i));
+               ++count;
+            }
+         }
+         if (!variable_map_.empty())
+         {
+            vm_const_itr_t itr = variable_map_.begin();
+            vm_const_itr_t end = variable_map_.end();
+            while (end != itr)
+            {
+               vlist.push_back((*itr).first);
+               ++itr;
+               ++count;
+            }
+         }
+         return count;
+      }
+
+      template <typename Allocator,
+                template <typename, typename> class Sequence>
+      inline std::size_t get_stringvar_list(Sequence<std::pair<std::string,std::string>,Allocator>& svlist) const
+      {
+         std::size_t count = 0;
+         for (std::size_t i = 0; i < lut_size; ++i)
+         {
+            const stringvar_pair_t& svp = short_stringvar_lut_[static_cast<std::size_t>(i)];
+            if (0 != svp.second)
+            {
+               svlist.push_back(std::make_pair(std::string("") + static_cast<char>(i),svp.second->ref()));
+               ++count;
+            }
+         }
+         if (!stringvar_map_.empty())
+         {
+            svm_const_itr_t itr = stringvar_map_.begin();
+            svm_const_itr_t end = stringvar_map_.end();
+            while (end != itr)
+            {
+               svlist.push_back(std::make_pair((*itr).first,itr->second.second->ref()));
+               ++itr;
+               ++count;
+            }
+         }
+         return count;
+      }
+
+      template <typename Allocator,
+                template <typename, typename> class Sequence>
+      inline std::size_t get_stringvar_list(Sequence<std::string,Allocator>& svlist) const
+      {
+         std::size_t count = 0;
+         for (std::size_t i = 0; i < lut_size; ++i)
+         {
+            const stringvar_pair_t& svp = short_stringvar_lut_[static_cast<std::size_t>(i)];
+            if (0 != svp.second)
+            {
+               svlist.push_back(std::string("") + static_cast<char>(i));
+               ++count;
+            }
+         }
+         if (!stringvar_map_.empty())
+         {
+            svm_const_itr_t itr = stringvar_map_.begin();
+            svm_const_itr_t end = stringvar_map_.end();
+            while (end != itr)
+            {
+               svlist.push_back((*itr).first);
+               ++itr;
+               ++count;
+            }
+         }
+         return count;
+      }
+
       inline bool symbol_exists(const std::string& symbol_name) const
       {
          /*
@@ -3944,7 +4062,7 @@ namespace exprtk
          */
          if ((1 == symbol_name.size()) && short_variable_lut_[static_cast<std::size_t>(symbol_name[0])].second)
             return true;
-         if ((1 == symbol_name.size()) && short_stringvar_lut_[static_cast<std::size_t>(symbol_name[0])].second)
+         else if ((1 == symbol_name.size()) && short_stringvar_lut_[static_cast<std::size_t>(symbol_name[0])].second)
             return true;
          else if ((1 == symbol_name.size()) && short_function_lut_[static_cast<std::size_t>(symbol_name[0])])
             return true;
@@ -3953,6 +4071,36 @@ namespace exprtk
          else if (stringvar_map_.end() != stringvar_map_.find(symbol_name))
             return true;
          else if (function_map_.end() != function_map_.find(symbol_name))
+            return true;
+         else
+            return false;
+      }
+
+      inline bool is_variable(const std::string& variable_name) const
+      {
+         if ((1 == variable_name.size()) && short_variable_lut_[static_cast<std::size_t>(variable_name[0])].second)
+            return true;
+         else if (variable_map_.end() != variable_map_.find(variable_name))
+            return true;
+         else
+            return false;
+      }
+
+      inline bool is_stringvar(const std::string& stringvar_name) const
+      {
+         if ((1 == stringvar_name.size()) && short_stringvar_lut_[static_cast<std::size_t>(stringvar_name[0])].second)
+            return true;
+         else if (stringvar_map_.end() != stringvar_map_.find(stringvar_name))
+            return true;
+         else
+            return false;
+      }
+
+      inline bool is_function(const std::string& function_name) const
+      {
+         if ((1 == function_name.size()) && short_function_lut_[static_cast<std::size_t>(function_name[0])].second)
+            return true;
+         else if (function_map_.end() != function_map_.find(function_name))
             return true;
          else
             return false;
@@ -4097,17 +4245,17 @@ namespace exprtk
          }
       }
 
-      inline T operator()() const
-      {
-         return value();
-      }
-
       inline T value() const
       {
          if (expression_holder_ && expression_holder_->expr)
             return expression_holder_->expr->value();
          else
             return std::numeric_limits<T>::quiet_NaN();
+      }
+
+      inline T operator()() const
+      {
+         return value();
       }
 
       inline operator T() const

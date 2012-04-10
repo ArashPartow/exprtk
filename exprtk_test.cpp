@@ -1438,6 +1438,11 @@ inline bool run_test10()
    T xx = T(3.3);
    T yy = T(4.4);
 
+   std::string i  = "A String";
+   std::string j  = "Another String";
+   std::string ii = "A String";
+   std::string jj = "Another String";
+
    exprtk::symbol_table<T> symbol_table;
 
    struct test
@@ -1560,12 +1565,6 @@ inline bool run_test10()
    }
 
    {
-      std::string i = "A String";
-      std::string j = "Another String";
-
-      std::string ii = "A String";
-      std::string jj = "Another String";
-
       symbol_table.add_stringvar("i",i);
       symbol_table.add_stringvar("j",j);
 
@@ -1630,6 +1629,182 @@ inline bool run_test10()
       else if (!symbol_table.remove_stringvar("jj"))
       {
          std::cout << "run_test10() - Failed to remove String 'jj'!\n";
+         return false;
+      }
+   }
+
+   {
+      symbol_table.add_variable("x",  x);
+      symbol_table.add_variable("y",  y);
+      symbol_table.add_variable("xx",xx);
+      symbol_table.add_variable("yy",yy);
+
+      std::vector<std::string> expected_var_list;
+
+      expected_var_list.push_back( "x");
+      expected_var_list.push_back( "y");
+      expected_var_list.push_back("xx");
+      expected_var_list.push_back("yy");
+
+      std::deque<std::pair<std::string,T> > variable_list;
+
+      symbol_table.get_variable_list(variable_list);
+
+      if (variable_list.size() != expected_var_list.size())
+      {
+         std::cout << "run_test10() - Failed to get variable list (1)\n";
+         return false;
+      }
+
+      std::size_t found_count = 0;
+
+      for (std::size_t i = 0; i < variable_list.size(); ++i)
+      {
+         for (std::size_t j = 0; j < expected_var_list.size(); ++j)
+         {
+            if (variable_list[i].first == expected_var_list[j])
+            {
+               ++found_count;
+               break;
+            }
+         }
+      }
+
+      if (found_count != expected_var_list.size())
+      {
+         std::cout << "run_test10() - Failed to get variable list (2)\n";
+         return false;
+      }
+   }
+
+   {
+      symbol_table.add_variable("x",  x);
+      symbol_table.add_variable("y",  y);
+      symbol_table.add_variable("xx",xx);
+      symbol_table.add_variable("yy",yy);
+
+      std::vector<std::string> expected_var_list;
+
+      expected_var_list.push_back( "x");
+      expected_var_list.push_back( "y");
+      expected_var_list.push_back("xx");
+      expected_var_list.push_back("yy");
+
+      std::deque<std::string> variable_list;
+
+      symbol_table.get_variable_list(variable_list);
+
+      if (variable_list.size() != expected_var_list.size())
+      {
+         std::cout << "run_test10() - Failed to get variable list (3)\n";
+         return false;
+      }
+
+      std::size_t found_count = 0;
+
+      for (std::size_t i = 0; i < variable_list.size(); ++i)
+      {
+         for (std::size_t j = 0; j < expected_var_list.size(); ++j)
+         {
+            if (variable_list[i] == expected_var_list[j])
+            {
+               ++found_count;
+               break;
+            }
+         }
+      }
+
+      if (found_count != expected_var_list.size())
+      {
+         std::cout << "run_test10() - Failed to get variable list (4)\n";
+         return false;
+      }
+   }
+
+   {
+      symbol_table.add_stringvar( "i", i);
+      symbol_table.add_stringvar( "j", j);
+      symbol_table.add_stringvar("ii",ii);
+      symbol_table.add_stringvar("jj",jj);
+
+      std::vector<std::string> expected_var_list;
+
+      expected_var_list.push_back( "i");
+      expected_var_list.push_back( "j");
+      expected_var_list.push_back("ii");
+      expected_var_list.push_back("jj");
+
+      std::deque<std::pair<std::string,std::string> > stringvar_list;
+
+      symbol_table.get_stringvar_list(stringvar_list);
+
+      if (stringvar_list.size() != expected_var_list.size())
+      {
+         std::cout << "run_test10() - Failed to get stringvar list (1)\n";
+         return false;
+      }
+
+      std::size_t found_count = 0;
+
+      for (std::size_t i = 0; i < stringvar_list.size(); ++i)
+      {
+         for (std::size_t j = 0; j < expected_var_list.size(); ++j)
+         {
+            if (stringvar_list[i].first == expected_var_list[j])
+            {
+               ++found_count;
+               break;
+            }
+         }
+      }
+
+      if (found_count != expected_var_list.size())
+      {
+         std::cout << "run_test10() - Failed to get stringvar list (2)\n";
+         return false;
+      }
+   }
+
+   {
+      symbol_table.add_stringvar("i",  i);
+      symbol_table.add_stringvar("j",  j);
+      symbol_table.add_stringvar("ii",ii);
+      symbol_table.add_stringvar("jj",jj);
+
+      std::vector<std::string> expected_var_list;
+
+      expected_var_list.push_back( "i");
+      expected_var_list.push_back( "j");
+      expected_var_list.push_back("ii");
+      expected_var_list.push_back("jj");
+
+      std::deque<std::string> stringvar_list;
+
+      symbol_table.get_stringvar_list(stringvar_list);
+
+      if (stringvar_list.size() != expected_var_list.size())
+      {
+         std::cout << "run_test10() - Failed to get stringvar list (3)\n";
+         return false;
+      }
+
+      std::size_t found_count = 0;
+
+      for (std::size_t i = 0; i < stringvar_list.size(); ++i)
+      {
+         for (std::size_t j = 0; j < expected_var_list.size(); ++j)
+         {
+            if (stringvar_list[i] == expected_var_list[j])
+            {
+               ++found_count;
+               break;
+            }
+         }
+      }
+
+      if (found_count != expected_var_list.size())
+      {
+         std::cout << "run_test10() - Failed to get stringvar list (4)\n";
          return false;
       }
    }
