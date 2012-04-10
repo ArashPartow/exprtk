@@ -3665,7 +3665,7 @@ namespace exprtk
       {
          static std::string null_stringvar;
          if (!valid_symbol(symbol_name))
-            return null_var;
+            return null_stringvar;
          else if (1 == symbol_name.size())
          {
             stringvar_pair_t& svp = short_stringvar_lut_[static_cast<std::size_t>(symbol_name[0])];
@@ -3678,7 +3678,7 @@ namespace exprtk
          {
             svm_const_itr_t itr = stringvar_map_.find(symbol_name);
             if (stringvar_map_.end() == itr)
-               return null_var;
+               return null_stringvar;
             else
                return itr->second.second->ref();
          }
