@@ -923,11 +923,11 @@ namespace exprtk
                     //3x -> 3*x
                     ((token_t::symbol == curr_token.type) && (token_t::number == prev_token.type) && curr_token_not_reserved) ||
                     //3(x+1) -> 3*(x+1)
-                    (is_left_bracket(curr_token.type)     && (token_t::number == prev_token.type)) ||
+                    (is_left_bracket (static_cast<char>(curr_token.type)) && (token_t::number == prev_token.type)) ||
                     //(x+1)3 -> (x+1)*3
-                    (is_right_bracket(prev_token.type)    && (token_t::number == curr_token.type)) ||
+                    (is_right_bracket(static_cast<char>(prev_token.type)) && (token_t::number == curr_token.type)) ||
                     //(x+1)y -> (x+1)*y
-                    (is_right_bracket(prev_token.type)    && (token_t::symbol == curr_token.type) && curr_token_not_reserved)
+                    (is_right_bracket(static_cast<char>(prev_token.type)) && (token_t::symbol == curr_token.type) && curr_token_not_reserved)
                   )
                {
                   prev_itr = itr = token_list_.insert(itr,token_t(token_t::mul));
@@ -1714,6 +1714,9 @@ namespace exprtk
 
       private:
 
+         string_literal_node(const string_literal_node<T>&);
+         string_literal_node<T>& operator=(const string_literal_node<T>&);
+
          const std::string value_;
       };
 
@@ -2271,7 +2274,6 @@ namespace exprtk
       private:
 
          std::string* value_;
-
       };
 
       template <typename T>
@@ -2720,6 +2722,11 @@ namespace exprtk
 
          T& v0_;
          T& v1_;
+
+      private:
+
+         vov_node(vov_node<T,Operation>&);
+         vov_node<T,Operation>& operator=(vov_node<T,Operation>&);
       };
 
       template <typename T, typename Type0, typename Type1, typename Operation>
@@ -2810,6 +2817,11 @@ namespace exprtk
 
          T  c_;
          T& v_;
+
+      private:
+
+         cov_node(const cov_node<T,Operation>&);
+         cov_node<T,Operation>& operator=(const cov_node<T,Operation>&);
       };
 
       template <typename T, typename Operation>
@@ -2840,6 +2852,11 @@ namespace exprtk
 
          T& v_;
          T  c_;
+
+      private:
+
+         voc_node(const voc_node<T,Operation>&);
+         voc_node<T,Operation>& operator=(const voc_node<T,Operation>&);
       };
 
       template <typename T, typename Operation1, typename Operation2>
@@ -2882,6 +2899,11 @@ namespace exprtk
          T& v0_;
          T& v1_;
          T& v2_;
+
+      private:
+
+         vovov1_node(const vovov1_node<T,Operation1,Operation2>&);
+         vovov1_node<T,Operation1,Operation2>& operator=(const vovov1_node<T,Operation1,Operation2>&);
       };
 
       template <typename T, typename Operation1, typename Operation2>
@@ -2924,6 +2946,11 @@ namespace exprtk
          T& v0_;
          T& v1_;
          T& v2_;
+
+      private:
+
+         vovov2_node(const vovov2_node<T,Operation1,Operation2>&);
+         vovov2_node<T,Operation1,Operation2>& operator=(const vovov2_node<T,Operation1,Operation2>&);
       };
 
       template <typename T, typename Operation1, typename Operation2>
@@ -2966,6 +2993,11 @@ namespace exprtk
          T   c_;
          T& v0_;
          T& v1_;
+
+      private:
+
+         covov1_node(const covov1_node<T,Operation1,Operation2>&);
+         covov1_node<T,Operation1,Operation2>& operator=(const covov1_node<T,Operation1,Operation2>&);
       };
 
       template <typename T, typename Operation1, typename Operation2>
@@ -2978,7 +3010,7 @@ namespace exprtk
 
          //(constant op1 variable0) op2 variable1 node
          explicit covov2_node(cov_node<T,Operation1>& cvn, T& v1)
-         : c_ (cvn.c()),
+         : c_(cvn.c()),
            v0_(cvn.v()),
            v1_(v1)
          {}
@@ -3008,6 +3040,11 @@ namespace exprtk
          T   c_;
          T& v0_;
          T& v1_;
+
+      private:
+
+         covov2_node(covov2_node<T,Operation1,Operation2>&);
+         covov2_node<T,Operation1,Operation2>& operator=(covov2_node<T,Operation1,Operation2>&);
       };
 
       template <typename T, typename Operation1, typename Operation2, typename Operation3>
@@ -3052,6 +3089,11 @@ namespace exprtk
          T& v1_;
          T& v2_;
          T& v3_;
+
+      private:
+
+         vovovov_node(vovovov_node<T,Operation1,Operation2,Operation3>&);
+         vovovov_node<T,Operation1,Operation2,Operation3>& operator=(const vovovov_node<T,Operation1,Operation2,Operation3>&);
       };
 
       template <typename T, typename SType0, typename SType1, typename Operation>
@@ -3097,6 +3139,11 @@ namespace exprtk
 
          SType0 s0_;
          SType1 s1_;
+
+      private:
+
+         sos_node(sos_node<T,SType0,SType1,Operation>&);
+         sos_node<T,SType0,SType1,Operation>& operator=(sos_node<T,SType0,SType1,Operation>&);
       };
 
       template <typename T>
@@ -6085,7 +6132,6 @@ namespace exprtk
       private:
 
          details::node_allocator* node_allocator_;
-
       };
 
       inline bool check0(const char c0, const char c1,
@@ -6521,7 +6567,7 @@ namespace exprtk
    namespace information
    {
       static const char* library = "Mathematical Expression Toolkit";
-      static const char* version = "2.718281828459045235";
+      static const char* version = "2.71828182845904523536";
       static const char* date    = "20111111";
 
       static inline std::string data()
