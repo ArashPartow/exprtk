@@ -142,7 +142,7 @@ namespace exprtk
                                      "floor", "for", "grad2deg", "hyp", "if", "ilike", "in", "inrange",
                                      "like", "log", "log10", "logn", "max", "min", "mod", "mul", "nand",
                                      "nor", "not", "not_equal", "or", "rad2deg", "root", "round", "roundn",
-                                     "sec", "shl", "shr", "sin", "sinh", "sqrt", "sum", "tan", "tanh",
+                                     "sec", "sgn", "shl", "shr", "sin", "sinh", "sqrt", "sum", "tan", "tanh",
                                      "while", "xor"
                                   };
       static const std::size_t reserved_symbols_size = sizeof(reserved_symbols) / sizeof(std::string);
@@ -448,6 +448,22 @@ namespace exprtk
             }
 
             template <typename T>
+            inline T sgn_impl(const T& v, real_type_tag)
+            {
+                    if (v > T(0.0)) return T(+1.0);
+               else if (v < T(0.0)) return T(-1.0);
+               else                 return T( 0.0);
+            }
+
+            template <typename T>
+            inline T sgn_impl(const T& v, int_type_tag)
+            {
+                    if (v > T(0)) return T(+1);
+               else if (v < T(0)) return T(-1);
+               else               return T( 0);
+            }
+
+            template <typename T>
             inline T xor_impl(const T& v0, const T& v1, real_type_tag)
             {
                return v0 != v1;
@@ -544,6 +560,13 @@ namespace exprtk
          {
             typename details::number_type<T>::type num_type;
             return details::shl_impl(v0,v1,num_type);
+         }
+
+         template <typename T>
+         inline T sgn(const T& v)
+         {
+            typename details::number_type<T>::type num_type;
+            return details::sgn_impl(v,num_type);
          }
 
          template <typename T>
@@ -1344,6 +1367,7 @@ namespace exprtk
          e_cot    ,
          e_clamp  ,
          e_inrange,
+         e_sgn    ,
          e_r2d    ,
          e_d2r    ,
          e_d2g    ,
@@ -1437,6 +1461,7 @@ namespace exprtk
                   case e_d2g   : return (arg * T(20/9));
                   case e_g2d   : return (arg * T(9/20));
                   case e_not   : return (arg != T(0) ? T(0) : T(1));
+                  case e_sgn   : return numeric::sgn(arg);
                   default      : return std::numeric_limits<T>::quiet_NaN();
                }
             }
@@ -1454,6 +1479,7 @@ namespace exprtk
                   case e_pos   : return +arg;
                   case e_sqrt  : return std::sqrt (arg);
                   case e_not   : return !arg;
+                  case e_sgn   : return numeric::sgn(arg);
                   default      : return std::numeric_limits<T>::quiet_NaN();
                }
             }
@@ -3403,6 +3429,7 @@ namespace exprtk
                                     operation_t(  "deg2rad" , e_d2r    , 1),
                                     operation_t( "deg2grad" , e_d2g    , 1),
                                     operation_t( "grad2deg" , e_g2d    , 1),
+                                    operation_t(      "sgn" , e_sgn    , 1),
                                     operation_t(      "not" , e_not    , 1),
                                     operation_t(    "atan2", e_atan2   , 2),
                                     operation_t(      "min", e_min     , 2),
@@ -5418,7 +5445,10 @@ namespace exprtk
                return error_node();
             else
             {
-               if (!all_nodes_valid(b))
+               //has the function call been completely optimized?
+               if (details::is_constant_node(result))
+                  return result;
+               else if (!all_nodes_valid(b))
                   return error_node();
                else if (N != f->param_count)
                   return error_node();

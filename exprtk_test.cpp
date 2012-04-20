@@ -600,6 +600,9 @@ static const test_t test_list[] =
                            test_t("clamp(-1,-1.5,+1.0) + clamp(-1,+1.5,+1.0)",0.0),
                            test_t("inrange(-2,1,+2) == ((-2 <= 1) and (1 <= +2))",1.0),
                            test_t("inrange(-2,1,+2) == if(({-2 <= 1} and [1 <= +2]),1.0,0.0)",1.0),
+                           test_t("sgn( 0)", 0.0),
+                           test_t("sgn(+3)",+1.0),
+                           test_t("sgn(-3)",-1.0),
                            test_t("equal($f00(1.1,2.2,3.3),((1.1+2.2)/3.3))",1.0),
                            test_t("equal($f01(1.1,2.2,3.3),((1.1+2.2)*3.3))",1.0),
                            test_t("equal($f02(1.1,2.2,3.3),((1.1-2.2)/3.3))",1.0),
@@ -1365,16 +1368,26 @@ inline bool run_test09()
    for (std::size_t i = 0; i < rounds; ++i)
    {
       typedef exprtk::expression<T> expression_t;
-      std::string expression_string = "myfunc0(sin(x*pi),y/2)+"
-                                      "myfunc1(sin(x*pi),y/2)+"
-                                      "myfunc2(sin(x*pi),y/2)+"
-                                      "myfunc3(sin(x*pi),y/2)+"
-                                      "myfunc4(sin(x*pi),y/2)+"
-                                      "myfunc5(sin(x*pi),y/2)+"
-                                      "myfunc6(sin(x*pi),y/2)+"
-                                      "myfunc7(sin(x*pi),y/2)+"
-                                      "myfunc8(sin(x*pi),y/2)+"
-                                      "myfunc9(sin(x*pi),y/2)";
+      std::string expression_string = "myfunc0(sin(x*pi),y/2)+myfunc1(sin(x*pi),y/2)+"
+                                      "myfunc2(sin(x*pi),y/2)+myfunc3(sin(x*pi),y/2)+"
+                                      "myfunc4(sin(x*pi),y/2)+myfunc5(sin(x*pi),y/2)+"
+                                      "myfunc6(sin(x*pi),y/2)+myfunc7(sin(x*pi),y/2)+"
+                                      "myfunc8(sin(x*pi),y/2)+myfunc9(sin(x*pi),y/2)+"
+                                      "myfunc0(sin(1*pi),y/2)+myfunc1(sin(1*pi),y/2)+"
+                                      "myfunc2(sin(1*pi),y/2)+myfunc3(sin(1*pi),y/2)+"
+                                      "myfunc4(sin(1*pi),y/2)+myfunc5(sin(1*pi),y/2)+"
+                                      "myfunc6(sin(1*pi),y/2)+myfunc7(sin(1*pi),y/2)+"
+                                      "myfunc8(sin(1*pi),y/2)+myfunc9(sin(1*pi),y/2)+"
+                                      "myfunc0(sin(x*pi),2/2)+myfunc1(sin(x*pi),2/2)+"
+                                      "myfunc2(sin(x*pi),2/2)+myfunc3(sin(x*pi),2/2)+"
+                                      "myfunc4(sin(x*pi),2/2)+myfunc5(sin(x*pi),2/2)+"
+                                      "myfunc6(sin(x*pi),2/2)+myfunc7(sin(x*pi),2/2)+"
+                                      "myfunc8(sin(x*pi),2/2)+myfunc9(sin(x*pi),2/2)+"
+                                      "myfunc0(sin(1*pi),2/2)+myfunc1(sin(1*pi),2/2)+"
+                                      "myfunc2(sin(1*pi),2/2)+myfunc3(sin(1*pi),2/2)+"
+                                      "myfunc4(sin(1*pi),2/2)+myfunc5(sin(1*pi),2/2)+"
+                                      "myfunc6(sin(1*pi),2/2)+myfunc7(sin(1*pi),2/2)+"
+                                      "myfunc8(sin(1*pi),2/2)+myfunc9(sin(1*pi),2/2)";
 
       T x = T(1.0);
       T y = T(2.0);
@@ -1408,16 +1421,19 @@ inline bool run_test09()
       const T pi = T(3.14159265358979323846);
 
       T result = expression.value();
-      T expected = mf(sin(x*pi),y/2.0) +
-                   mf(sin(x*pi),y/2.0) +
-                   mf(sin(x*pi),y/2.0) +
-                   mf(sin(x*pi),y/2.0) +
-                   mf(sin(x*pi),y/2.0) +
-                   mf(sin(x*pi),y/2.0) +
-                   mf(sin(x*pi),y/2.0) +
-                   mf(sin(x*pi),y/2.0) +
-                   mf(sin(x*pi),y/2.0) +
-                   mf(sin(x*pi),y/2.0);
+      T expected = T(4.0) *
+                   (
+                      mf(sin(x*pi),y/2.0) +
+                      mf(sin(x*pi),y/2.0) +
+                      mf(sin(x*pi),y/2.0) +
+                      mf(sin(x*pi),y/2.0) +
+                      mf(sin(x*pi),y/2.0) +
+                      mf(sin(x*pi),y/2.0) +
+                      mf(sin(x*pi),y/2.0) +
+                      mf(sin(x*pi),y/2.0) +
+                      mf(sin(x*pi),y/2.0) +
+                      mf(sin(x*pi),y/2.0)
+                   );
 
       if (not_equal<T>(result,expected,0.0000001))
       {
