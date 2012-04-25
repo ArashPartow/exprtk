@@ -1619,6 +1619,7 @@ namespace exprtk
             e_in          ,
             e_like        ,
             e_ilike       ,
+            e_inranges    ,
             e_vov
          };
 
@@ -2673,6 +2674,18 @@ namespace exprtk
       };
 
       template <typename T>
+      struct inrange_op
+      {
+         static inline T process(const T& t0, const T& t1, const T& t2) { return ((t0 <= t1) && (t1 <= t2)) ? T(1) : T(0); }
+         static inline T process(const std::string& t0, const std::string& t1, const std::string& t2)
+         {
+            return ((t0 <= t1) && (t1 <= t2)) ? T(1) : T(0);
+         }
+         static inline typename expression_node<T>::node_type type() { return expression_node<T>::e_inranges; }
+         static inline details::operator_type operation() { return details::e_ilike; }
+      };
+
+      template <typename T>
       class vov_base_node : public expression_node<T>
       {
       public:
@@ -2696,6 +2709,17 @@ namespace exprtk
 
       template <typename T>
       class sos_base_node : public expression_node<T>
+      {
+      public:
+
+         inline virtual operator_type operation() const
+         {
+            return details::e_default;
+         }
+      };
+
+      template <typename T>
+      class sosos_base_node : public expression_node<T>
       {
       public:
 
@@ -3172,6 +3196,63 @@ namespace exprtk
          sos_node<T,SType0,SType1,Operation>& operator=(sos_node<T,SType0,SType1,Operation>&);
       };
 
+      template <typename T, typename SType0, typename SType1, typename SType2, typename Operation>
+      class sosos_node : public sosos_base_node<T>
+      {
+      public:
+
+         typedef expression_node<T>* expression_ptr;
+         typedef Operation operation_t;
+
+         //variable op variable node
+         explicit sosos_node(SType0 s0, SType1 s1, SType2 s2)
+         : s0_(s0),
+           s1_(s1),
+           s2_(s2)
+         {}
+
+         inline T value() const
+         {
+            return Operation::process(s0_,s1_,s2_);
+         }
+
+         inline typename expression_node<T>::node_type type() const
+         {
+            return Operation::type();
+         }
+
+         inline operator_type operation() const
+         {
+            return Operation::operation();
+         }
+
+         inline std::string& s0()
+         {
+            return s0_;
+         }
+
+         inline std::string& s1()
+         {
+            return s1_;
+         }
+
+         inline std::string& s2()
+         {
+            return s2_;
+         }
+
+      protected:
+
+         SType0 s0_;
+         SType1 s1_;
+         SType2 s2_;
+
+      private:
+
+         sosos_node(sosos_node<T,SType0,SType1,SType2,Operation>&);
+         sosos_node<T,SType0,SType1,SType2,Operation>& operator=(sosos_node<T,SType0,SType1,SType2,Operation>&);
+      };
+
       template <typename T>
       inline bool is_vov_node(const expression_node<T>* node)
       {
@@ -3286,6 +3367,13 @@ namespace exprtk
          template <typename node_type,
                    typename T1, typename T2, typename T3>
          inline expression_node<typename node_type::value_type>* allocate_rrr(T1& t1, T2& t2, T3& t3) const
+         {
+            return new node_type(t1,t2,t3);
+         }
+
+         template <typename node_type,
+                   typename T1, typename T2, typename T3>
+         inline expression_node<typename node_type::value_type>* allocate_type(T1 t1, T2 t2, T3 t3) const
          {
             return new node_type(t1,t2,t3);
          }
@@ -4305,6 +4393,19 @@ namespace exprtk
          return ((0 == expression_holder_) || (0 == expression_holder_->expr));
       }
 
+      inline expression& release()
+      {
+         if (expression_holder_)
+         {
+            if (0 == --expression_holder_->ref_count)
+            {
+               delete expression_holder_;
+            }
+            expression_holder_ = 0;
+         }
+         return *this;
+      }
+
      ~expression()
       {
          if (expression_holder_)
@@ -5234,11 +5335,32 @@ namespace exprtk
                return false;
          }
 
+         inline bool is_invalid_string_op(const details::operator_type& operation, expression_node_ptr (&branch)[3])
+         {
+            bool b0_string = details::is_string_node(branch[0]) || details::is_const_string_node(branch[0]);
+            bool b1_string = details::is_string_node(branch[1]) || details::is_const_string_node(branch[1]);
+            bool b2_string = details::is_string_node(branch[2]) || details::is_const_string_node(branch[2]);
+            if ((b0_string || b1_string || b2_string) && !(b0_string && b1_string && b2_string))
+               return true;
+            if ((details::e_inrange != operation) && b0_string && b1_string && b2_string)
+               return true;
+            else
+               return false;
+         }
+
          inline bool is_string_operation(const details::operator_type& operation, expression_node_ptr (&branch)[2])
          {
             bool b0_string = details::is_string_node(branch[0]) || details::is_const_string_node(branch[0]);
             bool b1_string = details::is_string_node(branch[1]) || details::is_const_string_node(branch[1]);
             return (b0_string && b1_string && valid_string_operation(operation));
+         }
+
+         inline bool is_string_operation(const details::operator_type& operation, expression_node_ptr (&branch)[3])
+         {
+            bool b0_string = details::is_string_node(branch[0]) || details::is_const_string_node(branch[0]);
+            bool b1_string = details::is_string_node(branch[1]) || details::is_const_string_node(branch[1]);
+            bool b2_string = details::is_string_node(branch[2]) || details::is_const_string_node(branch[2]);
+            return (b0_string && b1_string && b2_string && (details::e_inrange == operation));
          }
 
          // Note: Extended Optimisations
@@ -5303,7 +5425,14 @@ namespace exprtk
 
          inline expression_node_ptr operator()(const details::operator_type& operation, expression_node_ptr (&branch)[3])
          {
-            return synthesize_expression<trinary_node_t,3>(operation,branch);
+            if ((0 == branch[0]) || (0 == branch[1]) || (0 == branch[2]))
+               return error_node();
+            else if (is_invalid_string_op(operation,branch))
+               return error_node();
+            else if (is_string_operation(operation,branch))
+               return synthesize_string_expression(operation,branch);
+            else
+               return synthesize_expression<trinary_node_t,3>(operation,branch);
          }
 
          inline expression_node_ptr operator()(const details::operator_type& operation, expression_node_ptr (&branch)[4])
@@ -5988,8 +6117,8 @@ namespace exprtk
 
          inline expression_node_ptr synthesize_csocs_expression(const details::operator_type& opr, expression_node_ptr (&branch)[2])
          {
-            std::string s0 = dynamic_cast<details::string_literal_node<Type>*>(branch[0])->str();
-            std::string s1 = dynamic_cast<details::string_literal_node<Type>*>(branch[1])->str();
+            const std::string s0 = dynamic_cast<details::string_literal_node<Type>*>(branch[0])->str();
+            const std::string s1 = dynamic_cast<details::string_literal_node<Type>*>(branch[1])->str();
             expression_node_ptr result = error_node();
             if (details::e_add == opr)
                result = node_allocator_->allocate_c<details::string_literal_node<Type> >(s0 + s1);
@@ -6028,6 +6157,101 @@ namespace exprtk
          }
          #else
          inline expression_node_ptr synthesize_string_expression(const details::operator_type&, expression_node_ptr (&)[2])
+         {
+            return error_node();
+         }
+         #endif
+
+         #ifndef exprtk_disable_string_capabilities
+         inline expression_node_ptr synthesize_string_expression(const details::operator_type& opr, expression_node_ptr (&branch)[3])
+         {
+            if (details::e_inrange != opr)
+               return error_node();
+            else if (
+                      details::is_const_string_node(branch[0]) &&
+                      details::is_const_string_node(branch[1]) &&
+                      details::is_const_string_node(branch[2])
+                    )
+            {
+               const std::string s0 = dynamic_cast<details::string_literal_node<Type>*>(branch[0])->str();
+               const std::string s1 = dynamic_cast<details::string_literal_node<Type>*>(branch[1])->str();
+               const std::string s2 = dynamic_cast<details::string_literal_node<Type>*>(branch[2])->str();
+               Type v = (((s0 <= s1) && (s1 <= s2)) ? Type(1) : Type(0));
+               node_allocator_->free(branch[0]);
+               node_allocator_->free(branch[1]);
+               node_allocator_->free(branch[2]);
+               return node_allocator_->allocate_c<details::literal_node<Type> >(v);
+            }
+            else if (
+                     details::is_string_node(branch[0]) &&
+                     details::is_string_node(branch[1]) &&
+                     details::is_string_node(branch[2])
+                    )
+            {
+               std::string& s0 = dynamic_cast<details::stringvar_node<Type>*>(branch[0])->ref();
+               std::string& s1 = dynamic_cast<details::stringvar_node<Type>*>(branch[1])->ref();
+               std::string& s2 = dynamic_cast<details::stringvar_node<Type>*>(branch[2])->ref();
+               typedef typename details::sosos_node<Type,std::string&,std::string&,std::string&,details::inrange_op<Type> > inrange_t;
+               return node_allocator_->allocate_type<inrange_t,std::string&,std::string&,std::string&>(s0,s1,s2);
+            }
+            else if (
+                     details::is_const_string_node(branch[0]) &&
+                           details::is_string_node(branch[1]) &&
+                     details::is_const_string_node(branch[2])
+                    )
+            {
+               std::string  s0 = dynamic_cast<details::string_literal_node<Type>*>(branch[0])->str();
+               std::string& s1 = dynamic_cast<     details::stringvar_node<Type>*>(branch[1])->ref();
+               std::string  s2 = dynamic_cast<details::string_literal_node<Type>*>(branch[2])->str();
+               typedef typename details::sosos_node<Type,std::string,std::string&,std::string,details::inrange_op<Type> > inrange_t;
+               node_allocator_->free(branch[0]);
+               node_allocator_->free(branch[2]);
+               return node_allocator_->allocate_type<inrange_t,std::string,std::string&,std::string>(s0,s1,s2);
+            }
+            else if (
+                           details::is_string_node(branch[0]) &&
+                     details::is_const_string_node(branch[1]) &&
+                           details::is_string_node(branch[2])
+                    )
+            {
+               std::string&  s0 = dynamic_cast<     details::stringvar_node<Type>*>(branch[0])->ref();
+               std::string   s1 = dynamic_cast<details::string_literal_node<Type>*>(branch[1])->str();
+               std::string&  s2 = dynamic_cast<     details::stringvar_node<Type>*>(branch[2])->ref();
+               typedef typename details::sosos_node<Type,std::string&,std::string,std::string&,details::inrange_op<Type> > inrange_t;
+               node_allocator_->free(branch[1]);
+               return node_allocator_->allocate_type<inrange_t,std::string&,std::string,std::string&>(s0,s1,s2);
+            }
+            else if (
+                     details::is_string_node(branch[0]) &&
+                     details::is_string_node(branch[1]) &&
+                     details::is_const_string_node(branch[2])
+                    )
+            {
+               std::string& s0 = dynamic_cast<     details::stringvar_node<Type>*>(branch[0])->ref();
+               std::string& s1 = dynamic_cast<     details::stringvar_node<Type>*>(branch[1])->ref();
+               std::string  s2 = dynamic_cast<details::string_literal_node<Type>*>(branch[2])->str();
+               typedef typename details::sosos_node<Type,std::string&,std::string&,std::string,details::inrange_op<Type> > inrange_t;
+               node_allocator_->free(branch[2]);
+               return node_allocator_->allocate_type<inrange_t,std::string&,std::string&,std::string>(s0,s1,s2);
+            }
+            else if (
+                     details::is_const_string_node(branch[0]) &&
+                     details::      is_string_node(branch[1]) &&
+                     details::      is_string_node(branch[2])
+                    )
+            {
+               std::string  s0 = dynamic_cast<details::string_literal_node<Type>*>(branch[0])->str();
+               std::string& s1 = dynamic_cast<     details::stringvar_node<Type>*>(branch[1])->ref();
+               std::string& s2 = dynamic_cast<     details::stringvar_node<Type>*>(branch[2])->ref();
+               typedef typename details::sosos_node<Type,std::string,std::string&,std::string&,details::inrange_op<Type> > inrange_t;
+               node_allocator_->free(branch[0]);
+               return node_allocator_->allocate_type<inrange_t,std::string,std::string&,std::string&>(s0,s1,s2);
+            }
+            else
+               return error_node();
+         }
+         #else
+         inline expression_node_ptr synthesize_string_expression(const details::operator_type&, expression_node_ptr (&)[3])
          {
             return error_node();
          }

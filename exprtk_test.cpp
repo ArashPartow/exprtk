@@ -849,12 +849,14 @@ struct test_ab
    : expr(e),
      a(v0),
      b(v1),
+     c("ccc"),
      result(r)
    {}
 
    std::string expr;
    std::string a;
    std::string b;
+   std::string c;
    T result;
 };
 
@@ -880,6 +882,7 @@ inline bool run_test02()
                               test_ab<T>("'a123b' like '*123?'"        ,"","",T(1.0)),
                               test_ab<T>("'1XYZ2' ilike '*xyz*'"       ,"","",T(1.0)),
                               test_ab<T>("'1XYZ2' ilike '*xyz?'"       ,"","",T(1.0)),
+                              test_ab<T>("inrange('aaa','bbb','ccc')"  ,"","",T(1.0)),
                               test_ab<T>("a == b"                      ,"aaa","aaa",T(1.0)),
                               test_ab<T>("a != b"                      ,"aaa","bbb",T(1.0)),
                               test_ab<T>("a <  b"                      ,"aaa","bbb",T(1.0)),
@@ -913,6 +916,11 @@ inline bool run_test02()
                               test_ab<T>("a ilike '*xyz?'"             ,"1XYZ2","",T(1.0)),
                               test_ab<T>("'1XYZ2' ilike b"             ,"","*xyz*",T(1.0)),
                               test_ab<T>("'1XYZ2' ilike b"             ,"","*xyz?",T(1.0)),
+                              test_ab<T>("inrange(a,'bbb',c)"          ,"aaa","bbb",T(1.0)),
+                              test_ab<T>("inrange('aaa',b,'ccc')"      ,"aaa","bbb",T(1.0)),
+                              test_ab<T>("inrange(a,b,c)"              ,"aaa","bbb",T(1.0)),
+                              test_ab<T>("inrange(a,b,'ccc')"          ,"aaa","bbb",T(1.0)),
+                              test_ab<T>("inrange('aaa',b,c)"          ,"aaa","bbb",T(1.0)),
                            };
 
 
@@ -928,6 +936,7 @@ inline bool run_test02()
          exprtk::symbol_table<T> symbol_table;
          symbol_table.add_stringvar("a",test.a);
          symbol_table.add_stringvar("b",test.b);
+         symbol_table.add_stringvar("c",test.c);
 
          exprtk::expression<T> expression;
          expression.register_symbol_table(symbol_table);
@@ -1268,6 +1277,7 @@ inline bool run_test08()
                                  "(3min(x,y))==(3*min(x,y))",
                                  "(sin(x)y)==(sin(x)*y)",
                                  "(sin(x)cos(y)+1)==(sin(x)*cos(y)+1)",
+                                 "(sgn(sin(x))cos(sgn(y))+1)==(sgn(sin(x))*cos(sgn(y))+1)",
                                  "equal($f00(x,y,z),((x+y)/z))",
                                  "equal($f01(x,y,z),((x+y)*z))",
                                  "equal($f02(x,y,z),((x-y)/z))",
@@ -1828,6 +1838,63 @@ inline bool run_test10()
    return true;
 }
 
+template <typename T>
+inline bool run_test11()
+{
+   typedef exprtk::expression<T> expression_t;
+   std::string expression_string = "(x + y) / 3";
+
+   T x = T(1.0);
+   T y = T(2.0);
+
+   exprtk::symbol_table<T> symbol_table;
+   symbol_table.add_variable("x",x);
+   symbol_table.add_variable("y",y);
+
+   expression_t expression;
+   expression.register_symbol_table(symbol_table);
+
+   static const std::size_t rounds = 100000;
+
+   for (std::size_t i = 0; i < rounds; ++i)
+   {
+      {
+         exprtk::parser<T> parser;
+         if (!parser.compile(expression_string,expression))
+         {
+            std::cout << "run_test11() - Error: " << parser.error() << "\tExpression: " << expression_string << std::endl;
+            return false;
+         }
+      }
+      if (not_equal<T>(expression.value(),(x + y)/T(3.0),0.000001))
+      {
+         printf("run_test11() - Error in evaluation!(1)\n");
+         return false;
+      }
+      expression.release();
+      T result2 = expression.value();
+      if (result2 == result2)
+      {
+         printf("run_test11() - Error in evaluation!(2)\n");
+         return false;
+      }
+      {
+         exprtk::parser<T> parser;
+         if (!parser.compile(expression_string,expression))
+         {
+            std::cout << "run_test11() - Error: " << parser.error() << "\tExpression: " << expression_string << std::endl;
+            return false;
+         }
+      }
+      if (not_equal<T>(expression.value(),(x + y)/T(3.0),0.000001))
+      {
+         printf("run_test11() - Error in evaluation!(3)\n");
+         return false;
+      }
+   }
+   return true;
+}
+
 int main()
 {
    return (
@@ -1841,7 +1908,8 @@ int main()
              run_test07<double>() &&
              run_test08<double>() &&
              run_test09<double>() &&
-             run_test10<double>()
+             run_test10<double>() &&
+             run_test11<double>()
           )
           ? 0 : 1;
 }

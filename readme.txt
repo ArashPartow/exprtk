@@ -20,7 +20,7 @@ http://www.opensource.org/licenses/cpl1.0.php
 All  updates  and  the most  recent version  of the  C++ Mathematical
 Expression Library can be found at:
 (1) http://www.partow.net/programming/exprtk/index.html
-
+(2) svn checkout http://exprtk.googlecode.com/svn/ exprtk
 
 [INSTALLATION]
 (1) exprtk.hpp should be  placed in  a project or system include path
