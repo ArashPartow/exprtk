@@ -34,18 +34,17 @@ exprtk_benchmark: exprtk_benchmark.cpp exprtk.hpp
 	$(COMPILER) $(OPTIONS) exprtk_benchmark exprtk_benchmark.cpp $(LINKER_OPT)
 
 pgo: exprtk_test.cpp exprtk_benchmark.cpp exprtk.hpp
-	$(COMPILER) $(BASE_OPTIONS) -O3 -march=native -fprofile-generate -o exprtk_test exprtk_test.cpp $(LINKER_OPT)
 	$(COMPILER) $(BASE_OPTIONS) -O3 -march=native -fprofile-generate -o exprtk_benchmark exprtk_benchmark.cpp $(LINKER_OPT)
-	./exprtk_test
 	./exprtk_benchmark
-	$(COMPILER) $(BASE_OPTIONS) -O3 -march=native -fprofile-use -o exprtk_test exprtk_test.cpp $(LINKER_OPT)
 	$(COMPILER) $(BASE_OPTIONS) -O3 -march=native -fprofile-use -o exprtk_benchmark exprtk_benchmark.cpp $(LINKER_OPT)
 
 strip_bin:
 	strip -s exprtk_test
+	strip -s exprtk_benchmark
 
 valgrind_check:
 	valgrind --leak-check=full --show-reachable=yes --track-origins=yes ./exprtk_test
+	valgrind --leak-check=full --show-reachable=yes --track-origins=yes ./exprtk_benchmark
 
 clean:
 	rm -f core.* *~ *.o *.bak *stackdump gmon.out *.gcda *.gcno *.gcnor *.gch

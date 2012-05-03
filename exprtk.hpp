@@ -6873,6 +6873,101 @@ namespace exprtk
          return std::numeric_limits<T>::quiet_NaN();
    }
 
+   /*
+      Note: The following 'compute' routines are very simple helpers,
+      for quickly setting up the required pieces of code in order to
+      evaluate an expression. By virtue of how they the operate there
+      will be an overhead with regards to their setup and teardown and
+      hence should not be used in time critical sections of code.
+      Furthermore they only assume a small sub set of variables - no
+      string variables or user defined functions.
+   */
+   template <typename T>
+   inline bool compute(const std::string& expression_string, T& result)
+   {
+      //No variables
+      symbol_table<T> symbol_table;
+      symbol_table.add_constants();
+      expression<T> expression;
+      parser<T> parser;
+      if (parser.compile(expression_string,expression))
+      {
+         result = expression.value();
+         return true;
+      }
+      else
+         return false;
+   }
+
+   template <typename T>
+   inline bool compute(const std::string& expression_string,
+                       const T& x,
+                       T& result)
+   {
+      //Only 'x'
+      static const std::string x_var("x");
+      symbol_table<T> symbol_table;
+      symbol_table.add_constants();
+      symbol_table.add_variable("x",x);
+      expression<T> expression;
+      parser<T> parser;
+      if (parser.compile(expression_string,expression))
+      {
+         result = expression.value();
+         return true;
+      }
+      else
+         return false;
+   }
+
+   template <typename T>
+   inline bool compute(const std::string& expression_string,
+                       const T&x, const T& y,
+                       T& result)
+   {
+      //Only 'x' and 'y'
+      static const std::string x_var("x");
+      static const std::string y_var("y");
+      symbol_table<T> symbol_table;
+      symbol_table.add_constants();
+      symbol_table.add_variable("x",x);
+      symbol_table.add_variable("y",y);
+      expression<T> expression;
+      parser<T> parser;
+      if (parser.compile(expression_string,expression))
+      {
+         result = expression.value();
+         return true;
+      }
+      else
+         return false;
+   }
+
+   template <typename T>
+   inline bool compute(const std::string& expression_string,
+                       const T& x, const T& y, const T& z,
+                       T& result)
+   {
+      //Only 'x', 'y' or 'z'
+      static const std::string x_var("x");
+      static const std::string y_var("y");
+      static const std::string z_var("z");
+      symbol_table<T> symbol_table;
+      symbol_table.add_constants();
+      symbol_table.add_variable(x_var,x);
+      symbol_table.add_variable(y_var,y);
+      symbol_table.add_variable(z_var,z);
+      expression<T> expression;
+      parser<T> parser;
+      if (parser.compile(expression_string,expression))
+      {
+         result = expression.value();
+         return true;
+      }
+      else
+         return false;
+   }
+
    template <typename T>
    inline bool pgo_primer()
    {
@@ -7035,6 +7130,26 @@ namespace exprtk
             else if (details::numeric::nequal(details::numeric::fast_exp<T,38>::result(v),std::pow(v,T(38.0)))) return false;
             else if (details::numeric::nequal(details::numeric::fast_exp<T,39>::result(v),std::pow(v,T(39.0)))) return false;
             else if (details::numeric::nequal(details::numeric::fast_exp<T,40>::result(v),std::pow(v,T(40.0)))) return false;
+            else if (details::numeric::nequal(details::numeric::fast_exp<T,41>::result(v),std::pow(v,T(41.0)))) return false;
+            else if (details::numeric::nequal(details::numeric::fast_exp<T,42>::result(v),std::pow(v,T(42.0)))) return false;
+            else if (details::numeric::nequal(details::numeric::fast_exp<T,43>::result(v),std::pow(v,T(43.0)))) return false;
+            else if (details::numeric::nequal(details::numeric::fast_exp<T,44>::result(v),std::pow(v,T(44.0)))) return false;
+            else if (details::numeric::nequal(details::numeric::fast_exp<T,45>::result(v),std::pow(v,T(45.0)))) return false;
+            else if (details::numeric::nequal(details::numeric::fast_exp<T,46>::result(v),std::pow(v,T(46.0)))) return false;
+            else if (details::numeric::nequal(details::numeric::fast_exp<T,47>::result(v),std::pow(v,T(47.0)))) return false;
+            else if (details::numeric::nequal(details::numeric::fast_exp<T,48>::result(v),std::pow(v,T(48.0)))) return false;
+            else if (details::numeric::nequal(details::numeric::fast_exp<T,49>::result(v),std::pow(v,T(49.0)))) return false;
+            else if (details::numeric::nequal(details::numeric::fast_exp<T,50>::result(v),std::pow(v,T(50.0)))) return false;
+            else if (details::numeric::nequal(details::numeric::fast_exp<T,51>::result(v),std::pow(v,T(51.0)))) return false;
+            else if (details::numeric::nequal(details::numeric::fast_exp<T,52>::result(v),std::pow(v,T(52.0)))) return false;
+            else if (details::numeric::nequal(details::numeric::fast_exp<T,53>::result(v),std::pow(v,T(53.0)))) return false;
+            else if (details::numeric::nequal(details::numeric::fast_exp<T,54>::result(v),std::pow(v,T(54.0)))) return false;
+            else if (details::numeric::nequal(details::numeric::fast_exp<T,55>::result(v),std::pow(v,T(55.0)))) return false;
+            else if (details::numeric::nequal(details::numeric::fast_exp<T,56>::result(v),std::pow(v,T(56.0)))) return false;
+            else if (details::numeric::nequal(details::numeric::fast_exp<T,57>::result(v),std::pow(v,T(57.0)))) return false;
+            else if (details::numeric::nequal(details::numeric::fast_exp<T,58>::result(v),std::pow(v,T(58.0)))) return false;
+            else if (details::numeric::nequal(details::numeric::fast_exp<T,59>::result(v),std::pow(v,T(59.0)))) return false;
+            else if (details::numeric::nequal(details::numeric::fast_exp<T,60>::result(v),std::pow(v,T(60.0)))) return false;
             else
                return true;
          }
