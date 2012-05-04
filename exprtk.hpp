@@ -45,6 +45,27 @@
 #include <stack>
 
 
+#define exprtk_lean_and_mean
+
+#ifdef exprtk_lean_and_mean_numeric_only
+   #ifndef exprtk_lean_and_mean
+      #define exprtk_lean_and_mean
+   #endif
+   #ifndef exprtk_disable_string_capabilities
+      #define exprtk_disable_string_capabilities
+   #endif
+#endif
+
+#ifdef exprtk_lean_and_mean
+   #ifndef exprtk_disable_extended_operator_optimizations
+      #define exprtk_disable_extended_operator_optimizations
+   #endif
+   #ifndef exprtk_disable_extended_optimisations
+      #define exprtk_disable_extended_optimisations
+   #endif
+#endif
+
+
 namespace exprtk
 {
    namespace details
@@ -785,11 +806,13 @@ namespace exprtk
                scan_special_function();
                return;
             }
+            #ifndef exprtk_disable_string_capabilities
             else if ('\'' == (*s_itr))
             {
                scan_string();
                return;
             }
+            #endif
             else
             {
                set_error(std::string("scan_token() - error invalid token: ") + std::string(s_itr,s_itr + 2));
@@ -943,6 +966,7 @@ namespace exprtk
             return;
          }
 
+         #ifndef exprtk_disable_string_capabilities
          inline void scan_string()
          {
             const char* begin = s_itr + 1;
@@ -983,6 +1007,7 @@ namespace exprtk
             ++s_itr;
             return;
          }
+         #endif
 
          inline void process_commutative_symbols()
          {
@@ -2312,6 +2337,7 @@ namespace exprtk
       template <typename T>
       T variable_node<T>::null_value = T(std::numeric_limits<T>::quiet_NaN());
 
+      #ifndef exprtk_disable_string_capabilities
       template <typename T>
       class stringvar_node : public expression_node<T>
       {
@@ -2364,6 +2390,7 @@ namespace exprtk
 
       template <typename T>
       std::string stringvar_node<T>::null_value = std::string("");
+      #endif
 
       template <typename T> struct sf00_op { static inline T process(const T& x, const T& y, const T& z) { return (x + y) / z; } };
       template <typename T> struct sf01_op { static inline T process(const T& x, const T& y, const T& z) { return (x + y) * z; } };
@@ -3205,6 +3232,7 @@ namespace exprtk
          vovovov_node<T,Operation1,Operation2,Operation3>& operator=(const vovovov_node<T,Operation1,Operation2,Operation3>&);
       };
 
+      #ifndef exprtk_disable_string_capabilities
       template <typename T, typename SType0, typename SType1, typename Operation>
       class sos_node : public sos_base_node<T>
       {
@@ -3311,6 +3339,7 @@ namespace exprtk
          sosos_node(sosos_node<T,SType0,SType1,SType2,Operation>&);
          sosos_node<T,SType0,SType1,SType2,Operation>& operator=(sosos_node<T,SType0,SType1,SType2,Operation>&);
       };
+      #endif
 
       template <typename T, typename PowOp>
       class ipow_node : public expression_node<T>
@@ -3748,25 +3777,282 @@ namespace exprtk
          }
       };
 
+      template<typename Type, typename RawType>
+      struct type_store
+      {
+         typedef typename details::variable_node<T>  variable_node_t;
+         typedef ifunction<T>                        ifunction_t;
+         #ifndef exprtk_disable_string_capabilities
+         typedef typename details::stringvar_node<T> stringvar_node_t;
+         #endif
+
+         typedef Type type_t;
+         typedef type_t* type_ptr;
+         typedef std::pair<bool,type_ptr> type_pair_t;
+         typedef std::map<std::string,type_pair_t,ilesscompare> type_map_t;
+         typedef typename type_map_t::iterator tm_itr_t;
+         typedef typename type_map_t::const_iterator tm_const_itr_t;
+
+         enum { lut_size = 256 };
+
+         type_pair_t short_type_lut[lut_size];
+         type_map_t  map;
+         std::size_t size;
+
+         type_store()
+         : size(0)
+         {}
+
+         inline bool symbol_exists(const std::string& symbol_name) const
+         {
+            if ((1 == symbol_name.size()) && short_type_lut[static_cast<std::size_t>(symbol_name[0])].second)
+               return true;
+            else if (map.end() != map.find(symbol_name))
+               return true;
+            else
+               return false;
+         }
+
+         inline bool is_constant(const std::string& symbol_name) const
+         {
+            return short_type_lut[static_cast<std::size_t>(symbol_name[0])].first;
+         }
+
+         inline bool add(const std::string& symbol_name, RawType& t, const bool is_constant = false)
+         {
+            struct tie
+            {
+               static inline std::pair<bool,variable_node_t*> make(T& t,const bool is_constant = false)
+               {
+                  return std::make_pair(is_constant,new variable_node_t(t));
+               }
+
+               #ifndef exprtk_disable_string_capabilities
+               static inline std::pair<bool,stringvar_node_t*> make(std::string& t,const bool is_constant = false)
+               {
+                  return std::make_pair(is_constant,new stringvar_node_t(t));
+               }
+               #endif
+
+               static inline std::pair<bool,function_t*> make(function_t& t, const bool is_constant = false)
+               {
+                  return std::make_pair(is_constant,&t);
+               }
+            };
+
+            if (1 == symbol_name.size())
+            {
+               short_type_lut[static_cast<std::size_t>(symbol_name[0])] = tie::make(t,is_constant);
+               ++size;
+            }
+            else
+            {
+               for (std::size_t i = 0; i < details::reserved_symbols_size; ++i)
+               {
+                  if (details::imatch(symbol_name,details::reserved_symbols[i]))
+                  {
+                     return false;
+                  }
+               }
+               tm_itr_t itr = map.find(symbol_name);
+               if (map.end() == itr)
+               {
+                  map[symbol_name] = tie::make(t,is_constant);
+                  ++size;
+               }
+            }
+            return true;
+         }
+
+         inline type_ptr get(const std::string& symbol_name)
+         {
+            if (1 == symbol_name.size())
+            {
+               type_pair_t& tp = short_type_lut[static_cast<std::size_t>(symbol_name[0])];
+               if (tp.second)
+                  return tp.second;
+               else
+                  return reinterpret_cast<type_ptr>(0);
+            }
+            else
+            {
+               tm_const_itr_t itr = map.find(symbol_name);
+               if (map.end() == itr)
+                  return reinterpret_cast<type_ptr>(0);
+               else
+                  return itr->second.second;
+            }
+         }
+
+         inline bool remove(const std::string& symbol_name)
+         {
+            if (1 == symbol_name.size())
+            {
+               type_pair_t& tp = short_type_lut[static_cast<std::size_t>(symbol_name[0])];
+               if (0 == tp.second)
+                  return false;
+               struct deleter
+               {
+                  static inline void process(std::pair<bool,variable_node_t*>& n)  { delete n.second; }
+                  #ifndef exprtk_disable_string_capabilities
+                  static inline void process(std::pair<bool,stringvar_node_t*>& n) { delete n.second; }
+                  #endif
+                  static inline void process(std::pair<bool,function_t*>&)         {                  }
+               };
+               deleter::process(tp);
+               tp.first = false;
+               tp.second = 0;
+               --size;
+               return true;
+            }
+            else
+            {
+               tm_itr_t itr = map.find(symbol_name);
+               if (map.end() != itr)
+               {
+                  struct deleter
+                  {
+                     static inline void process(std::pair<bool,variable_node_t*>& n)  { delete n.second; }
+                     #ifndef exprtk_disable_string_capabilities
+                     static inline void process(std::pair<bool,stringvar_node_t*>& n) { delete n.second; }
+                     #endif
+                     static inline void process(std::pair<bool,function_t*>&)         {                  }
+                  };
+                  deleter::process((*itr).second);
+                  map.erase(itr);
+                  --size;
+                  return true;
+               }
+               else
+                  return false;
+            }
+         }
+
+         inline RawType& type_ref(const std::string& symbol_name)
+         {
+            struct init_type
+            {
+               static inline double set(long double)      { return (0.0);           }
+               static inline float  set(float)            { return (0.0f);          }
+               static inline std::string set(std::string) { return std::string(""); }
+            };
+            static RawType null_type = init_type::set(RawType());
+            if (1 == symbol_name.size())
+            {
+               type_pair_t& tp = short_type_lut[static_cast<std::size_t>(symbol_name[0])];
+               if (tp.second)
+                  return tp->second.ref();
+               else
+                  return null_type;
+            }
+            else
+            {
+               tm_const_itr_t itr = map.find(symbol_name);
+               if (map.end() == itr)
+                  return null_type;
+               else
+                  return itr->second.second->ref();
+            }
+         }
+
+         inline void clear()
+         {
+            for (std::size_t i = 0; i < lut_size; ++i)
+            {
+               if (short_type_lut[i].second)
+               {
+                  delete (short_type_lut[i]).second;
+                  short_type_lut[i].first = false;
+                  short_type_lut[i].second = reinterpret_cast<type_ptr>(0);
+               }
+            }
+            if (!map.empty())
+            {
+               tm_itr_t itr = map.begin();
+               tm_itr_t end = map.end();
+               while (end != itr)
+               {
+                  struct deleter
+                  {
+                     static inline void process(std::pair<bool,variable_node_t*>& n)  { delete n.second; }
+                     static inline void process(std::pair<bool,function_t*>&)         {                  }
+                     #ifndef exprtk_disable_string_capabilities
+                     static inline void process(std::pair<bool,stringvar_node_t*>& n) { delete n.second; }
+                     #endif
+                  };
+                  deleter::process((*itr).second);
+                  ++itr;
+               }
+               map.clear();
+            }
+         }
+
+         template <typename Allocator,
+                   template <typename, typename> class Sequence>
+         inline std::size_t get_list(Sequence<std::pair<std::string,RawType>,Allocator>& list) const
+         {
+            std::size_t count = 0;
+            for (std::size_t i = 0; i < lut_size; ++i)
+            {
+               const type_pair_t& tp = short_type_lut[static_cast<std::size_t>(i)];
+               if (0 != tp.second)
+               {
+                  list.push_back(std::make_pair(std::string("") + static_cast<char>(i),tp.second->ref()));
+                  ++count;
+               }
+            }
+            if (!map.empty())
+            {
+               tm_const_itr_t itr = map.begin();
+               tm_const_itr_t end = map.end();
+               while (end != itr)
+               {
+                  list.push_back(std::make_pair((*itr).first,itr->second.second->ref()));
+                  ++itr;
+                  ++count;
+               }
+            }
+            return count;
+         }
+
+         template <typename Allocator,
+                   template <typename, typename> class Sequence>
+         inline std::size_t get_list(Sequence<std::string,Allocator>& vlist) const
+         {
+            std::size_t count = 0;
+            for (std::size_t i = 0; i < lut_size; ++i)
+            {
+               const type_pair_t& tp = short_type_lut[static_cast<std::size_t>(i)];
+               if (0 != tp.second)
+               {
+                  vlist.push_back(std::string("") + static_cast<char>(i));
+                  ++count;
+               }
+            }
+            if (!map.empty())
+            {
+               tm_const_itr_t itr = map.begin();
+               tm_const_itr_t end = map.end();
+               while (end != itr)
+               {
+                  vlist.push_back((*itr).first);
+                  ++itr;
+                  ++count;
+               }
+            }
+            return count;
+         }
+
+      };
+
       typedef typename details::variable_node<T> variable_t;
       typedef variable_t* variable_ptr;
-      typedef std::pair<bool,variable_ptr> variable_pair_t;
-      typedef std::map<std::string,variable_pair_t,ilesscompare> variable_map_t;
-      typedef typename variable_map_t::iterator vm_itr_t;
-      typedef typename variable_map_t::const_iterator vm_const_itr_t;
-
+      #ifndef exprtk_disable_string_capabilities
       typedef typename details::stringvar_node<T> stringvar_t;
       typedef stringvar_t* stringvar_ptr;
-      typedef std::pair<bool,stringvar_ptr> stringvar_pair_t;
-      typedef std::map<std::string,stringvar_pair_t,ilesscompare> stringvar_map_t;
-      typedef typename stringvar_map_t::iterator svm_itr_t;
-      typedef typename stringvar_map_t::const_iterator svm_const_itr_t;
-
+      #endif
       typedef ifunction<T> function_t;
       typedef function_t* function_ptr;
-      typedef std::map<std::string,function_ptr,ilesscompare> function_map_t;
-      typedef typename function_map_t::iterator fm_itr_t;
-      typedef typename function_map_t::const_iterator fm_const_itr_t;
 
       static const std::size_t lut_size = 256;
 
@@ -3774,27 +4060,14 @@ namespace exprtk
       {
          struct st_data
          {
-            st_data()
-            : variable_count_(0),
-              function_count_(0),
-              stringvar_count_(0)
-            {}
-
-            variable_pair_t short_variable_lut_[lut_size];
-            variable_map_t  variable_map_;
-
-            function_ptr short_function_lut_[lut_size];
-            function_map_t function_map_;
-
-            stringvar_pair_t short_stringvar_lut_[lut_size];
-            stringvar_map_t stringvar_map_;
+            type_store<typename details::variable_node<T>,T> variable_store;
+            #ifndef exprtk_disable_string_capabilities
+            type_store<typename details::stringvar_node<T>,std::string> stringvar_store;
+            #endif
+            type_store<ifunction<T>,ifunction<T> > function_store;
 
             std::list<T> local_symbol_list_;
             std::list<std::string> local_stringvar_list_;
-
-            std::size_t variable_count_;
-            std::size_t function_count_;
-            std::size_t stringvar_count_;
          };
 
          st_holder()
@@ -3825,7 +4098,7 @@ namespace exprtk
       symbol_table()
       : holder_(new st_holder)
       {
-         clear_short_symbol_luts();
+         clear();
       }
 
      ~symbol_table()
@@ -3864,55 +4137,35 @@ namespace exprtk
       inline void clear()
       {
          if (!valid()) return;
-         if (!local_data().variable_map_.empty())
-         {
-            vm_itr_t itr = local_data().variable_map_.begin();
-            vm_itr_t end = local_data().variable_map_.end();
-            while (end != itr)
-            {
-               delete (*itr).second.second;
-               ++itr;
-            }
-            local_data().variable_map_.clear();
-         }
-         if (!local_data().stringvar_map_.empty())
-         {
-            svm_itr_t itr = local_data().stringvar_map_.begin();
-            svm_itr_t end = local_data().stringvar_map_.end();
-            while (end != itr)
-            {
-               delete (*itr).second.second;
-               ++itr;
-            }
-            local_data().stringvar_map_.clear();
-         }
-         if (!local_data().function_map_.empty())
-         {
-            local_data().function_map_.clear();
-         }
-         for (std::size_t i = 0; i < lut_size; ++i)
-         {
-            if (local_data().short_variable_lut_[i].second)  delete (local_data().short_variable_lut_[i]).second;
-            if (local_data().short_stringvar_lut_[i].second) delete (local_data().short_stringvar_lut_[i]).second;
-            if (local_data().short_function_lut_[i])         delete  local_data().short_function_lut_[i];
-         }
-         clear_short_symbol_luts();
-         local_data().local_symbol_list_.clear();
-         local_data().local_stringvar_list_.clear();
+         local_data().variable_store.clear();
+         local_data().function_store.clear();
+         #ifndef exprtk_disable_string_capabilities
+         local_data().stringvar_store.clear();
+         #endif
       }
 
       inline std::size_t variable_count() const
       {
          if (valid())
-            return local_data().variable_count_;
+            return local_data().variable_store().size;
          else
             return 0;
       }
 
+      #ifndef exprtk_disable_string_capabilities
+      inline std::size_t stringvar_count() const
+      {
+         if (valid())
+            return local_data().stringvar_store().size;
+         else
+            return 0;
+      }
+      #endif
+
       inline std::size_t function_count() const
       {
          if (valid())
-            return local_data().function_count_;
+            return local_data().function_store().size;
          else
             return 0;
       }
@@ -3923,47 +4176,21 @@ namespace exprtk
             return reinterpret_cast<variable_ptr>(0);
          else if (!valid_symbol(variable_name))
             return reinterpret_cast<variable_ptr>(0);
-         else if (1 == variable_name.size())
-         {
-            variable_pair_t& vp = local_data().short_variable_lut_[static_cast<std::size_t>(variable_name[0])];
-            if (vp.second)
-               return vp.second;
-            else
-               return reinterpret_cast<variable_ptr>(0);
-         }
          else
-         {
-            vm_const_itr_t itr = local_data().variable_map_.find(variable_name);
-            if (local_data().variable_map_.end() == itr)
-               return reinterpret_cast<variable_ptr>(0);
-            else
-               return itr->second.second;
-         }
+            return local_data().variable_store.get(variable_name);
       }
 
+      #ifndef exprtk_disable_string_capabilities
       inline stringvar_ptr get_stringvar(const std::string& string_name)
       {
          if (!valid())
             return reinterpret_cast<stringvar_ptr>(0);
          else if (!valid_symbol(string_name))
             return reinterpret_cast<stringvar_ptr>(0);
-         else if (1 == string_name.size())
-         {
-            stringvar_pair_t& svp = local_data().short_stringvar_lut_[static_cast<std::size_t>(string_name[0])];
-            if (svp.second)
-               return svp.second;
-            else
-               return reinterpret_cast<stringvar_ptr>(0);
-         }
          else
-         {
-            svm_const_itr_t itr = local_data().stringvar_map_.find(string_name);
-            if (local_data().stringvar_map_.end() == itr)
-               return reinterpret_cast<stringvar_ptr>(0);
-            else
-               return itr->second.second;
-         }
+            return local_data().stringvar_store.get(string_name);
       }
+      #endif
 
       inline function_ptr get_function(const std::string& function_name)
       {
@@ -3971,18 +4198,8 @@ namespace exprtk
             return reinterpret_cast<function_ptr>(0);
          else if (!valid_symbol(function_name))
             return reinterpret_cast<function_ptr>(0);
-         else if (1 == function_name.size())
-         {
-            return local_data().short_function_lut_[static_cast<std::size_t>(function_name[0])];
-         }
          else
-         {
-            fm_const_itr_t itr = local_data().function_map_.find(function_name);
-            if (local_data().function_map_.end() == itr)
-               return reinterpret_cast<function_ptr>(0);
-            else
-               return itr->second;
-         }
+            return local_data().function_store.get(function_name);
       }
 
       inline T& variable_ref(const std::string& symbol_name)
@@ -3992,24 +4209,11 @@ namespace exprtk
             return null_var;
          else if (!valid_symbol(symbol_name))
             return null_var;
-         else if (1 == symbol_name.size())
-         {
-            variable_pair_t& vp = local_data().short_variable_lut_[static_cast<std::size_t>(symbol_name[0])];
-            if (vp.second)
-               return vp->second.ref();
-            else
-               return null_var;
-         }
          else
-         {
-            vm_const_itr_t itr = local_data().variable_map_.find(symbol_name);
-            if (local_data().variable_map_.end() == itr)
-               return null_var;
-            else
-               return itr->second.second->ref();
-         }
+            return local_data().variable_store.type_ref(symbol_name);
       }
 
+      #ifndef exprtk_disable_string_capabilities
       inline std::string& stringvar_ref(const std::string& symbol_name)
       {
          static std::string null_stringvar;
@@ -4017,59 +4221,36 @@ namespace exprtk
             return null_stringvar;
          else if (!valid_symbol(symbol_name))
             return null_stringvar;
-         else if (1 == symbol_name.size())
-         {
-            stringvar_pair_t& svp = local_data().short_stringvar_lut_[static_cast<std::size_t>(symbol_name[0])];
-            if (svp.second)
-               return svp->second.ref();
-            else
-               return null_stringvar;
-         }
          else
-         {
-            svm_const_itr_t itr = local_data().stringvar_map_.find(symbol_name);
-            if (local_data().stringvar_map_.end() == itr)
-               return null_stringvar;
-            else
-               return itr->second.second->ref();
-         }
+            return local_data().stringvar_store.type_ref(symbol_name);
       }
+      #endif
 
       inline bool is_constant_node(const std::string& symbol_name) const
       {
          if (!valid())
             return false;
-         else if (1 == symbol_name.size())
-         {
-            return local_data().short_variable_lut_[static_cast<std::size_t>(symbol_name[0])].first;
-         }
+         else if (!valid_symbol(symbol_name))
+            return false;
+         else if (!local_data().variable_store.symbol_exists(symbol_name))
+            return false;
          else
-         {
-            vm_const_itr_t itr = local_data().variable_map_.find(symbol_name);
-            if (local_data().variable_map_.end() == itr)
-               return false;
-            else
-               return itr->second.first;
-         }
+            return local_data().variable_store.is_constant(symbol_name);
       }
 
+      #ifndef exprtk_disable_string_capabilities
       inline bool is_constant_string(const std::string& symbol_name) const
       {
          if (!valid())
             return false;
-         else if (1 == symbol_name.size())
-         {
-            return local_data().short_stringvar_lut_[static_cast<std::size_t>(symbol_name[0])].first;
-         }
+         else if (!valid_symbol(symbol_name))
+            return false;
+         else if (!local_data().stringvar_store.symbol_exists(symbol_name))
+            return false;
          else
-         {
-            svm_const_itr_t itr = local_data().stringvar_map_.find(symbol_name);
-            if (local_data().stringvar_map_.end() == itr)
-               return false;
-            else
-               return itr->second.first;
-         }
+            return local_data().stringvar_store.is_constant(symbol_name);
       }
+      #endif
 
       inline bool create_variable(const std::string& variable_name, const T& value = T(0))
       {
@@ -4084,6 +4265,7 @@ namespace exprtk
          return add_variable(variable_name,t);
       }
 
+      #ifndef exprtk_disable_string_capabilities
       inline bool create_stringvar(const std::string& stringvar_name, const std::string& value = std::string(""))
       {
          if (!valid())
@@ -4096,6 +4278,7 @@ namespace exprtk
          std::string& s = local_data().local_stringvar_list_.back();
          return add_stringvar(stringvar_name,s);
       }
+      #endif
 
       inline bool add_variable(const std::string& variable_name, T& t, const bool is_constant = false)
       {
@@ -4105,32 +4288,11 @@ namespace exprtk
             return false;
          else if (symbol_exists(variable_name))
             return false;
-         else if (1 == variable_name.size())
-         {
-            variable_pair_t& vp = local_data().short_variable_lut_[static_cast<std::size_t>(variable_name[0])];
-            vp.first = is_constant;
-            vp.second = new variable_t(t);
-            ++(local_data().variable_count_);
-         }
          else
-         {
-            for (std::size_t i = 0; i < details::reserved_symbols_size; ++i)
-            {
-               if (details::imatch(variable_name,details::reserved_symbols[i]))
-               {
-                  return false;
-               }
-            }
-            vm_itr_t itr = local_data().variable_map_.find(variable_name);
-            if (local_data().variable_map_.end() == itr)
-            {
-               local_data().variable_map_[variable_name] = std::make_pair(is_constant,new details::variable_node<T>(t));
-               ++(local_data().variable_count_);
-            }
-         }
-         return true;
+            return local_data().variable_store.add(variable_name,t,is_constant);
       }
 
+      #ifndef exprtk_disable_string_capabilities
       inline bool add_stringvar(const std::string& stringvar_name, std::string& s, const bool is_constant = false)
       {
          if (!valid())
@@ -4139,31 +4301,10 @@ namespace exprtk
             return false;
          else if (symbol_exists(stringvar_name))
             return false;
-         else if (1 == stringvar_name.size())
-         {
-            stringvar_pair_t& svp = local_data().short_stringvar_lut_[static_cast<std::size_t>(stringvar_name[0])];
-            svp.first = is_constant;
-            svp.second = new stringvar_t(s);
-            ++(local_data().stringvar_count_);
-         }
          else
-         {
-            for (std::size_t i = 0; i < details::reserved_symbols_size; ++i)
-            {
-               if (details::imatch(stringvar_name,details::reserved_symbols[i]))
-               {
-                  return false;
-               }
-            }
-            svm_itr_t itr = local_data().stringvar_map_.find(stringvar_name);
-            if (local_data().stringvar_map_.end() == itr)
-            {
-               local_data().stringvar_map_[stringvar_name] = std::make_pair(is_constant,new details::stringvar_node<T>(s));
-               ++(local_data().stringvar_count_);
-            }
-         }
-         return true;
+            return local_data().stringvar_store.add(stringvar_name,s,is_constant);
       }
+      #endif
 
       inline bool add_function(const std::string& function_name, function_t& function)
       {
@@ -4173,119 +4314,34 @@ namespace exprtk
             return false;
          else if (symbol_exists(function_name))
             return false;
-         else if (1 == function_name.size())
-         {
-            local_data().short_function_lut_[static_cast<std::size_t>(function_name[0])] = &function;
-            ++(local_data().function_count_);
-         }
          else
-         {
-            for (std::size_t i = 0; i < details::reserved_symbols_size; ++i)
-            {
-               if (details::imatch(function_name,details::reserved_symbols[i]))
-               {
-                  return false;
-               }
-            }
-            fm_itr_t itr = local_data().function_map_.find(function_name);
-            if (local_data().function_map_.end() == itr)
-            {
-               local_data().function_map_[function_name] = &function;
-               ++(local_data().function_count_);
-            }
-            else
-               return false;
-         }
-         return true;
+            return local_data().function_store.add(function_name,function);
       }
 
       inline bool remove_variable(const std::string& variable_name)
       {
          if (!valid())
             return false;
-         else if (1 == variable_name.size())
-         {
-            variable_pair_t& vp = local_data().short_variable_lut_[static_cast<std::size_t>(variable_name[0])];
-            if (0 == vp.second)
-               return false;
-            delete vp.second;
-            vp.first = false;
-            vp.second = 0;
-            --(local_data().variable_count_);
-            return true;
-         }
          else
-         {
-            vm_itr_t itr = local_data().variable_map_.find(variable_name);
-            if (local_data().variable_map_.end() != itr)
-            {
-               delete (*itr).second.second;
-               local_data().variable_map_.erase(itr);
-               --(local_data().variable_count_);
-               return true;
-            }
-            else
-               return false;
-         }
+            return local_data().variable_store.remove(variable_name);
       }
+
+      #ifndef exprtk_disable_string_capabilities
+      inline bool remove_stringvar(const std::string& string_name)
+      {
+         if (!valid())
+            return false;
+         else
+            return local_data().stringvar_store.remove(string_name);
+      }
+      #endif
 
       inline bool remove_function(const std::string& function_name)
       {
          if (!valid())
             return false;
-         else if (1 == function_name.size())
-         {
-            if (local_data().short_function_lut_[static_cast<std::size_t>(function_name[0])])
-            {
-               local_data().short_function_lut_[static_cast<std::size_t>(function_name[0])] = 0;
-               --local_data().function_count_;
-               return true;
-            }
-            else
-               return false;
-         }
          else
-         {
-            fm_itr_t itr = local_data().function_map_.find(function_name);
-            if (local_data().function_map_.end() != itr)
-            {
-               local_data().function_map_.erase(itr);
-               --local_data().function_count_;
-               return true;
-            }
-            else
-               return false;
-         }
-      }
-
-      inline bool remove_stringvar(const std::string& string_name)
-      {
-         if (!valid())
-            return false;
-         else if (1 == string_name.size())
-         {
-            stringvar_pair_t& svp = local_data().short_stringvar_lut_[static_cast<std::size_t>(string_name[0])];
-            if (0 == svp.second)
-               return false;
-            delete svp.second;
-            svp.first = false;
-            svp.second = 0;
-            --local_data().stringvar_count_;
-            return true;
-         }
-         else
-         {
-            svm_itr_t itr = local_data().stringvar_map_.find(string_name);
-            if (local_data().stringvar_map_.end() != itr)
-            {
-               delete (*itr).second.second;
-               local_data().stringvar_map_.erase(itr);
-               --local_data().stringvar_count_;
-               return true;
-            }
-            else
-               return false;
-         }
+            return local_data().function_store.remove(function_name);
       }
 
       inline bool add_constants()
@@ -4317,137 +4373,59 @@ namespace exprtk
                 template <typename, typename> class Sequence>
       inline std::size_t get_variable_list(Sequence<std::pair<std::string,T>,Allocator>& vlist) const
       {
-         if (!valid()) return 0;
-         std::size_t count = 0;
-         for (std::size_t i = 0; i < lut_size; ++i)
-         {
-            const variable_pair_t& vp = local_data().short_variable_lut_[static_cast<std::size_t>(i)];
-            if (0 != vp.second)
-            {
-               vlist.push_back(std::make_pair(std::string("") + static_cast<char>(i),vp.second->value()));
-               ++count;
-            }
-         }
-         if (!local_data().variable_map_.empty())
-         {
-            vm_const_itr_t itr = local_data().variable_map_.begin();
-            vm_const_itr_t end = local_data().variable_map_.end();
-            while (end != itr)
-            {
-               vlist.push_back(std::make_pair((*itr).first,itr->second.second->ref()));
-               ++itr;
-               ++count;
-            }
-         }
-         return count;
+         if (!valid())
+            return 0;
+         else
+            return local_data().variable_store.get_list(vlist);
       }
 
       template <typename Allocator,
                 template <typename, typename> class Sequence>
       inline std::size_t get_variable_list(Sequence<std::string,Allocator>& vlist) const
       {
-         if (!valid()) return 0;
-         std::size_t count = 0;
-         for (std::size_t i = 0; i < lut_size; ++i)
-         {
-            const variable_pair_t& vp = local_data().short_variable_lut_[static_cast<std::size_t>(i)];
-            if (0 != vp.second)
-            {
-               vlist.push_back(std::string("") + static_cast<char>(i));
-               ++count;
-            }
-         }
-         if (!local_data().variable_map_.empty())
-         {
-            vm_const_itr_t itr = local_data().variable_map_.begin();
-            vm_const_itr_t end = local_data().variable_map_.end();
-            while (end != itr)
-            {
-               vlist.push_back((*itr).first);
-               ++itr;
-               ++count;
-            }
-         }
-         return count;
+         if (!valid())
+            return 0;
+         else
+            return local_data().variable_store.get_list(vlist);
       }
 
+      #ifndef exprtk_disable_string_capabilities
       template <typename Allocator,
                 template <typename, typename> class Sequence>
       inline std::size_t get_stringvar_list(Sequence<std::pair<std::string,std::string>,Allocator>& svlist) const
       {
-         if (!valid()) return 0;
-         std::size_t count = 0;
-         for (std::size_t i = 0; i < lut_size; ++i)
-         {
-            const stringvar_pair_t& svp = local_data().short_stringvar_lut_[static_cast<std::size_t>(i)];
-            if (0 != svp.second)
-            {
-               svlist.push_back(std::make_pair(std::string("") + static_cast<char>(i),svp.second->ref()));
-               ++count;
-            }
-         }
-         if (!local_data().stringvar_map_.empty())
-         {
-            svm_const_itr_t itr = local_data().stringvar_map_.begin();
-            svm_const_itr_t end = local_data().stringvar_map_.end();
-            while (end != itr)
-            {
-               svlist.push_back(std::make_pair((*itr).first,itr->second.second->ref()));
-               ++itr;
-               ++count;
-            }
-         }
-         return count;
+         if (!valid())
+            return 0;
+         else
+            return local_data().stringvar_store.get_list(svlist);
       }
 
       template <typename Allocator,
                 template <typename, typename> class Sequence>
       inline std::size_t get_stringvar_list(Sequence<std::string,Allocator>& svlist) const
       {
-         if (!valid()) return 0;
-         std::size_t count = 0;
-         for (std::size_t i = 0; i < lut_size; ++i)
-         {
-            const stringvar_pair_t& svp = local_data().short_stringvar_lut_[static_cast<std::size_t>(i)];
-            if (0 != svp.second)
-            {
-               svlist.push_back(std::string("") + static_cast<char>(i));
-               ++count;
-            }
-         }
-         if (!local_data().stringvar_map_.empty())
-         {
-            svm_const_itr_t itr = local_data().stringvar_map_.begin();
-            svm_const_itr_t end = local_data().stringvar_map_.end();
-            while (end != itr)
-            {
-               svlist.push_back((*itr).first);
-               ++itr;
-               ++count;
-            }
-         }
-         return count;
+         if (!valid())
+            return 0;
+         else
+            return local_data().stringvar_store.get_list(svlist);
       }
+      #endif
 
       inline bool symbol_exists(const std::string& symbol_name) const
       {
          /*
             Will return true if symbol_name exists as either a
-            variable, stringvar or function name in any of the LUTs or maps.
+            variable, stringvar or function name in any of the type stores.
          */
          if (!valid())
             return false;
-         else if ((1 == symbol_name.size()) && local_data().short_variable_lut_[static_cast<std::size_t>(symbol_name[0])].second)
+         else if (local_data().variable_store.symbol_exists(symbol_name))
             return true;
-         else if ((1 == symbol_name.size()) && local_data().short_stringvar_lut_[static_cast<std::size_t>(symbol_name[0])].second)
+         #ifndef exprtk_disable_string_capabilities
+         else if (local_data().stringvar_store.symbol_exists(symbol_name))
             return true;
-         else if ((1 == symbol_name.size()) && local_data().short_function_lut_[static_cast<std::size_t>(symbol_name[0])])
-            return true;
-         else if (local_data().variable_map_.end() != local_data().variable_map_.find(symbol_name))
-            return true;
-         else if (local_data().stringvar_map_.end() != local_data().stringvar_map_.find(symbol_name))
-            return true;
-         else if (local_data().function_map_.end() != local_data().function_map_.find(symbol_name))
+         #endif
+         else if (local_data().function_store.symbol_exists(symbol_name))
             return true;
          else
             return false;
@@ -4457,36 +4435,26 @@ namespace exprtk
       {
          if (!valid())
             return false;
-         else if ((1 == variable_name.size()) && local_data().short_variable_lut_[static_cast<std::size_t>(variable_name[0])].second)
-            return true;
-         else if (local_data().variable_map_.end() != local_data().variable_map_.find(variable_name))
-            return true;
          else
-            return false;
+            return local_data().variable_store.symbol_exists(variable_name);
       }
 
+      #ifndef exprtk_disable_string_capabilities
       inline bool is_stringvar(const std::string& stringvar_name) const
       {
          if (!valid())
             return false;
-         else if ((1 == stringvar_name.size()) && local_data().short_stringvar_lut_[static_cast<std::size_t>(stringvar_name[0])].second)
-            return true;
-         else if (local_data().stringvar_map_.end() != local_data().stringvar_map_.find(stringvar_name))
-            return true;
          else
-            return false;
+            return local_data().stringvar_store.symbol_exists(stringvar_name);
       }
+      #endif
 
       inline bool is_function(const std::string& function_name) const
       {
          if (!valid())
             return false;
-         else if ((1 == function_name.size()) && local_data().short_function_lut_[static_cast<std::size_t>(function_name[0])].second)
-            return true;
-         else if (local_data().function_map_.end() != local_data().function_map_.find(function_name))
-            return true;
          else
-            return false;
+            return local_data().function_store.symbol_exists(function_name);
       }
 
       inline bool valid() const
@@ -4516,21 +4484,6 @@ namespace exprtk
             }
          }
          return true;
-      }
-
-      inline void clear_short_symbol_luts()
-      {
-         if (!valid()) return;
-         for (std::size_t i = 0; i < lut_size; ++i)
-         {
-            local_data().short_variable_lut_[i].first = false;
-            local_data().short_variable_lut_[i].second = reinterpret_cast<variable_ptr>(0);
-
-            local_data().short_stringvar_lut_[i].first = false;
-            local_data().short_stringvar_lut_[i].second = reinterpret_cast<stringvar_ptr>(0);
-
-            local_data().short_function_lut_[i] = reinterpret_cast<function_ptr>(0);
-         }
       }
 
       inline typename st_holder::st_data& local_data()
@@ -4738,7 +4691,9 @@ namespace exprtk
       typedef details::conditional_node<T>       conditional_node_t;
       typedef details::while_loop_node <T>        while_loop_node_t;
       typedef details::variable_node   <T>          variable_node_t;
+      #ifndef exprtk_disable_string_capabilities
       typedef details::stringvar_node  <T>         stringvar_node_t;
+      #endif
       typedef details::assignment_node <T>        assignment_node_t;
       typedef details::function_node <T,F>          function_node_t;
       typedef details::token           <T>                  token_t;
@@ -5453,6 +5408,7 @@ namespace exprtk
                    (details::e_div  == operation) ||
                    (details::e_mod  == operation) ||
                    (details::e_pow  == operation) ||
+                   #ifndef exprtk_disable_extended_operator_optimizations
                    (details::e_lt   == operation) ||
                    (details::e_lte  == operation) ||
                    (details::e_gt   == operation) ||
@@ -5463,7 +5419,9 @@ namespace exprtk
                    (details::e_nand == operation) ||
                    (details::e_or   == operation) ||
                    (details::e_nor  == operation) ||
-                   (details::e_xor  == operation);
+                   (details::e_xor  == operation) ||
+                   #endif
+                   false;
          }
 
          inline bool is_level_optimizable(const std::size_t& level = 0) const
@@ -5870,6 +5828,7 @@ namespace exprtk
                case_stmt(details:: e_div,details:: div_op)
                case_stmt(details:: e_mod,details:: mod_op)
                case_stmt(details:: e_pow,details:: pow_op)
+               #ifndef exprtk_disable_extended_operator_optimizations
                case_stmt(details::  e_lt,details::  lt_op)
                case_stmt(details:: e_lte,details:: lte_op)
                case_stmt(details::  e_gt,details::  gt_op)
@@ -5881,6 +5840,7 @@ namespace exprtk
                case_stmt(details::  e_or,details::  or_op)
                case_stmt(details:: e_nor,details:: nor_op)
                case_stmt(details:: e_xor,details:: xor_op)
+               #endif
                default : return error_node();
                #undef case_stmt
             }
@@ -5954,6 +5914,7 @@ namespace exprtk
                case_stmt(details:: e_div,details:: div_op)
                case_stmt(details:: e_mod,details:: mod_op)
                case_stmt(details:: e_pow,details:: pow_op)
+               #ifndef exprtk_disable_extended_operator_optimizations
                case_stmt(details::  e_lt,details::  lt_op)
                case_stmt(details:: e_lte,details:: lte_op)
                case_stmt(details::  e_gt,details::  gt_op)
@@ -5965,6 +5926,7 @@ namespace exprtk
                case_stmt(details::  e_or,details::  or_op)
                case_stmt(details:: e_nor,details:: nor_op)
                case_stmt(details:: e_xor,details:: xor_op)
+               #endif
                default : return error_node();
                #undef case_stmt
             }
@@ -5983,6 +5945,7 @@ namespace exprtk
                case_stmt(details:: e_div,details:: div_op)
                case_stmt(details:: e_mod,details:: mod_op)
                case_stmt(details:: e_pow,details:: pow_op)
+               #ifndef exprtk_disable_extended_operator_optimizations
                case_stmt(details::  e_lt,details::  lt_op)
                case_stmt(details:: e_lte,details:: lte_op)
                case_stmt(details::  e_gt,details::  gt_op)
@@ -5994,6 +5957,7 @@ namespace exprtk
                case_stmt(details::  e_or,details::  or_op)
                case_stmt(details:: e_nor,details:: nor_op)
                case_stmt(details:: e_xor,details:: xor_op)
+               #endif
                default : return error_node();
                #undef case_stmt
             }
@@ -6012,6 +5976,7 @@ namespace exprtk
                case_stmt(details:: e_div,details:: div_op)
                case_stmt(details:: e_mod,details:: mod_op)
                case_stmt(details:: e_pow,details:: pow_op)
+               #ifndef exprtk_disable_extended_operator_optimizations
                case_stmt(details::  e_lt,details::  lt_op)
                case_stmt(details:: e_lte,details:: lte_op)
                case_stmt(details::  e_gt,details::  gt_op)
@@ -6023,6 +5988,7 @@ namespace exprtk
                case_stmt(details::  e_or,details::  or_op)
                case_stmt(details:: e_nor,details:: nor_op)
                case_stmt(details:: e_xor,details:: xor_op)
+               #endif
                default : return error_node();
                #undef case_stmt
             }
@@ -6041,6 +6007,7 @@ namespace exprtk
                case_stmt(details:: e_div,details:: div_op)
                case_stmt(details:: e_mod,details:: mod_op)
                case_stmt(details:: e_pow,details:: pow_op)
+               #ifndef exprtk_disable_extended_operator_optimizations
                case_stmt(details::  e_lt,details::  lt_op)
                case_stmt(details:: e_lte,details:: lte_op)
                case_stmt(details::  e_gt,details::  gt_op)
@@ -6052,6 +6019,7 @@ namespace exprtk
                case_stmt(details::  e_or,details::  or_op)
                case_stmt(details:: e_nor,details:: nor_op)
                case_stmt(details:: e_xor,details:: xor_op)
+               #endif
                default : return error_node();
                #undef case_stmt
             }
@@ -6072,6 +6040,7 @@ namespace exprtk
                case_stmt(details:: e_div,details:: div_op)
                case_stmt(details:: e_mod,details:: mod_op)
                case_stmt(details:: e_pow,details:: pow_op)
+               #ifndef exprtk_disable_extended_operator_optimizations
                case_stmt(details::  e_lt,details::  lt_op)
                case_stmt(details:: e_lte,details:: lte_op)
                case_stmt(details::  e_gt,details::  gt_op)
@@ -6083,6 +6052,7 @@ namespace exprtk
                case_stmt(details::  e_or,details::  or_op)
                case_stmt(details:: e_nor,details:: nor_op)
                case_stmt(details:: e_xor,details:: xor_op)
+               #endif
                default : return error_node();
                #undef case_stmt
             }
@@ -6101,6 +6071,7 @@ namespace exprtk
                case_stmt(details:: e_div,details:: div_op)
                case_stmt(details:: e_mod,details:: mod_op)
                case_stmt(details:: e_pow,details:: pow_op)
+               #ifndef exprtk_disable_extended_operator_optimizations
                case_stmt(details::  e_lt,details::  lt_op)
                case_stmt(details:: e_lte,details:: lte_op)
                case_stmt(details::  e_gt,details::  gt_op)
@@ -6112,6 +6083,7 @@ namespace exprtk
                case_stmt(details::  e_or,details::  or_op)
                case_stmt(details:: e_nor,details:: nor_op)
                case_stmt(details:: e_xor,details:: xor_op)
+               #endif
                default : return error_node();
                #undef case_stmt
             }
@@ -6132,6 +6104,7 @@ namespace exprtk
                case_stmt(details:: e_div,details:: div_op)
                case_stmt(details:: e_mod,details:: mod_op)
                case_stmt(details:: e_pow,details:: pow_op)
+               #ifndef exprtk_disable_extended_operator_optimizations
                case_stmt(details::  e_lt,details::  lt_op)
                case_stmt(details:: e_lte,details:: lte_op)
                case_stmt(details::  e_gt,details::  gt_op)
@@ -6143,6 +6116,7 @@ namespace exprtk
                case_stmt(details::  e_or,details::  or_op)
                case_stmt(details:: e_nor,details:: nor_op)
                case_stmt(details:: e_xor,details:: xor_op)
+               #endif
                default : return error_node();
                #undef case_stmt
             }
@@ -6161,6 +6135,7 @@ namespace exprtk
                case_stmt(details:: e_div,details:: div_op)
                case_stmt(details:: e_mod,details:: mod_op)
                case_stmt(details:: e_pow,details:: pow_op)
+               #ifndef exprtk_disable_extended_operator_optimizations
                case_stmt(details::  e_lt,details::  lt_op)
                case_stmt(details:: e_lte,details:: lte_op)
                case_stmt(details::  e_gt,details::  gt_op)
@@ -6172,6 +6147,7 @@ namespace exprtk
                case_stmt(details::  e_or,details::  or_op)
                case_stmt(details:: e_nor,details:: nor_op)
                case_stmt(details:: e_xor,details:: xor_op)
+               #endif
                default : return error_node();
                #undef case_stmt
             }
@@ -6192,6 +6168,7 @@ namespace exprtk
                case_stmt(details:: e_div,details:: div_op)
                case_stmt(details:: e_mod,details:: mod_op)
                case_stmt(details:: e_pow,details:: pow_op)
+               #ifndef exprtk_disable_extended_operator_optimizations
                case_stmt(details::  e_lt,details::  lt_op)
                case_stmt(details:: e_lte,details:: lte_op)
                case_stmt(details::  e_gt,details::  gt_op)
@@ -6203,6 +6180,7 @@ namespace exprtk
                case_stmt(details::  e_or,details::  or_op)
                case_stmt(details:: e_nor,details:: nor_op)
                case_stmt(details:: e_xor,details:: xor_op)
+               #endif
                default : return error_node();
                #undef case_stmt
             }
@@ -6221,6 +6199,7 @@ namespace exprtk
                case_stmt(details:: e_div,details:: div_op)
                case_stmt(details:: e_mod,details:: mod_op)
                case_stmt(details:: e_pow,details:: pow_op)
+               #ifndef exprtk_disable_extended_operator_optimizations
                case_stmt(details::  e_lt,details::  lt_op)
                case_stmt(details:: e_lte,details:: lte_op)
                case_stmt(details::  e_gt,details::  gt_op)
@@ -6232,6 +6211,7 @@ namespace exprtk
                case_stmt(details::  e_or,details::  or_op)
                case_stmt(details:: e_nor,details:: nor_op)
                case_stmt(details:: e_xor,details:: xor_op)
+               #endif
                default : return error_node();
                #undef case_stmt
             }
@@ -6253,6 +6233,7 @@ namespace exprtk
                case_stmt(details:: e_div,details:: div_op)
                case_stmt(details:: e_mod,details:: mod_op)
                case_stmt(details:: e_pow,details:: pow_op)
+               #ifndef exprtk_disable_extended_operator_optimizations
                case_stmt(details::  e_lt,details::  lt_op)
                case_stmt(details:: e_lte,details:: lte_op)
                case_stmt(details::  e_gt,details::  gt_op)
@@ -6264,6 +6245,7 @@ namespace exprtk
                case_stmt(details::  e_or,details::  or_op)
                case_stmt(details:: e_nor,details:: nor_op)
                case_stmt(details:: e_xor,details:: xor_op)
+               #endif
                default : return error_node();
                #undef case_stmt
             }
@@ -6289,6 +6271,7 @@ namespace exprtk
                case_stmt(details:: e_div,details:: div_op)
                case_stmt(details:: e_mod,details:: mod_op)
                case_stmt(details:: e_pow,details:: pow_op)
+               #ifndef exprtk_disable_extended_operator_optimizations
                case_stmt(details::  e_lt,details::  lt_op)
                case_stmt(details:: e_lte,details:: lte_op)
                case_stmt(details::  e_gt,details::  gt_op)
@@ -6300,6 +6283,7 @@ namespace exprtk
                case_stmt(details::  e_or,details::  or_op)
                case_stmt(details:: e_nor,details:: nor_op)
                case_stmt(details:: e_xor,details:: xor_op)
+               #endif
                default : return error_node();
                #undef case_stmt
             }
@@ -6325,6 +6309,7 @@ namespace exprtk
                case_stmt(details:: e_div,details:: div_op)
                case_stmt(details:: e_mod,details:: mod_op)
                case_stmt(details:: e_pow,details:: pow_op)
+               #ifndef exprtk_disable_extended_operator_optimizations
                case_stmt(details::  e_lt,details::  lt_op)
                case_stmt(details:: e_lte,details:: lte_op)
                case_stmt(details::  e_gt,details::  gt_op)
@@ -6336,6 +6321,7 @@ namespace exprtk
                case_stmt(details::  e_or,details::  or_op)
                case_stmt(details:: e_nor,details:: nor_op)
                case_stmt(details:: e_xor,details:: xor_op)
+               #endif
                default : return error_node();
                #undef case_stmt
             }
@@ -6350,6 +6336,7 @@ namespace exprtk
          }
          #endif
 
+         #ifndef exprtk_disable_string_capabilities
          template <typename T0, typename T1>
          inline expression_node_ptr synthesize_sos_expression_impl(const details::operator_type& opr, T0 s0, T1 s1)
          {
@@ -6417,6 +6404,7 @@ namespace exprtk
             node_allocator_->free(branch[1]);
             return result;
          }
+         #endif
 
          #ifndef exprtk_disable_string_capabilities
          inline expression_node_ptr synthesize_string_expression(const details::operator_type& opr, expression_node_ptr (&branch)[2])

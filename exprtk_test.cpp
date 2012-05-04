@@ -814,8 +814,8 @@ inline bool run_test01()
                               test_xy<T>("2x + 3y    ==   2*x + 3*y" ,T(2.0),T(3.0),T(1.0)),
                               test_xy<T>("2(x +  y)  ==   2*x + 2*y" ,T(2.0),T(3.0),T(1.0)),
                               test_xy<T>(" (x +  y)3 ==   3*x + 3*y" ,T(2.0),T(3.0),T(1.0)),
-                              test_xy<T>("(x+y^3/7) == (x+(y*y*y)/7)",T(2.0),T(3.0),T(1.0)),
-                              test_xy<T>("(1-x^3+y^2*7) == (1-(x*x*x)+(y*y)*7)",T(2.0),T(3.0),T(1.0)),
+                              test_xy<T>("equal(x+y^3/7,x+(y*y*y)/7)",T(2.0),T(3.0),T(1.0)),
+                              test_xy<T>("equal(1-x^3+y^2*7,1-(x*x*x)+(y*y)*7)",T(2.0),T(3.0),T(1.0)),
                               test_xy<T>("equal( x^0,1)",T(12.34),T(0.0),T(1.0)),
                               test_xy<T>("equal( x^1,x)",T(12.34),T(0.0),T(1.0)),
                               test_xy<T>("equal( x^2,x*x)",T(12.34),T(0.0),T(1.0)),
@@ -1615,6 +1615,9 @@ inline bool run_test10()
       }
    };
 
+   static const std::size_t rounds = 1000;
+
+   for (std::size_t r = 0; r < rounds; ++r)
    {
       symbol_table.add_variable("x",  x);
       symbol_table.add_variable("y",  y);
@@ -1684,6 +1687,7 @@ inline bool run_test10()
       }
    }
 
+   for (std::size_t r = 0; r < rounds; ++r)
    {
       myfunc<T> mf;
 
@@ -1713,6 +1717,7 @@ inline bool run_test10()
       }
    }
 
+   for (std::size_t r = 0; r < rounds; ++r)
    {
       symbol_table.add_stringvar("i",i);
       symbol_table.add_stringvar("j",j);
@@ -1782,6 +1787,7 @@ inline bool run_test10()
       }
    }
 
+   for (std::size_t r = 0; r < rounds; ++r)
    {
       symbol_table.add_variable("x",  x);
       symbol_table.add_variable("y",  y);
@@ -1826,6 +1832,7 @@ inline bool run_test10()
       }
    }
 
+   for (std::size_t r = 0; r < rounds; ++r)
    {
       symbol_table.add_variable("x",  x);
       symbol_table.add_variable("y",  y);
@@ -1870,6 +1877,7 @@ inline bool run_test10()
       }
    }
 
+   for (std::size_t r = 0; r < rounds; ++r)
    {
       symbol_table.add_stringvar( "i", i);
       symbol_table.add_stringvar( "j", j);
@@ -1914,6 +1922,7 @@ inline bool run_test10()
       }
    }
 
+   for (std::size_t r = 0; r < rounds; ++r)
    {
       symbol_table.add_stringvar("i",  i);
       symbol_table.add_stringvar("j",  j);
