@@ -8,6 +8,56 @@ kinds of  functional, logic  processing semantics  and is  very easily
 extendible.
 
 
+[CAPABILITIES]
+The ExprTk evaluator  supports the following  fundamental mathematical
+operations, function and processes:
+
+(1) Basic operators: +, -, *, /, %, ^
+
+(2) Functions:       min, max, avg, sum, abs, ceil, floor, round,
+                     roundn, exp, log, log10, logn, root, sqrt,
+                     clamp, inrange, sgn
+
+(3) Trigonometry:    sin, cos, tan, acos, asin, atan, atan2, cosh, cot
+                     csc, sec, sinh, tanh, d2r, r2d, d2g, g2d, hyp
+
+(4) Equalities &
+    Inequalities:    =, ==, <>, !=, <, <=, >, >=,
+
+(5) Boolean logic:   and, or, xor, not, nand, nor
+
+(6) Conditional &
+    Loop statement:  if-then-else, while
+
+(7) Assigment:       :=, <-
+
+
+[EXAMPLE EXPRESSIONS]
+The  following  is  a  short  sample  of  the  types  of  mathematical
+expressions that can be parsed and evaluated using the ExprTk library.
+
+(01) sqrt(1 - (x^2))
+(02) clamp(-1,sin(2 * pi * x) + cos(y / 2 * pi),+1)
+(03) sin(2 * x)
+(04) if(((x + 2) == 3) and ((y + 5) <= 9),1 + w, 2 / z)
+(05) inrange(-2,m,+2) == if(({-2 <= m} and [m <= +2]),1,0)
+(06) ({1/1}*[1/2]+(1/3))-{1/4}^[1/5]+(1/6)-({1/7}+[1/8]*(1/9))
+(07) a * exp(2 * t) + c
+(08) z := x + sin(2 * pi / y)
+(09) u <- 2 * (pi * z) / (w := x + cos(y / pi))
+(10) 2x + 3y + 4z + 5w == 2 * x + 3 * y + 4 * z + 5 * w
+(11) 3(x + y) / 2 + 1 == 3 * (x + y) / 2 + 1
+(12) (x + y)3 + 1 / 4 == (x + y) * 3 + 1 / 4
+(13) (x + y)z + 1 / 2 == (x + y) * z + 1 / 2
+(14) (sin(x/pi)cos(2y) + 1)==(sin(x / pi) * cos(2 * y) + 1)
+(15) 25x^5 - 35x^4 - 15x^3 + 40x^2 - 15x + 1
+(16) if(avg(x,y) <= x + y, x - y, x * y) + 2 * pi / x
+(17) fib_i := fib_i + (x := y + 0 * (fib_i := x + (y := fib_i)))
+(18) while(x <= 100) { x := x + 1 }
+(19) x <= 'abc123' and (y in 'AString') or ('1x2y3z' != z)
+(20) (x like '*123*') or ('a123b' ilike y)
+
+
 [COPYRIGHT NOTICE]
 Free use of the  Mathematical Expression Toolkit Library  is permitted
 under the guidelines and in  accordance with the most current  version
@@ -21,6 +71,7 @@ All  updates  and  the most  recent version  of the  C++ Mathematical
 Expression Library can be found at:
 (1) http://www.partow.net/programming/exprtk/index.html
 (2) svn checkout http://exprtk.googlecode.com/svn/ exprtk
+
 
 [INSTALLATION]
 (1) exprtk.hpp should be  placed in  a project or system include path
