@@ -20,7 +20,7 @@
  * (05) if(((x+2)==3)and((y+5)<=9),1+w,2/z)                     *
  * (06) if(avg(x,y)<=x+y,x-y,x*y)+2*pi/x                        *
  * (07) z:=x+sin(2*pi/y)                                        *
- * (08) u<-2*(pi*z)/(w:=x+cos(y/pi))                            *
+ * (08) u:=2*(pi*z)/(w:=x+cos(y/pi))                            *
  * (09) clamp(-1,sin(2*pi*x)+cos(y/2*pi),+1)                    *
  * (10) inrange(-2,m,+2)==if(({-2<=m}and[m<=+2]),1,0)           *
  * (11) (12.34sin(x)cos(2y)7+1)==(12.34*sin(x)*cos(2*y)*7+1)    *
@@ -160,8 +160,8 @@ namespace exprtk
       static const std::string reserved_symbols[] =
                                   {
                                      "abs", "acos", "and", "asin", "atan", "atan2", "avg", "ceil", "clamp",
-                                     "cos", "cosh", "cot", "csc", "deg2grad", "deg2rad", "equal", "exp",
-                                     "floor", "for", "grad2deg", "hyp", "if", "ilike", "in", "inrange",
+                                     "cos", "cosh", "cot", "csc", "deg2grad", "deg2rad", "equal", "erf", "erfc",
+                                     "exp", "floor", "for", "grad2deg", "hyp", "if", "ilike", "in", "inrange",
                                      "like", "log", "log10", "logn", "max", "min", "mod", "mul", "nand",
                                      "nor", "not", "not_equal", "or", "rad2deg", "root", "round", "roundn",
                                      "sec", "sgn", "shl", "shr", "sin", "sinh", "sqrt", "sum", "tan", "tanh",
@@ -412,7 +412,7 @@ namespace exprtk
             template <typename T>
             inline T roundn_impl(const T& v0, const T& v1, real_type_tag)
             {
-               return std::floor((v0 * pow10[(int)std::floor(v1)]) + T(0.5)) / T(pow10[(int)std::floor(v1)]);
+               return T(std::floor((v0 * pow10[(int)std::floor(v1)]) + T(0.5)) / T(pow10[(int)std::floor(v1)]));
             }
 
             template <typename T>
@@ -448,7 +448,7 @@ namespace exprtk
             template <typename T>
             inline T shr_impl(const T& v0, const T& v1, real_type_tag)
             {
-               return v0 * (T(1) / std::pow(T(2),static_cast<double>(static_cast<int>(v1))));
+               return v0 * (T(1) / std::pow(T(2),static_cast<T>(static_cast<int>(v1))));
             }
 
             template <typename T>
@@ -460,7 +460,7 @@ namespace exprtk
             template <typename T>
             inline T shl_impl(const T& v0, const T& v1, real_type_tag)
             {
-               return v0 * std::pow(T(2),static_cast<double>(static_cast<int>(v1)));
+               return v0 * std::pow(T(2),static_cast<T>(static_cast<int>(v1)));
             }
 
             template <typename T>
@@ -495,6 +495,53 @@ namespace exprtk
             inline T xor_impl(const T& v0, const T& v1, int_type_tag)
             {
                return v0 ^ v1;
+            }
+
+            template <typename T>
+            inline T erf_impl(T v, real_type_tag)
+            {
+               #if defined(_WIN32) || defined(__WIN32__) || defined(WIN32)
+               //Note: This should not be required for mscv 11.+
+               T a1 =  T(+0.254829592);
+               T a2 =  T(-0.284496736);
+               T a3 =  T(+1.421413741);
+               T a4 =  T(-1.453152027);
+               T a5 =  T(+1.061405429);
+               T p  =  T( 0.327591100);
+               T sign = T(1.0);
+               if (v < 0)
+               {
+                  sign = -1;
+                  v = abs(v);
+               }
+               T t = T(1.0) / (T(1.0) + p * v);
+               T y = T(1.0) - (((((a5 * t + a4) * t) + a3) * t + a2) * t + a1) * t * std::exp(-v * v);
+               return sign * y;
+               #else
+               return ::erf(v);
+               #endif
+            }
+
+            template <typename T>
+            inline T erf_impl(T v, int_type_tag)
+            {
+               return erf_impl(static_cast<double>(v),real_type_tag());
+            }
+
+            template <typename T>
+            inline T erfc_impl(T v, real_type_tag)
+            {
+               #if defined(_WIN32) || defined(__WIN32__) || defined(WIN32)
+               return T(1.0) - erf_impl(v,real_type_tag());
+               #else
+               return ::erfc(v);
+               #endif
+            }
+
+            template <typename T>
+            inline T erfc_impl(T v, int_type_tag)
+            {
+               return erfc_impl(static_cast<double>(v),real_type_tag());
             }
 
             template <typename T>
@@ -608,6 +655,20 @@ namespace exprtk
          {
             typename details::number_type<T>::type num_type;
             return details::xor_impl(v0,v1,num_type);
+         }
+
+         template <typename T>
+         inline T erf(const T& v)
+         {
+            typename details::number_type<T>::type num_type;
+            return details::erf_impl(v,num_type);
+         }
+
+         template <typename T>
+         inline T erfc(const T& v)
+         {
+            typename details::number_type<T>::type num_type;
+            return details::erfc_impl(v,num_type);
          }
 
          template <typename T>
@@ -834,7 +895,6 @@ namespace exprtk
                else if ((c0 == '!') && (c1 == '=')) ttype = token_t::ne;
                else if ((c0 == '=') && (c1 == '=')) ttype = token_t::eq;
                else if ((c0 == ':') && (c1 == '=')) ttype = token_t::assign;
-               else if ((c0 == '<') && (c1 == '-')) ttype = token_t::assign;
                else if ((c0 == '<') && (c1 == '<')) ttype = token_t::shl;
                else if ((c0 == '>') && (c1 == '>')) ttype = token_t::shr;
                if (token_t::none != ttype)
@@ -1452,6 +1512,8 @@ namespace exprtk
          e_g2d    ,
          e_hyp    ,
          e_not    ,
+         e_erf    ,
+         e_erfc   ,
          e_assign ,
          e_in     ,
          e_like   ,
@@ -1540,6 +1602,8 @@ namespace exprtk
                   case e_g2d   : return (arg * T(9/20));
                   case e_not   : return (arg != T(0) ? T(0) : T(1));
                   case e_sgn   : return numeric::sgn(arg);
+                  case e_erf   : return numeric::erf(arg);
+                  case e_erfc  : return numeric::erfc(arg);
                   default      : return std::numeric_limits<T>::quiet_NaN();
                }
             }
@@ -3643,6 +3707,8 @@ namespace exprtk
                                     operation_t( "grad2deg" , e_g2d    , 1),
                                     operation_t(      "sgn" , e_sgn    , 1),
                                     operation_t(      "not" , e_not    , 1),
+                                    operation_t(      "erf" , e_erf    , 1),
+                                    operation_t(     "erfc" , e_erfc   , 1),
                                     operation_t(    "atan2", e_atan2   , 2),
                                     operation_t(      "min", e_min     , 2),
                                     operation_t(      "max", e_max     , 2),

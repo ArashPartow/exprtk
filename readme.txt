@@ -10,21 +10,22 @@ extendible.
 
 [CAPABILITIES]
 The ExprTk evaluator  supports the following  fundamental mathematical
-operations, function and processes:
+operations, functions and processes:
 
 (1) Basic operators: +, -, *, /, %, ^
 
 (2) Functions:       min, max, avg, sum, abs, ceil, floor, round,
                      roundn, exp, log, log10, logn, root, sqrt,
-                     clamp, inrange, sgn
+                     clamp, inrange, sgn, erf, erfc
 
-(3) Trigonometry:    sin, cos, tan, acos, asin, atan, atan2, cosh, cot
-                     csc, sec, sinh, tanh, d2r, r2d, d2g, g2d, hyp
+(3) Trigonometry:    sin, cos, tan, acos, asin, atan, atan2, cosh,
+                     cot, csc, sec, sinh, tanh, d2r, r2d, d2g, g2d,
+                     hyp
 
 (4) Equalities &
     Inequalities:    =, ==, <>, !=, <, <=, >, >=,
 
-(5) Boolean logic:   and, or, xor, not, nand, nor
+(5) Boolean logic:   and, or, xor, not, nand, nor, shr, shl
 
 (6) Conditional &
     Loop statement:  if-then-else, while
