@@ -30,7 +30,7 @@ operations, functions and processes:
 (6) Conditional &
     Loop statement:  if-then-else, while
 
-(7) Assigment:       :=, <-
+(7) Assigment:       :=
 
 
 [EXAMPLE EXPRESSIONS]
@@ -91,6 +91,56 @@ Expression Library can be found at:
 (*) Clang/LLVM (1.1+)
 (*) Microsoft Visual Studio C++ Compiler (8.1+)
 (*) Comeau C++ Compiler (4.3+)
+
+
+[SPECIAL FUNCTIONS]
+The purpose  of special  functions in  ExprTk is  to provide  compiler
+generated equivalents of common mathematical expressions which can  be
+invoked by  using the  'special function'  syntax (eg:  $f12(x,y,z) or
+$f24(x,y,z,w)).
+
+Special functions dramatically decrease  the total evaluation time  of
+expressions which would otherwise  have been written using  the common
+form by reducing the total number  of nodes in the evaluation tree  of
+an  expression  and  by  also  leveraging  the  compiler's  ability to
+correctly optimize such expressions for a given architecture.
+
+         3-Parameter                     4-Parameter
+ | Prototype  |  Operation  |  | Prototype    |     Operation    |
+ +------------+-------------+  +--------------+------------------+
+  sf00(x,y,z) | (x + y) / z     sf26(x,y,z,w) | w + ((x + y) / z)
+  sf01(x,y,z) | (x + y) * z     sf27(x,y,z,w) | w + ((x + y) * z)
+  sf02(x,y,z) | (x - y) / z     sf28(x,y,z,w) | w + ((x - y) / z)
+  sf03(x,y,z) | (x - y) * z     sf29(x,y,z,w) | w + ((x - y) * z)
+  sf04(x,y,z) | (x * y) + z     sf30(x,y,z,w) | w + ((x * y) / z)
+  sf05(x,y,z) | (x * y) - z     sf31(x,y,z,w) | w + ((x * y) * z)
+  sf06(x,y,z) | (x * y) / z     sf32(x,y,z,w) | w + ((x / y) + z)
+  sf07(x,y,z) | (x * y) * z     sf33(x,y,z,w) | w + ((x / y) / z)
+  sf08(x,y,z) | (x / y) + z     sf34(x,y,z,w) | w + ((x / y) * z)
+  sf09(x,y,z) | (x / y) - z     sf35(x,y,z,w) | w - ((x + y) / z)
+  sf10(x,y,z) | (x / y) / z     sf36(x,y,z,w) | w - ((x + y) * z)
+  sf11(x,y,z) | (x / y) * z     sf37(x,y,z,w) | w - ((x - y) / z)
+  sf12(x,y,z) | z / (x + y)     sf38(x,y,z,w) | w - ((x - y) * z)
+  sf13(x,y,z) | z / (x - y)     sf39(x,y,z,w) | w - ((x * y) / z)
+  sf14(x,y,z) | z / (x * y)     sf40(x,y,z,w) | w - ((x * y) * z)
+  sf15(x,y,z) | z / (x / y)     sf41(x,y,z,w) | w - ((x / y) / z)
+  sf16(x,y,z) | z - (x / y)     sf42(x,y,z,w) | w - ((x / y) * z)
+  sf17(x,y,z) | z - (x / y)     sf43(x,y,z,w) | ((x + y) * z) - w
+  sf18(x,y,z) | x * y^2 + z     sf44(x,y,z,w) | ((x - y) * z) - w
+  sf19(x,y,z) | x * y^3 + z     sf45(x,y,z,w) | ((x * y) * z) - w
+  sf20(x,y,z) | x * y^4 + z     sf46(x,y,z,w) | ((x / y) * z) - w
+  sf21(x,y,z) | x * y^5 + z     sf47(x,y,z,w) | ((x + y) / z) - w
+  sf22(x,y,z) | x * y^6 + z     sf48(x,y,z,w) | ((x - y) / z) - w
+  sf23(x,y,z) | x * y^7 + z     sf49(x,y,z,w) | ((x * y) / z) - w
+  sf24(x,y,z) | x * y^8 + z     sf50(x,y,z,w) | ((x / y) / z) - w
+  sf25(x,y,z) | x * y^9 + z     sf51(x,y,z,w) | x * y^2 + z * w^2
+                                sf52(x,y,z,w) | x * y^3 + z * w^3
+                                sf53(x,y,z,w) | x * y^4 + z * w^4
+                                sf54(x,y,z,w) | x * y^5 + z * w^5
+                                sf55(x,y,z,w) | x * y^6 + z * w^6
+                                sf56(x,y,z,w) | x * y^7 + z * w^7
+                                sf57(x,y,z,w) | x * y^8 + z * w^8
+                                sf58(x,y,z,w) | x * y^9 + z * w^9
 
 
 [MACROS]
