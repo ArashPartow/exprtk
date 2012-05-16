@@ -35,12 +35,12 @@ const std::string expression_list[] = {
                                          "1 - sin(2 * x) + cos(pi / y)",
                                          "sqrt(1 - sin(2 * x) + cos(pi / y) / 3)",
                                          "(x^2 / sin(2 * pi / y)) -x / 2",
+                                         "x + (cos(y - sin(2 / x * pi)) - sin(x - cos(2 * y / pi))) - y",
                                          "clamp(-1.0, sin(2 * pi * x) + cos(y / 2 * pi), +1.0)",
                                          "max(3.33, min(sqrt(1 - sin(2 * x) + cos(pi / y) / 3), 1.11))",
                                          "if(avg(x,y) <= x + y, x - y, x * y) + 2 * pi / x"
                                       };
 const std::size_t expression_list_size = sizeof(expression_list) / sizeof(std::string);
-
 
 template <typename T,
           typename Allocator,
@@ -85,10 +85,13 @@ void run_benchmark(T& x, T& y,
       }
    }
    timer.stop();
-   printf("[exprtk] Total Time:%12.8f  Rate:%14.3fevals/sec Expression: %s\n",
-          timer.time(),
-          count / timer.time(),
-          expr_string.c_str());
+   if (T(0.0) != total)
+      printf("[exprtk] Total Time:%12.8f  Rate:%14.3fevals/sec Expression: %s\n",
+             timer.time(),
+             count / timer.time(),
+             expr_string.c_str());
+   else
+      std::cerr << "Error - expression: " << expr_string << "\n";
 }
 
 const double pi = 3.14159265358979323846;
@@ -108,20 +111,21 @@ inline T clamp(const T& l, const T& v, const T& u)
       return (v > u) ? u : v;
 }
 
-template <typename T> inline T func00(const T& x, const T& y) { return (y + x); }
-template <typename T> inline T func01(const T& x, const T& y) { return T(2.0) * (y + x); }
-template <typename T> inline T func02(const T& x, const T& y) { return (T(2.0) * y + T(2.0) * x); }
-template <typename T> inline T func03(const T& x, const T& y) { return (y + x / y) * (x - y / x); }
-template <typename T> inline T func04(const T& x, const T& y) { return x / ((x + y) * (x - y)) / y; }
-template <typename T> inline T func05(const T& x, const T& y) { return T(1.0) - ((x * y) + (y / x)) - T(3.0); }
-template <typename T> inline T func06(const T& x, const T& y) { return (1.1*pow(x,T(1.0))+2.2*pow(y,T(2.0))-3.3*pow(x,T(3.0))+4.4*pow(y,T(15.0))-5.5*pow(x,T(23.0))+6.6*pow(y,T(55.0))); }
-template <typename T> inline T func07(const T& x, const T& y) { return std::sin(T(2.0) * x) + std::cos(pi / y); }
-template <typename T> inline T func08(const T& x, const T& y) { return T(1.0) - std::sin(2.0 * x) + std::cos(pi / y); }
-template <typename T> inline T func09(const T& x, const T& y) { return std::sqrt(T(1.0) - std::sin(T(2.0) * x) + std::cos(pi / y) / T(3.0)); }
-template <typename T> inline T func10(const T& x, const T& y) { return (std::pow(x,T(2.0)) / std::sin(T(2.0) * pi / y)) -x / T(2.0); }
-template <typename T> inline T func11(const T& x, const T& y) { return clamp(T(-1.0), std::sin(T(2.0) * pi * x) + std::cos(y / T(2.0) * pi), + T(1.0)); }
-template <typename T> inline T func12(const T& x, const T& y) { return std::max(T(3.33), std::min(sqrt(T(1.0) - std::sin(T(2.0) * x) + std::cos(pi / y) / T(3.0)), T(1.11))); }
-template <typename T> inline T func13(const T& x, const T& y) { return ((avg(x,y) <= x + y) ? x - y : x * y) + T(2.0) * pi / x; }
+template <typename T> inline T func00(const T x, const T y) { return (y + x); }
+template <typename T> inline T func01(const T x, const T y) { return T(2.0) * (y + x); }
+template <typename T> inline T func02(const T x, const T y) { return (T(2.0) * y + T(2.0) * x); }
+template <typename T> inline T func03(const T x, const T y) { return (y + x / y) * (x - y / x); }
+template <typename T> inline T func04(const T x, const T y) { return x / ((x + y) * (x - y)) / y; }
+template <typename T> inline T func05(const T x, const T y) { return T(1.0) - ((x * y) + (y / x)) - T(3.0); }
+template <typename T> inline T func06(const T x, const T y) { return (1.1*pow(x,T(1.0))+2.2*pow(y,T(2.0))-3.3*pow(x,T(3.0))+4.4*pow(y,T(15.0))-5.5*pow(x,T(23.0))+6.6*pow(y,T(55.0))); }
+template <typename T> inline T func07(const T x, const T y) { return std::sin(T(2.0) * x) + std::cos(pi / y); }
+template <typename T> inline T func08(const T x, const T y) { return T(1.0) - std::sin(2.0 * x) + std::cos(pi / y); }
+template <typename T> inline T func09(const T x, const T y) { return std::sqrt(T(1.0) - std::sin(T(2.0) * x) + std::cos(pi / y) / T(3.0)); }
+template <typename T> inline T func10(const T x, const T y) { return (std::pow(x,T(2.0)) / std::sin(T(2.0) * pi / y)) -x / T(2.0); }
+template <typename T> inline T func11(const T x, const T y) { return (x + (std::cos(y - std::sin(2 / x * pi)) - std::sin(x - std::cos(2 * y / pi))) - y); }
+template <typename T> inline T func12(const T x, const T y) { return clamp(T(-1.0), std::sin(T(2.0) * pi * x) + std::cos(y / T(2.0) * pi), + T(1.0)); }
+template <typename T> inline T func13(const T x, const T y) { return std::max(T(3.33), std::min(sqrt(T(1.0) - std::sin(T(2.0) * x) + std::cos(pi / y) / T(3.0)), T(1.11))); }
+template <typename T> inline T func14(const T x, const T y) { return ((avg(x,y) <= x + y) ? x - y : x * y) + T(2.0) * pi / x; }
 
 template <typename T, typename NativeFunction>
 void run_native_benchmark(T& x, T& y, NativeFunction f, const std::string& expr_string)
@@ -142,13 +146,16 @@ void run_native_benchmark(T& x, T& y, NativeFunction f, const std::string& expr_
       }
    }
    timer.stop();
-   printf("[native] Total Time:%12.8f  Rate:%14.3fevals/sec Expression: %s\n",
-          timer.time(),
-          count / timer.time(),
-          expr_string.c_str());
+   if (T(0.0) != total)
+      printf("[native] Total Time:%12.8f  Rate:%14.3fevals/sec Expression: %s\n",
+             timer.time(),
+             count / timer.time(),
+             expr_string.c_str());
+   else
+      std::cerr << "Error - expression: " << expr_string << "\n";
 }
 
-template<typename T>
+template <typename T>
 bool run_parse_benchmark(exprtk::symbol_table<T>& symbol_table)
 {
    static const std::size_t rounds = 1000000;
@@ -229,6 +236,7 @@ int main()
       run_native_benchmark(x,y,func11<double>,expression_list[11]);
       run_native_benchmark(x,y,func12<double>,expression_list[12]);
       run_native_benchmark(x,y,func13<double>,expression_list[13]);
+      run_native_benchmark(x,y,func14<double>,expression_list[14]);
    }
 
    {

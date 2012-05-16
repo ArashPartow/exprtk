@@ -608,6 +608,26 @@ static const test_t test_list[] =
                            test_t("if((1.0+1.1) >= (2.0+1.2), 3.3, 4.4)",4.4),
                            test_t("if(((1.0 + 2.0) == 3.0) and ((4.0 + 5.0) < 9.0),1,2)",2.0),
                            test_t("(3.0 - 1.0 - 2.0) == ((3.0 - 1.0) - 2.0)",1.0),
+                           test_t("true == true",1.0),
+                           test_t("false == false",1.0),
+                           test_t("true != false",1.0),
+                           test_t("false != true",1.0),
+                           test_t("(1 < 2) == true",1.0),
+                           test_t("(1 > 2) == false",1.0),
+                           test_t("true == (1 < 2)",1.0),
+                           test_t("false == (1 > 2)",1.0),
+                           test_t("(1 > 2) != true",1.0),
+                           test_t("(1 < 2) != false",1.0),
+                           test_t("true != (1 > 2)",1.0),
+                           test_t("false != (1 < 2)",1.0),
+                           test_t("(true and true) == true",1.0),
+                           test_t("(false and false) == false",1.0),
+                           test_t("(true or true) == true",1.0),
+                           test_t("(false or false) == false",1.0),
+                           test_t("(true and false) == false",1.0),
+                           test_t("(false and true) == false",1.0),
+                           test_t("(true or false) == true",1.0),
+                           test_t("(false or true) == true",1.0),
                            test_t("clamp(-1,1,+1)",1.0),
                            test_t("clamp(-1,-1.5,+1.0)",-1.0),
                            test_t("clamp(-1,+1.5,+1.0)",+1.0),
@@ -735,6 +755,12 @@ inline bool test_expression(const std::string& expression_string, const T& expec
          std::cout << "test_expression() - Error: " << parser.error() << "\tExpression: " << expression_string << std::endl;
          return false;
       }
+   }
+
+   if (!exprtk::expression_helper<T>::is_head_constant(expression))
+   {
+      std::cout << "test_expression() - Error: Expression did not compile to a constant!\tExpression: " << expression_string << std::endl;
+      return false;
    }
 
    T result = expression.value();

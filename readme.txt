@@ -25,7 +25,8 @@ operations, functions and processes:
 (4) Equalities &
     Inequalities:    =, ==, <>, !=, <, <=, >, >=,
 
-(5) Boolean logic:   and, or, xor, not, nand, nor, shr, shl
+(5) Boolean logic:   and, or, xor, not, nand, nor, shr, shl, true,
+                     false
 
 (6) Conditional &
     Loop statement:  if-then-else, while
