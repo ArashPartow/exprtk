@@ -1861,7 +1861,37 @@ namespace exprtk
             e_ilike       ,
             e_inranges    ,
             e_ipow        ,
-            e_vov
+            e_vov         ,
+            e_abs         ,
+            e_acos        ,
+            e_asin        ,
+            e_atan        ,
+            e_ceil        ,
+            e_cos         ,
+            e_cosh        ,
+            e_exp         ,
+            e_floor       ,
+            e_log         ,
+            e_log10       ,
+            e_neg         ,
+            e_pos         ,
+            e_round       ,
+            e_sin         ,
+            e_sinh        ,
+            e_sqrt        ,
+            e_tan         ,
+            e_tanh        ,
+            e_cot         ,
+            e_sec         ,
+            e_csc         ,
+            e_r2d         ,
+            e_d2r         ,
+            e_d2g         ,
+            e_g2d         ,
+            e_notl        ,
+            e_sgn         ,
+            e_erf         ,
+            e_erfc
          };
 
          typedef T value_type;
@@ -3116,6 +3146,94 @@ namespace exprtk
          }
          static inline typename expression_node<T>::node_type type() { return expression_node<T>::e_inranges; }
          static inline details::operator_type operation() { return details::e_ilike; }
+      };
+
+      template <typename T, typename Operation>
+      class unary_variable_node : public expression_node<T>
+      {
+      public:
+
+         typedef expression_node<T>* expression_ptr;
+         typedef Operation operation_t;
+
+         explicit unary_variable_node(T& v)
+         : v_(v)
+         {}
+
+         inline T value() const
+         {
+            return Operation::process(v_);
+         }
+
+         inline typename expression_node<T>::node_type type() const
+         {
+            return Operation::type();
+         }
+
+         inline operator_type operation() const
+         {
+            return Operation::operation();
+         }
+
+         inline T& v()
+         {
+            return v_;
+         }
+
+      private:
+
+         unary_variable_node(unary_variable_node<T,Operation>&);
+         unary_variable_node<T,Operation>& operator=(unary_variable_node<T,Operation>&);
+
+         T& v_;
+      };
+
+      template <typename T, typename Operation>
+      class unary_branch_node : public expression_node<T>
+      {
+      public:
+
+         typedef expression_node<T>* expression_ptr;
+         typedef Operation operation_t;
+
+         explicit unary_branch_node(expression_ptr branch)
+         : branch_(branch),
+           branch_deletable_(branch_deletable(branch_))
+
+         {}
+
+        ~unary_branch_node()
+         {
+            if (branch_ && branch_deletable_)
+            {
+               delete branch_;
+               branch_ = 0;
+            }
+         }
+
+         inline T value() const
+         {
+            T v = branch_->value();
+            return Operation::process(v);
+         }
+
+         inline typename expression_node<T>::node_type type() const
+         {
+            return Operation::type();
+         }
+
+         inline operator_type operation() const
+         {
+            return Operation::operation();
+         }
+
+      private:
+
+         unary_branch_node(unary_branch_node<T,Operation>&);
+         unary_branch_node<T,Operation>& operator=(unary_branch_node<T,Operation>&);
+
+         expression_ptr branch_;
+         bool           branch_deletable_;
       };
 
       template <typename T>
@@ -5782,12 +5900,35 @@ namespace exprtk
             return node_allocator_->allocate<string_literal_node_t>(s);
          }
 
+         inline bool unary_optimizable(const details::operator_type& operation) const
+         {
+            return (details::e_abs   == operation) || (details::e_acos  == operation) ||
+                   (details::e_asin  == operation) || (details::e_atan  == operation) ||
+                   (details::e_ceil  == operation) || (details::e_cos   == operation) ||
+                   (details::e_cosh  == operation) || (details::e_exp   == operation) ||
+                   (details::e_floor == operation) || (details::e_log   == operation) ||
+                   (details::e_log10 == operation) || (details::e_neg   == operation) ||
+                   (details::e_pos   == operation) || (details::e_round == operation) ||
+                   (details::e_sin   == operation) || (details::e_sinh  == operation) ||
+                   (details::e_sqrt  == operation) || (details::e_tan   == operation) ||
+                   (details::e_tanh  == operation) || (details::e_cot   == operation) ||
+                   (details::e_sec   == operation) || (details::e_csc   == operation) ||
+                   (details::e_r2d   == operation) || (details::e_d2r   == operation) ||
+                   (details::e_d2g   == operation) || (details::e_g2d   == operation) ||
+                   (details::e_notl  == operation) || (details::e_sgn   == operation) ||
+                   (details::e_erf   == operation) || (details::e_erfc  == operation);
+         }
+
          inline expression_node_ptr operator()(const details::operator_type& operation, expression_node_ptr (&branch)[1])
          {
-            if (0 != branch[0])
-               return synthesize_expression<unary_node_t,1>(operation,branch);
-            else
+            if (0 == branch[0])
                return error_node();
+            else if (details::is_constant_node(branch[0]))
+               return synthesize_expression<unary_node_t,1>(operation,branch);
+            else if (unary_optimizable(operation) && details::is_variable_node(branch[0]))
+               return synthesize_uv_expression(operation,branch);
+            else
+               return synthesize_unary_expression(operation,branch);
          }
 
          #ifndef exprtk_disable_string_capabilities
@@ -6092,6 +6233,87 @@ namespace exprtk
             return node_allocator_->allocate<while_loop_node_t>(condition,branch);
          }
 
+         inline expression_node_ptr synthesize_uv_expression(const details::operator_type& operation, expression_node_ptr (&branch)[1])
+         {
+            T& v = dynamic_cast<details::variable_node<T>*>(branch[0])->ref();
+            switch (operation)
+            {
+               #define case_stmt(op0,op1) case op0 : return node_allocator_->allocate<typename details::unary_variable_node<Type,op1<Type> > >(v);
+               case_stmt(details::  e_abs,details::  abs_op)
+               case_stmt(details:: e_acos,details:: acos_op)
+               case_stmt(details:: e_asin,details:: asin_op)
+               case_stmt(details:: e_atan,details:: atan_op)
+               case_stmt(details:: e_ceil,details:: ceil_op)
+               case_stmt(details::  e_cos,details::  cos_op)
+               case_stmt(details:: e_cosh,details:: cosh_op)
+               case_stmt(details::  e_exp,details::  exp_op)
+               case_stmt(details::e_floor,details::floor_op)
+               case_stmt(details::  e_log,details::  log_op)
+               case_stmt(details::e_log10,details::log10_op)
+               case_stmt(details::  e_neg,details::  neg_op)
+               case_stmt(details::  e_pos,details::  pos_op)
+               case_stmt(details::e_round,details::round_op)
+               case_stmt(details::  e_sin,details::  sin_op)
+               case_stmt(details:: e_sinh,details:: sinh_op)
+               case_stmt(details:: e_sqrt,details:: sqrt_op)
+               case_stmt(details::  e_tan,details::  tan_op)
+               case_stmt(details:: e_tanh,details:: tanh_op)
+               case_stmt(details::  e_cot,details::  cot_op)
+               case_stmt(details::  e_sec,details::  sec_op)
+               case_stmt(details::  e_csc,details::  csc_op)
+               case_stmt(details::  e_r2d,details::  r2d_op)
+               case_stmt(details::  e_d2r,details::  d2r_op)
+               case_stmt(details::  e_d2g,details::  d2g_op)
+               case_stmt(details::  e_g2d,details::  g2d_op)
+               case_stmt(details:: e_notl,details:: notl_op)
+               case_stmt(details::  e_sgn,details::  sgn_op)
+               case_stmt(details::  e_erf,details::  erf_op)
+               case_stmt(details:: e_erfc,details:: erfc_op)
+               #undef case_stmt
+               default : return error_node();
+            }
+         }
+
+         inline expression_node_ptr synthesize_unary_expression(const details::operator_type& operation, expression_node_ptr (&branch)[1])
+         {
+            switch (operation)
+            {
+               #define case_stmt(op0,op1) case op0 : return node_allocator_->allocate<typename details::unary_branch_node<Type,op1<Type> > >(branch[0]);
+               case_stmt(details::  e_abs,details::  abs_op)
+               case_stmt(details:: e_acos,details:: acos_op)
+               case_stmt(details:: e_asin,details:: asin_op)
+               case_stmt(details:: e_atan,details:: atan_op)
+               case_stmt(details:: e_ceil,details:: ceil_op)
+               case_stmt(details::  e_cos,details::  cos_op)
+               case_stmt(details:: e_cosh,details:: cosh_op)
+               case_stmt(details::  e_exp,details::  exp_op)
+               case_stmt(details::e_floor,details::floor_op)
+               case_stmt(details::  e_log,details::  log_op)
+               case_stmt(details::e_log10,details::log10_op)
+               case_stmt(details::  e_neg,details::  neg_op)
+               case_stmt(details::  e_pos,details::  pos_op)
+               case_stmt(details::e_round,details::round_op)
+               case_stmt(details::  e_sin,details::  sin_op)
+               case_stmt(details:: e_sinh,details:: sinh_op)
+               case_stmt(details:: e_sqrt,details:: sqrt_op)
+               case_stmt(details::  e_tan,details::  tan_op)
+               case_stmt(details:: e_tanh,details:: tanh_op)
+               case_stmt(details::  e_cot,details::  cot_op)
+               case_stmt(details::  e_sec,details::  sec_op)
+               case_stmt(details::  e_csc,details::  csc_op)
+               case_stmt(details::  e_r2d,details::  r2d_op)
+               case_stmt(details::  e_d2r,details::  d2r_op)
+               case_stmt(details::  e_d2g,details::  d2g_op)
+               case_stmt(details::  e_g2d,details::  g2d_op)
+               case_stmt(details:: e_notl,details:: notl_op)
+               case_stmt(details::  e_sgn,details::  sgn_op)
+               case_stmt(details::  e_erf,details::  erf_op)
+               case_stmt(details:: e_erfc,details:: erfc_op)
+               #undef case_stmt
+               default : return error_node();
+            }
+         }
+
          inline expression_node_ptr const_optimize_sf3(const details::operator_type& operation, expression_node_ptr (&branch)[3])
          {
             expression_node_ptr temp_node = error_node();
@@ -6124,8 +6346,8 @@ namespace exprtk
                case_stmt(details::e_sf23,details::sf23_op)
                case_stmt(details::e_sf24,details::sf24_op)
                case_stmt(details::e_sf25,details::sf25_op)
-               default : return error_node();
                #undef case_stmt
+               default : return error_node();
             }
             T v = temp_node->value();
             node_allocator_->free(temp_node);
@@ -6167,8 +6389,8 @@ namespace exprtk
                case_stmt(details::e_sf23,details::sf23_op)
                case_stmt(details::e_sf24,details::sf24_op)
                case_stmt(details::e_sf25,details::sf25_op)
-               default : return error_node();
                #undef case_stmt
+               default : return error_node();
             }
          }
 
@@ -6211,8 +6433,8 @@ namespace exprtk
                case_stmt(details::e_sf56,details::sf56_op)
                case_stmt(details::e_sf57,details::sf57_op)
                case_stmt(details::e_sf58,details::sf58_op)
-               default : return error_node();
                #undef case_stmt
+               default : return error_node();
             }
             T v = temp_node->value();
             node_allocator_->free(temp_node);
@@ -6261,8 +6483,8 @@ namespace exprtk
                case_stmt(details::e_sf56,details::sf56_op)
                case_stmt(details::e_sf57,details::sf57_op)
                case_stmt(details::e_sf58,details::sf58_op)
-               default : return error_node();
                #undef case_stmt
+               default : return error_node();
             }
          }
 
@@ -6362,8 +6584,8 @@ namespace exprtk
                case_stmt(details:: e_nor,details:: nor_op)
                case_stmt(details:: e_xor,details:: xor_op)
                #endif
-               default : return error_node();
                #undef case_stmt
+               default : return error_node();
             }
          }
 
@@ -6394,8 +6616,8 @@ namespace exprtk
                   case_stmt(49) case_stmt(50) case_stmt(51) case_stmt(52)
                   case_stmt(53) case_stmt(54) case_stmt(55) case_stmt(56)
                   case_stmt(57) case_stmt(58) case_stmt(59) case_stmt(60)
-                  default : return error_node();
                   #undef case_stmt
+                  default : return error_node();
                }
             }
          }
@@ -6448,8 +6670,8 @@ namespace exprtk
                case_stmt(details:: e_nor,details:: nor_op)
                case_stmt(details:: e_xor,details:: xor_op)
                #endif
-               default : return error_node();
                #undef case_stmt
+               default : return error_node();
             }
          }
 
@@ -6479,8 +6701,8 @@ namespace exprtk
                case_stmt(details:: e_nor,details:: nor_op)
                case_stmt(details:: e_xor,details:: xor_op)
                #endif
-               default : return error_node();
                #undef case_stmt
+               default : return error_node();
             }
          }
 
@@ -6510,8 +6732,8 @@ namespace exprtk
                case_stmt(details:: e_nor,details:: nor_op)
                case_stmt(details:: e_xor,details:: xor_op)
                #endif
-               default : return error_node();
                #undef case_stmt
+               default : return error_node();
             }
          }
 
@@ -6541,8 +6763,8 @@ namespace exprtk
                case_stmt(details:: e_nor,details:: nor_op)
                case_stmt(details:: e_xor,details:: xor_op)
                #endif
-               default : return error_node();
                #undef case_stmt
+               default : return error_node();
             }
             node_allocator_->free(branch[1]);
             return result;
@@ -6574,8 +6796,8 @@ namespace exprtk
                case_stmt(details:: e_nor,details:: nor_op)
                case_stmt(details:: e_xor,details:: xor_op)
                #endif
-               default : return error_node();
                #undef case_stmt
+               default : return error_node();
             }
          }
 
@@ -6605,8 +6827,8 @@ namespace exprtk
                case_stmt(details:: e_nor,details:: nor_op)
                case_stmt(details:: e_xor,details:: xor_op)
                #endif
-               default : return error_node();
                #undef case_stmt
+               default : return error_node();
             }
             node_allocator_->free(branch[0]);
             return result;
@@ -6638,8 +6860,8 @@ namespace exprtk
                case_stmt(details:: e_nor,details:: nor_op)
                case_stmt(details:: e_xor,details:: xor_op)
                #endif
-               default : return error_node();
                #undef case_stmt
+               default : return error_node();
             }
          }
 
@@ -6669,8 +6891,8 @@ namespace exprtk
                case_stmt(details:: e_nor,details:: nor_op)
                case_stmt(details:: e_xor,details:: xor_op)
                #endif
-               default : return error_node();
                #undef case_stmt
+               default : return error_node();
             }
             node_allocator_->free(branch[1]);
             return result;
@@ -6702,8 +6924,8 @@ namespace exprtk
                case_stmt(details:: e_nor,details:: nor_op)
                case_stmt(details:: e_xor,details:: xor_op)
                #endif
-               default : return error_node();
                #undef case_stmt
+               default : return error_node();
             }
          }
 
@@ -6733,8 +6955,8 @@ namespace exprtk
                case_stmt(details:: e_nor,details:: nor_op)
                case_stmt(details:: e_xor,details:: xor_op)
                #endif
-               default : return error_node();
                #undef case_stmt
+               default : return error_node();
             }
             node_allocator_->free(branch[0]);
             return result;
@@ -6767,8 +6989,8 @@ namespace exprtk
                case_stmt(details:: e_nor,details:: nor_op)
                case_stmt(details:: e_xor,details:: xor_op)
                #endif
-               default : return error_node();
                #undef case_stmt
+               default : return error_node();
             }
          #else
          template <typename Op1, typename Op2>
@@ -6805,8 +7027,8 @@ namespace exprtk
                case_stmt(details:: e_nor,details:: nor_op)
                case_stmt(details:: e_xor,details:: xor_op)
                #endif
-               default : return error_node();
                #undef case_stmt
+               default : return error_node();
             }
          }
          #else
@@ -6843,8 +7065,8 @@ namespace exprtk
                case_stmt(details:: e_nor,details:: nor_op)
                case_stmt(details:: e_xor,details:: xor_op)
                #endif
-               default : return error_node();
                #undef case_stmt
+               default : return error_node();
             }
             node_allocator_->free(branch[0]);
             node_allocator_->free(branch[1]);
@@ -6873,8 +7095,8 @@ namespace exprtk
                case_stmt(details::e_in   ,details::   in_op)
                case_stmt(details::e_like ,details:: like_op)
                case_stmt(details::e_ilike,details::ilike_op)
-               default : return error_node();
                #undef case_stmt
+               default : return error_node();
             }
          }
 

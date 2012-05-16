@@ -8,6 +8,7 @@ kinds of  functional, logic  processing semantics  and is  very easily
 extendible.
 
 
+
 [CAPABILITIES]
 The ExprTk evaluator  supports the following  fundamental mathematical
 operations, functions and processes:
@@ -32,6 +33,7 @@ operations, functions and processes:
     Loop statement:  if-then-else, while
 
 (7) Assigment:       :=
+
 
 
 [EXAMPLE EXPRESSIONS]
@@ -60,12 +62,14 @@ expressions that can be parsed and evaluated using the ExprTk library.
 (20) (x like '*123*') or ('a123b' ilike y)
 
 
+
 [COPYRIGHT NOTICE]
 Free use of the  Mathematical Expression Toolkit Library  is permitted
 under the guidelines and in  accordance with the most current  version
 of the Common Public License.
 
 http://www.opensource.org/licenses/cpl1.0.php
+
 
 
 [DOWNLOADS & UPDATES]
@@ -75,9 +79,11 @@ Expression Library can be found at:
 (2) svn checkout http://exprtk.googlecode.com/svn/ exprtk
 
 
+
 [INSTALLATION]
 (1) exprtk.hpp should be  placed in  a project or system include path
 (e.g: /usr/include/).
+
 
 
 [COMPILATION]
@@ -86,12 +92,14 @@ Expression Library can be found at:
 (3) To strip executables: make strip_bin
 
 
+
 [COMPILER COMPATIBILITY]
 (*) GNU Compiler Collection (4.3+)
 (*) Intel® C++ Compiler (9.x+)
 (*) Clang/LLVM (1.1+)
 (*) Microsoft Visual Studio C++ Compiler (8.1+)
 (*) Comeau C++ Compiler (4.3+)
+
 
 
 [SPECIAL FUNCTIONS]
@@ -144,6 +152,7 @@ correctly optimize such expressions for a given architecture.
                                 sf58(x,y,z,w) | x * y^9 + z * w^9
 
 
+
 [MACROS]
 ExprTk utilizes certain macros  to modify the underlying  behaviour of
 the parser and the evaluation engine. The following macros are used to
@@ -193,6 +202,11 @@ both modes [3] and [4].
 (6) "exprtk_lean_and_mean_numeric_only"
 The mode when this macro is  defined, is 'lean and mean' coupled  with
 all string capabilities disabled [1].
+
+Note:  Foregoing  a  few  extra  clock  cycles  during  compilation in
+exchange  for a  dramatic increase in performance  during run-time  is
+always a worthy undertaking.
+
 
 
 [FILES]

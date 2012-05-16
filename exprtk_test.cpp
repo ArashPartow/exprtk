@@ -963,7 +963,14 @@ inline bool run_test01()
                               test_xy<T>("equal(y^-22,1/(y*y*y*y*y*y*y*y*y*y*y*y*y*y*y*y*y*y*y*y*y*y))",T(0.0),T(12.34),T(1.0)),
                               test_xy<T>("equal(y^-23,1/(y*y*y*y*y*y*y*y*y*y*y*y*y*y*y*y*y*y*y*y*y*y*y))",T(0.0),T(12.34),T(1.0)),
                               test_xy<T>("equal(y^-24,1/(y*y*y*y*y*y*y*y*y*y*y*y*y*y*y*y*y*y*y*y*y*y*y*y))",T(0.0),T(12.34),T(1.0)),
-                              test_xy<T>("equal(y^-25,1/(y*y*y*y*y*y*y*y*y*y*y*y*y*y*y*y*y*y*y*y*y*y*y*y*y))",T(0.0),T(12.34),T(1.0))
+                              test_xy<T>("equal(y^-25,1/(y*y*y*y*y*y*y*y*y*y*y*y*y*y*y*y*y*y*y*y*y*y*y*y*y))",T(0.0),T(12.34),T(1.0)),
+                              test_xy<T>("0 * (abs  (x) + acos (y) + asin (x) + atan (y))",T(1.0),T(1.0),T(0.0)),
+                              test_xy<T>("0 * (ceil (x) + cos  (y) + cosh (x) + exp  (y))",T(1.0),T(1.0),T(0.0)),
+                              test_xy<T>("0 * (floor(x) + log  (y) + log10(x) + round(y))",T(1.0),T(1.0),T(0.0)),
+                              test_xy<T>("0 * (sin  (x) + sinh (y) + sqrt (x) + tan  (y))",T(1.0),T(1.0),T(0.0)),
+                              test_xy<T>("0 * (sec  (x) + csc  (y) + tanh (x) + cot  (y))",T(1.0),T(1.0),T(0.0)),
+                              test_xy<T>("0 * (erf  (x) + erfc (y) + sgn  (y)           )",T(1.0),T(1.0),T(0.0)),
+                              test_xy<T>("0 * (deg2grad(x) + grad2deg(y) + rad2deg(x) + deg2rad(y))",T(1.0),T(1.0),T(0.0)),
                            };
 
    static const std::size_t test_list_size = sizeof(test_list) / sizeof(test_xy<T>);
