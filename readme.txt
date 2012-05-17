@@ -20,8 +20,8 @@ operations, functions and processes:
                      clamp, inrange, sgn, erf, erfc
 
 (3) Trigonometry:    sin, cos, tan, acos, asin, atan, atan2, cosh,
-                     cot, csc, sec, sinh, tanh, d2r, r2d, d2g, g2d,
-                     hyp
+                     cot, csc, sec, sinh, tanh, rad2deg, deg2rad,
+                     deg2grad, grad2deg, hyp
 
 (4) Equalities &
     Inequalities:    =, ==, <>, !=, <, <=, >, >=,

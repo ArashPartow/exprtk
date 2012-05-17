@@ -546,57 +546,57 @@ namespace exprtk
                return erfc_impl(static_cast<double>(v),real_type_tag());
             }
 
-            template <typename T> inline T  abs_impl (const T v, real_type_tag) { return std::abs  (v); }
-            template <typename T> inline T acos_impl (const T v, real_type_tag) { return std::acos (v); }
-            template <typename T> inline T asin_impl (const T v, real_type_tag) { return std::asin (v); }
-            template <typename T> inline T atan_impl (const T v, real_type_tag) { return std::atan (v); }
-            template <typename T> inline T ceil_impl (const T v, real_type_tag) { return std::ceil (v); }
-            template <typename T> inline T  cos_impl (const T v, real_type_tag) { return std::cos  (v); }
-            template <typename T> inline T cosh_impl (const T v, real_type_tag) { return std::cosh (v); }
-            template <typename T> inline T  exp_impl (const T v, real_type_tag) { return std::exp  (v); }
-            template <typename T> inline T floor_impl(const T v, real_type_tag) { return std::floor(v); }
-            template <typename T> inline T log_impl  (const T v, real_type_tag) { return std::log  (v); }
-            template <typename T> inline T log10_impl(const T v, real_type_tag) { return std::log10(v); }
-            template <typename T> inline T  neg_impl (const T v, real_type_tag) { return -v;            }
-            template <typename T> inline T  pos_impl (const T v, real_type_tag) { return +v;            }
-            template <typename T> inline T round_impl(const T v, real_type_tag) { return std::floor(v + T(0.5)); }
-            template <typename T> inline T sin_impl  (const T v, real_type_tag) { return std::sin  (v); }
-            template <typename T> inline T sinh_impl (const T v, real_type_tag) { return std::sinh (v); }
-            template <typename T> inline T sqrt_impl (const T v, real_type_tag) { return std::sqrt (v); }
-            template <typename T> inline T tan_impl  (const T v, real_type_tag) { return std::tan  (v); }
-            template <typename T> inline T tanh_impl (const T v, real_type_tag) { return std::tanh (v); }
-            template <typename T> inline T cot_impl  (const T v, real_type_tag) { return T(1) / std::tan(v); }
-            template <typename T> inline T sec_impl  (const T v, real_type_tag) { return T(1) / std::cos(v); }
-            template <typename T> inline T csc_impl  (const T v, real_type_tag) { return T(1) / std::sin(v); }
-            template <typename T> inline T r2d_impl  (const T v, real_type_tag) { return (v * T(numeric::constant::_180_pi)); }
-            template <typename T> inline T d2r_impl  (const T v, real_type_tag) { return (v * T(numeric::constant::pi_180));  }
-            template <typename T> inline T d2g_impl  (const T v, real_type_tag) { return (v * T(20.0/9.0)); }
-            template <typename T> inline T g2d_impl  (const T v, real_type_tag) { return (v * T(9.0/20.0)); }
-            template <typename T> inline T notl_impl (const T v, real_type_tag) { return (v != T(0) ? T(0) : T(1)); }
+            template <typename T> inline T   abs_impl(const T& v, real_type_tag) { return std::abs  (v); }
+            template <typename T> inline T  acos_impl(const T& v, real_type_tag) { return std::acos (v); }
+            template <typename T> inline T  asin_impl(const T& v, real_type_tag) { return std::asin (v); }
+            template <typename T> inline T  atan_impl(const T& v, real_type_tag) { return std::atan (v); }
+            template <typename T> inline T  ceil_impl(const T& v, real_type_tag) { return std::ceil (v); }
+            template <typename T> inline T   cos_impl(const T& v, real_type_tag) { return std::cos  (v); }
+            template <typename T> inline T  cosh_impl(const T& v, real_type_tag) { return std::cosh (v); }
+            template <typename T> inline T   exp_impl(const T& v, real_type_tag) { return std::exp  (v); }
+            template <typename T> inline T floor_impl(const T& v, real_type_tag) { return std::floor(v); }
+            template <typename T> inline T   log_impl(const T& v, real_type_tag) { return std::log  (v); }
+            template <typename T> inline T log10_impl(const T& v, real_type_tag) { return std::log10(v); }
+            template <typename T> inline T   neg_impl(const T& v, real_type_tag) { return -v;            }
+            template <typename T> inline T   pos_impl(const T& v, real_type_tag) { return +v;            }
+            template <typename T> inline T round_impl(const T& v, real_type_tag) { return std::floor(v + T(0.5)); }
+            template <typename T> inline T   sin_impl(const T& v, real_type_tag) { return std::sin  (v); }
+            template <typename T> inline T  sinh_impl(const T& v, real_type_tag) { return std::sinh (v); }
+            template <typename T> inline T  sqrt_impl(const T& v, real_type_tag) { return std::sqrt (v); }
+            template <typename T> inline T   tan_impl(const T& v, real_type_tag) { return std::tan  (v); }
+            template <typename T> inline T  tanh_impl(const T& v, real_type_tag) { return std::tanh (v); }
+            template <typename T> inline T   cot_impl(const T& v, real_type_tag) { return T(1) / std::tan(v); }
+            template <typename T> inline T   sec_impl(const T& v, real_type_tag) { return T(1) / std::cos(v); }
+            template <typename T> inline T   csc_impl(const T& v, real_type_tag) { return T(1) / std::sin(v); }
+            template <typename T> inline T   r2d_impl(const T& v, real_type_tag) { return (v * T(numeric::constant::_180_pi)); }
+            template <typename T> inline T   d2r_impl(const T& v, real_type_tag) { return (v * T(numeric::constant::pi_180));  }
+            template <typename T> inline T   d2g_impl(const T& v, real_type_tag) { return (v * T(20.0/9.0)); }
+            template <typename T> inline T   g2d_impl(const T& v, real_type_tag) { return (v * T(9.0/20.0)); }
+            template <typename T> inline T  notl_impl(const T& v, real_type_tag) { return (v != T(0) ? T(0) : T(1)); }
 
-            template <typename T> inline T  abs_impl (const T v, int_type_tag) { return std::abs  (v); }
-            template <typename T> inline T  exp_impl (const T v, int_type_tag) { return std::exp  (v); }
-            template <typename T> inline T  log_impl (const T v, int_type_tag) { return std::log  (v); }
-            template <typename T> inline T log10_impl(const T v, int_type_tag) { return std::log10(v); }
-            template <typename T> inline T  neg_impl (const T v, int_type_tag) { return -v;            }
-            template <typename T> inline T  pos_impl (const T v, int_type_tag) { return +v;            }
-            template <typename T> inline T ceil_impl (const T v, int_type_tag) { return v;             }
-            template <typename T> inline T floor_impl(const T v, int_type_tag) { return v;             }
-            template <typename T> inline T round_impl(const T v, int_type_tag) { return v;             }
-            template <typename T> inline T notl_impl (const T v, int_type_tag) { return !v;            }
-            template <typename T> inline T sqrt_impl (const T v, int_type_tag) { return std::sqrt (v); }
-            template <typename T> inline T acos_impl (const T  , int_type_tag) { return std::numeric_limits<T>::quiet_NaN(); }
-            template <typename T> inline T asin_impl (const T  , int_type_tag) { return std::numeric_limits<T>::quiet_NaN(); }
-            template <typename T> inline T atan_impl (const T  , int_type_tag) { return std::numeric_limits<T>::quiet_NaN(); }
-            template <typename T> inline T  cos_impl (const T  , int_type_tag) { return std::numeric_limits<T>::quiet_NaN(); }
-            template <typename T> inline T cosh_impl (const T  , int_type_tag) { return std::numeric_limits<T>::quiet_NaN(); }
-            template <typename T> inline T  sin_impl (const T  , int_type_tag) { return std::numeric_limits<T>::quiet_NaN(); }
-            template <typename T> inline T sinh_impl (const T  , int_type_tag) { return std::numeric_limits<T>::quiet_NaN(); }
-            template <typename T> inline T  tan_impl (const T  , int_type_tag) { return std::numeric_limits<T>::quiet_NaN(); }
-            template <typename T> inline T tanh_impl (const T  , int_type_tag) { return std::numeric_limits<T>::quiet_NaN(); }
-            template <typename T> inline T  cot_impl (const T  , int_type_tag) { return std::numeric_limits<T>::quiet_NaN(); }
-            template <typename T> inline T  sec_impl (const T  , int_type_tag) { return std::numeric_limits<T>::quiet_NaN(); }
-            template <typename T> inline T  csc_impl (const T  , int_type_tag) { return std::numeric_limits<T>::quiet_NaN(); }
+            template <typename T> inline T   abs_impl(const T& v, int_type_tag) { return std::abs  (v); }
+            template <typename T> inline T   exp_impl(const T& v, int_type_tag) { return std::exp  (v); }
+            template <typename T> inline T   log_impl(const T& v, int_type_tag) { return std::log  (v); }
+            template <typename T> inline T log10_impl(const T& v, int_type_tag) { return std::log10(v); }
+            template <typename T> inline T   neg_impl(const T& v, int_type_tag) { return -v;            }
+            template <typename T> inline T   pos_impl(const T& v, int_type_tag) { return +v;            }
+            template <typename T> inline T  ceil_impl(const T& v, int_type_tag) { return v;             }
+            template <typename T> inline T floor_impl(const T& v, int_type_tag) { return v;             }
+            template <typename T> inline T round_impl(const T& v, int_type_tag) { return v;             }
+            template <typename T> inline T  notl_impl(const T& v, int_type_tag) { return !v;            }
+            template <typename T> inline T  sqrt_impl(const T& v, int_type_tag) { return std::sqrt (v); }
+            template <typename T> inline T  acos_impl(const T&  , int_type_tag) { return std::numeric_limits<T>::quiet_NaN(); }
+            template <typename T> inline T  asin_impl(const T&  , int_type_tag) { return std::numeric_limits<T>::quiet_NaN(); }
+            template <typename T> inline T  atan_impl(const T&  , int_type_tag) { return std::numeric_limits<T>::quiet_NaN(); }
+            template <typename T> inline T   cos_impl(const T&  , int_type_tag) { return std::numeric_limits<T>::quiet_NaN(); }
+            template <typename T> inline T  cosh_impl(const T&  , int_type_tag) { return std::numeric_limits<T>::quiet_NaN(); }
+            template <typename T> inline T   sin_impl(const T&  , int_type_tag) { return std::numeric_limits<T>::quiet_NaN(); }
+            template <typename T> inline T  sinh_impl(const T&  , int_type_tag) { return std::numeric_limits<T>::quiet_NaN(); }
+            template <typename T> inline T   tan_impl(const T&  , int_type_tag) { return std::numeric_limits<T>::quiet_NaN(); }
+            template <typename T> inline T  tanh_impl(const T&  , int_type_tag) { return std::numeric_limits<T>::quiet_NaN(); }
+            template <typename T> inline T   cot_impl(const T&  , int_type_tag) { return std::numeric_limits<T>::quiet_NaN(); }
+            template <typename T> inline T   sec_impl(const T&  , int_type_tag) { return std::numeric_limits<T>::quiet_NaN(); }
+            template <typename T> inline T   csc_impl(const T&  , int_type_tag) { return std::numeric_limits<T>::quiet_NaN(); }
 
             template <typename T>
             inline bool is_integer_impl(const T& v, real_type_tag)
@@ -2077,8 +2077,24 @@ namespace exprtk
          bool           branch_deletable_;
       };
 
+      template<typename T, std::size_t D, bool B>
+      struct construct_branch_pair
+      {
+         template <std::size_t N>
+         static inline void process(std::pair<expression_node<T>*,bool> (&)[N], expression_node<T>*)
+         {}
+      };
+
+      template<typename T, std::size_t D>
+      struct construct_branch_pair<T,D,true>
+      {
+         template <std::size_t N>
+         static inline void process(std::pair<expression_node<T>*,bool> (&branch)[N], expression_node<T>* b)
+         { if (b) branch[D] = std::make_pair(b,branch_deletable(b)); }
+      };
+
       template <std::size_t N, typename T>
-      inline void init_branches(std::pair< expression_node<T>*,bool> (&branch)[N],
+      inline void init_branches(std::pair<expression_node<T>*,bool> (&branch)[N],
                                 expression_node<T>* b0,
                                 expression_node<T>* b1 = reinterpret_cast<expression_node<T>*>(0),
                                 expression_node<T>* b2 = reinterpret_cast<expression_node<T>*>(0),
@@ -2090,25 +2106,16 @@ namespace exprtk
                                 expression_node<T>* b8 = reinterpret_cast<expression_node<T>*>(0),
                                 expression_node<T>* b9 = reinterpret_cast<expression_node<T>*>(0))
       {
-         typedef expression_node<T> Node;
-         //Needed for incompetent and broken msvc compiler versions
-         #ifdef _MSC_VER
-          #pragma warning(push)
-          #pragma warning(disable: 4127)
-         #endif
-         if (b0 && (N > 0)) { branch[0] = std::make_pair(b0,branch_deletable(b0)); }
-         if (b1 && (N > 1)) { branch[1] = std::make_pair(b1,branch_deletable(b1)); }
-         if (b2 && (N > 2)) { branch[2] = std::make_pair(b2,branch_deletable(b2)); }
-         if (b3 && (N > 3)) { branch[3] = std::make_pair(b3,branch_deletable(b3)); }
-         if (b4 && (N > 4)) { branch[4] = std::make_pair(b4,branch_deletable(b4)); }
-         if (b5 && (N > 5)) { branch[5] = std::make_pair(b5,branch_deletable(b5)); }
-         if (b6 && (N > 6)) { branch[6] = std::make_pair(b6,branch_deletable(b6)); }
-         if (b7 && (N > 7)) { branch[7] = std::make_pair(b7,branch_deletable(b7)); }
-         if (b8 && (N > 8)) { branch[8] = std::make_pair(b8,branch_deletable(b8)); }
-         if (b9 && (N > 9)) { branch[9] = std::make_pair(b9,branch_deletable(b9)); }
-         #ifdef _MSC_VER
-          #pragma warning(pop)
-         #endif
+         construct_branch_pair<T,0,(N > 0)>::process(branch,b0);
+         construct_branch_pair<T,1,(N > 1)>::process(branch,b1);
+         construct_branch_pair<T,2,(N > 2)>::process(branch,b2);
+         construct_branch_pair<T,3,(N > 3)>::process(branch,b3);
+         construct_branch_pair<T,4,(N > 4)>::process(branch,b4);
+         construct_branch_pair<T,5,(N > 5)>::process(branch,b5);
+         construct_branch_pair<T,6,(N > 6)>::process(branch,b6);
+         construct_branch_pair<T,7,(N > 7)>::process(branch,b7);
+         construct_branch_pair<T,8,(N > 8)>::process(branch,b8);
+         construct_branch_pair<T,9,(N > 9)>::process(branch,b9);
       }
 
       template <typename T, std::size_t N>
@@ -7892,6 +7899,7 @@ namespace exprtk
                                              "1 - sin(2 * x) + cos(pi / y)",
                                              "sqrt(1 - sin(2 * x) + cos(pi / y) / 3)",
                                              "(x^2 / sin(2 * pi / y)) -x / 2",
+                                             "x + (cos(y - sin(2 / x * pi)) - sin(x - cos(2 * y / pi))) - y",
                                              "clamp(-1.0, sin(2 * pi * x) + cos(y / 2 * pi), +1.0)",
                                              "max(3.33, min(sqrt(1 - sin(2 * x) + cos(pi / y) / 3), 1.11))",
                                              "if(avg(x,y) <= x + y, x - y, x * y) + 2 * pi / x",
@@ -7906,10 +7914,11 @@ namespace exprtk
                                              "1 - sin(2 * xx) + cos(pi / yy)",
                                              "sqrt(1 - sin(2 * xx) + cos(pi / yy) / 3)",
                                              "(xx^2 / sin(2 * pi / yy)) -xx / 2",
+                                             "xx + (cos(yy - sin(2 / xx * pi)) - sin(xx - cos(2 * yy / pi))) - yy",
                                              "clamp(-1.0, sin(2 * pi * xx) + cos(yy / 2 * pi), +1.0)",
                                              "max(3.33, min(sqrt(1 - sin(2 * xx) + cos(pi / yy) / 3), 1.11))",
                                              "if(avg(xx,yy) <= xx + yy, xx - yy, xx * yy) + 2 * pi / xx",
-                                             "1.1xx^1 + 2.2yy^2 - 3.3xx^3 + 4.4yy^4 - 5.5xx^5 + 6.6yy^6 - 7.7xx^27 + 8.8yy^55",
+                                             "1.1xx^1 + 2.2yy^2 - 3.3xx^3 + 4.4yy^4 - 5.5xx^5 + 6.6yy^6 - 7.7xx^27 + 8.8yy^55"
                                           };
       static const std::size_t expression_list_size = sizeof(expression_list) / sizeof(std::string);
 

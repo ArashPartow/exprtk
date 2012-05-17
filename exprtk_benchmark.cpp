@@ -33,7 +33,7 @@ const std::string expression_list[] = {
                                          "1.1x^1 + 2.2y^2 - 3.3x^3 + 4.4y^15 - 5.5x^23 + 6.6y^55",
                                          "sin(2 * x) + cos(pi / y)",
                                          "1 - sin(2 * x) + cos(pi / y)",
-                                         "sqrt(1 - sin(2 * x) + cos(pi / y) / 3)",
+                                         "sqrt(111.111 - sin(2 * x) + cos(pi / y) / 333.333)",
                                          "(x^2 / sin(2 * pi / y)) -x / 2",
                                          "x + (cos(y - sin(2 / x * pi)) - sin(x - cos(2 * y / pi))) - y",
                                          "clamp(-1.0, sin(2 * pi * x) + cos(y / 2 * pi), +1.0)",
@@ -97,18 +97,15 @@ void run_benchmark(T& x, T& y,
 const double pi = 3.14159265358979323846;
 
 template <typename T>
-inline T avg(const T& v1, const T& v2)
+inline T avg(const T v1, const T v2)
 {
-   return v1 + v2 / T(2.0);
+   return (v1 + v2) / T(2.0);
 }
 
 template <typename T>
-inline T clamp(const T& l, const T& v, const T& u)
+inline T clamp(const T l, const T v, const T u)
 {
-   if (v < l)
-      return l;
-   else
-      return (v > u) ? u : v;
+   return ((v < l) ? l : ((v > u) ? u : v));
 }
 
 template <typename T> inline T func00(const T x, const T y) { return (y + x); }
@@ -120,7 +117,7 @@ template <typename T> inline T func05(const T x, const T y) { return T(1.0) - ((
 template <typename T> inline T func06(const T x, const T y) { return (1.1*pow(x,T(1.0))+2.2*pow(y,T(2.0))-3.3*pow(x,T(3.0))+4.4*pow(y,T(15.0))-5.5*pow(x,T(23.0))+6.6*pow(y,T(55.0))); }
 template <typename T> inline T func07(const T x, const T y) { return std::sin(T(2.0) * x) + std::cos(pi / y); }
 template <typename T> inline T func08(const T x, const T y) { return T(1.0) - std::sin(2.0 * x) + std::cos(pi / y); }
-template <typename T> inline T func09(const T x, const T y) { return std::sqrt(T(1.0) - std::sin(T(2.0) * x) + std::cos(pi / y) / T(3.0)); }
+template <typename T> inline T func09(const T x, const T y) { return std::sqrt(T(111.111) - std::sin(T(2.0) * x) + std::cos(pi / y) / T(333.333)); }
 template <typename T> inline T func10(const T x, const T y) { return (std::pow(x,T(2.0)) / std::sin(T(2.0) * pi / y)) -x / T(2.0); }
 template <typename T> inline T func11(const T x, const T y) { return (x + (std::cos(y - std::sin(2 / x * pi)) - std::sin(x - std::cos(2 * y / pi))) - y); }
 template <typename T> inline T func12(const T x, const T y) { return clamp(T(-1.0), std::sin(T(2.0) * pi * x) + std::cos(y / T(2.0) * pi), + T(1.0)); }
