@@ -1659,8 +1659,32 @@ namespace exprtk
          e_sf55 = 1055,
          e_sf56 = 1056,
          e_sf57 = 1057,
-         e_sf58 = 1058
-
+         e_sf58 = 1058,
+         e_sf59 = 1059,
+         e_sf60 = 1060,
+         e_sf61 = 1061,
+         e_sf62 = 1062,
+         e_sf63 = 1063,
+         e_sf64 = 1064,
+         e_sf65 = 1065,
+         e_sf66 = 1066,
+         e_sf67 = 1067,
+         e_sf68 = 1068,
+         e_sf69 = 1069,
+         e_sf70 = 1070,
+         e_sf71 = 1071,
+         e_sf72 = 1072,
+         e_sf73 = 1073,
+         e_sf74 = 1074,
+         e_sf75 = 1075,
+         e_sf76 = 1076,
+         e_sf77 = 1077,
+         e_sf78 = 1078,
+         e_sf79 = 1079,
+         e_sf80 = 1080,
+         e_sf81 = 1081,
+         e_sf82 = 1082,
+         e_sf83 = 1083
       };
 
       namespace numeric
@@ -2077,7 +2101,7 @@ namespace exprtk
          bool           branch_deletable_;
       };
 
-      template<typename T, std::size_t D, bool B>
+      template <typename T, std::size_t D, bool B>
       struct construct_branch_pair
       {
          template <std::size_t N>
@@ -2085,7 +2109,7 @@ namespace exprtk
          {}
       };
 
-      template<typename T, std::size_t D>
+      template <typename T, std::size_t D>
       struct construct_branch_pair<T,D,true>
       {
          template <std::size_t N>
@@ -2609,12 +2633,12 @@ namespace exprtk
       template <typename T> struct sf09_op { static inline T process(const T& x, const T& y, const T& z) { return (x / y) - z; } };
       template <typename T> struct sf10_op { static inline T process(const T& x, const T& y, const T& z) { return (x / y) / z; } };
       template <typename T> struct sf11_op { static inline T process(const T& x, const T& y, const T& z) { return (x / y) * z; } };
-      template <typename T> struct sf12_op { static inline T process(const T& x, const T& y, const T& z) { return z / (x + y); } };
-      template <typename T> struct sf13_op { static inline T process(const T& x, const T& y, const T& z) { return z / (x - y); } };
-      template <typename T> struct sf14_op { static inline T process(const T& x, const T& y, const T& z) { return z / (x * y); } };
-      template <typename T> struct sf15_op { static inline T process(const T& x, const T& y, const T& z) { return z / (x / y); } };
-      template <typename T> struct sf16_op { static inline T process(const T& x, const T& y, const T& z) { return z - (x / y); } };
-      template <typename T> struct sf17_op { static inline T process(const T& x, const T& y, const T& z) { return z - (x / y); } };
+      template <typename T> struct sf12_op { static inline T process(const T& x, const T& y, const T& z) { return x / (y + z); } };
+      template <typename T> struct sf13_op { static inline T process(const T& x, const T& y, const T& z) { return x / (y - z); } };
+      template <typename T> struct sf14_op { static inline T process(const T& x, const T& y, const T& z) { return x / (y * z); } };
+      template <typename T> struct sf15_op { static inline T process(const T& x, const T& y, const T& z) { return x / (y / z); } };
+      template <typename T> struct sf16_op { static inline T process(const T& x, const T& y, const T& z) { return x - (y / z); } };
+      template <typename T> struct sf17_op { static inline T process(const T& x, const T& y, const T& z) { return x - (y / z); } };
       template <typename T> struct sf18_op { static inline T process(const T& x, const T& y, const T& z) { return axnb<T,2>(x,y,z); } }; //x * y^2 + z
       template <typename T> struct sf19_op { static inline T process(const T& x, const T& y, const T& z) { return axnb<T,3>(x,y,z); } }; //x * y^3 + z
       template <typename T> struct sf20_op { static inline T process(const T& x, const T& y, const T& z) { return axnb<T,4>(x,y,z); } }; //x * y^4 + z
@@ -2623,39 +2647,64 @@ namespace exprtk
       template <typename T> struct sf23_op { static inline T process(const T& x, const T& y, const T& z) { return axnb<T,7>(x,y,z); } }; //x * y^7 + z
       template <typename T> struct sf24_op { static inline T process(const T& x, const T& y, const T& z) { return axnb<T,8>(x,y,z); } }; //x * y^8 + z
       template <typename T> struct sf25_op { static inline T process(const T& x, const T& y, const T& z) { return axnb<T,9>(x,y,z); } }; //x * y^9 + z
-      template <typename T> struct sf26_op { static inline T process(const T& x, const T& y, const T& z, const T& w) { return w + ((x + y) / z); } };
-      template <typename T> struct sf27_op { static inline T process(const T& x, const T& y, const T& z, const T& w) { return w + ((x + y) * z); } };
-      template <typename T> struct sf28_op { static inline T process(const T& x, const T& y, const T& z, const T& w) { return w + ((x - y) / z); } };
-      template <typename T> struct sf29_op { static inline T process(const T& x, const T& y, const T& z, const T& w) { return w + ((x - y) * z); } };
-      template <typename T> struct sf30_op { static inline T process(const T& x, const T& y, const T& z, const T& w) { return w + ((x * y) / z); } };
-      template <typename T> struct sf31_op { static inline T process(const T& x, const T& y, const T& z, const T& w) { return w + ((x * y) * z); } };
-      template <typename T> struct sf32_op { static inline T process(const T& x, const T& y, const T& z, const T& w) { return w + ((x / y) + z); } };
-      template <typename T> struct sf33_op { static inline T process(const T& x, const T& y, const T& z, const T& w) { return w + ((x / y) / z); } };
-      template <typename T> struct sf34_op { static inline T process(const T& x, const T& y, const T& z, const T& w) { return w + ((x / y) * z); } };
-      template <typename T> struct sf35_op { static inline T process(const T& x, const T& y, const T& z, const T& w) { return w - ((x + y) / z); } };
-      template <typename T> struct sf36_op { static inline T process(const T& x, const T& y, const T& z, const T& w) { return w - ((x + y) * z); } };
-      template <typename T> struct sf37_op { static inline T process(const T& x, const T& y, const T& z, const T& w) { return w - ((x - y) / z); } };
-      template <typename T> struct sf38_op { static inline T process(const T& x, const T& y, const T& z, const T& w) { return w - ((x - y) * z); } };
-      template <typename T> struct sf39_op { static inline T process(const T& x, const T& y, const T& z, const T& w) { return w - ((x * y) / z); } };
-      template <typename T> struct sf40_op { static inline T process(const T& x, const T& y, const T& z, const T& w) { return w - ((x * y) * z); } };
-      template <typename T> struct sf41_op { static inline T process(const T& x, const T& y, const T& z, const T& w) { return w - ((x / y) / z); } };
-      template <typename T> struct sf42_op { static inline T process(const T& x, const T& y, const T& z, const T& w) { return w - ((x / y) * z); } };
-      template <typename T> struct sf43_op { static inline T process(const T& x, const T& y, const T& z, const T& w) { return ((x + y) * z) - w; } };
-      template <typename T> struct sf44_op { static inline T process(const T& x, const T& y, const T& z, const T& w) { return ((x - y) * z) - w; } };
-      template <typename T> struct sf45_op { static inline T process(const T& x, const T& y, const T& z, const T& w) { return ((x * y) * z) - w; } };
-      template <typename T> struct sf46_op { static inline T process(const T& x, const T& y, const T& z, const T& w) { return ((x / y) * z) - w; } };
-      template <typename T> struct sf47_op { static inline T process(const T& x, const T& y, const T& z, const T& w) { return ((x + y) / z) - w; } };
-      template <typename T> struct sf48_op { static inline T process(const T& x, const T& y, const T& z, const T& w) { return ((x - y) / z) - w; } };
-      template <typename T> struct sf49_op { static inline T process(const T& x, const T& y, const T& z, const T& w) { return ((x * y) / z) - w; } };
-      template <typename T> struct sf50_op { static inline T process(const T& x, const T& y, const T& z, const T& w) { return ((x / y) / z) - w; } };
-      template <typename T> struct sf51_op { static inline T process(const T& x, const T& y, const T& z, const T& w) { return axn<T,2>(x,y) + axn<T,2>(z,w); } }; //x*y^2+z*w^2
-      template <typename T> struct sf52_op { static inline T process(const T& x, const T& y, const T& z, const T& w) { return axn<T,3>(x,y) + axn<T,3>(z,w); } }; //x*y^3+z*w^3
-      template <typename T> struct sf53_op { static inline T process(const T& x, const T& y, const T& z, const T& w) { return axn<T,4>(x,y) + axn<T,4>(z,w); } }; //x*y^4+z*w^4
-      template <typename T> struct sf54_op { static inline T process(const T& x, const T& y, const T& z, const T& w) { return axn<T,5>(x,y) + axn<T,5>(z,w); } }; //x*y^5+z*w^5
-      template <typename T> struct sf55_op { static inline T process(const T& x, const T& y, const T& z, const T& w) { return axn<T,6>(x,y) + axn<T,6>(z,w); } }; //x*y^6+z*w^6
-      template <typename T> struct sf56_op { static inline T process(const T& x, const T& y, const T& z, const T& w) { return axn<T,7>(x,y) + axn<T,7>(z,w); } }; //x*y^7+z*w^7
-      template <typename T> struct sf57_op { static inline T process(const T& x, const T& y, const T& z, const T& w) { return axn<T,8>(x,y) + axn<T,8>(z,w); } }; //x*y^8+z*w^8
-      template <typename T> struct sf58_op { static inline T process(const T& x, const T& y, const T& z, const T& w) { return axn<T,9>(x,y) + axn<T,9>(z,w); } }; //x*y^9+z*w^9
+      template <typename T> struct sf26_op { static inline T process(const T& x, const T& y, const T& z) { return x * numeric::log(y)   + z; } };
+      template <typename T> struct sf27_op { static inline T process(const T& x, const T& y, const T& z) { return x * numeric::log(y)   - z; } };
+      template <typename T> struct sf28_op { static inline T process(const T& x, const T& y, const T& z) { return x * numeric::log10(y) + z; } };
+      template <typename T> struct sf29_op { static inline T process(const T& x, const T& y, const T& z) { return x * numeric::log10(y) - z; } };
+      template <typename T> struct sf30_op { static inline T process(const T& x, const T& y, const T& z) { return x * numeric::sin(y) + z; } };
+      template <typename T> struct sf31_op { static inline T process(const T& x, const T& y, const T& z) { return x * numeric::sin(y) - z; } };
+      template <typename T> struct sf32_op { static inline T process(const T& x, const T& y, const T& z) { return x * numeric::cos(y) + z; } };
+      template <typename T> struct sf33_op { static inline T process(const T& x, const T& y, const T& z) { return x * numeric::cos(y) - z; } };
+      template <typename T> struct sf34_op { static inline T process(const T& x, const T& y, const T& z) { return (T(0) != x) ? y : z; } };
+      template <typename T> struct sf35_op { static inline T process(const T& x, const T& y, const T& z, const T& w) { return x + ((y + z) / w); } };
+      template <typename T> struct sf36_op { static inline T process(const T& x, const T& y, const T& z, const T& w) { return x + ((y + z) * w); } };
+      template <typename T> struct sf37_op { static inline T process(const T& x, const T& y, const T& z, const T& w) { return x + ((y - z) / w); } };
+      template <typename T> struct sf38_op { static inline T process(const T& x, const T& y, const T& z, const T& w) { return x + ((y - z) * w); } };
+      template <typename T> struct sf39_op { static inline T process(const T& x, const T& y, const T& z, const T& w) { return x + ((y * z) / w); } };
+      template <typename T> struct sf40_op { static inline T process(const T& x, const T& y, const T& z, const T& w) { return x + ((y * z) * w); } };
+      template <typename T> struct sf41_op { static inline T process(const T& x, const T& y, const T& z, const T& w) { return x + ((y / z) + w); } };
+      template <typename T> struct sf42_op { static inline T process(const T& x, const T& y, const T& z, const T& w) { return x + ((y / z) / w); } };
+      template <typename T> struct sf43_op { static inline T process(const T& x, const T& y, const T& z, const T& w) { return x + ((y / z) * w); } };
+      template <typename T> struct sf44_op { static inline T process(const T& x, const T& y, const T& z, const T& w) { return x - ((y + z) / w); } };
+      template <typename T> struct sf45_op { static inline T process(const T& x, const T& y, const T& z, const T& w) { return x - ((y + z) * w); } };
+      template <typename T> struct sf46_op { static inline T process(const T& x, const T& y, const T& z, const T& w) { return x - ((y - z) / w); } };
+      template <typename T> struct sf47_op { static inline T process(const T& x, const T& y, const T& z, const T& w) { return x - ((y - z) * w); } };
+      template <typename T> struct sf48_op { static inline T process(const T& x, const T& y, const T& z, const T& w) { return x - ((y * z) / w); } };
+      template <typename T> struct sf49_op { static inline T process(const T& x, const T& y, const T& z, const T& w) { return x - ((y * z) * w); } };
+      template <typename T> struct sf50_op { static inline T process(const T& x, const T& y, const T& z, const T& w) { return x - ((y / z) / w); } };
+      template <typename T> struct sf51_op { static inline T process(const T& x, const T& y, const T& z, const T& w) { return x - ((y / z) * w); } };
+      template <typename T> struct sf52_op { static inline T process(const T& x, const T& y, const T& z, const T& w) { return ((x + y) * z) - w; } };
+      template <typename T> struct sf53_op { static inline T process(const T& x, const T& y, const T& z, const T& w) { return ((x - y) * z) - w; } };
+      template <typename T> struct sf54_op { static inline T process(const T& x, const T& y, const T& z, const T& w) { return ((x * y) * z) - w; } };
+      template <typename T> struct sf55_op { static inline T process(const T& x, const T& y, const T& z, const T& w) { return ((x / y) * z) - w; } };
+      template <typename T> struct sf56_op { static inline T process(const T& x, const T& y, const T& z, const T& w) { return ((x + y) / z) - w; } };
+      template <typename T> struct sf57_op { static inline T process(const T& x, const T& y, const T& z, const T& w) { return ((x - y) / z) - w; } };
+      template <typename T> struct sf58_op { static inline T process(const T& x, const T& y, const T& z, const T& w) { return ((x * y) / z) - w; } };
+      template <typename T> struct sf59_op { static inline T process(const T& x, const T& y, const T& z, const T& w) { return ((x / y) / z) - w; } };
+      template <typename T> struct sf60_op { static inline T process(const T& x, const T& y, const T& z, const T& w) { return (x * y) + (z * w); } };
+      template <typename T> struct sf61_op { static inline T process(const T& x, const T& y, const T& z, const T& w) { return (x * y) - (z * w); } };
+      template <typename T> struct sf62_op { static inline T process(const T& x, const T& y, const T& z, const T& w) { return (x * y) + (z / w); } };
+      template <typename T> struct sf63_op { static inline T process(const T& x, const T& y, const T& z, const T& w) { return (x * y) - (z / w); } };
+      template <typename T> struct sf64_op { static inline T process(const T& x, const T& y, const T& z, const T& w) { return (x / y) + (z / w); } };
+      template <typename T> struct sf65_op { static inline T process(const T& x, const T& y, const T& z, const T& w) { return (x / y) - (z / w); } };
+      template <typename T> struct sf66_op { static inline T process(const T& x, const T& y, const T& z, const T& w) { return (x / y) - (z / w); } };
+      template <typename T> struct sf67_op { static inline T process(const T& x, const T& y, const T& z, const T& w) { return (x / y) - (z * w); } };
+      template <typename T> struct sf68_op { static inline T process(const T& x, const T& y, const T& z, const T& w) { return axn<T,2>(x,y) + axn<T,2>(z,w); } }; //x*y^2+z*w^2
+      template <typename T> struct sf69_op { static inline T process(const T& x, const T& y, const T& z, const T& w) { return axn<T,3>(x,y) + axn<T,3>(z,w); } }; //x*y^3+z*w^3
+      template <typename T> struct sf70_op { static inline T process(const T& x, const T& y, const T& z, const T& w) { return axn<T,4>(x,y) + axn<T,4>(z,w); } }; //x*y^4+z*w^4
+      template <typename T> struct sf71_op { static inline T process(const T& x, const T& y, const T& z, const T& w) { return axn<T,5>(x,y) + axn<T,5>(z,w); } }; //x*y^5+z*w^5
+      template <typename T> struct sf72_op { static inline T process(const T& x, const T& y, const T& z, const T& w) { return axn<T,6>(x,y) + axn<T,6>(z,w); } }; //x*y^6+z*w^6
+      template <typename T> struct sf73_op { static inline T process(const T& x, const T& y, const T& z, const T& w) { return axn<T,7>(x,y) + axn<T,7>(z,w); } }; //x*y^7+z*w^7
+      template <typename T> struct sf74_op { static inline T process(const T& x, const T& y, const T& z, const T& w) { return axn<T,8>(x,y) + axn<T,8>(z,w); } }; //x*y^8+z*w^8
+      template <typename T> struct sf75_op { static inline T process(const T& x, const T& y, const T& z, const T& w) { return axn<T,9>(x,y) + axn<T,9>(z,w); } }; //x*y^9+z*w^9
+      template <typename T> struct sf76_op { static inline T process(const T& x, const T& y, const T& z, const T& w) { return ((T(0) != x) && (T(0) != y)) ? z : w; } };
+      template <typename T> struct sf77_op { static inline T process(const T& x, const T& y, const T& z, const T& w) { return ((T(0) != x) || (T(0) != y)) ? z : w; } };
+      template <typename T> struct sf78_op { static inline T process(const T& x, const T& y, const T& z, const T& w) { return (x <  y) ? z : w; } };
+      template <typename T> struct sf79_op { static inline T process(const T& x, const T& y, const T& z, const T& w) { return (x <= y) ? z : w; } };
+      template <typename T> struct sf80_op { static inline T process(const T& x, const T& y, const T& z, const T& w) { return (x >  y) ? z : w; } };
+      template <typename T> struct sf81_op { static inline T process(const T& x, const T& y, const T& z, const T& w) { return (x >= y) ? z : w; } };
+      template <typename T> struct sf82_op { static inline T process(const T& x, const T& y, const T& z, const T& w) { return numeric::equal(x,y) ? z : w; } };
+      template <typename T> struct sf83_op { static inline T process(const T& x, const T& y, const T& z, const T& w) { return x * numeric::sin(y) + z * numeric::cos(w); } };
 
       template <typename T, typename SpecialFunction>
       class sf3_node : public trinary_node<T>
@@ -2874,16 +2923,144 @@ namespace exprtk
          template <typename T_, std::size_t ParamCount>
          struct invoke { static inline T execute(ifunction*, branch_t (&)[ParamCount]) { return std::numeric_limits<T_>::quiet_NaN(); } };
 
-         template <typename T_> struct invoke<T_,10> { static inline T_ execute(ifunction& f, T_ (&v)[10])  { return f(v[0],v[1],v[2],v[3],v[4],v[5],v[6],v[7],v[8],v[9]); } };
-         template <typename T_> struct invoke<T_, 9> { static inline T_ execute(ifunction& f, T_ (&v)[ 9])  { return f(v[0],v[1],v[2],v[3],v[4],v[5],v[6],v[7],v[8]); } };
-         template <typename T_> struct invoke<T_, 8> { static inline T_ execute(ifunction& f, T_ (&v)[ 8])  { return f(v[0],v[1],v[2],v[3],v[4],v[5],v[6],v[7]); } };
-         template <typename T_> struct invoke<T_, 7> { static inline T_ execute(ifunction& f, T_ (&v)[ 7])  { return f(v[0],v[1],v[2],v[3],v[4],v[5],v[6]); } };
-         template <typename T_> struct invoke<T_, 6> { static inline T_ execute(ifunction& f, T_ (&v)[ 6])  { return f(v[0],v[1],v[2],v[3],v[4],v[5]); } };
-         template <typename T_> struct invoke<T_, 5> { static inline T_ execute(ifunction& f, T_ (&v)[ 5])  { return f(v[0],v[1],v[2],v[3],v[4]); } };
-         template <typename T_> struct invoke<T_, 4> { static inline T_ execute(ifunction& f, T_ (&v)[ 4])  { return f(v[0],v[1],v[2],v[3]); } };
-         template <typename T_> struct invoke<T_, 3> { static inline T_ execute(ifunction& f, T_ (&v)[ 3])  { return f(v[0],v[1],v[2]); } };
-         template <typename T_> struct invoke<T_, 2> { static inline T_ execute(ifunction& f, T_ (&v)[ 2])  { return f(v[0],v[1]); } };
-         template <typename T_> struct invoke<T_, 1> { static inline T_ execute(ifunction& f, T_ (&v)[ 1])  { return f(v[0]); } };
+         template <typename T_>
+         struct invoke<T_,20>
+         {
+            static inline T_ execute(ifunction& f, T_ (&v)[20])
+            { return f(v[0],v[1],v[2],v[3],v[4],v[5],v[6],v[7],v[8],v[9],v[10],v[11],v[12],v[13],v[14],v[15],v[16],v[17],v[18],v[19]); }
+         };
+
+         template <typename T_>
+         struct invoke<T_,19>
+         {
+            static inline T_ execute(ifunction& f, T_ (&v)[19])
+            { return f(v[0],v[1],v[2],v[3],v[4],v[5],v[6],v[7],v[8],v[9],v[10],v[11],v[12],v[13],v[14],v[15],v[16],v[17],v[18]); }
+         };
+
+         template <typename T_>
+         struct invoke<T_,18>
+         {
+            static inline T_ execute(ifunction& f, T_ (&v)[18])
+            { return f(v[0],v[1],v[2],v[3],v[4],v[5],v[6],v[7],v[8],v[9],v[10],v[11],v[12],v[13],v[14],v[15],v[16],v[17]); }
+         };
+
+         template <typename T_>
+         struct invoke<T_,17>
+         {
+            static inline T_ execute(ifunction& f, T_ (&v)[17])
+            { return f(v[0],v[1],v[2],v[3],v[4],v[5],v[6],v[7],v[8],v[9],v[10],v[11],v[12],v[13],v[14],v[15],v[16]); }
+         };
+
+         template <typename T_>
+         struct invoke<T_,16>
+         {
+            static inline T_ execute(ifunction& f, T_ (&v)[16])
+            { return f(v[0],v[1],v[2],v[3],v[4],v[5],v[6],v[7],v[8],v[9],v[10],v[11],v[12],v[13],v[14],v[15]); }
+         };
+
+         template <typename T_>
+         struct invoke<T_,15>
+         {
+            static inline T_ execute(ifunction& f, T_ (&v)[15])
+            { return f(v[0],v[1],v[2],v[3],v[4],v[5],v[6],v[7],v[8],v[9],v[10],v[11],v[12],v[13],v[14]); }
+         };
+
+         template <typename T_>
+         struct invoke<T_,14>
+         {
+            static inline T_ execute(ifunction& f, T_ (&v)[14])
+            { return f(v[0],v[1],v[2],v[3],v[4],v[5],v[6],v[7],v[8],v[9],v[10],v[11],v[12],v[13]); }
+         };
+
+         template <typename T_>
+         struct invoke<T_,13>
+         {
+            static inline T_ execute(ifunction& f, T_ (&v)[13])
+            { return f(v[0],v[1],v[2],v[3],v[4],v[5],v[6],v[7],v[8],v[9],v[10],v[11],v[12]); }
+         };
+
+         template <typename T_>
+         struct invoke<T_,12>
+         {
+            static inline T_ execute(ifunction& f, T_ (&v)[12])
+            { return f(v[0],v[1],v[2],v[3],v[4],v[5],v[6],v[7],v[8],v[9],v[10],v[11]); }
+         };
+
+         template <typename T_>
+         struct invoke<T_,11>
+         {
+            static inline T_ execute(ifunction& f, T_ (&v)[11])
+            { return f(v[0],v[1],v[2],v[3],v[4],v[5],v[6],v[7],v[8],v[9],v[10]); }
+         };
+
+         template <typename T_>
+         struct invoke<T_,10>
+         {
+            static inline T_ execute(ifunction& f, T_ (&v)[10])
+            { return f(v[0],v[1],v[2],v[3],v[4],v[5],v[6],v[7],v[8],v[9]); }
+         };
+
+         template <typename T_>
+         struct invoke<T_,9>
+         {
+            static inline T_ execute(ifunction& f, T_ (&v)[9])
+            { return f(v[0],v[1],v[2],v[3],v[4],v[5],v[6],v[7],v[8]); }
+         };
+
+         template <typename T_>
+         struct invoke<T_,8>
+         {
+            static inline T_ execute(ifunction& f, T_ (&v)[8])
+            { return f(v[0],v[1],v[2],v[3],v[4],v[5],v[6],v[7]); }
+         };
+
+         template <typename T_>
+         struct invoke<T_, 7>
+         {
+            static inline T_ execute(ifunction& f, T_ (&v)[ 7])
+            { return f(v[0],v[1],v[2],v[3],v[4],v[5],v[6]); } };
+
+         template <typename T_>
+         struct invoke<T_,6>
+         {
+            static inline T_ execute(ifunction& f, T_ (&v)[6])
+            { return f(v[0],v[1],v[2],v[3],v[4],v[5]); }
+         };
+
+         template <typename T_>
+         struct invoke<T_,5>
+         {
+            static inline T_ execute(ifunction& f, T_ (&v)[5])
+            { return f(v[0],v[1],v[2],v[3],v[4]); }
+         };
+
+         template <typename T_>
+         struct invoke<T_,4>
+         {
+            static inline T_ execute(ifunction& f, T_ (&v)[4])
+            { return f(v[0],v[1],v[2],v[3]); }
+         };
+
+         template <typename T_>
+         struct invoke<T_,3>
+         {
+            static inline T_ execute(ifunction& f, T_ (&v)[3])
+            { return f(v[0],v[1],v[2]); }
+         };
+
+         template <typename T_>
+         struct invoke<T_,2>
+         {
+            static inline T_ execute(ifunction& f, T_ (&v)[2])
+            { return f(v[0],v[1]); }
+         };
+
+         template <typename T_>
+         struct invoke<T_,1>
+         {
+            static inline T_ execute(ifunction& f, T_ (&v)[1])
+            { return f(v[0]); }
+         };
 
          inline typename expression_node<T>::node_type type() const
          {
@@ -4228,6 +4405,67 @@ namespace exprtk
       {
          return std::numeric_limits<T>::quiet_NaN();
       }
+
+      inline virtual T operator()(const T&, const T&, const T&, const T&, const T&, const T&, const T&, const T&, const T&, const T&,
+                                  const T&)
+      {
+         return std::numeric_limits<T>::quiet_NaN();
+      }
+
+      inline virtual T operator()(const T&, const T&, const T&, const T&, const T&, const T&, const T&, const T&, const T&, const T&,
+                                  const T&, const T&)
+      {
+         return std::numeric_limits<T>::quiet_NaN();
+      }
+
+      inline virtual T operator()(const T&, const T&, const T&, const T&, const T&, const T&, const T&, const T&, const T&, const T&,
+                                  const T&, const T&, const T&)
+      {
+         return std::numeric_limits<T>::quiet_NaN();
+      }
+
+      inline virtual T operator()(const T&, const T&, const T&, const T&, const T&, const T&, const T&, const T&, const T&, const T&,
+                                  const T&, const T&, const T&, const T&)
+      {
+         return std::numeric_limits<T>::quiet_NaN();
+      }
+
+      inline virtual T operator()(const T&, const T&, const T&, const T&, const T&, const T&, const T&, const T&, const T&, const T&,
+                                  const T&, const T&, const T&, const T&, const T&)
+      {
+         return std::numeric_limits<T>::quiet_NaN();
+      }
+
+      inline virtual T operator()(const T&, const T&, const T&, const T&, const T&, const T&, const T&, const T&, const T&, const T&,
+                                  const T&, const T&, const T&, const T&, const T&, const T&)
+      {
+         return std::numeric_limits<T>::quiet_NaN();
+      }
+
+      inline virtual T operator()(const T&, const T&, const T&, const T&, const T&, const T&, const T&, const T&, const T&, const T&,
+                                  const T&, const T&, const T&, const T&, const T&, const T&, const T&)
+      {
+         return std::numeric_limits<T>::quiet_NaN();
+      }
+
+      inline virtual T operator()(const T&, const T&, const T&, const T&, const T&, const T&, const T&, const T&, const T&, const T&,
+                                  const T&, const T&, const T&, const T&, const T&, const T&, const T&, const T&)
+      {
+         return std::numeric_limits<T>::quiet_NaN();
+      }
+
+      inline virtual T operator()(const T&, const T&, const T&, const T&, const T&, const T&, const T&, const T&, const T&, const T&,
+                                  const T&, const T&, const T&, const T&, const T&, const T&, const T&, const T&, const T&)
+      {
+         return std::numeric_limits<T>::quiet_NaN();
+      }
+
+      inline virtual T operator()(const T&, const T&, const T&, const T&, const T&, const T&, const T&, const T&, const T&, const T&,
+                                  const T&, const T&, const T&, const T&, const T&, const T&, const T&, const T&, const T&, const T&)
+      {
+         return std::numeric_limits<T>::quiet_NaN();
+      }
+
    };
 
    template <typename T>
@@ -4793,6 +5031,19 @@ namespace exprtk
             return local_data().variable_store.add(variable_name,t,is_constant);
       }
 
+      inline bool add_constant(const std::string& constant_name, const T& value)
+      {
+         if (!valid())
+            return false;
+         else if (!valid_symbol(constant_name))
+            return false;
+         else if (symbol_exists(constant_name))
+            return false;
+         local_data().local_symbol_list_.push_back(value);
+         T& t = local_data().local_symbol_list_.back();
+         return add_variable(constant_name,t,true);
+      }
+
       #ifndef exprtk_disable_string_capabilities
       inline bool add_stringvar(const std::string& stringvar_name, std::string& s, const bool is_constant = false)
       {
@@ -4854,20 +5105,20 @@ namespace exprtk
 
       inline bool add_pi()
       {
-         static T pi = T(details::numeric::constant::pi);
-         return add_variable("pi",pi,true);
+         static const T local_pi = T(details::numeric::constant::pi);
+         return add_constant("pi",local_pi);
       }
 
       inline bool add_epsilon()
       {
-         static T epsilon = std::numeric_limits<T>::epsilon();
-         return add_variable("epsilon",epsilon,true);
+         static const T local_epsilon = std::numeric_limits<T>::epsilon();
+         return add_constant("epsilon",local_epsilon);
       }
 
       inline bool add_infinity()
       {
-         static T infinity = std::numeric_limits<T>::infinity();
-         return add_variable("inf",infinity,true);
+         static const T local_infinity = std::numeric_limits<T>::infinity();
+         return add_constant("inf",local_infinity);
       }
 
       template <typename Allocator,
@@ -5507,7 +5758,11 @@ namespace exprtk
          for (int i = 0; i < static_cast<int>(NumberofParameters); ++i)
          {
             branch[i] = parse_expression();
-            if (i < static_cast<int>(NumberofParameters - 1))
+            if (0 == branch[i])
+            {
+               return error_node();
+            }
+            else if (i < static_cast<int>(NumberofParameters - 1))
             {
                if (!token_is(token_t::comma))
                {
@@ -5540,7 +5795,11 @@ namespace exprtk
          for (int i = 0; i < static_cast<int>(NumberofParameters); ++i)
          {
             branch[i] = parse_expression();
-            if (i < static_cast<int>(NumberofParameters - 1))
+            if (0 == branch[i])
+            {
+               return error_node();
+            }
+            else if (i < static_cast<int>(NumberofParameters - 1))
             {
                if (!token_is(token_t::comma))
                {
@@ -5566,15 +5825,27 @@ namespace exprtk
          expression_node_ptr alternative = 0;
          next_token();
          if (token_is(token_t::lbracket))
+         {
             condition = parse_expression();
+            if (0 == condition)
+               return error_node();
+         }
          else
             return error_node();
          if (token_is(token_t::comma))
+         {
             consequent = parse_expression();
+            if (0 == consequent)
+               return error_node();
+         }
          else
             return error_node();
          if (token_is(token_t::comma))
+         {
             alternative = parse_expression();
+            if (0 == alternative)
+               return error_node();
+         }
          else
             return error_node();
          if (token_is(token_t::rbracket))
@@ -5608,11 +5879,12 @@ namespace exprtk
       inline expression_node_ptr parse_special_function(const unsigned int id)
       {
          //Expect: $fDD(expr0,expr1,expr2) or $fDD(expr0,expr1,expr2,expr3)
+         const std::size_t sf_3_to_4 = details::e_sf35;
          const details::operator_type opt_type = details::operator_type(id + 1000);
-         const std::size_t NumberOfParameters = (id < (details::e_sf26 - 1000)) ? 3 : 4;
+         const std::size_t NumberOfParameters = (id < (sf_3_to_4 - 1000)) ? 3 : 4;
          expression_node_ptr branch3[3];
          expression_node_ptr branch4[4];
-         expression_node_ptr* branch = (id < (details::e_sf26 - 1000)) ? &branch3[0] : &branch4[0];
+         expression_node_ptr* branch = (id < (sf_3_to_4 - 1000)) ? &branch3[0] : &branch4[0];
          expression_node_ptr result  = 0;
          std::fill_n(branch3,3,reinterpret_cast<expression_node_ptr>(0));
          std::fill_n(branch4,4,reinterpret_cast<expression_node_ptr>(0));
@@ -5626,7 +5898,11 @@ namespace exprtk
          for (std::size_t i = 0; i < NumberOfParameters; ++i)
          {
             branch[i] = parse_expression();
-            if (i < (NumberOfParameters - 1))
+            if (0 == branch[i])
+            {
+               return error_node();
+            }
+            else if (i < (NumberOfParameters - 1))
             {
                if (!token_is(token_t::comma))
                {
@@ -5768,6 +6044,16 @@ namespace exprtk
                   case  8 : func_node = parse_function_call< 8>(function); break;
                   case  9 : func_node = parse_function_call< 9>(function); break;
                   case 10 : func_node = parse_function_call<10>(function); break;
+                  case 11 : func_node = parse_function_call<11>(function); break;
+                  case 12 : func_node = parse_function_call<12>(function); break;
+                  case 13 : func_node = parse_function_call<13>(function); break;
+                  case 14 : func_node = parse_function_call<14>(function); break;
+                  case 15 : func_node = parse_function_call<15>(function); break;
+                  case 16 : func_node = parse_function_call<16>(function); break;
+                  case 17 : func_node = parse_function_call<17>(function); break;
+                  case 18 : func_node = parse_function_call<18>(function); break;
+                  case 19 : func_node = parse_function_call<19>(function); break;
+                  case 20 : func_node = parse_function_call<20>(function); break;
                   default : {
                               set_error("parser::parse_branch() - invalid number of parameters for function: " + symbol);
                               return expression_node_ptr(0);
@@ -6353,6 +6639,15 @@ namespace exprtk
                case_stmt(details::e_sf23,details::sf23_op)
                case_stmt(details::e_sf24,details::sf24_op)
                case_stmt(details::e_sf25,details::sf25_op)
+               case_stmt(details::e_sf26,details::sf26_op)
+               case_stmt(details::e_sf27,details::sf27_op)
+               case_stmt(details::e_sf28,details::sf28_op)
+               case_stmt(details::e_sf29,details::sf29_op)
+               case_stmt(details::e_sf30,details::sf30_op)
+               case_stmt(details::e_sf31,details::sf31_op)
+               case_stmt(details::e_sf32,details::sf32_op)
+               case_stmt(details::e_sf33,details::sf33_op)
+               case_stmt(details::e_sf34,details::sf34_op)
                #undef case_stmt
                default : return error_node();
             }
@@ -6396,6 +6691,15 @@ namespace exprtk
                case_stmt(details::e_sf23,details::sf23_op)
                case_stmt(details::e_sf24,details::sf24_op)
                case_stmt(details::e_sf25,details::sf25_op)
+               case_stmt(details::e_sf26,details::sf26_op)
+               case_stmt(details::e_sf27,details::sf27_op)
+               case_stmt(details::e_sf28,details::sf28_op)
+               case_stmt(details::e_sf29,details::sf29_op)
+               case_stmt(details::e_sf30,details::sf30_op)
+               case_stmt(details::e_sf31,details::sf31_op)
+               case_stmt(details::e_sf32,details::sf32_op)
+               case_stmt(details::e_sf33,details::sf33_op)
+               case_stmt(details::e_sf34,details::sf34_op)
                #undef case_stmt
                default : return error_node();
             }
@@ -6407,15 +6711,6 @@ namespace exprtk
             switch (operation)
             {
                #define case_stmt(op0,op1) case op0 : temp_node = node_allocator_->allocate<details::sf4_node<Type,op1<Type> > >(operation,branch); break;
-               case_stmt(details::e_sf26,details::sf26_op)
-               case_stmt(details::e_sf27,details::sf27_op)
-               case_stmt(details::e_sf28,details::sf28_op)
-               case_stmt(details::e_sf29,details::sf29_op)
-               case_stmt(details::e_sf30,details::sf30_op)
-               case_stmt(details::e_sf31,details::sf31_op)
-               case_stmt(details::e_sf32,details::sf32_op)
-               case_stmt(details::e_sf33,details::sf33_op)
-               case_stmt(details::e_sf34,details::sf34_op)
                case_stmt(details::e_sf35,details::sf35_op)
                case_stmt(details::e_sf36,details::sf36_op)
                case_stmt(details::e_sf37,details::sf37_op)
@@ -6440,6 +6735,31 @@ namespace exprtk
                case_stmt(details::e_sf56,details::sf56_op)
                case_stmt(details::e_sf57,details::sf57_op)
                case_stmt(details::e_sf58,details::sf58_op)
+               case_stmt(details::e_sf59,details::sf59_op)
+               case_stmt(details::e_sf60,details::sf60_op)
+               case_stmt(details::e_sf61,details::sf61_op)
+               case_stmt(details::e_sf62,details::sf62_op)
+               case_stmt(details::e_sf63,details::sf63_op)
+               case_stmt(details::e_sf64,details::sf64_op)
+               case_stmt(details::e_sf65,details::sf65_op)
+               case_stmt(details::e_sf66,details::sf66_op)
+               case_stmt(details::e_sf67,details::sf67_op)
+               case_stmt(details::e_sf68,details::sf68_op)
+               case_stmt(details::e_sf69,details::sf69_op)
+               case_stmt(details::e_sf70,details::sf70_op)
+               case_stmt(details::e_sf71,details::sf71_op)
+               case_stmt(details::e_sf72,details::sf72_op)
+               case_stmt(details::e_sf73,details::sf73_op)
+               case_stmt(details::e_sf74,details::sf74_op)
+               case_stmt(details::e_sf75,details::sf75_op)
+               case_stmt(details::e_sf76,details::sf76_op)
+               case_stmt(details::e_sf77,details::sf77_op)
+               case_stmt(details::e_sf78,details::sf78_op)
+               case_stmt(details::e_sf79,details::sf79_op)
+               case_stmt(details::e_sf80,details::sf80_op)
+               case_stmt(details::e_sf81,details::sf81_op)
+               case_stmt(details::e_sf82,details::sf82_op)
+               case_stmt(details::e_sf83,details::sf83_op)
                #undef case_stmt
                default : return error_node();
             }
@@ -6457,15 +6777,6 @@ namespace exprtk
             switch (operation)
             {
                #define case_stmt(op0,op1) case op0 : return node_allocator_->allocate<details::sf4_node<Type,op1<Type> > >(operation,branch);
-               case_stmt(details::e_sf26,details::sf26_op)
-               case_stmt(details::e_sf27,details::sf27_op)
-               case_stmt(details::e_sf28,details::sf28_op)
-               case_stmt(details::e_sf29,details::sf29_op)
-               case_stmt(details::e_sf30,details::sf30_op)
-               case_stmt(details::e_sf31,details::sf31_op)
-               case_stmt(details::e_sf32,details::sf32_op)
-               case_stmt(details::e_sf33,details::sf33_op)
-               case_stmt(details::e_sf34,details::sf34_op)
                case_stmt(details::e_sf35,details::sf35_op)
                case_stmt(details::e_sf36,details::sf36_op)
                case_stmt(details::e_sf37,details::sf37_op)
@@ -6490,6 +6801,31 @@ namespace exprtk
                case_stmt(details::e_sf56,details::sf56_op)
                case_stmt(details::e_sf57,details::sf57_op)
                case_stmt(details::e_sf58,details::sf58_op)
+               case_stmt(details::e_sf59,details::sf59_op)
+               case_stmt(details::e_sf60,details::sf60_op)
+               case_stmt(details::e_sf61,details::sf61_op)
+               case_stmt(details::e_sf62,details::sf62_op)
+               case_stmt(details::e_sf63,details::sf63_op)
+               case_stmt(details::e_sf64,details::sf64_op)
+               case_stmt(details::e_sf65,details::sf65_op)
+               case_stmt(details::e_sf66,details::sf66_op)
+               case_stmt(details::e_sf67,details::sf67_op)
+               case_stmt(details::e_sf68,details::sf68_op)
+               case_stmt(details::e_sf69,details::sf69_op)
+               case_stmt(details::e_sf70,details::sf70_op)
+               case_stmt(details::e_sf71,details::sf71_op)
+               case_stmt(details::e_sf72,details::sf72_op)
+               case_stmt(details::e_sf73,details::sf73_op)
+               case_stmt(details::e_sf74,details::sf74_op)
+               case_stmt(details::e_sf75,details::sf75_op)
+               case_stmt(details::e_sf76,details::sf76_op)
+               case_stmt(details::e_sf77,details::sf77_op)
+               case_stmt(details::e_sf78,details::sf78_op)
+               case_stmt(details::e_sf79,details::sf79_op)
+               case_stmt(details::e_sf80,details::sf80_op)
+               case_stmt(details::e_sf81,details::sf81_op)
+               case_stmt(details::e_sf82,details::sf82_op)
+               case_stmt(details::e_sf83,details::sf83_op)
                #undef case_stmt
                default : return error_node();
             }
@@ -7724,6 +8060,19 @@ namespace exprtk
       struct poly_impl { };
 
       template <typename Type>
+      struct poly_impl <Type,10>
+      {
+         static inline T evaluate(const Type x,
+                                  const Type c10, const Type c9, const Type c8, const Type c7, const Type c6,
+                                  const Type c5,  const Type c4, const Type c3, const Type c2, const Type c1,
+                                  const Type c0)
+         {
+            //p(x) = c_10x^10 + c_9x^9 + c_8x^8 + c_7x^7 + c_6x^6 + c_5x^5 + c_4x^4 + c_3x^3 + c_2x^2 + c_1x^1 + c_0
+            return ((((((((((c10 * x + c9) * x + c8) * x + c7) * x + c6) * x + c5) * x + c4) * x + c3) * x + c2) * x + c1) * x + c0);
+         }
+      };
+
+      template <typename Type>
       struct poly_impl <Type,9>
       {
          static inline T evaluate(const Type x,
@@ -7825,7 +8174,7 @@ namespace exprtk
 
    public:
 
-      polynomial() : exprtk::ifunction<T>(N) {}
+      polynomial() : exprtk::ifunction<T>((N+2 <= 20) ? (N + 2) : std::numeric_limits<std::size_t>::max()) {}
 
       inline virtual T operator()(const T& x, const T& c1, const T& c0)
       {
@@ -7865,6 +8214,16 @@ namespace exprtk
       inline virtual T operator()(const T& x, const T& c8, const T& c7, const T& c6, const T& c5, const T& c4, const T& c3, const T& c2, const T& c1, const T& c0)
       {
          return ((8 == N) ? poly_impl<T,8>::evaluate(x,c8,c7,c6,c5,c4,c3,c2,c1,c0) : std::numeric_limits<T>::quiet_NaN());
+      }
+
+      inline virtual T operator()(const T& x, const T& c9, const T& c8, const T& c7, const T& c6, const T& c5, const T& c4, const T& c3, const T& c2, const T& c1, const T& c0)
+      {
+         return ((9 == N) ? poly_impl<T,9>::evaluate(x,c9,c8,c7,c6,c5,c4,c3,c2,c1,c0) : std::numeric_limits<T>::quiet_NaN());
+      }
+
+      inline virtual T operator()(const T& x, const T& c10, const T& c9, const T& c8, const T& c7, const T& c6, const T& c5, const T& c4, const T& c3, const T& c2, const T& c1, const T& c0)
+      {
+         return ((10 == N) ? poly_impl<T,10>::evaluate(x,c10,c9,c8,c7,c6,c5,c4,c3,c2,c1,c0) : std::numeric_limits<T>::quiet_NaN());
       }
 
       inline virtual T operator()()

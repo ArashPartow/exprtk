@@ -4,7 +4,7 @@ C++ Mathematical Expression Toolkit Library
 The C++ Mathematical Expression Library  (ExprTk) is a simple to  use,
 easy  to  integrate and  extremely  efficient mathematical  expression
 parsing and  evaluation engine.  The parsing  engine supports  various
-kinds of  functional, logic  processing semantics  and is  very easily
+kinds of functional and logic  processing semantics and is very easily
 extendible.
 
 
@@ -48,7 +48,7 @@ expressions that can be parsed and evaluated using the ExprTk library.
 (06) ({1/1}*[1/2]+(1/3))-{1/4}^[1/5]+(1/6)-({1/7}+[1/8]*(1/9))
 (07) a * exp(2 * t) + c
 (08) z := x + sin(2 * pi / y)
-(09) u <- 2 * (pi * z) / (w := x + cos(y / pi))
+(09) u := 2 * (pi * z) / (w := x + cos(y / pi))
 (10) 2x + 3y + 4z + 5w == 2 * x + 3 * y + 4 * z + 5 * w
 (11) 3(x + y) / 2 + 1 == 3 * (x + y) / 2 + 1
 (12) (x + y)3 + 1 / 4 == (x + y) * 3 + 1 / 4
@@ -115,41 +115,54 @@ an  expression  and  by  also  leveraging  the  compiler's  ability to
 correctly optimize such expressions for a given architecture.
 
          3-Parameter                     4-Parameter
- | Prototype  |  Operation  |  | Prototype    |     Operation    |
- +------------+-------------+  +--------------+------------------+
-  sf00(x,y,z) | (x + y) / z     sf26(x,y,z,w) | w + ((x + y) / z)
-  sf01(x,y,z) | (x + y) * z     sf27(x,y,z,w) | w + ((x + y) * z)
-  sf02(x,y,z) | (x - y) / z     sf28(x,y,z,w) | w + ((x - y) / z)
-  sf03(x,y,z) | (x - y) * z     sf29(x,y,z,w) | w + ((x - y) * z)
-  sf04(x,y,z) | (x * y) + z     sf30(x,y,z,w) | w + ((x * y) / z)
-  sf05(x,y,z) | (x * y) - z     sf31(x,y,z,w) | w + ((x * y) * z)
-  sf06(x,y,z) | (x * y) / z     sf32(x,y,z,w) | w + ((x / y) + z)
-  sf07(x,y,z) | (x * y) * z     sf33(x,y,z,w) | w + ((x / y) / z)
-  sf08(x,y,z) | (x / y) + z     sf34(x,y,z,w) | w + ((x / y) * z)
-  sf09(x,y,z) | (x / y) - z     sf35(x,y,z,w) | w - ((x + y) / z)
-  sf10(x,y,z) | (x / y) / z     sf36(x,y,z,w) | w - ((x + y) * z)
-  sf11(x,y,z) | (x / y) * z     sf37(x,y,z,w) | w - ((x - y) / z)
-  sf12(x,y,z) | z / (x + y)     sf38(x,y,z,w) | w - ((x - y) * z)
-  sf13(x,y,z) | z / (x - y)     sf39(x,y,z,w) | w - ((x * y) / z)
-  sf14(x,y,z) | z / (x * y)     sf40(x,y,z,w) | w - ((x * y) * z)
-  sf15(x,y,z) | z / (x / y)     sf41(x,y,z,w) | w - ((x / y) / z)
-  sf16(x,y,z) | z - (x / y)     sf42(x,y,z,w) | w - ((x / y) * z)
-  sf17(x,y,z) | z - (x / y)     sf43(x,y,z,w) | ((x + y) * z) - w
-  sf18(x,y,z) | x * y^2 + z     sf44(x,y,z,w) | ((x - y) * z) - w
-  sf19(x,y,z) | x * y^3 + z     sf45(x,y,z,w) | ((x * y) * z) - w
-  sf20(x,y,z) | x * y^4 + z     sf46(x,y,z,w) | ((x / y) * z) - w
-  sf21(x,y,z) | x * y^5 + z     sf47(x,y,z,w) | ((x + y) / z) - w
-  sf22(x,y,z) | x * y^6 + z     sf48(x,y,z,w) | ((x - y) / z) - w
-  sf23(x,y,z) | x * y^7 + z     sf49(x,y,z,w) | ((x * y) / z) - w
-  sf24(x,y,z) | x * y^8 + z     sf50(x,y,z,w) | ((x / y) / z) - w
-  sf25(x,y,z) | x * y^9 + z     sf51(x,y,z,w) | x * y^2 + z * w^2
-                                sf52(x,y,z,w) | x * y^3 + z * w^3
-                                sf53(x,y,z,w) | x * y^4 + z * w^4
-                                sf54(x,y,z,w) | x * y^5 + z * w^5
-                                sf55(x,y,z,w) | x * y^6 + z * w^6
-                                sf56(x,y,z,w) | x * y^7 + z * w^7
-                                sf57(x,y,z,w) | x * y^8 + z * w^8
-                                sf58(x,y,z,w) | x * y^9 + z * w^9
+ +------------+-------------+   +--------------+------------------+
+ | Prototype  |  Operation  |   | Prototype    |    Operation     |
+ +------------+-------------+   +--------------+------------------+
+  sf00(x,y,z) | (x + y) / z      sf35(x,y,z,w) | x + ((y + z) / w)
+  sf01(x,y,z) | (x + y) * z      sf36(x,y,z,w) | x + ((y + z) * w)
+  sf02(x,y,z) | (x - y) / z      sf37(x,y,z,w) | x + ((y - z) / w)
+  sf03(x,y,z) | (x - y) * z      sf38(x,y,z,w) | x + ((y - z) * w)
+  sf04(x,y,z) | (x * y) + z      sf39(x,y,z,w) | x + ((y * z) / w)
+  sf05(x,y,z) | (x * y) - z      sf40(x,y,z,w) | x + ((y * z) * w)
+  sf06(x,y,z) | (x * y) / z      sf41(x,y,z,w) | x + ((y / z) + w)
+  sf07(x,y,z) | (x * y) * z      sf42(x,y,z,w) | x + ((y / z) / w)
+  sf08(x,y,z) | (x / y) + z      sf43(x,y,z,w) | x + ((y / z) * w)
+  sf09(x,y,z) | (x / y) - z      sf44(x,y,z,w) | x - ((y + z) / w)
+  sf10(x,y,z) | (x / y) / z      sf45(x,y,z,w) | x - ((y + z) * w)
+  sf11(x,y,z) | (x / y) * z      sf46(x,y,z,w) | x - ((y - z) / w)
+  sf12(x,y,z) | x / (y + z)      sf47(x,y,z,w) | x - ((y - z) * w)
+  sf13(x,y,z) | x / (y - z)      sf48(x,y,z,w) | x - ((y * z) / w)
+  sf14(x,y,z) | x / (y * z)      sf49(x,y,z,w) | x - ((y * z) * w)
+  sf15(x,y,z) | x / (y / z)      sf50(x,y,z,w) | x - ((y / z) / w)
+  sf16(x,y,z) | x - (y / z)      sf51(x,y,z,w) | x - ((y / z) * w)
+  sf17(x,y,z) | x - (y / z)      sf52(x,y,z,w) | ((x + y) * z) - w
+  sf18(x,y,z) | x * y^2 + z      sf53(x,y,z,w) | ((x - y) * z) - w
+  sf19(x,y,z) | x * y^3 + z      sf54(x,y,z,w) | ((x * y) * z) - w
+  sf20(x,y,z) | x * y^4 + z      sf55(x,y,z,w) | ((x / y) * z) - w
+  sf21(x,y,z) | x * y^5 + z      sf56(x,y,z,w) | ((x + y) / z) - w
+  sf22(x,y,z) | x * y^6 + z      sf57(x,y,z,w) | ((x - y) / z) - w
+  sf23(x,y,z) | x * y^7 + z      sf58(x,y,z,w) | ((x * y) / z) - w
+  sf24(x,y,z) | x * y^8 + z      sf59(x,y,z,w) | ((x / y) / z) - w
+  sf25(x,y,z) | x * y^9 + z      sf60(x,y,z,w) | (x * y) + (z * w)
+  sf26(x,y,z) | x * log(y)+z     sf61(x,y,z,w) | (x * y) - (z * w)
+  sf27(x,y,z) | x * log(y)-z     sf62(x,y,z,w) | (x / y) + (z / w)
+  sf28(x,y,z) | x * log10(y)+z   sf63(x,y,z,w) | (x / y) - (z / w)
+  sf29(x,y,z) | x * log10(y)-z   sf64(x,y,z,w) | x * y^2 + z * w^2
+  sf30(x,y,z) | x * sin(y)+z     sf65(x,y,z,w) | x * y^3 + z * w^3
+  sf31(x,y,z) | x * sin(y)-z     sf66(x,y,z,w) | x * y^4 + z * w^4
+  sf32(x,y,z) | x * cos(y)+z     sf67(x,y,z,w) | x * y^5 + z * w^5
+  sf33(x,y,z) | x * cos(y)-z     sf68(x,y,z,w) | x * y^6 + z * w^6
+  sf34(x,y,z) | x ? y : z        sf69(x,y,z,w) | x * y^7 + z * w^7
+                                 sf70(x,y,z,w) | x * y^8 + z * w^8
+                                 sf71(x,y,z,w) | x * y^9 + z * w^9
+                                 sf72(x,y,z,w) | (x and y) ? z : w
+                                 sf73(x,y,z,w) | (x  or y) ? z : w
+                                 sf74(x,y,z,w) | (x <   y) ? z : w
+                                 sf75(x,y,z,w) | (x <=  y) ? z : w
+                                 sf76(x,y,z,w) | (x >   y) ? z : w
+                                 sf77(x,y,z,w) | (x >=  y) ? z : w
+                                 sf78(x,y,z,w) | (x ==  y) ? z : w
+                                 sf79(x,y,z,w) | x*sin(y) + z*cos(w)
 
 
 
@@ -164,6 +177,8 @@ and the ability to evaluate strings within expressions.
 (2) exprtk_disable_cardinal_pow_optimisation
 (3) exprtk_disable_extended_optimisations
 (4) exprtk_disable_extended_operator_optimizations
+(5) exprtk_lean_and_mean
+(6) exprtk_lean_and_mean_numeric_only
 
 (1) "exprtk_disable_string_capabilities"
 If defined, the macro will disable all string processing capabilities.
