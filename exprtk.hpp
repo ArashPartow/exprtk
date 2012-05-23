@@ -22,7 +22,7 @@
  * (07) z:=x+sin(2*pi/y)                                        *
  * (08) u:=2*(pi*z)/(w:=x+cos(y/pi))                            *
  * (09) clamp(-1,sin(2*pi*x)+cos(y/2*pi),+1)                    *
- * (10) inrange(-2,m,+2)==if(({-2<=m}and[m<=+2]),1,0)           *
+ * (10) inrange(-2,m,+2)==if(({-2<=m} and [m<=+2]),1,0)         *
  * (11) (12.34sin(x)cos(2y)7+1)==(12.34*sin(x)*cos(2*y)*7+1)    *
  * (12) (x ilike 's*ri?g') and [y<(3z^7+w)]                     *
  *                                                              *
@@ -1946,6 +1946,18 @@ namespace exprtk
       };
 
       template <typename T>
+      inline bool is_true(const expression_node<T>* node)
+      {
+         return (T(0) != node->value());
+      }
+
+      template <typename T>
+      inline bool is_false(const expression_node<T>* node)
+      {
+         return (T(0) == node->value());
+      }
+
+      template <typename T>
       inline bool is_unary_node(const expression_node<T>* node)
       {
          return (details::expression_node<T>::e_unary == node->type());
@@ -1980,6 +1992,22 @@ namespace exprtk
       {
          return !is_variable_node(node);
       }
+
+      template <typename T>
+      class null_node : public expression_node<T>
+      {
+      public:
+
+         inline T value() const
+         {
+            return std::numeric_limits<T>::quiet_NaN();
+         }
+
+         inline typename expression_node<T>::node_type type() const
+         {
+            return expression_node<T>::e_nul;
+         }
+      };
 
       template <typename T>
       class literal_node : public expression_node<T>
@@ -2450,7 +2478,7 @@ namespace exprtk
 
          inline T value() const
          {
-            if (test_->value() != 0)
+            if (is_true(test_))
                return consequent_->value();
             else
                return alternative_->value();
@@ -2495,7 +2523,7 @@ namespace exprtk
          inline T value() const
          {
             T result = T(0);
-            while (test_->value() != T(0))
+            while (is_true(test_))
             {
                result = branch_->value();
             }
@@ -5351,10 +5379,7 @@ namespace exprtk
 
       inline T value() const
       {
-         if (expression_holder_ && expression_holder_->expr)
-            return expression_holder_->expr->value();
-         else
-            return std::numeric_limits<T>::quiet_NaN();
+         return expression_holder_->expr->value();
       }
 
       inline T operator()() const

@@ -1309,7 +1309,7 @@ inline bool run_test05()
    symbol_table.add_variable("y_var123",y);
    symbol_table.add_constants();
 
-   const std::size_t expression_count = 100;
+   const std::size_t expression_count = 10;
    for (std::size_t i = 0; i < expression_count; ++i)
    {
       expression_t e;
@@ -1325,7 +1325,7 @@ inline bool run_test05()
    }
 
    const T pi = T(3.14159265358979323846);
-   const T increment = T(0.0001);
+   const T increment = T(0.001);
 
    while ((x <= T(+1000.0)) && (y <= T(+1000.0)))
    {
@@ -2165,13 +2165,15 @@ inline bool run_test11()
          printf("run_test11() - Error in evaluation!(1)\n");
          return false;
       }
+
       expression.release();
-      T result2 = expression.value();
-      if (result2 == result2)
+
+      if (false == (!expression))
       {
          printf("run_test11() - Error in evaluation!(2)\n");
          return false;
       }
+
       {
          exprtk::parser<T> parser;
          if (!parser.compile(expression_string,expression))
