@@ -17,14 +17,14 @@ operations, functions and processes:
 
 (2) Functions:       min, max, avg, sum, abs, ceil, floor, round,
                      roundn, exp, log, log10, logn, root, sqrt,
-                     clamp, inrange, sgn, erf, erfc
+                     clamp, inrange, sgn, erf, erfc, frac, trunc
 
 (3) Trigonometry:    sin, cos, tan, acos, asin, atan, atan2, cosh,
                      cot, csc, sec, sinh, tanh, rad2deg, deg2rad,
                      deg2grad, grad2deg, hyp
 
 (4) Equalities &
-    Inequalities:    =, ==, <>, !=, <, <=, >, >=,
+    Inequalities:    =, ==, <>, !=, <, <=, >, >=
 
 (5) Boolean logic:   and, or, xor, not, nand, nor, shr, shl, true,
                      false
@@ -32,7 +32,11 @@ operations, functions and processes:
 (6) Conditional &
     Loop statement:  if-then-else, while
 
-(7) Assigment:       :=
+(7) Assignment:      :=
+
+(8) Calculus:        numerical integration and differentiation
+
+Note: The trigonometry functions assume radians as input.
 
 
 
@@ -97,6 +101,7 @@ Expression Library can be found at:
 (*) GNU Compiler Collection (4.3+)
 (*) Intel® C++ Compiler (9.x+)
 (*) Clang/LLVM (1.1+)
+(*) PGI C++ (10.x+)
 (*) Microsoft Visual Studio C++ Compiler (8.1+)
 (*) Comeau C++ Compiler (4.3+)
 
@@ -114,55 +119,58 @@ form by reducing the total number  of nodes in the evaluation tree  of
 an  expression  and  by  also  leveraging  the  compiler's  ability to
 correctly optimize such expressions for a given architecture.
 
-         3-Parameter                     4-Parameter
- +------------+-------------+   +--------------+------------------+
- | Prototype  |  Operation  |   | Prototype    |    Operation     |
- +------------+-------------+   +--------------+------------------+
-  sf00(x,y,z) | (x + y) / z      sf35(x,y,z,w) | x + ((y + z) / w)
-  sf01(x,y,z) | (x + y) * z      sf36(x,y,z,w) | x + ((y + z) * w)
-  sf02(x,y,z) | (x - y) / z      sf37(x,y,z,w) | x + ((y - z) / w)
-  sf03(x,y,z) | (x - y) * z      sf38(x,y,z,w) | x + ((y - z) * w)
-  sf04(x,y,z) | (x * y) + z      sf39(x,y,z,w) | x + ((y * z) / w)
-  sf05(x,y,z) | (x * y) - z      sf40(x,y,z,w) | x + ((y * z) * w)
-  sf06(x,y,z) | (x * y) / z      sf41(x,y,z,w) | x + ((y / z) + w)
-  sf07(x,y,z) | (x * y) * z      sf42(x,y,z,w) | x + ((y / z) / w)
-  sf08(x,y,z) | (x / y) + z      sf43(x,y,z,w) | x + ((y / z) * w)
-  sf09(x,y,z) | (x / y) - z      sf44(x,y,z,w) | x - ((y + z) / w)
-  sf10(x,y,z) | (x / y) / z      sf45(x,y,z,w) | x - ((y + z) * w)
-  sf11(x,y,z) | (x / y) * z      sf46(x,y,z,w) | x - ((y - z) / w)
-  sf12(x,y,z) | x / (y + z)      sf47(x,y,z,w) | x - ((y - z) * w)
-  sf13(x,y,z) | x / (y - z)      sf48(x,y,z,w) | x - ((y * z) / w)
-  sf14(x,y,z) | x / (y * z)      sf49(x,y,z,w) | x - ((y * z) * w)
-  sf15(x,y,z) | x / (y / z)      sf50(x,y,z,w) | x - ((y / z) / w)
-  sf16(x,y,z) | x - (y / z)      sf51(x,y,z,w) | x - ((y / z) * w)
-  sf17(x,y,z) | x - (y / z)      sf52(x,y,z,w) | ((x + y) * z) - w
-  sf18(x,y,z) | x * y^2 + z      sf53(x,y,z,w) | ((x - y) * z) - w
-  sf19(x,y,z) | x * y^3 + z      sf54(x,y,z,w) | ((x * y) * z) - w
-  sf20(x,y,z) | x * y^4 + z      sf55(x,y,z,w) | ((x / y) * z) - w
-  sf21(x,y,z) | x * y^5 + z      sf56(x,y,z,w) | ((x + y) / z) - w
-  sf22(x,y,z) | x * y^6 + z      sf57(x,y,z,w) | ((x - y) / z) - w
-  sf23(x,y,z) | x * y^7 + z      sf58(x,y,z,w) | ((x * y) / z) - w
-  sf24(x,y,z) | x * y^8 + z      sf59(x,y,z,w) | ((x / y) / z) - w
-  sf25(x,y,z) | x * y^9 + z      sf60(x,y,z,w) | (x * y) + (z * w)
-  sf26(x,y,z) | x * log(y)+z     sf61(x,y,z,w) | (x * y) - (z * w)
-  sf27(x,y,z) | x * log(y)-z     sf62(x,y,z,w) | (x / y) + (z / w)
-  sf28(x,y,z) | x * log10(y)+z   sf63(x,y,z,w) | (x / y) - (z / w)
-  sf29(x,y,z) | x * log10(y)-z   sf64(x,y,z,w) | x * y^2 + z * w^2
-  sf30(x,y,z) | x * sin(y)+z     sf65(x,y,z,w) | x * y^3 + z * w^3
-  sf31(x,y,z) | x * sin(y)-z     sf66(x,y,z,w) | x * y^4 + z * w^4
-  sf32(x,y,z) | x * cos(y)+z     sf67(x,y,z,w) | x * y^5 + z * w^5
-  sf33(x,y,z) | x * cos(y)-z     sf68(x,y,z,w) | x * y^6 + z * w^6
-  sf34(x,y,z) | x ? y : z        sf69(x,y,z,w) | x * y^7 + z * w^7
-                                 sf70(x,y,z,w) | x * y^8 + z * w^8
-                                 sf71(x,y,z,w) | x * y^9 + z * w^9
-                                 sf72(x,y,z,w) | (x and y) ? z : w
-                                 sf73(x,y,z,w) | (x  or y) ? z : w
-                                 sf74(x,y,z,w) | (x <   y) ? z : w
-                                 sf75(x,y,z,w) | (x <=  y) ? z : w
-                                 sf76(x,y,z,w) | (x >   y) ? z : w
-                                 sf77(x,y,z,w) | (x >=  y) ? z : w
-                                 sf78(x,y,z,w) | (x ==  y) ? z : w
-                                 sf79(x,y,z,w) | x*sin(y) + z*cos(w)
+          3-Parameter                      4-Parameter
+ +-------------+-------------+   +--------------+------------------+
+ |  Prototype  |  Operation  |   |  Prototype   |    Operation     |
+ +-------------+-------------+   +--------------+------------------+
+   sf00(x,y,z) | (x + y) / z      sf35(x,y,z,w) | x + ((y + z) / w)
+   sf01(x,y,z) | (x + y) * z      sf36(x,y,z,w) | x + ((y + z) * w)
+   sf02(x,y,z) | (x - y) / z      sf37(x,y,z,w) | x + ((y - z) / w)
+   sf03(x,y,z) | (x - y) * z      sf38(x,y,z,w) | x + ((y - z) * w)
+   sf04(x,y,z) | (x * y) + z      sf39(x,y,z,w) | x + ((y * z) / w)
+   sf05(x,y,z) | (x * y) - z      sf40(x,y,z,w) | x + ((y * z) * w)
+   sf06(x,y,z) | (x * y) / z      sf41(x,y,z,w) | x + ((y / z) + w)
+   sf07(x,y,z) | (x * y) * z      sf42(x,y,z,w) | x + ((y / z) / w)
+   sf08(x,y,z) | (x / y) + z      sf43(x,y,z,w) | x + ((y / z) * w)
+   sf09(x,y,z) | (x / y) - z      sf44(x,y,z,w) | x - ((y + z) / w)
+   sf10(x,y,z) | (x / y) / z      sf45(x,y,z,w) | x - ((y + z) * w)
+   sf11(x,y,z) | (x / y) * z      sf46(x,y,z,w) | x - ((y - z) / w)
+   sf12(x,y,z) | x / (y + z)      sf47(x,y,z,w) | x - ((y - z) * w)
+   sf13(x,y,z) | x / (y - z)      sf48(x,y,z,w) | x - ((y * z) / w)
+   sf14(x,y,z) | x / (y * z)      sf49(x,y,z,w) | x - ((y * z) * w)
+   sf15(x,y,z) | x / (y / z)      sf50(x,y,z,w) | x - ((y / z) / w)
+   sf16(x,y,z) | x - (y / z)      sf51(x,y,z,w) | x - ((y / z) * w)
+   sf17(x,y,z) | x - (y / z)      sf52(x,y,z,w) | ((x + y) * z) - w
+   sf18(x,y,z) | x * y^2 + z      sf53(x,y,z,w) | ((x - y) * z) - w
+   sf19(x,y,z) | x * y^3 + z      sf54(x,y,z,w) | ((x * y) * z) - w
+   sf20(x,y,z) | x * y^4 + z      sf55(x,y,z,w) | ((x / y) * z) - w
+   sf21(x,y,z) | x * y^5 + z      sf56(x,y,z,w) | ((x + y) / z) - w
+   sf22(x,y,z) | x * y^6 + z      sf57(x,y,z,w) | ((x - y) / z) - w
+   sf23(x,y,z) | x * y^7 + z      sf58(x,y,z,w) | ((x * y) / z) - w
+   sf24(x,y,z) | x * y^8 + z      sf59(x,y,z,w) | ((x / y) / z) - w
+   sf25(x,y,z) | x * y^9 + z      sf60(x,y,z,w) | (x * y) + (z * w)
+   sf26(x,y,z) | x * log(y)+z     sf61(x,y,z,w) | (x * y) - (z * w)
+   sf27(x,y,z) | x * log(y)-z     sf62(x,y,z,w) | (x * y) + (z / w)
+   sf28(x,y,z) | x * log10(y)+z   sf63(x,y,z,w) | (x * y) - (z / w)
+   sf29(x,y,z) | x * log10(y)-z   sf64(x,y,z,w) | (x / y) + (z / w)
+   sf30(x,y,z) | x * sin(y)+z     sf65(x,y,z,w) | (x / y) - (z / w)
+   sf31(x,y,z) | x * sin(y)-z     sf66(x,y,z,w) | (x / y) - (z * w)
+   sf32(x,y,z) | x * cos(y)+z     sf67(x,y,z,w) | x * y^2 + z * w^2
+   sf33(x,y,z) | x * cos(y)-z     sf68(x,y,z,w) | x * y^3 + z * w^3
+   sf34(x,y,z) | x ? y : z        sf69(x,y,z,w) | x * y^4 + z * w^4
+                                  sf70(x,y,z,w) | x * y^5 + z * w^5
+                                  sf71(x,y,z,w) | x * y^6 + z * w^6
+                                  sf72(x,y,z,w) | x * y^7 + z * w^7
+                                  sf73(x,y,z,w) | x * y^8 + z * w^8
+                                  sf74(x,y,z,w) | x * y^9 + z * w^9
+                                  sf75(x,y,z,w) | (x and y) ? z : w
+                                  sf76(x,y,z,w) | (x  or y) ? z : w
+                                  sf77(x,y,z,w) | (x <   y) ? z : w
+                                  sf78(x,y,z,w) | (x <=  y) ? z : w
+                                  sf79(x,y,z,w) | (x >   y) ? z : w
+                                  sf80(x,y,z,w) | (x >=  y) ? z : w
+                                  sf81(x,y,z,w) | (x ==  y) ? z : w
+                                  sf82(x,y,z,w) | x*sin(y) + z*cos(w)
 
 
 
@@ -179,6 +187,7 @@ and the ability to evaluate strings within expressions.
 (4) exprtk_disable_extended_operator_optimizations
 (5) exprtk_lean_and_mean
 (6) exprtk_lean_and_mean_numeric_only
+(7) exprtk_enable_all_optimizations
 
 (1) "exprtk_disable_string_capabilities"
 If defined, the macro will disable all string processing capabilities.
@@ -218,9 +227,80 @@ both modes [3] and [4].
 The mode when this macro is  defined, is 'lean and mean' coupled  with
 all string capabilities disabled [1].
 
+(7) "exprtk_enable_all_optimizations"
+When defined all optimization mechanisms are turned on, including  all
+string processing related optimizations. In short nothing is disabled.
+This mode will cause older  C++ compilers and or compilers  running on
+slower machines with limited RAM to nearly come to a grinding halt  as
+per (3). This  mode will however  produce the most  efficient and high
+performance expression evaluation results. It is advised to have  this
+mode  turned  on  for final  builds  and  not to  be  used  during the
+development cycle.
+
 Note:  Foregoing  a  few  extra  clock  cycles  during  compilation in
 exchange  for a  dramatic increase in performance  during run-time  is
 always a worthy undertaking.
+
+
+
+[SIMPLE EXAMPLE]
+--- snip ---
+#include <cstdio>
+#include <string>
+
+#include "exprtk.hpp"
+
+int main()
+{
+   typedef exprtk::symbol_table<double> symbol_table_t;
+   typedef exprtk::expression<double>     expression_t;
+   typedef exprtk::parser<double>             parser_t;
+   typedef exprtk::parser_error::type          error_t;
+
+   std::string expression_str = "z := 2 [sin(x/pi)^3 + cos(pi/y)^4]";
+
+   double x = 1.1;
+   double y = 2.2;
+   double z = 3.3;
+
+   symbol_table_t symbol_table;
+   symbol_table.add_constants();
+   symbol_table.add_variable("x",x);
+   symbol_table.add_variable("y",y);
+   symbol_table.add_variable("z",z);
+
+   expression_t expression;
+   expression.register_symbol_table(symbol_table);
+
+   parser_t parser;
+
+   if (!parser.compile(expression_str,expression))
+   {
+      printf("Error: %s\tExpression: %s\n",
+             parser.error().c_str(),
+             expression_str.c_str());
+
+      for (std::size_t i = 0; i < parser.error_count(); ++i)
+      {
+         error_t error = parser.get_error(i);
+         printf("Err: %02d Pos: %02d Type: [%s] Msg: %s Expr: %s\n",
+                static_cast<int>(i),
+                static_cast<int>(error.token.position),
+                exprtk::parser_error::to_str(error.mode).c_str(),
+                error.diagnostic.c_str(),
+                expression_str.c_str());
+      }
+
+      return 1;
+   }
+
+   double result = expression.value();
+
+   printf("Result: %10.5f\n",result);
+
+   return 0;
+}
+--- snip ---
 
 
 

@@ -2,8 +2,8 @@
  **************************************************************
  *         C++ Mathematical Expression Toolkit Library        *
  *                                                            *
- * Benchmarks                                                 *
- * Author: Arash Partow (1999-2012)                           *
+ * ExprTk vs Native Benchmarks                                *
+ * Author: Arash Partow (1999-2013)                           *
  * URL: http://www.partow.net/programming/exprtk/index.html   *
  *                                                            *
  * Copyright notice:                                          *
@@ -18,6 +18,7 @@
 
 #include <cstdio>
 #include <cmath>
+#include <iostream>
 #include <string>
 #include <deque>
 
@@ -40,7 +41,16 @@ const std::string expression_list[] = {
                                          "max(3.33, min(sqrt(1 - sin(2 * x) + cos(pi / y) / 3), 1.11))",
                                          "if(avg(x,y) <= x + y, x - y, x * y) + 2 * pi / x"
                                       };
+
 const std::size_t expression_list_size = sizeof(expression_list) / sizeof(std::string);
+
+
+static const double lower_bound_x = -100.0;
+static const double lower_bound_y = -100.0;
+static const double upper_bound_x = +100.0;
+static const double upper_bound_y = +100.0;
+static const double delta = 0.0173;
+
 
 template <typename T,
           typename Allocator,
@@ -54,102 +64,95 @@ bool load_expression(exprtk::symbol_table<T>& symbol_table,
    {
       exprtk::expression<double> expression;
       expression.register_symbol_table(symbol_table);
+
       if (!parser.compile(expression_list[i],expression,opt_level))
       {
-         std::cout << "[load_expression] - Parser Error: " << parser.error() << "\tExpression: " << expression_list[i] << std::endl;
+         printf("[load_expression] - Parser Error: %s\tExpression: %s\n",
+                parser.error().c_str(),
+                expression_list[i].c_str());
+
          return false;
       }
+
       expr_seq.push_back(expression);
    }
    return true;
 }
 
 template <typename T>
-void run_benchmark(T& x, T& y,
-                   exprtk::expression<T>& expression,
-                   const std::string& expr_string)
+void run_exprtk_benchmark(T& x, T& y,
+                          exprtk::expression<T>& expression,
+                          const std::string& expr_string)
 {
-   static const double lower_bound = -85.0;
-   static const double upper_bound = +85.0;
-   double delta = 0.01;
    double total = 0.0;
    unsigned int count = 0;
+
    exprtk::timer timer;
    timer.start();
-   for (x = lower_bound; x <= upper_bound; x += delta)
+
+   for (x = lower_bound_x; x <= upper_bound_x; x += delta)
    {
-      for (y = lower_bound; y <= upper_bound; y += delta)
+      for (y = lower_bound_y; y <= upper_bound_y; y += delta)
       {
          total += expression.value();
          ++count;
       }
    }
+
    timer.stop();
+
    if (T(0.0) != total)
       printf("[exprtk] Total Time:%12.8f  Rate:%14.3fevals/sec Expression: %s\n",
              timer.time(),
              count / timer.time(),
              expr_string.c_str());
    else
-      std::cerr << "Error - expression: " << expr_string << "\n";
+      printf("run_exprtk_benchmark() - Error running benchmark for expression: %s\n",expr_string.c_str());
 }
 
-const double pi = 3.14159265358979323846;
-
-template <typename T>
-inline T avg(const T v1, const T v2)
-{
-   return (v1 + v2) / T(2.0);
-}
-
-template <typename T>
-inline T clamp(const T l, const T v, const T u)
-{
-   return ((v < l) ? l : ((v > u) ? u : v));
-}
-
-template <typename T> inline T func00(const T x, const T y) { return (y + x); }
-template <typename T> inline T func01(const T x, const T y) { return T(2.0) * (y + x); }
-template <typename T> inline T func02(const T x, const T y) { return (T(2.0) * y + T(2.0) * x); }
-template <typename T> inline T func03(const T x, const T y) { return (y + x / y) * (x - y / x); }
-template <typename T> inline T func04(const T x, const T y) { return x / ((x + y) * (x - y)) / y; }
-template <typename T> inline T func05(const T x, const T y) { return T(1.0) - ((x * y) + (y / x)) - T(3.0); }
-template <typename T> inline T func06(const T x, const T y) { return (1.1*pow(x,T(1.0))+2.2*pow(y,T(2.0))-3.3*pow(x,T(3.0))+4.4*pow(y,T(15.0))-5.5*pow(x,T(23.0))+6.6*pow(y,T(55.0))); }
-template <typename T> inline T func07(const T x, const T y) { return std::sin(T(2.0) * x) + std::cos(pi / y); }
-template <typename T> inline T func08(const T x, const T y) { return T(1.0) - std::sin(2.0 * x) + std::cos(pi / y); }
-template <typename T> inline T func09(const T x, const T y) { return std::sqrt(T(111.111) - std::sin(T(2.0) * x) + std::cos(pi / y) / T(333.333)); }
-template <typename T> inline T func10(const T x, const T y) { return (std::pow(x,T(2.0)) / std::sin(T(2.0) * pi / y)) -x / T(2.0); }
-template <typename T> inline T func11(const T x, const T y) { return (x + (std::cos(y - std::sin(2 / x * pi)) - std::sin(x - std::cos(2 * y / pi))) - y); }
-template <typename T> inline T func12(const T x, const T y) { return clamp(T(-1.0), std::sin(T(2.0) * pi * x) + std::cos(y / T(2.0) * pi), + T(1.0)); }
-template <typename T> inline T func13(const T x, const T y) { return std::max(T(3.33), std::min(sqrt(T(1.0) - std::sin(T(2.0) * x) + std::cos(pi / y) / T(3.0)), T(1.11))); }
-template <typename T> inline T func14(const T x, const T y) { return ((avg(x,y) <= x + y) ? x - y : x * y) + T(2.0) * pi / x; }
+template <typename T> inline T func00(const T x, const T y);
+template <typename T> inline T func01(const T x, const T y);
+template <typename T> inline T func02(const T x, const T y);
+template <typename T> inline T func03(const T x, const T y);
+template <typename T> inline T func04(const T x, const T y);
+template <typename T> inline T func05(const T x, const T y);
+template <typename T> inline T func06(const T x, const T y);
+template <typename T> inline T func07(const T x, const T y);
+template <typename T> inline T func08(const T x, const T y);
+template <typename T> inline T func09(const T x, const T y);
+template <typename T> inline T func10(const T x, const T y);
+template <typename T> inline T func11(const T x, const T y);
+template <typename T> inline T func12(const T x, const T y);
+template <typename T> inline T func13(const T x, const T y);
+template <typename T> inline T func14(const T x, const T y);
 
 template <typename T, typename NativeFunction>
 void run_native_benchmark(T& x, T& y, NativeFunction f, const std::string& expr_string)
 {
-   static const double lower_bound = -85.0;
-   static const double upper_bound = +85.0;
-   double delta = 0.01;
    double total = 0.0;
    unsigned int count = 0;
+
    exprtk::timer timer;
    timer.start();
-   for (x = lower_bound; x <= upper_bound; x += delta)
+
+   for (x = lower_bound_x; x <= upper_bound_x; x += delta)
    {
-      for (y = lower_bound; y <= upper_bound; y += delta)
+      for (y = lower_bound_y; y <= upper_bound_y; y += delta)
       {
          total += f(x,y);
          ++count;
       }
    }
+
    timer.stop();
+
    if (T(0.0) != total)
       printf("[native] Total Time:%12.8f  Rate:%14.3fevals/sec Expression: %s\n",
              timer.time(),
              count / timer.time(),
              expr_string.c_str());
    else
-      std::cerr << "Error - expression: " << expr_string << "\n";
+      printf("run_native_benchmark() - Error running benchmark for expression: %s\n",expr_string.c_str());
 }
 
 template <typename T>
@@ -158,20 +161,28 @@ bool run_parse_benchmark(exprtk::symbol_table<T>& symbol_table)
    static const std::size_t rounds = 1000000;
    exprtk::parser<double> parser;
    exprtk::expression<double> expression;
+
    expression.register_symbol_table(symbol_table);
+
    for (std::size_t i = 0; i < expression_list_size; ++i)
    {
       exprtk::timer timer;
       timer.start();
+
       for (std::size_t r = 0; r < rounds; ++r)
       {
          if (!parser.compile(expression_list[i],expression))
          {
-            std::cout << "[run_parse_benchmark] - Parser Error: " << parser.error() << "\tExpression: " << expression_list[i] << std::endl;
+            printf("[run_parse_benchmark] - Parser Error: %s\tExpression: %s\n",
+                   parser.error().c_str(),
+                   expression_list[i].c_str());
+
             return false;
          }
       }
+
       timer.stop();
+
       printf("[parse] Total Time:%12.8f  Rate:%14.3fparse/sec Expression: %s\n",
              timer.time(),
              rounds / timer.time(),
@@ -180,8 +191,12 @@ bool run_parse_benchmark(exprtk::symbol_table<T>& symbol_table)
    return true;
 }
 
+void pgo_primer();
+
 int main()
 {
+   pgo_primer();
+
    double x = 0;
    double y = 0;
 
@@ -204,16 +219,16 @@ int main()
    }
 
    {
-      std::cout << "--- EXPRTK [Opt All]---" << std::endl;
+      std::cout << "--- EXPRTK [All Optimisations] ---" << std::endl;
       for (std::size_t i = 0; i < optimized_expr_list.size(); ++i)
       {
-         run_benchmark(x,y,optimized_expr_list[i],expression_list[i]);
+         run_exprtk_benchmark(x,y,optimized_expr_list[i],expression_list[i]);
       }
 
-      std::cout << "--- EXPRTK [No Opt]---" << std::endl;
+      std::cout << "--- EXPRTK [No Optimisations] ---" << std::endl;
       for (std::size_t i = 0; i < expr_list.size(); ++i)
       {
-         run_benchmark(x,y,expr_list[i],expression_list[i]);
+         run_exprtk_benchmark(x,y,expr_list[i],expression_list[i]);
       }
    }
 
@@ -242,4 +257,143 @@ int main()
    }
 
    return 0;
+}
+
+void pgo_primer()
+{
+   exprtk::pgo_primer<double>();
+
+   static const double lower_bound_x = -50.0;
+   static const double lower_bound_y = -50.0;
+   static const double upper_bound_x = +50.0;
+   static const double upper_bound_y = +50.0;
+   static const double delta = 0.03;
+
+   double total = 0.0;
+
+   for (double x = lower_bound_x; x <= upper_bound_x; x += delta)
+   {
+      for (double y = lower_bound_y; y <= upper_bound_y; y += delta)
+      {
+         total += func00<double>(x,y);
+         total += func01<double>(x,y);
+         total += func02<double>(x,y);
+         total += func03<double>(x,y);
+         total += func04<double>(x,y);
+         total += func05<double>(x,y);
+         total += func06<double>(x,y);
+         total += func07<double>(x,y);
+         total += func08<double>(x,y);
+         total += func09<double>(x,y);
+         total += func10<double>(x,y);
+         total += func11<double>(x,y);
+         total += func12<double>(x,y);
+         total += func13<double>(x,y);
+         total += func14<double>(x,y);
+      }
+   }
+}
+
+const double pi = 3.14159265358979323846;
+
+template <typename T>
+inline T avg(const T v1, const T v2)
+{
+   return (v1 + v2) / T(2.0);
+}
+
+template <typename T>
+inline T clamp(const T l, const T v, const T u)
+{
+   return ((v < l) ? l : ((v > u) ? u : v));
+}
+
+template <typename T>
+inline T func00(const T x, const T y)
+{
+   return (y + x);
+}
+
+template <typename T>
+inline T func01(const T x, const T y)
+{
+   return T(2.0) * (y + x);
+}
+
+template <typename T>
+inline T func02(const T x, const T y)
+{
+   return (T(2.0) * y + T(2.0) * x);
+}
+
+template <typename T>
+inline T func03(const T x, const T y)
+{
+   return (y + x / y) * (x - y / x);
+}
+
+template <typename T>
+inline T func04(const T x, const T y)
+{
+   return x / ((x + y) * (x - y)) / y;
+}
+
+template <typename T>
+inline T func05(const T x, const T y)
+{
+   return T(1.0) - ((x * y) + (y / x)) - T(3.0);
+}
+
+template <typename T>
+inline T func06(const T x, const T y)
+{
+   return (1.1*pow(x,T(1.0))+2.2*pow(y,T(2.0))-3.3*pow(x,T(3.0))+4.4*pow(y,T(15.0))-5.5*pow(x,T(23.0))+6.6*pow(y,T(55.0)));
+}
+
+template <typename T>
+inline T func07(const T x, const T y)
+{
+   return std::sin(T(2.0) * x) + std::cos(pi / y);
+}
+
+template <typename T>
+inline T func08(const T x, const T y)
+{
+   return T(1.0) - std::sin(2.0 * x) + std::cos(pi / y);
+}
+
+template <typename T>
+inline T func09(const T x, const T y)
+{
+   return std::sqrt(T(111.111) - std::sin(T(2.0) * x) + std::cos(pi / y) / T(333.333));
+}
+
+template <typename T>
+inline T func10(const T x, const T y)
+{
+   return (std::pow(x,T(2.0)) / std::sin(T(2.0) * pi / y)) -x / T(2.0);
+}
+
+template <typename T>
+inline T func11(const T x, const T y)
+{
+   return (x + (std::cos(y - std::sin(2 / x * pi)) - std::sin(x - std::cos(2 * y / pi))) - y);
+}
+
+template <typename T>
+inline T func12(const T x, const T y)
+{
+   return clamp(T(-1.0), std::sin(T(2.0) * pi * x) + std::cos(y / T(2.0) * pi), + T(1.0));
+}
+
+template <typename T>
+inline T func13(const T x, const T y)
+{
+   return std::max(T(3.33), std::min(sqrt(T(1.0) - std::sin(T(2.0) * x) + std::cos(pi / y) / T(3.0)), T(1.11)));
+}
+
+template <typename T>
+inline T func14(const T x, const T y)
+{
+   return ((avg(x,y) <= x + y) ? x - y : x * y) + T(2.0) * pi / x;
 }
