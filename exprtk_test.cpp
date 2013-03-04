@@ -20,6 +20,7 @@
 #include <cstddef>
 #include <cstdio>
 #include <deque>
+#include <iostream>
 #include <string>
 #include <vector>
 
@@ -365,16 +366,16 @@ static const test_t test_list[] =
                            test_t("1.1^(1.1 * 2.2)", 1.25941916576299080582),
                            test_t("2.2^(1.1 * 3.3)",17.49823848953534759743),
                            test_t("3.3^(1.1 * 2.2)",17.98058156638874965269),
-                           test_t("1.23^3 == (1.23 * 1.23 * 1.23)",1.0),
+                           test_t("equal(1.23^3,(1.23 * 1.23 * 1.23))",1.0),
                            test_t("equal(1.23^-3,1/(1.23 * 1.23 * 1.23))",1.0),
-                           test_t("(2.1 + 1.23^3) == (2.1 + [1.23 * 1.23 * 1.23])",1.0),
-                           test_t("(2.1 - 1.23^3) == (2.1 - [1.23 * 1.23 * 1.23])",1.0),
-                           test_t("(2.1 * 1.23^3) == (2.1 * [1.23 * 1.23 * 1.23])",1.0),
-                           test_t("(2.1 / 1.23^3) == (2.1 / [1.23 * 1.23 * 1.23])",1.0),
-                           test_t("(1.23^3 + 2.1) == ({1.23 * 1.23 * 1.23} + 2.1)",1.0),
-                           test_t("(1.23^3 - 2.1) == ({1.23 * 1.23 * 1.23} - 2.1)",1.0),
-                           test_t("(1.23^3 * 2.1) == ({1.23 * 1.23 * 1.23} * 2.1)",1.0),
-                           test_t("(1.23^3 / 2.1) == ({1.23 * 1.23 * 1.23} / 2.1)",1.0),
+                           test_t("equal((2.1 + 1.23^3),(2.1 + [1.23 * 1.23 * 1.23]))",1.0),
+                           test_t("equal((2.1 - 1.23^3),(2.1 - [1.23 * 1.23 * 1.23]))",1.0),
+                           test_t("equal((2.1 * 1.23^3),(2.1 * [1.23 * 1.23 * 1.23]))",1.0),
+                           test_t("equal((2.1 / 1.23^3),(2.1 / [1.23 * 1.23 * 1.23]))",1.0),
+                           test_t("equal((1.23^3 + 2.1),({1.23 * 1.23 * 1.23} + 2.1))",1.0),
+                           test_t("equal((1.23^3 - 2.1),({1.23 * 1.23 * 1.23} - 2.1))",1.0),
+                           test_t("equal((1.23^3 * 2.1),({1.23 * 1.23 * 1.23} * 2.1))",1.0),
+                           test_t("equal((1.23^3 / 2.1),({1.23 * 1.23 * 1.23} / 2.1))",1.0),
                            test_t("equal(1.0^(1.0/2.0),sqrt(1.0))",1.0),
                            test_t("equal(1.0^(1.0/2.0),root(1.0,2.0))",1.0),
                            test_t("equal(1.0^(1.0/3.0),root(1.0,3.0))",1.0),
@@ -646,87 +647,102 @@ static const test_t test_list[] =
                            test_t("sgn(-3)",-1.0),
                            test_t("equal($f00(1.1,2.2,3.3),((1.1+2.2)/3.3))",1.0),
                            test_t("equal($f01(1.1,2.2,3.3),((1.1+2.2)*3.3))",1.0),
-                           test_t("equal($f02(1.1,2.2,3.3),((1.1-2.2)/3.3))",1.0),
-                           test_t("equal($f03(1.1,2.2,3.3),((1.1-2.2)*3.3))",1.0),
-                           test_t("equal($f04(1.1,2.2,3.3),((1.1*2.2)+3.3))",1.0),
-                           test_t("equal($f05(1.1,2.2,3.3),((1.1*2.2)-3.3))",1.0),
-                           test_t("equal($f06(1.1,2.2,3.3),((1.1*2.2)/3.3))",1.0),
-                           test_t("equal($f07(1.1,2.2,3.3),((1.1*2.2)*3.3))",1.0),
-                           test_t("equal($f08(1.1,2.2,3.3),((1.1/2.2)+3.3))",1.0),
-                           test_t("equal($f09(1.1,2.2,3.3),((1.1/2.2)-3.3))",1.0),
-                           test_t("equal($f10(1.1,2.2,3.3),((1.1/2.2)/3.3))",1.0),
-                           test_t("equal($f11(1.1,2.2,3.3),((1.1/2.2)*3.3))",1.0),
-                           test_t("equal($f12(1.1,2.2,3.3),(1.1/(2.2+3.3)))",1.0),
-                           test_t("equal($f13(1.1,2.2,3.3),(1.1/(2.2-3.3)))",1.0),
-                           test_t("equal($f14(1.1,2.2,3.3),(1.1/(2.2*3.3)))",1.0),
-                           test_t("equal($f15(1.1,2.2,3.3),(1.1/(2.2/3.3)))",1.0),
-                           test_t("equal($f16(1.1,2.2,3.3),(1.1-(2.2/3.3)))",1.0),
-                           test_t("equal($f17(1.1,2.2,3.3),(1.1-(2.2/3.3)))",1.0),
-                           test_t("equal($f18(1.1,2.2,3.3),(1.1*2.2^2+3.3))",1.0),
-                           test_t("equal($f19(1.1,2.2,3.3),(1.1*2.2^3+3.3))",1.0),
-                           test_t("equal($f20(1.1,2.2,3.3),(1.1*2.2^4+3.3))",1.0),
-                           test_t("equal($f21(1.1,2.2,3.3),(1.1*2.2^5+3.3))",1.0),
-                           test_t("equal($f22(1.1,2.2,3.3),(1.1*2.2^6+3.3))",1.0),
-                           test_t("equal($f23(1.1,2.2,3.3),(1.1*2.2^7+3.3))",1.0),
-                           test_t("equal($f24(1.1,2.2,3.3),(1.1*2.2^8+3.3))",1.0),
-                           test_t("equal($f25(1.1,2.2,3.3),(1.1*2.2^9+3.3))",1.0),
-                           test_t("equal($f26(1.1,2.2,3.3),(1.1*log(2.2)+3.3))",1.0),
-                           test_t("equal($f27(1.1,2.2,3.3),(1.1*log(2.2)-3.3))",1.0),
-                           test_t("equal($f28(1.1,2.2,3.3),(1.1*log10(2.2)+3.3))",1.0),
-                           test_t("equal($f29(1.1,2.2,3.3),(1.1*log10(2.2)-3.3))",1.0),
-                           test_t("equal($f30(1.1,2.2,3.3),(1.1*sin(2.2)+3.3))",1.0),
-                           test_t("equal($f31(1.1,2.2,3.3),(1.1*sin(2.2)-3.3))",1.0),
-                           test_t("equal($f32(1.1,2.2,3.3),(1.1*cos(2.2)+3.3))",1.0),
-                           test_t("equal($f33(1.1,2.2,3.3),(1.1*cos(2.2)-3.3))",1.0),
-                           test_t("equal($f34(1.1,2.2,3.3),if((0 != 1.1),2.2,3.3))",1.0),
-                           test_t("equal($f35(1.1,2.2,3.3,4.4),(1.1+((2.2+3.3)/4.4)))",1.0),
-                           test_t("equal($f36(1.1,2.2,3.3,4.4),(1.1+((2.2+3.3)*4.4)))",1.0),
-                           test_t("equal($f37(1.1,2.2,3.3,4.4),(1.1+((2.2-3.3)/4.4)))",1.0),
-                           test_t("equal($f38(1.1,2.2,3.3,4.4),(1.1+((2.2-3.3)*4.4)))",1.0),
-                           test_t("equal($f39(1.1,2.2,3.3,4.4),(1.1+((2.2*3.3)/4.4)))",1.0),
-                           test_t("equal($f40(1.1,2.2,3.3,4.4),(1.1+((2.2*3.3)*4.4)))",1.0),
-                           test_t("equal($f41(1.1,2.2,3.3,4.4),(1.1+((2.2/3.3)+4.4)))",1.0),
-                           test_t("equal($f42(1.1,2.2,3.3,4.4),(1.1+((2.2/3.3)/4.4)))",1.0),
-                           test_t("equal($f43(1.1,2.2,3.3,4.4),(1.1+((2.2/3.3)*4.4)))",1.0),
-                           test_t("equal($f44(1.1,2.2,3.3,4.4),(1.1-((2.2+3.3)/4.4)))",1.0),
-                           test_t("equal($f45(1.1,2.2,3.3,4.4),(1.1-((2.2+3.3)*4.4)))",1.0),
-                           test_t("equal($f46(1.1,2.2,3.3,4.4),(1.1-((2.2-3.3)/4.4)))",1.0),
-                           test_t("equal($f47(1.1,2.2,3.3,4.4),(1.1-((2.2-3.3)*4.4)))",1.0),
-                           test_t("equal($f48(1.1,2.2,3.3,4.4),(1.1-((2.2*3.3)/4.4)))",1.0),
-                           test_t("equal($f49(1.1,2.2,3.3,4.4),(1.1-((2.2*3.3)*4.4)))",1.0),
-                           test_t("equal($f50(1.1,2.2,3.3,4.4),(1.1-((2.2/3.3)/4.4)))",1.0),
-                           test_t("equal($f51(1.1,2.2,3.3,4.4),(1.1-((2.2/3.3)*4.4)))",1.0),
-                           test_t("equal($f52(1.1,2.2,3.3,4.4),(((1.1+2.2)*3.3)-4.4))",1.0),
-                           test_t("equal($f53(1.1,2.2,3.3,4.4),(((1.1-2.2)*3.3)-4.4))",1.0),
-                           test_t("equal($f54(1.1,2.2,3.3,4.4),(((1.1*2.2)*3.3)-4.4))",1.0),
-                           test_t("equal($f55(1.1,2.2,3.3,4.4),(((1.1/2.2)*3.3)-4.4))",1.0),
-                           test_t("equal($f56(1.1,2.2,3.3,4.4),(((1.1+2.2)/3.3)-4.4))",1.0),
-                           test_t("equal($f57(1.1,2.2,3.3,4.4),(((1.1-2.2)/3.3)-4.4))",1.0),
-                           test_t("equal($f58(1.1,2.2,3.3,4.4),(((1.1*2.2)/3.3)-4.4))",1.0),
-                           test_t("equal($f59(1.1,2.2,3.3,4.4),(((1.1/2.2)/3.3)-4.4))",1.0),
-                           test_t("equal($f60(1.1,2.2,3.3,4.4),(1.1*2.2)+(3.3*4.4))",1.0),
-                           test_t("equal($f61(1.1,2.2,3.3,4.4),(1.1*2.2)-(3.3*4.4))",1.0),
-                           test_t("equal($f62(1.1,2.2,3.3,4.4),(1.1*2.2)+(3.3/4.4))",1.0),
-                           test_t("equal($f63(1.1,2.2,3.3,4.4),(1.1*2.2)-(3.3/4.4))",1.0),
-                           test_t("equal($f64(1.1,2.2,3.3,4.4),(1.1/2.2)+(3.3/4.4))",1.0),
-                           test_t("equal($f65(1.1,2.2,3.3,4.4),(1.1/2.2)-(3.3/4.4))",1.0),
-                           test_t("equal($f66(1.1,2.2,3.3,4.4),(1.1/2.2)-(3.3*4.4))",1.0),
-                           test_t("equal($f67(1.1,2.2,3.3,4.4),(1.1*2.2^2+3.3*4.4^2))",1.0),
-                           test_t("equal($f68(1.1,2.2,3.3,4.4),(1.1*2.2^3+3.3*4.4^3))",1.0),
-                           test_t("equal($f69(1.1,2.2,3.3,4.4),(1.1*2.2^4+3.3*4.4^4))",1.0),
-                           test_t("equal($f70(1.1,2.2,3.3,4.4),(1.1*2.2^5+3.3*4.4^5))",1.0),
-                           test_t("equal($f71(1.1,2.2,3.3,4.4),(1.1*2.2^6+3.3*4.4^6))",1.0),
-                           test_t("equal($f72(1.1,2.2,3.3,4.4),(1.1*2.2^7+3.3*4.4^7))",1.0),
-                           test_t("equal($f73(1.1,2.2,3.3,4.4),(1.1*2.2^8+3.3*4.4^8))",1.0),
-                           test_t("equal($f74(1.1,2.2,3.3,4.4),(1.1*2.2^9+3.3*4.4^9))",1.0),
-                           test_t("equal($f75(1.1,2.2,3.3,4.4),if(1.1 and 2.2,3.3,4.4))",1.0),
-                           test_t("equal($f76(1.1,2.2,3.3,4.4),if(1.1 or 2.2,3.3,4.4))",1.0),
-                           test_t("equal($f77(1.1,2.2,3.3,4.4),if(1.1 < 2.2,3.3,4.4))",1.0),
-                           test_t("equal($f78(1.1,2.2,3.3,4.4),if(1.1 <= 2.2,3.3,4.4))",1.0),
-                           test_t("equal($f79(1.1,2.2,3.3,4.4),if(1.1 > 2.2,3.3,4.4))",1.0),
-                           test_t("equal($f80(1.1,2.2,3.3,4.4),if(1.1 >= 2.2,3.3,4.4))",1.0),
-                           test_t("equal($f81(1.1,2.2,3.3,4.4),if(equal(1.1,2.2),3.3,4.4))",1.0),
-                           test_t("equal($f82(1.1,2.2,3.3,4.4),1.1*sin(2.2)+3.3*cos(4.4))",1.0),
+                           test_t("equal($f02(1.1,2.2,3.3),((1.1+2.2)-3.3))",1.0),
+                           test_t("equal($f03(1.1,2.2,3.3),((1.1+2.2)+3.3))",1.0),
+                           test_t("equal($f04(1.1,2.2,3.3),((1.1-2.2)/3.3))",1.0),
+                           test_t("equal($f05(1.1,2.2,3.3),((1.1-2.2)*3.3))",1.0),
+                           test_t("equal($f06(1.1,2.2,3.3),((1.1*2.2)+3.3))",1.0),
+                           test_t("equal($f07(1.1,2.2,3.3),((1.1*2.2)-3.3))",1.0),
+                           test_t("equal($f08(1.1,2.2,3.3),((1.1*2.2)/3.3))",1.0),
+                           test_t("equal($f09(1.1,2.2,3.3),((1.1*2.2)*3.3))",1.0),
+                           test_t("equal($f10(1.1,2.2,3.3),((1.1/2.2)+3.3))",1.0),
+                           test_t("equal($f11(1.1,2.2,3.3),((1.1/2.2)-3.3))",1.0),
+                           test_t("equal($f12(1.1,2.2,3.3),((1.1/2.2)/3.3))",1.0),
+                           test_t("equal($f13(1.1,2.2,3.3),((1.1/2.2)*3.3))",1.0),
+                           test_t("equal($f14(1.1,2.2,3.3),(1.1/(2.2+3.3)))",1.0),
+                           test_t("equal($f15(1.1,2.2,3.3),(1.1/(2.2-3.3)))",1.0),
+                           test_t("equal($f16(1.1,2.2,3.3),(1.1/(2.2*3.3)))",1.0),
+                           test_t("equal($f17(1.1,2.2,3.3),(1.1/(2.2/3.3)))",1.0),
+                           test_t("equal($f18(1.1,2.2,3.3),(1.1*(2.2+3.3)))",1.0),
+                           test_t("equal($f19(1.1,2.2,3.3),(1.1*(2.2-3.3)))",1.0),
+                           test_t("equal($f20(1.1,2.2,3.3),(1.1*(2.2*3.3)))",1.0),
+                           test_t("equal($f21(1.1,2.2,3.3),(1.1*(2.2/3.3)))",1.0),
+                           test_t("equal($f22(1.1,2.2,3.3),(1.1-(2.2/3.3)))",1.0),
+                           test_t("equal($f23(1.1,2.2,3.3),(1.1-(2.2/3.3)))",1.0),
+                           test_t("equal($f24(1.1,2.2,3.3),(1.1-(2.2*3.3)))",1.0),
+                           test_t("equal($f25(1.1,2.2,3.3),(1.1+(2.2*3.3)))",1.0),
+                           test_t("equal($f26(1.1,2.2,3.3),(1.1+(2.2/3.3)))",1.0),
+                           test_t("equal($f27(1.1,2.2,3.3),(1.1+(2.2+3.3)))",1.0),
+                           test_t("equal($f28(1.1,2.2,3.3),(1.1+(2.2-3.3)))",1.0),
+                           test_t("equal($f29(1.1,2.2,3.3),(1.1*2.2^2+3.3))",1.0),
+                           test_t("equal($f30(1.1,2.2,3.3),(1.1*2.2^3+3.3))",1.0),
+                           test_t("equal($f31(1.1,2.2,3.3),(1.1*2.2^4+3.3))",1.0),
+                           test_t("equal($f32(1.1,2.2,3.3),(1.1*2.2^5+3.3))",1.0),
+                           test_t("equal($f33(1.1,2.2,3.3),(1.1*2.2^6+3.3))",1.0),
+                           test_t("equal($f34(1.1,2.2,3.3),(1.1*2.2^7+3.3))",1.0),
+                           test_t("equal($f35(1.1,2.2,3.3),(1.1*2.2^8+3.3))",1.0),
+                           test_t("equal($f36(1.1,2.2,3.3),(1.1*2.2^9+3.3))",1.0),
+                           test_t("equal($f37(1.1,2.2,3.3),(1.1*log(2.2)+3.3))",1.0),
+                           test_t("equal($f38(1.1,2.2,3.3),(1.1*log(2.2)-3.3))",1.0),
+                           test_t("equal($f39(1.1,2.2,3.3),(1.1*log10(2.2)+3.3))",1.0),
+                           test_t("equal($f40(1.1,2.2,3.3),(1.1*log10(2.2)-3.3))",1.0),
+                           test_t("equal($f41(1.1,2.2,3.3),(1.1*sin(2.2)+3.3))",1.0),
+                           test_t("equal($f42(1.1,2.2,3.3),(1.1*sin(2.2)-3.3))",1.0),
+                           test_t("equal($f43(1.1,2.2,3.3),(1.1*cos(2.2)+3.3))",1.0),
+                           test_t("equal($f44(1.1,2.2,3.3),(1.1*cos(2.2)-3.3))",1.0),
+                           test_t("equal($f45(1.1,2.2,3.3),if((0 != 1.1),2.2,3.3))",1.0),
+                           test_t("equal($f46(1.1,2.2,3.3,4.4),(1.1+((2.2+3.3)/4.4)))",1.0),
+                           test_t("equal($f47(1.1,2.2,3.3,4.4),(1.1+((2.2+3.3)*4.4)))",1.0),
+                           test_t("equal($f48(1.1,2.2,3.3,4.4),(1.1+((2.2-3.3)/4.4)))",1.0),
+                           test_t("equal($f49(1.1,2.2,3.3,4.4),(1.1+((2.2-3.3)*4.4)))",1.0),
+                           test_t("equal($f50(1.1,2.2,3.3,4.4),(1.1+((2.2*3.3)/4.4)))",1.0),
+                           test_t("equal($f51(1.1,2.2,3.3,4.4),(1.1+((2.2*3.3)*4.4)))",1.0),
+                           test_t("equal($f52(1.1,2.2,3.3,4.4),(1.1+((2.2/3.3)+4.4)))",1.0),
+                           test_t("equal($f53(1.1,2.2,3.3,4.4),(1.1+((2.2/3.3)/4.4)))",1.0),
+                           test_t("equal($f54(1.1,2.2,3.3,4.4),(1.1+((2.2/3.3)*4.4)))",1.0),
+                           test_t("equal($f55(1.1,2.2,3.3,4.4),(1.1-((2.2+3.3)/4.4)))",1.0),
+                           test_t("equal($f56(1.1,2.2,3.3,4.4),(1.1-((2.2+3.3)*4.4)))",1.0),
+                           test_t("equal($f57(1.1,2.2,3.3,4.4),(1.1-((2.2-3.3)/4.4)))",1.0),
+                           test_t("equal($f58(1.1,2.2,3.3,4.4),(1.1-((2.2-3.3)*4.4)))",1.0),
+                           test_t("equal($f59(1.1,2.2,3.3,4.4),(1.1-((2.2*3.3)/4.4)))",1.0),
+                           test_t("equal($f60(1.1,2.2,3.3,4.4),(1.1-((2.2*3.3)*4.4)))",1.0),
+                           test_t("equal($f61(1.1,2.2,3.3,4.4),(1.1-((2.2/3.3)/4.4)))",1.0),
+                           test_t("equal($f62(1.1,2.2,3.3,4.4),(1.1-((2.2/3.3)*4.4)))",1.0),
+                           test_t("equal($f63(1.1,2.2,3.3,4.4),(((1.1+2.2)*3.3)-4.4))",1.0),
+                           test_t("equal($f64(1.1,2.2,3.3,4.4),(((1.1-2.2)*3.3)-4.4))",1.0),
+                           test_t("equal($f65(1.1,2.2,3.3,4.4),(((1.1*2.2)*3.3)-4.4))",1.0),
+                           test_t("equal($f66(1.1,2.2,3.3,4.4),(((1.1/2.2)*3.3)-4.4))",1.0),
+                           test_t("equal($f67(1.1,2.2,3.3,4.4),(((1.1+2.2)/3.3)-4.4))",1.0),
+                           test_t("equal($f68(1.1,2.2,3.3,4.4),(((1.1-2.2)/3.3)-4.4))",1.0),
+                           test_t("equal($f69(1.1,2.2,3.3,4.4),(((1.1*2.2)/3.3)-4.4))",1.0),
+                           test_t("equal($f70(1.1,2.2,3.3,4.4),(((1.1/2.2)/3.3)-4.4))",1.0),
+                           test_t("equal($f71(1.1,2.2,3.3,4.4),(1.1*2.2)+(3.3*4.4))",1.0),
+                           test_t("equal($f72(1.1,2.2,3.3,4.4),(1.1*2.2)-(3.3*4.4))",1.0),
+                           test_t("equal($f73(1.1,2.2,3.3,4.4),(1.1*2.2)+(3.3/4.4))",1.0),
+                           test_t("equal($f74(1.1,2.2,3.3,4.4),(1.1*2.2)-(3.3/4.4))",1.0),
+                           test_t("equal($f75(1.1,2.2,3.3,4.4),(1.1/2.2)+(3.3/4.4))",1.0),
+                           test_t("equal($f76(1.1,2.2,3.3,4.4),(1.1/2.2)-(3.3/4.4))",1.0),
+                           test_t("equal($f77(1.1,2.2,3.3,4.4),(1.1/2.2)-(3.3*4.4))",1.0),
+                           test_t("equal($f78(1.1,2.2,3.3,4.4),(1.1/(2.2+(3.3*4.4))))",1.0),
+                           test_t("equal($f79(1.1,2.2,3.3,4.4),(1.1/(2.2-(3.3*4.4))))",1.0),
+                           test_t("equal($f80(1.1,2.2,3.3,4.4),(1.1*(2.2+(3.3*4.4))))",1.0),
+                           test_t("equal($f81(1.1,2.2,3.3,4.4),(1.1*(2.2-(3.3*4.4))))",1.0),
+                           test_t("equal($f82(1.1,2.2,3.3,4.4),(1.1*2.2^2+3.3*4.4^2))",1.0),
+                           test_t("equal($f83(1.1,2.2,3.3,4.4),(1.1*2.2^3+3.3*4.4^3))",1.0),
+                           test_t("equal($f84(1.1,2.2,3.3,4.4),(1.1*2.2^4+3.3*4.4^4))",1.0),
+                           test_t("equal($f85(1.1,2.2,3.3,4.4),(1.1*2.2^5+3.3*4.4^5))",1.0),
+                           test_t("equal($f86(1.1,2.2,3.3,4.4),(1.1*2.2^6+3.3*4.4^6))",1.0),
+                           test_t("equal($f87(1.1,2.2,3.3,4.4),(1.1*2.2^7+3.3*4.4^7))",1.0),
+                           test_t("equal($f88(1.1,2.2,3.3,4.4),(1.1*2.2^8+3.3*4.4^8))",1.0),
+                           test_t("equal($f89(1.1,2.2,3.3,4.4),(1.1*2.2^9+3.3*4.4^9))",1.0),
+                           test_t("equal($f90(1.1,2.2,3.3,4.4),if(1.1 and 2.2,3.3,4.4))",1.0),
+                           test_t("equal($f91(1.1,2.2,3.3,4.4),if(1.1 or 2.2,3.3,4.4))",1.0),
+                           test_t("equal($f92(1.1,2.2,3.3,4.4),if(1.1 < 2.2,3.3,4.4))",1.0),
+                           test_t("equal($f93(1.1,2.2,3.3,4.4),if(1.1 <= 2.2,3.3,4.4))",1.0),
+                           test_t("equal($f94(1.1,2.2,3.3,4.4),if(1.1 >  2.2,3.3,4.4))",1.0),
+                           test_t("equal($f95(1.1,2.2,3.3,4.4),if(1.1 >= 2.2,3.3,4.4))",1.0),
+                           test_t("equal($f96(1.1,2.2,3.3,4.4),if(equal(1.1,2.2),3.3,4.4))",1.0),
+                           test_t("equal($f97(1.1,2.2,3.3,4.4),1.1*sin(2.2)+3.3*cos(4.4))",1.0),
                            test_t("1+2+3+4+5+6+7+8+9+0",45.0),
                            test_t("1 + 2 + 3 + 4 + 5 + 6 + 7 + 8 + 9 + 0",45.0),
                            test_t("1.0 + 2.0 + 3.0 + 4.0 + 5.0 + 6.0 + 7.0 + 8.0 + 9.0 + 0.0",45.0),
@@ -758,15 +774,27 @@ static const test_t test_list[] =
 static const std::size_t test_list_size = sizeof(test_list) / sizeof(test_t);
 
 template <typename T>
-inline bool not_equal(const T& t1,
-                      const T& t2,
-                      const T& epsilon = 0.0000000001/*std::numeric_limits<T>::epsilon()*/)
+inline bool not_equal_impl(const T& t1,
+                           const T& t2,
+                           const T& epsilon = 0.0000000001/*std::numeric_limits<T>::epsilon()*/)
 {
    if (t1 != t1) return true;
    if (t2 != t2) return true;
    T diff = std::abs(t1 - t2);
    T eps_norm = (std::max(T(1.0),std::max(std::abs(t1),std::abs(t2))) * epsilon);
    return diff > eps_norm;
+}
+
+template <typename T>
+inline bool not_equal(const T& t0, const T& t1,
+                      const T& epsilon = T(0.0000000001))
+{
+   return not_equal_impl(t0,t1,epsilon);
+}
+
+inline bool not_equal(const float& t0, const float& t1, const float& epsilon = 0.000001f)
+{
+   return not_equal_impl(t0,t1,epsilon);
 }
 
 template <typename T>
@@ -786,7 +814,6 @@ inline bool test_expression(const std::string& expression_string, const T& expec
          printf("test_expression() - Error: %s   Expression: %s\n",
                 parser.error().c_str(),
                 expression_string.c_str());
-
          return false;
       }
    }
@@ -795,19 +822,17 @@ inline bool test_expression(const std::string& expression_string, const T& expec
    {
       printf("test_expression() - Error: Expression did not compile to a constant!   Expression: %s\n",
              expression_string.c_str());
-
       return false;
    }
 
    T result = expression.value();
 
-   if (not_equal<T>(result,expected_result))
+   if (not_equal(result,expected_result))
    {
-      printf("Computation Error:  Expression: [%s]\tExpected: %19.15f\tResult: %19.15f\n",
+      printf("test_expression() - Computation Error:  Expression: [%s]\tExpected: %19.15f\tResult: %19.15f\n",
              expression_string.c_str(),
              expected_result,
              result);
-
       return false;
    }
 
@@ -817,16 +842,17 @@ inline bool test_expression(const std::string& expression_string, const T& expec
 template <typename T>
 inline bool run_test00()
 {
-   const std::size_t rounds = 40;
+   const std::size_t rounds = 10;
    for (std::size_t r = 0; r < rounds; ++r)
    {
       for (std::size_t i = 0; i < test_list_size; ++i)
       {
          if (!test_expression<T>(test_list[i].first,T(test_list[i].second)))
+         {
             return false;
+         }
       }
    }
-
    return true;
 }
 
@@ -1037,20 +1063,18 @@ inline bool run_test01()
                printf("run_test01() - Error: %s   Expression: %s\n",
                       parser.error().c_str(),
                       test.expr.c_str());
-
                return false;
             }
          }
 
          T result = expression.value();
 
-         if (not_equal<T>(result,test.result))
+         if (not_equal(result,test.result))
          {
             printf("run_test01() - Computation Error:  Expression: [%s]\tExpected: %19.15f\tResult: %19.15f\n",
                    test.expr.c_str(),
                    test.result,
                    result);
-
             return false;
          }
       }
@@ -1173,20 +1197,18 @@ inline bool run_test02()
                printf("run_test02() - Error: %s   Expression: %s\n",
                       parser.error().c_str(),
                       test.expr.c_str());
-
                return false;
             }
          }
 
          T result = expression.value();
 
-         if (not_equal<T>(result,test.result))
+         if (not_equal(result,test.result))
          {
             printf("run_test02() - Computation Error:  Expression: [%s]\tExpected: %19.15f\tResult: %19.15f\n",
                    test.expr.c_str(),
                    test.result,
                    result);
-
             return false;
          }
       }
@@ -1247,7 +1269,7 @@ inline bool run_test03()
 
       for (std::size_t i = 0; i < variable_list_size; ++i)
       {
-         v[i] = i;
+         v[i] = T(i);
          symbol_table.add_variable(variable_list[i],v[i]);
       }
 
@@ -1262,7 +1284,6 @@ inline bool run_test03()
          printf("run_test03() - Error: %s   Expression: %s\n",
                 parser.error().c_str(),
                 expression_string.c_str());
-
          return false;
       }
 
@@ -1303,7 +1324,6 @@ inline bool run_test04()
          printf("run_test04() - Error: %s   Expression: %s\n",
                 parser.error().c_str(),
                 expression_string.c_str());
-
          return false;
       }
    }
@@ -1316,7 +1336,7 @@ inline bool run_test04()
       T result1 = expression.value();
       T result2 = clamp<T>(-1.0,std::sin(2 * pi * x) + std::cos(y / 2 * pi),+1.0);
 
-      if (not_equal<T>(result1,result2))
+      if (not_equal(result1,result2))
       {
          printf("run_test04() - Computation Error:  Expression: [%s]\tExpected: %19.15f\tResult: %19.15f x:%19.15f\ty:%19.15f\n",
                 expression_string.c_str(),
@@ -1324,7 +1344,6 @@ inline bool run_test04()
                 result2,
                 x,
                 y);
-
          return false;
       }
 
@@ -1363,7 +1382,6 @@ inline bool run_test05()
          printf("run_test05() - Error: %s   Expression: %s\n",
                 parser.error().c_str(),
                 expression_string.c_str());
-
          return false;
       }
 
@@ -1383,7 +1401,7 @@ inline bool run_test05()
 
          T result = expr.value();
 
-         if (not_equal<T>(result,real_result))
+         if (not_equal(result,real_result))
          {
             printf("run_test05() - Computation Error:  Expression: [%s]\tExpected: %19.15f\tResult: %19.15f x:%19.15f\ty:%19.15f\tIndex:%d\n",
                    expression_string.c_str(),
@@ -1392,7 +1410,6 @@ inline bool run_test05()
                    x,
                    y,
                    static_cast<unsigned int>(i));
-
             return false;
          }
       }
@@ -1425,7 +1442,6 @@ inline bool run_test06()
       printf("run_test06() - Error: %s   Expression: %s\n",
              parser.error().c_str(),
              expression_string.c_str());
-
       return false;
    }
 
@@ -1433,13 +1449,13 @@ inline bool run_test06()
    T total_area2 = exprtk::integrate(expression,"x",T(-1.0),T(1.0));
    const T pi = T(3.14159265358979323846);
 
-   if (not_equal<T>(total_area1,total_area2,0.000001))
+   if (not_equal(total_area1,total_area2,T(0.000001)))
    {
       printf("run_test06() - Integration Error:  area1 != area2\n");
       return false;
    }
 
-   if (not_equal<T>(total_area1,pi/T(2.0),0.000001))
+   if (not_equal(total_area1,T(pi)/T(2.0),T(0.000001)))
    {
       printf("run_test06() - Integration Error:  Expected: %19.15f\tResult: %19.15f\n",
              pi/T(2.0),
@@ -1475,26 +1491,24 @@ inline bool run_test07()
       return false;
    }
 
-   for (x = -200.0; x < 200; x+=0.0001)
+   for (x = T(-200.0); x < T(200); x+=T(0.0001))
    {
       T result1 = exprtk::derivative(expression,x);
       T result2 = exprtk::derivative(expression,"x");
       T real_result = T(2.0) * std::cos(T(2.0) * x + T(1.0/3.0));
 
-      if (not_equal<T>(result1,result2,0.000000001))
+      if (not_equal(result1,result2,T(0.000000001)))
       {
          printf("run_test07() - Derivative Error:  result1 != result2\n");
-
          return false;
       }
 
-      if (not_equal<T>(result1,real_result,0.000000001))
+      if (not_equal(result1,real_result,T(0.000000001)))
       {
          printf("run_test07() - Derivative Error:  x: %19.15f\tExpected: %19.15f\tResult: %19.15f\n",
                 x,
                 real_result,
                 result1);
-
          return false;
       }
    }
@@ -1538,87 +1552,102 @@ inline bool run_test08()
                                  "(sgn(sin(x))cos(sgn(y))+1)==(sgn(sin(x))*cos(sgn(y))+1)",
                                  "equal($f00(x,y,z),((x+y)/z))",
                                  "equal($f01(x,y,z),((x+y)*z))",
-                                 "equal($f02(x,y,z),((x-y)/z))",
-                                 "equal($f03(x,y,z),((x-y)*z))",
-                                 "equal($f04(x,y,z),((x*y)+z))",
-                                 "equal($f05(x,y,z),((x*y)-z))",
-                                 "equal($f06(x,y,z),((x*y)/z))",
-                                 "equal($f07(x,y,z),((x*y)*z))",
-                                 "equal($f08(x,y,z),((x/y)+z))",
-                                 "equal($f09(x,y,z),((x/y)-z))",
-                                 "equal($f10(x,y,z),((x/y)/z))",
-                                 "equal($f11(x,y,z),((x/y)*z))",
-                                 "equal($f12(x,y,z),(x/(y+z)))",
-                                 "equal($f13(x,y,z),(x/(y-z)))",
-                                 "equal($f14(x,y,z),(x/(y*z)))",
-                                 "equal($f15(x,y,z),(x/(y/z)))",
-                                 "equal($f16(x,y,z),(x-(y/z)))",
-                                 "equal($f17(x,y,z),(x-(y/z)))",
-                                 "equal($f18(x,y,z),(x*y^2+z))",
-                                 "equal($f19(x,y,z),(x*y^3+z))",
-                                 "equal($f20(x,y,z),(x*y^4+z))",
-                                 "equal($f21(x,y,z),(x*y^5+z))",
-                                 "equal($f22(x,y,z),(x*y^6+z))",
-                                 "equal($f23(x,y,z),(x*y^7+z))",
-                                 "equal($f24(x,y,z),(x*y^8+z))",
-                                 "equal($f25(x,y,z),(x*y^9+z))",
-                                 "equal($f26(x,y,z),(x*log(y)+z))",
-                                 "equal($f27(x,y,z),(x*log(y)-z))",
-                                 "equal($f28(x,y,z),(x*log10(y)+z))",
-                                 "equal($f29(x,y,z),(x*log10(y)-z))",
-                                 "equal($f30(x,y,z),(x*sin(y)+z))",
-                                 "equal($f31(x,y,z),(x*sin(y)-z))",
-                                 "equal($f32(x,y,z),(x*cos(y)+z))",
-                                 "equal($f33(x,y,z),(x*cos(y)-z))",
-                                 "equal($f34(x,y,z),if((0 != x),y,z))",
-                                 "equal($f35(x,y,z,w),(x+((y+z)/w)))",
-                                 "equal($f36(x,y,z,w),(x+((y+z)*w)))",
-                                 "equal($f37(x,y,z,w),(x+((y-z)/w)))",
-                                 "equal($f38(x,y,z,w),(x+((y-z)*w)))",
-                                 "equal($f39(x,y,z,w),(x+((y*z)/w)))",
-                                 "equal($f40(x,y,z,w),(x+((y*z)*w)))",
-                                 "equal($f41(x,y,z,w),(x+((y/z)+w)))",
-                                 "equal($f42(x,y,z,w),(x+((y/z)/w)))",
-                                 "equal($f43(x,y,z,w),(x+((y/z)*w)))",
-                                 "equal($f44(x,y,z,w),(x-((y+z)/w)))",
-                                 "equal($f45(x,y,z,w),(x-((y+z)*w)))",
-                                 "equal($f46(x,y,z,w),(x-((y-z)/w)))",
-                                 "equal($f47(x,y,z,w),(x-((y-z)*w)))",
-                                 "equal($f48(x,y,z,w),(x-((y*z)/w)))",
-                                 "equal($f49(x,y,z,w),(x-((y*z)*w)))",
-                                 "equal($f50(x,y,z,w),(x-((y/z)/w)))",
-                                 "equal($f51(x,y,z,w),(x-((y/z)*w)))",
-                                 "equal($f52(x,y,z,w),(((x+y)*z)-w))",
-                                 "equal($f53(x,y,z,w),(((x-y)*z)-w))",
-                                 "equal($f54(x,y,z,w),(((x*y)*z)-w))",
-                                 "equal($f55(x,y,z,w),(((x/y)*z)-w))",
-                                 "equal($f56(x,y,z,w),(((x+y)/z)-w))",
-                                 "equal($f57(x,y,z,w),(((x-y)/z)-w))",
-                                 "equal($f58(x,y,z,w),(((x*y)/z)-w))",
-                                 "equal($f59(x,y,z,w),(((x/y)/z)-w))",
-                                 "equal($f60(x,y,z,w),(x*y)+(z*w))",
-                                 "equal($f61(x,y,z,w),(x*y)-(z*w))",
-                                 "equal($f62(x,y,z,w),(x*y)+(z/w))",
-                                 "equal($f63(x,y,z,w),(x*y)-(z/w))",
-                                 "equal($f64(x,y,z,w),(x/y)+(z/w))",
-                                 "equal($f65(x,y,z,w),(x/y)-(z/w))",
-                                 "equal($f66(x,y,z,w),(x/y)-(z*w))",
-                                 "equal($f67(x,y,z,w),(x*y^2+z*w^2))",
-                                 "equal($f68(x,y,z,w),(x*y^3+z*w^3))",
-                                 "equal($f69(x,y,z,w),(x*y^4+z*w^4))",
-                                 "equal($f70(x,y,z,w),(x*y^5+z*w^5))",
-                                 "equal($f71(x,y,z,w),(x*y^6+z*w^6))",
-                                 "equal($f72(x,y,z,w),(x*y^7+z*w^7))",
-                                 "equal($f73(x,y,z,w),(x*y^8+z*w^8))",
-                                 "equal($f74(x,y,z,w),(x*y^9+z*w^9))",
-                                 "equal($f75(x,y,z,w),if(x and y,z,w))",
-                                 "equal($f76(x,y,z,w),if(x or y,z,w))",
-                                 "equal($f77(x,y,z,w),if(x < y,z,w))",
-                                 "equal($f78(x,y,z,w),if(x <= y,z,w))",
-                                 "equal($f79(x,y,z,w),if(x > y,z,w))",
-                                 "equal($f80(x,y,z,w),if(x >= y,z,w))",
-                                 "equal($f81(x,y,z,w),if(equal(x,y),z,w))",
-                                 "equal($f82(x,y,z,w),x*sin(y)+z*cos(w))"
+                                 "equal($f02(x,y,z),((x+y)-z))",
+                                 "equal($f03(x,y,z),((x+y)+z))",
+                                 "equal($f04(x,y,z),((x-y)/z))",
+                                 "equal($f05(x,y,z),((x-y)*z))",
+                                 "equal($f06(x,y,z),((x*y)+z))",
+                                 "equal($f07(x,y,z),((x*y)-z))",
+                                 "equal($f08(x,y,z),((x*y)/z))",
+                                 "equal($f09(x,y,z),((x*y)*z))",
+                                 "equal($f10(x,y,z),((x/y)+z))",
+                                 "equal($f11(x,y,z),((x/y)-z))",
+                                 "equal($f12(x,y,z),((x/y)/z))",
+                                 "equal($f13(x,y,z),((x/y)*z))",
+                                 "equal($f14(x,y,z),(x/(y+z)))",
+                                 "equal($f15(x,y,z),(x/(y-z)))",
+                                 "equal($f16(x,y,z),(x/(y*z)))",
+                                 "equal($f17(x,y,z),(x/(y/z)))",
+                                 "equal($f18(x,y,z),(x*(y+z)))",
+                                 "equal($f19(x,y,z),(x*(y-z)))",
+                                 "equal($f20(x,y,z),(x*(y*z)))",
+                                 "equal($f21(x,y,z),(x*(y/z)))",
+                                 "equal($f22(x,y,z),(x-(y/z)))",
+                                 "equal($f23(x,y,z),(x-(y/z)))",
+                                 "equal($f24(x,y,z),(x-(y*z)))",
+                                 "equal($f25(x,y,z),(x+(y*z)))",
+                                 "equal($f26(x,y,z),(x+(y/z)))",
+                                 "equal($f27(x,y,z),(x+(y+z)))",
+                                 "equal($f28(x,y,z),(x+(y-z)))",
+                                 "equal($f29(x,y,z),(x*y^2+z))",
+                                 "equal($f30(x,y,z),(x*y^3+z))",
+                                 "equal($f31(x,y,z),(x*y^4+z))",
+                                 "equal($f32(x,y,z),(x*y^5+z))",
+                                 "equal($f33(x,y,z),(x*y^6+z))",
+                                 "equal($f34(x,y,z),(x*y^7+z))",
+                                 "equal($f35(x,y,z),(x*y^8+z))",
+                                 "equal($f36(x,y,z),(x*y^9+z))",
+                                 "equal($f37(x,y,z),(x*log(y)+z))",
+                                 "equal($f38(x,y,z),(x*log(y)-z))",
+                                 "equal($f39(x,y,z),(x*log10(y)+z))",
+                                 "equal($f40(x,y,z),(x*log10(y)-z))",
+                                 "equal($f41(x,y,z),(x*sin(y)+z))",
+                                 "equal($f42(x,y,z),(x*sin(y)-z))",
+                                 "equal($f43(x,y,z),(x*cos(y)+z))",
+                                 "equal($f44(x,y,z),(x*cos(y)-z))",
+                                 "equal($f45(x,y,z),if((0 != x),y,z))",
+                                 "equal($f46(x,y,z,w),(x+((y+z)/w)))",
+                                 "equal($f47(x,y,z,w),(x+((y+z)*w)))",
+                                 "equal($f48(x,y,z,w),(x+((y-z)/w)))",
+                                 "equal($f49(x,y,z,w),(x+((y-z)*w)))",
+                                 "equal($f50(x,y,z,w),(x+((y*z)/w)))",
+                                 "equal($f51(x,y,z,w),(x+((y*z)*w)))",
+                                 "equal($f52(x,y,z,w),(x+((y/z)+w)))",
+                                 "equal($f53(x,y,z,w),(x+((y/z)/w)))",
+                                 "equal($f54(x,y,z,w),(x+((y/z)*w)))",
+                                 "equal($f55(x,y,z,w),(x-((y+z)/w)))",
+                                 "equal($f56(x,y,z,w),(x-((y+z)*w)))",
+                                 "equal($f57(x,y,z,w),(x-((y-z)/w)))",
+                                 "equal($f58(x,y,z,w),(x-((y-z)*w)))",
+                                 "equal($f59(x,y,z,w),(x-((y*z)/w)))",
+                                 "equal($f60(x,y,z,w),(x-((y*z)*w)))",
+                                 "equal($f61(x,y,z,w),(x-((y/z)/w)))",
+                                 "equal($f62(x,y,z,w),(x-((y/z)*w)))",
+                                 "equal($f63(x,y,z,w),(((x+y)*z)-w))",
+                                 "equal($f64(x,y,z,w),(((x-y)*z)-w))",
+                                 "equal($f65(x,y,z,w),(((x*y)*z)-w))",
+                                 "equal($f66(x,y,z,w),(((x/y)*z)-w))",
+                                 "equal($f67(x,y,z,w),(((x+y)/z)-w))",
+                                 "equal($f68(x,y,z,w),(((x-y)/z)-w))",
+                                 "equal($f69(x,y,z,w),(((x*y)/z)-w))",
+                                 "equal($f70(x,y,z,w),(((x/y)/z)-w))",
+                                 "equal($f71(x,y,z,w),(x*y)+(z*w))",
+                                 "equal($f72(x,y,z,w),(x*y)-(z*w))",
+                                 "equal($f73(x,y,z,w),(x*y)+(z/w))",
+                                 "equal($f74(x,y,z,w),(x*y)-(z/w))",
+                                 "equal($f75(x,y,z,w),(x/y)+(z/w))",
+                                 "equal($f76(x,y,z,w),(x/y)-(z/w))",
+                                 "equal($f77(x,y,z,w),(x/y)-(z*w))",
+                                 "equal($f78(x,y,z,w),(x/(y+(z*w))))",
+                                 "equal($f79(x,y,z,w),(x/(y-(z*w))))",
+                                 "equal($f80(x,y,z,w),(x*(y+(z*w))))",
+                                 "equal($f81(x,y,z,w),(x*(y-(z*w))))",
+                                 "equal($f82(x,y,z,w),(x*y^2+z*w^2))",
+                                 "equal($f83(x,y,z,w),(x*y^3+z*w^3))",
+                                 "equal($f84(x,y,z,w),(x*y^4+z*w^4))",
+                                 "equal($f85(x,y,z,w),(x*y^5+z*w^5))",
+                                 "equal($f86(x,y,z,w),(x*y^6+z*w^6))",
+                                 "equal($f87(x,y,z,w),(x*y^7+z*w^7))",
+                                 "equal($f88(x,y,z,w),(x*y^8+z*w^8))",
+                                 "equal($f89(x,y,z,w),(x*y^9+z*w^9))",
+                                 "equal($f90(x,y,z,w),if(x and y,z,w))",
+                                 "equal($f91(x,y,z,w),if(x or y,z,w))",
+                                 "equal($f92(x,y,z,w),if(x < y,z,w))",
+                                 "equal($f93(x,y,z,w),if(x <= y,z,w))",
+                                 "equal($f94(x,y,z,w),if(x >  y,z,w))",
+                                 "equal($f95(x,y,z,w),if(x >= y,z,w))",
+                                 "equal($f96(x,y,z,w),if(equal(x,y),z,w))",
+                                 "equal($f97(x,y,z,w),x*sin(y)+z*cos(w))"
                               };
    static const std::size_t expr_str_size = sizeof(expr_str) / sizeof(std::string);
 
@@ -1653,7 +1682,6 @@ inline bool run_test08()
             printf("run_test08() - Error: %s   Expression: %s\n",
                    parser.error().c_str(),
                    expr_str[j].c_str());
-
             return false;
          }
 
@@ -1703,8 +1731,8 @@ inline bool run_test09()
                                       "myfunc6(sin(x*pi),y/2)+myfunc7(sin(x*pi),y/2)+"
                                       "myfunc8(sin(x*pi),y/2)+myfunc9(sin(x*pi),y/2)";
 
-      T x = T(1.0) + (i/10000.0);
-      T y = T(2.0) + (i/10000.0);
+      T x = T(1.0) + (i/T(10000.0));
+      T y = T(2.0) + (i/T(10000.0));
       myfunc<T> mf;
 
       exprtk::symbol_table<T> symbol_table;
@@ -1732,7 +1760,6 @@ inline bool run_test09()
          printf("run_test09() - Error: %s   Expression: %s\n",
                 parser.error().c_str(),
                 expression_string.c_str());
-
          return false;
       }
 
@@ -1742,19 +1769,19 @@ inline bool run_test09()
 
       T expected = T(4.0) *
                    (
-                      mf(sin(x*pi),y/2.0) +
-                      mf(sin(x*pi),y/2.0) +
-                      mf(sin(x*pi),y/2.0) +
-                      mf(sin(x*pi),y/2.0) +
-                      mf(sin(x*pi),y/2.0) +
-                      mf(sin(x*pi),y/2.0) +
-                      mf(sin(x*pi),y/2.0) +
-                      mf(sin(x*pi),y/2.0) +
-                      mf(sin(x*pi),y/2.0) +
-                      mf(sin(x*pi),y/2.0)
+                      mf(sin(x*pi),y/T(2.0)) +
+                      mf(sin(x*pi),y/T(2.0)) +
+                      mf(sin(x*pi),y/T(2.0)) +
+                      mf(sin(x*pi),y/T(2.0)) +
+                      mf(sin(x*pi),y/T(2.0)) +
+                      mf(sin(x*pi),y/T(2.0)) +
+                      mf(sin(x*pi),y/T(2.0)) +
+                      mf(sin(x*pi),y/T(2.0)) +
+                      mf(sin(x*pi),y/T(2.0)) +
+                      mf(sin(x*pi),y/T(2.0))
                    );
 
-      if (not_equal<T>(result,expected,0.0000001))
+      if (not_equal(result,expected,T(0.0000001)))
       {
          printf("run_test09() - Error Expected: %19.15f\tResult: %19.15f\n",
                 expected,
@@ -1789,7 +1816,7 @@ inline bool run_test10()
       {
          exprtk::details::variable_node<T>* var = symbol_table.get_variable(variable_name);
          if (var)
-            return (!not_equal<T>(var->ref(),value));
+            return (!not_equal(var->ref(),value));
          else
             return false;
       }
@@ -2188,7 +2215,6 @@ inline bool run_test10()
                printf("run_test10() - Error: %s   Expression: %s\n",
                       parser.error().c_str(),
                       expression_string.c_str());
-
                return false;
             }
          }
@@ -2205,7 +2231,6 @@ inline bool run_test10()
                   printf("run_test10() - Error: %s   Expression: %s\n",
                          parser.error().c_str(),
                          expression_string.c_str());
-
                   return false;
                }
             }
@@ -2213,7 +2238,6 @@ inline bool run_test10()
             st1.remove_variable("x0");
             st1.remove_variable("y0");
             st1.remove_variable("z0");
-
          }
       }
    }
@@ -2248,12 +2272,11 @@ inline bool run_test11()
             printf("run_test11() - Error: %s   Expression: %s\n",
                    parser.error().c_str(),
                    expression_string.c_str());
-
             return false;
          }
       }
 
-      if (not_equal<T>(expression.value(),(x + y)/T(3.0),0.000001))
+      if (not_equal(expression.value(),(x + y)/T(3.0),T(0.000001)))
       {
          printf("run_test11() - Error in evaluation!(1)\n");
          return false;
@@ -2281,7 +2304,7 @@ inline bool run_test11()
 
       expression.value();
 
-      if (not_equal<T>(expression.value(),(x + y)/T(3.0),0.000001))
+      if (not_equal(expression.value(),(x + y)/T(3.0),T(0.000001)))
       {
          printf("run_test11() - Error in evaluation!(3)\n");
          return false;
@@ -2360,7 +2383,6 @@ inline bool run_test12()
                printf("run_test12() - Error: %s   Expression: %s\n",
                       parser.error().c_str(),
                       expr_str.c_str());
-
                return false;
             }
          }
@@ -2368,7 +2390,6 @@ inline bool run_test12()
          if (T(1.0) != expression.value())
          {
             printf("run_test12() - Error in evaluation! Expression: %s\n",expr_str.c_str());
-
             return false;
          }
       }
@@ -2384,7 +2405,7 @@ struct sine_deg : public exprtk::ifunction<T>
 
    inline T operator()(const T& v)
    {
-      return std::sin((v * exprtk::details::numeric::constant::pi)/T(180.0));
+      return std::sin((v * T(exprtk::details::numeric::constant::pi))/T(180.0));
    }
 };
 
@@ -2395,7 +2416,7 @@ struct cosine_deg : public exprtk::ifunction<T>
 
    inline T operator()(const T& v)
    {
-      return std::cos((v * exprtk::details::numeric::constant::pi)/T(180.0));
+      return std::cos((v * T(exprtk::details::numeric::constant::pi))/T(180.0));
    }
 };
 
@@ -2452,7 +2473,6 @@ inline bool run_test13()
                printf("run_test13() - Error: %s   Expression: %s\n",
                       parser.error().c_str(),
                       expr_str.c_str());
-
                return false;
             }
          }
@@ -2460,7 +2480,6 @@ inline bool run_test13()
          if (T(1.0) != expression.value())
          {
             printf("run_test13() - Error in evaluation! Expression: %s\n",expr_str.c_str());
-
             return false;
          }
       }
@@ -2471,33 +2490,36 @@ inline bool run_test13()
 
 int main()
 {
-   #define perform_test(Number)\
+   #define perform_test(Type,Number) \
    { \
       exprtk::timer timer; \
       timer.start(); \
-      if (!run_test##Number<double>()) \
+      if (!run_test##Number<Type>()) \
       { \
-         printf("run_test"#Number" *** FAILED! ***\n"); \
-         return 1; \
+         printf("run_test"#Number" ("#Type") *** FAILED! ***\n"); \
       } \
-      timer.stop(); \
-      printf("run_test"#Number" - Time: %8.4fsec\n",timer.time()); \
-   }
+      else \
+      { \
+         timer.stop(); \
+         printf("run_test"#Number" ("#Type") - Result: SUCCESS     Time: %8.4fsec\n",timer.time()); \
+      } \
+   } \
 
-   perform_test(00)
-   perform_test(01)
-   perform_test(02)
-   perform_test(03)
-   perform_test(04)
-   perform_test(05)
-   perform_test(06)
-   perform_test(07)
-   perform_test(08)
-   perform_test(09)
-   perform_test(10)
-   perform_test(11)
-   perform_test(12)
-   perform_test(13)
+   perform_test(double,00)
+   perform_test(double,01)
+   perform_test(double,02)
+   perform_test(double,03)
+   perform_test(double,04)
+   perform_test(double,05)
+   perform_test(double,06)
+   perform_test(double,07)
+   perform_test(double,08)
+   perform_test(double,09)
+   perform_test(double,10)
+   perform_test(double,11)
+   perform_test(double,12)
+   perform_test(double,13)
+
    #undef perform_test
 
    return 0;

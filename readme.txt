@@ -36,7 +36,8 @@ operations, functions and processes:
 
 (8) Calculus:        numerical integration and differentiation
 
-Note: The trigonometry functions assume radians as input.
+Note 1: Normal mathematical operator precedence is applied (BEDMAS).
+Note 2: The trigonometry functions assume radians as input.
 
 
 
@@ -119,127 +120,62 @@ form by reducing the total number  of nodes in the evaluation tree  of
 an  expression  and  by  also  leveraging  the  compiler's  ability to
 correctly optimize such expressions for a given architecture.
 
-          3-Parameter                      4-Parameter
- +-------------+-------------+   +--------------+------------------+
- |  Prototype  |  Operation  |   |  Prototype   |    Operation     |
- +-------------+-------------+   +--------------+------------------+
-   sf00(x,y,z) | (x + y) / z      sf35(x,y,z,w) | x + ((y + z) / w)
-   sf01(x,y,z) | (x + y) * z      sf36(x,y,z,w) | x + ((y + z) * w)
-   sf02(x,y,z) | (x - y) / z      sf37(x,y,z,w) | x + ((y - z) / w)
-   sf03(x,y,z) | (x - y) * z      sf38(x,y,z,w) | x + ((y - z) * w)
-   sf04(x,y,z) | (x * y) + z      sf39(x,y,z,w) | x + ((y * z) / w)
-   sf05(x,y,z) | (x * y) - z      sf40(x,y,z,w) | x + ((y * z) * w)
-   sf06(x,y,z) | (x * y) / z      sf41(x,y,z,w) | x + ((y / z) + w)
-   sf07(x,y,z) | (x * y) * z      sf42(x,y,z,w) | x + ((y / z) / w)
-   sf08(x,y,z) | (x / y) + z      sf43(x,y,z,w) | x + ((y / z) * w)
-   sf09(x,y,z) | (x / y) - z      sf44(x,y,z,w) | x - ((y + z) / w)
-   sf10(x,y,z) | (x / y) / z      sf45(x,y,z,w) | x - ((y + z) * w)
-   sf11(x,y,z) | (x / y) * z      sf46(x,y,z,w) | x - ((y - z) / w)
-   sf12(x,y,z) | x / (y + z)      sf47(x,y,z,w) | x - ((y - z) * w)
-   sf13(x,y,z) | x / (y - z)      sf48(x,y,z,w) | x - ((y * z) / w)
-   sf14(x,y,z) | x / (y * z)      sf49(x,y,z,w) | x - ((y * z) * w)
-   sf15(x,y,z) | x / (y / z)      sf50(x,y,z,w) | x - ((y / z) / w)
-   sf16(x,y,z) | x - (y / z)      sf51(x,y,z,w) | x - ((y / z) * w)
-   sf17(x,y,z) | x - (y / z)      sf52(x,y,z,w) | ((x + y) * z) - w
-   sf18(x,y,z) | x * y^2 + z      sf53(x,y,z,w) | ((x - y) * z) - w
-   sf19(x,y,z) | x * y^3 + z      sf54(x,y,z,w) | ((x * y) * z) - w
-   sf20(x,y,z) | x * y^4 + z      sf55(x,y,z,w) | ((x / y) * z) - w
-   sf21(x,y,z) | x * y^5 + z      sf56(x,y,z,w) | ((x + y) / z) - w
-   sf22(x,y,z) | x * y^6 + z      sf57(x,y,z,w) | ((x - y) / z) - w
-   sf23(x,y,z) | x * y^7 + z      sf58(x,y,z,w) | ((x * y) / z) - w
-   sf24(x,y,z) | x * y^8 + z      sf59(x,y,z,w) | ((x / y) / z) - w
-   sf25(x,y,z) | x * y^9 + z      sf60(x,y,z,w) | (x * y) + (z * w)
-   sf26(x,y,z) | x * log(y)+z     sf61(x,y,z,w) | (x * y) - (z * w)
-   sf27(x,y,z) | x * log(y)-z     sf62(x,y,z,w) | (x * y) + (z / w)
-   sf28(x,y,z) | x * log10(y)+z   sf63(x,y,z,w) | (x * y) - (z / w)
-   sf29(x,y,z) | x * log10(y)-z   sf64(x,y,z,w) | (x / y) + (z / w)
-   sf30(x,y,z) | x * sin(y)+z     sf65(x,y,z,w) | (x / y) - (z / w)
-   sf31(x,y,z) | x * sin(y)-z     sf66(x,y,z,w) | (x / y) - (z * w)
-   sf32(x,y,z) | x * cos(y)+z     sf67(x,y,z,w) | x * y^2 + z * w^2
-   sf33(x,y,z) | x * cos(y)-z     sf68(x,y,z,w) | x * y^3 + z * w^3
-   sf34(x,y,z) | x ? y : z        sf69(x,y,z,w) | x * y^4 + z * w^4
-                                  sf70(x,y,z,w) | x * y^5 + z * w^5
-                                  sf71(x,y,z,w) | x * y^6 + z * w^6
-                                  sf72(x,y,z,w) | x * y^7 + z * w^7
-                                  sf73(x,y,z,w) | x * y^8 + z * w^8
-                                  sf74(x,y,z,w) | x * y^9 + z * w^9
-                                  sf75(x,y,z,w) | (x and y) ? z : w
-                                  sf76(x,y,z,w) | (x  or y) ? z : w
-                                  sf77(x,y,z,w) | (x <   y) ? z : w
-                                  sf78(x,y,z,w) | (x <=  y) ? z : w
-                                  sf79(x,y,z,w) | (x >   y) ? z : w
-                                  sf80(x,y,z,w) | (x >=  y) ? z : w
-                                  sf81(x,y,z,w) | (x ==  y) ? z : w
-                                  sf82(x,y,z,w) | x*sin(y) + z*cos(w)
-
-
-
-[MACROS]
-ExprTk utilizes certain macros  to modify the underlying  behaviour of
-the parser and the evaluation engine. The following macros are used to
-switch off certain capabilities  within the ExprTk evaluation  engine.
-The capabilities are predominantly related to expression optimisations
-and the ability to evaluate strings within expressions.
-
-(1) exprtk_disable_string_capabilities
-(2) exprtk_disable_cardinal_pow_optimisation
-(3) exprtk_disable_extended_optimisations
-(4) exprtk_disable_extended_operator_optimizations
-(5) exprtk_lean_and_mean
-(6) exprtk_lean_and_mean_numeric_only
-(7) exprtk_enable_all_optimizations
-
-(1) "exprtk_disable_string_capabilities"
-If defined, the macro will disable all string processing capabilities.
-When defined, if an expression  containing a string or string  related
-action  is  encountered,  a compilation  error will  be raised  by the
-parser.
-
-(2) "exprtk_disable_cardinal_pow_optimisation"
-If  defined,  the  macro  will  disable  the  special  case  regarding
-exponentiation  of  a  variable  to  an  integer  constant  (where the
-constant is  <= 60).  Defining this  variable may  be desirable if the
-error magnitude of the results using this special case are intolerable
-with regards to the precision required. When defined, the pow function
-used for all other powers will be invoked.
-
-(3) "exprtk_disable_extended_optimisations"
-If defined, the macro will disable the third tier optimisations.  This
-group of  optimisations creates  roughly 4K  type instantiations. This
-large number of type and branch instantiations in one translation unit
-may cause some  older compilers to  crash or not  be able to  properly
-compile  ExprTk.  If  such compiler  problems  are  encountered it  is
-recommended to test  having this particular  macro defined. It  should
-also  be noted  that some  of the  third tier  optimisations are  also
-available through  the predefined  'special functions',  however these
-require that expressions utilize them explicitly.
-
-(4) "exprtk_disable_extended_operator_optimizations"
-By default most of the mathematical operators are included as part  of
-the optimisation process. However if this macro is defined, then  only
-the basic mathematical operators (+,-,*,/,^) will be included.
-
-(5) "exprtk_lean_and_mean"
-The default mode  of ExprTk is  lean and mean.  This macro encompasses
-both modes [3] and [4].
-
-(6) "exprtk_lean_and_mean_numeric_only"
-The mode when this macro is  defined, is 'lean and mean' coupled  with
-all string capabilities disabled [1].
-
-(7) "exprtk_enable_all_optimizations"
-When defined all optimization mechanisms are turned on, including  all
-string processing related optimizations. In short nothing is disabled.
-This mode will cause older  C++ compilers and or compilers  running on
-slower machines with limited RAM to nearly come to a grinding halt  as
-per (3). This  mode will however  produce the most  efficient and high
-performance expression evaluation results. It is advised to have  this
-mode  turned  on  for final  builds  and  not to  be  used  during the
-development cycle.
-
-Note:  Foregoing  a  few  extra  clock  cycles  during  compilation in
-exchange  for a  dramatic increase in performance  during run-time  is
-always a worthy undertaking.
+          3-Parameter                       4-Parameter
+ +-------------+-------------+    +--------------+------------------+
+ |  Prototype  |  Operation  |    |  Prototype   |    Operation     |
+ +-------------+-------------+    +--------------+------------------+
+   $f00(x,y,z) |  (x + y) / z      $f46(x,y,z,w) | x + ((y + z) / w)
+   $f01(x,y,z) |  (x + y) * z      $f47(x,y,z,w) | x + ((y + z) * w)
+   $f02(x,y,z) |  (x + y) - z      $f48(x,y,z,w) | x + ((y - z) / w)
+   $f03(x,y,z) |  (x + y) + z      $f49(x,y,z,w) | x + ((y - z) * w)
+   $f04(x,y,z) |  (x - y) / z      $f50(x,y,z,w) | x + ((y * z) / w)
+   $f05(x,y,z) |  (x - y) * z      $f51(x,y,z,w) | x + ((y * z) * w)
+   $f06(x,y,z) |  (x * y) + z      $f52(x,y,z,w) | x + ((y / z) + w)
+   $f07(x,y,z) |  (x * y) - z      $f53(x,y,z,w) | x + ((y / z) / w)
+   $f08(x,y,z) |  (x * y) / z      $f54(x,y,z,w) | x + ((y / z) * w)
+   $f09(x,y,z) |  (x * y) * z      $f55(x,y,z,w) | x - ((y + z) / w)
+   $f10(x,y,z) |  (x / y) + z      $f56(x,y,z,w) | x - ((y + z) * w)
+   $f11(x,y,z) |  (x / y) - z      $f57(x,y,z,w) | x - ((y - z) / w)
+   $f12(x,y,z) |  (x / y) / z      $f58(x,y,z,w) | x - ((y - z) * w)
+   $f13(x,y,z) |  (x / y) * z      $f59(x,y,z,w) | x - ((y * z) / w)
+   $f14(x,y,z) |  x / (y + z)      $f60(x,y,z,w) | x - ((y * z) * w)
+   $f15(x,y,z) |  x / (y - z)      $f61(x,y,z,w) | x - ((y / z) / w)
+   $f16(x,y,z) |  x / (y * z)      $f62(x,y,z,w) | x - ((y / z) * w)
+   $f17(x,y,z) |  x / (y / z)      $f63(x,y,z,w) | ((x + y) * z) - w
+   $f18(x,y,z) |  x * (y + z)      $f64(x,y,z,w) | ((x - y) * z) - w
+   $f19(x,y,z) |  x * (y - z)      $f65(x,y,z,w) | ((x * y) * z) - w
+   $f20(x,y,z) |  x * (y * z)      $f66(x,y,z,w) | ((x / y) * z) - w
+   $f21(x,y,z) |  x * (y / z)      $f67(x,y,z,w) | ((x + y) / z) - w
+   $f22(x,y,z) |  x - (y / z)      $f68(x,y,z,w) | ((x - y) / z) - w
+   $f23(x,y,z) |  x - (y / z)      $f69(x,y,z,w) | ((x * y) / z) - w
+   $f24(x,y,z) |  x - (y * z)      $f70(x,y,z,w) | ((x / y) / z) - w
+   $f25(x,y,z) |  x + (y * z)      $f71(x,y,z,w) | (x * y) + (z * w)
+   $f26(x,y,z) |  x + (y / z)      $f72(x,y,z,w) | (x * y) - (z * w)
+   $f27(x,y,z) |  x + (y + z)      $f73(x,y,z,w) | (x * y) + (z / w)
+   $f28(x,y,z) |  x + (y - z)      $f74(x,y,z,w) | (x * y) - (z / w)
+   $f29(x,y,z) |  x * y^2 + z      $f75(x,y,z,w) | (x / y) + (z / w)
+   $f30(x,y,z) |  x * y^3 + z      $f76(x,y,z,w) | (x / y) - (z / w)
+   $f31(x,y,z) |  x * y^4 + z      $f77(x,y,z,w) | (x / y) - (z * w)
+   $f32(x,y,z) |  x * y^5 + z      $f78(x,y,z,w) | x / (y + (z * w))
+   $f33(x,y,z) |  x * y^6 + z      $f79(x,y,z,w) | x / (y - (z * w))
+   $f34(x,y,z) |  x * y^7 + z      $f80(x,y,z,w) | x * (y + (z * w))
+   $f35(x,y,z) |  x * y^8 + z      $f81(x,y,z,w) | x * (y - (z * w))
+   $f36(x,y,z) |  x * y^9 + z      $f82(x,y,z,w) | x * y^2 + z * w^2
+   $f37(x,y,z) |  x * log(y)+z     $f83(x,y,z,w) | x * y^3 + z * w^3
+   $f38(x,y,z) |  x * log(y)-z     $f84(x,y,z,w) | x * y^4 + z * w^4
+   $f39(x,y,z) |  x * log10(y)+z   $f85(x,y,z,w) | x * y^5 + z * w^5
+   $f40(x,y,z) |  x * log10(y)-z   $f86(x,y,z,w) | x * y^6 + z * w^6
+   $f41(x,y,z) |  x * sin(y)+z     $f87(x,y,z,w) | x * y^7 + z * w^7
+   $f42(x,y,z) |  x * sin(y)-z     $f88(x,y,z,w) | x * y^8 + z * w^8
+   $f43(x,y,z) |  x * cos(y)+z     $f89(x,y,z,w) | x * y^9 + z * w^9
+   $f44(x,y,z) |  x * cos(y)-z     $f90(x,y,z,w) | (x and y) ? z : w
+   $f45(x,y,z) |  x ? y : z        $f91(x,y,z,w) | (x  or y) ? z : w
+                                   $f92(x,y,z,w) | (x <   y) ? z : w
+                                   $f93(x,y,z,w) | (x <=  y) ? z : w
+                                   $f94(x,y,z,w) | (x >   y) ? z : w
+                                   $f95(x,y,z,w) | (x >=  y) ? z : w
+                                   $f96(x,y,z,w) | (x ==  y) ? z : w
+                                   $f97(x,y,z,w) | x*sin(y) + z*cos(w)
 
 
 
