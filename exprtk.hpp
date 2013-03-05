@@ -1796,47 +1796,49 @@ namespace exprtk
 
          inline std::size_t process(generator& g)
          {
-            for (std::size_t i = 0; i < (g.token_list_.size() - stride_ + 1); ++i)
+            if (!g.token_list_.empty())
             {
-               token t;
-               switch (stride_)
+               for (std::size_t i = 0; i < (g.token_list_.size() - stride_ + 1); ++i)
                {
-                  case 1 :
-                           {
-                              const token& t0 = g.token_list_[i];
-                              if (!operator()(t0)) return i;
-                           }
-                           break;
+                  token t;
+                  switch (stride_)
+                  {
+                     case 1 :
+                              {
+                                 const token& t0 = g.token_list_[i];
+                                 if (!operator()(t0)) return i;
+                              }
+                              break;
 
-                  case 2 :
-                           {
-                              const token& t0 = g.token_list_[i    ];
-                              const token& t1 = g.token_list_[i + 1];
-                              if (!operator()(t0,t1)) return i;
-                           }
-                           break;
+                     case 2 :
+                              {
+                                 const token& t0 = g.token_list_[i    ];
+                                 const token& t1 = g.token_list_[i + 1];
+                                 if (!operator()(t0,t1)) return i;
+                              }
+                              break;
 
-                  case 3 :
-                           {
-                              const token& t0 = g.token_list_[i    ];
-                              const token& t1 = g.token_list_[i + 1];
-                              const token& t2 = g.token_list_[i + 2];
-                              if (!operator()(t0,t1,t2)) return i;
-                           }
-                           break;
+                     case 3 :
+                              {
+                                 const token& t0 = g.token_list_[i    ];
+                                 const token& t1 = g.token_list_[i + 1];
+                                 const token& t2 = g.token_list_[i + 2];
+                                 if (!operator()(t0,t1,t2)) return i;
+                              }
+                              break;
 
-                  case 4 :
-                           {
-                              const token& t0 = g.token_list_[i    ];
-                              const token& t1 = g.token_list_[i + 1];
-                              const token& t2 = g.token_list_[i + 2];
-                              const token& t3 = g.token_list_[i + 3];
-                              if (!operator()(t0,t1,t2,t3)) return i;
-                           }
-                           break;
+                     case 4 :
+                              {
+                                 const token& t0 = g.token_list_[i    ];
+                                 const token& t1 = g.token_list_[i + 1];
+                                 const token& t2 = g.token_list_[i + 2];
+                                 const token& t3 = g.token_list_[i + 3];
+                                 if (!operator()(t0,t1,t2,t3)) return i;
+                              }
+                              break;
+                  }
                }
             }
-
             return (g.token_list_.size() - stride_ + 1);
          }
 
@@ -1872,12 +1874,10 @@ namespace exprtk
          inline std::size_t process(generator& g)
          {
             std::size_t changes = 0;
-
             for (std::size_t i = 0; i < g.token_list_.size(); ++i)
             {
                if (modify(g.token_list_[i])) changes++;
             }
-
             return changes;
          }
 
@@ -1899,8 +1899,9 @@ namespace exprtk
 
          inline std::size_t process(generator& g)
          {
+            if (g.token_list_.empty())
+               return 0;
             std::size_t changes = 0;
-
             for (std::size_t i = 0; i < (g.token_list_.size() - stride_ + 1); ++i)
             {
                token t;
@@ -1969,6 +1970,8 @@ namespace exprtk
 
          inline std::size_t process(generator& g)
          {
+            if (g.token_list_.empty())
+               return 0;
             std::size_t changes = 0;
             for (std::size_t i = 0; i < g.token_list_.size() - 1; ++i)
             {
@@ -3066,6 +3069,57 @@ namespace exprtk
       inline bool branch_deletable(expression_node<T>* node)
       {
          return !is_variable_node(node);
+      }
+
+      template <std::size_t N, typename T>
+      inline bool all_nodes_valid(expression_node<T>* (&b)[N])
+      {
+         for (std::size_t i = 0; i < N; ++i)
+         {
+            if (0 == b[i]) return false;
+         }
+         return true;
+      }
+
+      template <std::size_t N, typename T>
+      inline bool all_nodes_variables(expression_node<T>* (&b)[N])
+      {
+         for (std::size_t i = 0; i < N; ++i)
+         {
+            if (0 == b[i])
+               return false;
+            else if (!is_variable_node(b[i]))
+               return false;
+         }
+         return true;
+      }
+
+      template <typename NodeAllocator, typename T, std::size_t N>
+      inline void free_all_nodes(NodeAllocator& node_allocator, expression_node<T>* (&b)[N])
+      {
+         for (std::size_t i = 0; i < N; ++i)
+         {
+            if (0 != b[i])
+            {
+               if (!is_variable_node(b[i]))
+               {
+                  node_allocator.free(b[i]);
+                  b[i] = 0;
+               }
+            }
+         }
+      }
+
+      template <typename NodeAllocator, typename T>
+      inline void free_node(NodeAllocator& node_allocator, expression_node<T>*& node)
+      {
+         if (0 != node)
+         {
+            if (is_variable_node(node))
+               return;
+            node_allocator.free(node);
+            node = 0;
+         }
       }
 
       template <typename T>
@@ -8048,6 +8102,12 @@ namespace exprtk
 
       inline bool compile(const std::string& expression_string, expression<T>& expr)
       {
+         if (expression_string.empty())
+         {
+            set_error(parser_error::make_error(parser_error::e_syntax, "ERR00 - Empty expression!"));
+            return false;
+         }
+
          error_list_.clear();
          expression_generator_.set_allocator(node_allocator_);
 
@@ -8457,6 +8517,7 @@ namespace exprtk
                   if (p_[i] && !is_variable_node(p_[i]))
                   {
                      parser_.node_allocator_.free(p_[i]);
+                     p_[i] = 0;
                   }
                }
             }
@@ -9438,8 +9499,7 @@ namespace exprtk
          {
             if ((0 == branch[0]) || (0 == branch[1]))
             {
-               if (0 != branch[0]) node_allocator_->free(branch[0]);
-               if (0 != branch[1]) node_allocator_->free(branch[1]);
+               details::free_all_nodes(*node_allocator_,branch);
                return error_node();
             }
             else if (is_invalid_string_op(operation,branch))
@@ -9473,9 +9533,7 @@ namespace exprtk
          {
             if ((0 == branch[0]) || (0 == branch[1]) || (0 == branch[2]))
             {
-               if (0 != branch[0]) node_allocator_->free(branch[0]);
-               if (0 != branch[1]) node_allocator_->free(branch[1]);
-               if (0 != branch[2]) node_allocator_->free(branch[2]);
+               details::free_all_nodes(*node_allocator_,branch);
                return error_node();
             }
             else if (is_invalid_string_op(operation,branch))
@@ -9511,8 +9569,8 @@ namespace exprtk
          {
             if ((0 == b0) || (0 == b1))
             {
-               if (0 != b0) node_allocator_->free(b0);
-               if (0 != b1) node_allocator_->free(b1);
+               details::free_node(*node_allocator_,b0);
+               details::free_node(*node_allocator_,b1);
                return error_node();
             }
             else
@@ -9528,9 +9586,9 @@ namespace exprtk
          {
             if ((0 == condition) || (0 == consequent) || (0 == alternative))
             {
-               if (0 != condition  ) node_allocator_->free(condition  );
-               if (0 != consequent ) node_allocator_->free(consequent );
-               if (0 != alternative) node_allocator_->free(alternative);
+               free_node(*node_allocator_,condition);
+               free_node(*node_allocator_,consequent);
+               free_node(*node_allocator_,alternative);
                return error_node();
             }
             // Can the condition be immediately evaluated? if so optimize.
@@ -9539,15 +9597,15 @@ namespace exprtk
                // True branch
                if (details::is_true(condition))
                {
-                  node_allocator_->free(condition);
-                  node_allocator_->free(alternative);
+                  free_node(*node_allocator_,condition);
+                  free_node(*node_allocator_,alternative);
                   return consequent;
                }
                // False branch
                else
                {
-                  node_allocator_->free(condition);
-                  node_allocator_->free(consequent);
+                  free_node(*node_allocator_,condition);
+                  free_node(*node_allocator_,consequent);
                   return alternative;
                }
             }
@@ -9675,6 +9733,7 @@ namespace exprtk
             }
             T v = temp_node->value();
             node_allocator_->free(temp_node);
+            details::free_node(*node_allocator_,temp_node);
             return node_allocator_->allocate<literal_node_t>(v);
          }
 
@@ -9862,7 +9921,7 @@ namespace exprtk
                default : return error_node();
             }
             T v = temp_node->value();
-            node_allocator_->free(temp_node);
+            details::free_node(*node_allocator_,temp_node);
             return node_allocator_->allocate<literal_node_t>(v);
          }
 
@@ -10050,41 +10109,6 @@ namespace exprtk
             return true;
          }
 
-         template <std::size_t N>
-         inline bool all_nodes_valid(expression_node_ptr (&b)[N]) const
-         {
-            for (std::size_t i = 0; i < N; ++i)
-            {
-               if (0 == b[i]) return false;
-            }
-            return true;
-         }
-
-         template <std::size_t N>
-         inline bool all_nodes_variables(expression_node_ptr (&b)[N]) const
-         {
-            for (std::size_t i = 0; i < N; ++i)
-            {
-               if (0 == b[i])
-                  return false;
-               else if (!is_variable_node(b[i]))
-                  return false;
-            }
-            return true;
-         }
-
-         template <typename NodeAllocator, std::size_t N>
-         inline void free_all_nodes(NodeAllocator& node_allocator, expression_node_ptr (&b)[N]) const
-         {
-            for (std::size_t i = 0; i < N; ++i)
-            {
-               if (0 != b[i])
-               {
-                  node_allocator.free(b[i]);
-               }
-            }
-         }
-
          inline expression_node_ptr synthesize_assignment_expression(const details::operator_type& operation, expression_node_ptr (&branch)[2])
          {
             if (details::is_variable_node(branch[0]))
@@ -10232,7 +10256,7 @@ namespace exprtk
                                                       expression_node_ptr (&branch)[2])
             {
                const Type c = dynamic_cast<details::literal_node<Type>*>(branch[0])->value();
-               expr_gen.node_allocator_->free(branch[0]);
+               free_node(*expr_gen.node_allocator_,branch[0]);
                if (details::is_cob_node(branch[1]))
                {
                   // Simplify expressions of the form:
@@ -10274,7 +10298,7 @@ namespace exprtk
                                                       expression_node_ptr (&branch)[2])
             {
                const Type c = dynamic_cast<details::literal_node<Type>*>(branch[1])->value();
-               expr_gen.node_allocator_->free(branch[1]);
+               details::free_node(*(expr_gen.node_allocator_),branch[1]);
                if (details::is_boc_node(branch[0]))
                {
                   // Simplify expressions of the form:
@@ -10352,7 +10376,7 @@ namespace exprtk
             {
                const Type  c = dynamic_cast<details::literal_node<Type>* >(branch[0])->value();
                const Type& v = dynamic_cast<details::variable_node<Type>*>(branch[1])->ref();
-               expr_gen.node_allocator_->free(branch[0]);
+               details::free_node(*(expr_gen.node_allocator_),branch[0]);
                switch (operation)
                {
                   #define case_stmt(op0,op1) case op0 : return expr_gen.node_allocator_->template allocate_cr<typename details::cov_node<Type,op1<Type> > >(c,v);
@@ -10372,7 +10396,7 @@ namespace exprtk
             {
                const Type& v = dynamic_cast<details::variable_node<Type>*>(branch[0])->ref();
                const Type  c = dynamic_cast<details::literal_node<Type>* >(branch[1])->value();
-               expr_gen.node_allocator_->free(branch[1]);
+               details::free_node(*(expr_gen.node_allocator_),branch[1]);
                if (expr_gen.cardinal_pow_optimizable(operation,c))
                {
                   return expr_gen.cardinal_pow_optimization(v,c);
@@ -10568,7 +10592,7 @@ namespace exprtk
                const details::operator_type o1 = operation;
                binary_functor_t f0 = reinterpret_cast<binary_functor_t>(0);
                binary_functor_t f1 = reinterpret_cast<binary_functor_t>(0);
-               expr_gen.node_allocator_->free(branch[0]);
+               details::free_node(*(expr_gen.node_allocator_),branch[0]);
                expression_node_ptr result = error_node();
                if (synthesize_sf3ext_expression::template compile<vtype,vtype,vtype>(expr_gen,id(expr_gen,o0,o1),v0,v1,v2,result))
                   return result;
@@ -10604,7 +10628,7 @@ namespace exprtk
                const details::operator_type o1 = vov->operation();
                binary_functor_t f0 = reinterpret_cast<binary_functor_t>(0);
                binary_functor_t f1 = reinterpret_cast<binary_functor_t>(0);
-               expr_gen.node_allocator_->free(branch[1]);
+               details::free_node(*(expr_gen.node_allocator_),branch[1]);
                expression_node_ptr result = error_node();
                if (synthesize_sf3ext_expression::template compile<vtype,vtype,vtype>(expr_gen,id(expr_gen,o0,o1),v0,v1,v2,result))
                   return result;
@@ -10640,8 +10664,8 @@ namespace exprtk
                const details::operator_type o1 = operation;
                binary_functor_t f0 = reinterpret_cast<binary_functor_t>(0);
                binary_functor_t f1 = reinterpret_cast<binary_functor_t>(0);
-               expr_gen.node_allocator_->free(branch[0]);
-               expr_gen.node_allocator_->free(branch[1]);
+               details::free_node(*(expr_gen.node_allocator_),branch[0]);
+               details::free_node(*(expr_gen.node_allocator_),branch[1]);
                expression_node_ptr result = error_node();
                if (synthesize_sf3ext_expression::template compile<vtype,vtype,ctype>(expr_gen,id(expr_gen,o0,o1),v0,v1,c,result))
                   return result;
@@ -10677,7 +10701,7 @@ namespace exprtk
                const details::operator_type o1 = voc->operation();
                binary_functor_t f0 = reinterpret_cast<binary_functor_t>(0);
                binary_functor_t f1 = reinterpret_cast<binary_functor_t>(0);
-               expr_gen.node_allocator_->free(branch[1]);
+               details::free_node(*(expr_gen.node_allocator_),branch[1]);
                expression_node_ptr result = error_node();
                if (synthesize_sf3ext_expression::template compile<vtype,vtype,ctype>(expr_gen,id(expr_gen,o0,o1),v0,v1,c,result))
                   return result;
@@ -10713,7 +10737,7 @@ namespace exprtk
                const details::operator_type o1 = operation;
                binary_functor_t f0 = reinterpret_cast<binary_functor_t>(0);
                binary_functor_t f1 = reinterpret_cast<binary_functor_t>(0);
-               expr_gen.node_allocator_->free(branch[0]);
+               details::free_node(*(expr_gen.node_allocator_),branch[0]);
                expression_node_ptr result = error_node();
                if (synthesize_sf3ext_expression::template compile<vtype,ctype,vtype>(expr_gen,id(expr_gen,o0,o1),v0,c,v1,result))
                   return result;
@@ -10749,7 +10773,7 @@ namespace exprtk
                const details::operator_type o1 = cov->operation();
                binary_functor_t f0 = reinterpret_cast<binary_functor_t>(0);
                binary_functor_t f1 = reinterpret_cast<binary_functor_t>(0);
-               expr_gen.node_allocator_->free(branch[1]);
+               details::free_node(*(expr_gen.node_allocator_),branch[1]);
                expression_node_ptr result = error_node();
                if (synthesize_sf3ext_expression::template compile<vtype,ctype,vtype>(expr_gen,id(expr_gen,o0,o1),v0,c,v1,result))
                   return result;
@@ -10785,7 +10809,7 @@ namespace exprtk
                const details::operator_type o1 = operation;
                binary_functor_t f0 = reinterpret_cast<binary_functor_t>(0);
                binary_functor_t f1 = reinterpret_cast<binary_functor_t>(0);
-               expr_gen.node_allocator_->free(branch[0]);
+               details::free_node(*(expr_gen.node_allocator_),branch[0]);
                expression_node_ptr result = error_node();
                if (synthesize_sf3ext_expression::template compile<ctype,vtype,vtype>(expr_gen,id(expr_gen,o0,o1),c,v0,v1,result))
                   return result;
@@ -10821,8 +10845,8 @@ namespace exprtk
                const details::operator_type o1 = vov->operation();
                binary_functor_t f0 = reinterpret_cast<binary_functor_t>(0);
                binary_functor_t f1 = reinterpret_cast<binary_functor_t>(0);
-               expr_gen.node_allocator_->free(branch[0]);
-               expr_gen.node_allocator_->free(branch[1]);
+               details::free_node(*(expr_gen.node_allocator_),branch[0]);
+               details::free_node(*(expr_gen.node_allocator_),branch[1]);
                expression_node_ptr result = error_node();
                if (synthesize_sf3ext_expression::template compile<ctype,vtype,vtype>(expr_gen,id(expr_gen,o0,o1),c,v0,v1,result))
                   return result;
@@ -10857,8 +10881,8 @@ namespace exprtk
                const details::operator_type o1 = operation;
                binary_functor_t f0 = reinterpret_cast<binary_functor_t>(0);
                binary_functor_t f1 = reinterpret_cast<binary_functor_t>(0);
-               expr_gen.node_allocator_->free(branch[0]);
-               expr_gen.node_allocator_->free(branch[1]);
+               details::free_node(*(expr_gen.node_allocator_),branch[0]);
+               details::free_node(*(expr_gen.node_allocator_),branch[1]);
                expression_node_ptr result = error_node();
                if (synthesize_sf3ext_expression::template compile<ctype,vtype,ctype>(expr_gen,id(expr_gen,o0,o1),c0,v,c1,result))
                   return result;
@@ -10894,8 +10918,8 @@ namespace exprtk
                const details::operator_type o1 = voc->operation();
                binary_functor_t f0 = reinterpret_cast<binary_functor_t>(0);
                binary_functor_t f1 = reinterpret_cast<binary_functor_t>(0);
-               expr_gen.node_allocator_->free(branch[0]);
-               expr_gen.node_allocator_->free(branch[1]);
+               details::free_node(*(expr_gen.node_allocator_),branch[0]);
+               details::free_node(*(expr_gen.node_allocator_),branch[1]);
                expression_node_ptr result = error_node();
                if (synthesize_sf3ext_expression::template compile<ctype,vtype,ctype>(expr_gen,id(expr_gen,o0,o1),c0,v,c1,result))
                   return result;
@@ -10941,8 +10965,8 @@ namespace exprtk
                const details::operator_type o1 = cov->operation();
                binary_functor_t f0 = reinterpret_cast<binary_functor_t>(0);
                binary_functor_t f1 = reinterpret_cast<binary_functor_t>(0);
-               expr_gen.node_allocator_->free(branch[0]);
-               expr_gen.node_allocator_->free(branch[1]);
+               details::free_node(*(expr_gen.node_allocator_),branch[0]);
+               details::free_node(*(expr_gen.node_allocator_),branch[1]);
                expression_node_ptr result = error_node();
                if (synthesize_sf3ext_expression::template compile<ctype,ctype,vtype>(expr_gen,id(expr_gen,o0,o1),c0,c1,v,result))
                   return result;
@@ -10977,8 +11001,8 @@ namespace exprtk
                const details::operator_type o1 = operation;
                binary_functor_t f0 = reinterpret_cast<binary_functor_t>(0);
                binary_functor_t f1 = reinterpret_cast<binary_functor_t>(0);
-               expr_gen.node_allocator_->free(branch[0]);
-               expr_gen.node_allocator_->free(branch[1]);
+               details::free_node(*(expr_gen.node_allocator_),branch[0]);
+               details::free_node(*(expr_gen.node_allocator_),branch[1]);
                expression_node_ptr result = error_node();
                if (synthesize_sf3ext_expression::template compile<vtype,ctype,ctype>(expr_gen,id(expr_gen,o0,o1),v,c0,c1,result))
                   return result;
@@ -11033,8 +11057,8 @@ namespace exprtk
                binary_functor_t f0 = reinterpret_cast<binary_functor_t>(0);
                binary_functor_t f1 = reinterpret_cast<binary_functor_t>(0);
                binary_functor_t f2 = reinterpret_cast<binary_functor_t>(0);
-               expr_gen.node_allocator_->free(branch[0]);
-               expr_gen.node_allocator_->free(branch[1]);
+               details::free_node(*(expr_gen.node_allocator_),branch[0]);
+               details::free_node(*(expr_gen.node_allocator_),branch[1]);
                expression_node_ptr result = error_node();
                if (synthesize_sf4ext_expression::template compile<T0,T1,T2,T3>(expr_gen,id(expr_gen,o0,o1,o2),v0,v1,v2,v3,result))
                   return result;
@@ -11079,8 +11103,8 @@ namespace exprtk
                binary_functor_t f0 = reinterpret_cast<binary_functor_t>(0);
                binary_functor_t f1 = reinterpret_cast<binary_functor_t>(0);
                binary_functor_t f2 = reinterpret_cast<binary_functor_t>(0);
-               expr_gen.node_allocator_->free(branch[0]);
-               expr_gen.node_allocator_->free(branch[1]);
+               details::free_node(*(expr_gen.node_allocator_),branch[0]);
+               details::free_node(*(expr_gen.node_allocator_),branch[1]);
                expression_node_ptr result = error_node();
                if (synthesize_sf4ext_expression::template compile<T0,T1,T2,T3>(expr_gen,id(expr_gen,o0,o1,o2),v0,v1,v2,c,result))
                   return result;
@@ -11126,8 +11150,8 @@ namespace exprtk
                binary_functor_t f0 = reinterpret_cast<binary_functor_t>(0);
                binary_functor_t f1 = reinterpret_cast<binary_functor_t>(0);
                binary_functor_t f2 = reinterpret_cast<binary_functor_t>(0);
-               expr_gen.node_allocator_->free(branch[0]);
-               expr_gen.node_allocator_->free(branch[1]);
+               details::free_node(*(expr_gen.node_allocator_),branch[0]);
+               details::free_node(*(expr_gen.node_allocator_),branch[1]);
                expression_node_ptr result = error_node();
                if (synthesize_sf4ext_expression::template compile<T0,T1,T2,T3>(expr_gen,id(expr_gen,o0,o1,o2),v0,v1,c,v2,result))
                   return result;
@@ -11173,8 +11197,8 @@ namespace exprtk
                binary_functor_t f0 = reinterpret_cast<binary_functor_t>(0);
                binary_functor_t f1 = reinterpret_cast<binary_functor_t>(0);
                binary_functor_t f2 = reinterpret_cast<binary_functor_t>(0);
-               expr_gen.node_allocator_->free(branch[0]);
-               expr_gen.node_allocator_->free(branch[1]);
+               details::free_node(*(expr_gen.node_allocator_),branch[0]);
+               details::free_node(*(expr_gen.node_allocator_),branch[1]);
                expression_node_ptr result = error_node();
                if (synthesize_sf4ext_expression::template compile<T0,T1,T2,T3>(expr_gen,id(expr_gen,o0,o1,o2),v0,c,v1,v2,result))
                   return result;
@@ -11220,8 +11244,8 @@ namespace exprtk
                binary_functor_t f0 = reinterpret_cast<binary_functor_t>(0);
                binary_functor_t f1 = reinterpret_cast<binary_functor_t>(0);
                binary_functor_t f2 = reinterpret_cast<binary_functor_t>(0);
-               expr_gen.node_allocator_->free(branch[0]);
-               expr_gen.node_allocator_->free(branch[1]);
+               details::free_node(*(expr_gen.node_allocator_),branch[0]);
+               details::free_node(*(expr_gen.node_allocator_),branch[1]);
                expression_node_ptr result = error_node();
                if (synthesize_sf4ext_expression::template compile<T0,T1,T2,T3>(expr_gen,id(expr_gen,o0,o1,o2),c,v0,v1,v2,result))
                   return result;
@@ -11267,8 +11291,8 @@ namespace exprtk
                binary_functor_t f0 = reinterpret_cast<binary_functor_t>(0);
                binary_functor_t f1 = reinterpret_cast<binary_functor_t>(0);
                binary_functor_t f2 = reinterpret_cast<binary_functor_t>(0);
-               expr_gen.node_allocator_->free(branch[0]);
-               expr_gen.node_allocator_->free(branch[1]);
+               details::free_node(*(expr_gen.node_allocator_),branch[0]);
+               details::free_node(*(expr_gen.node_allocator_),branch[1]);
                expression_node_ptr result = error_node();
                if (synthesize_sf4ext_expression::template compile<T0,T1,T2,T3>(expr_gen,id(expr_gen,o0,o1,o2),c0,v0,c1,v1,result))
                   return result;
@@ -11314,8 +11338,8 @@ namespace exprtk
                binary_functor_t f0 = reinterpret_cast<binary_functor_t>(0);
                binary_functor_t f1 = reinterpret_cast<binary_functor_t>(0);
                binary_functor_t f2 = reinterpret_cast<binary_functor_t>(0);
-               expr_gen.node_allocator_->free(branch[0]);
-               expr_gen.node_allocator_->free(branch[1]);
+               details::free_node(*(expr_gen.node_allocator_),branch[0]);
+               details::free_node(*(expr_gen.node_allocator_),branch[1]);
                expression_node_ptr result = error_node();
                if (synthesize_sf4ext_expression::template compile<T0,T1,T2,T3>(expr_gen,id(expr_gen,o0,o1,o2),v0,c0,v1,c1,result))
                   return result;
@@ -11361,8 +11385,8 @@ namespace exprtk
                binary_functor_t f0 = reinterpret_cast<binary_functor_t>(0);
                binary_functor_t f1 = reinterpret_cast<binary_functor_t>(0);
                binary_functor_t f2 = reinterpret_cast<binary_functor_t>(0);
-               expr_gen.node_allocator_->free(branch[0]);
-               expr_gen.node_allocator_->free(branch[1]);
+               details::free_node(*(expr_gen.node_allocator_),branch[0]);
+               details::free_node(*(expr_gen.node_allocator_),branch[1]);
                expression_node_ptr result = error_node();
                if (synthesize_sf4ext_expression::template compile<T0,T1,T2,T3>(expr_gen,id(expr_gen,o0,o1,o2),c0,v0,v1,c1,result))
                   return result;
@@ -11408,8 +11432,8 @@ namespace exprtk
                binary_functor_t f0 = reinterpret_cast<binary_functor_t>(0);
                binary_functor_t f1 = reinterpret_cast<binary_functor_t>(0);
                binary_functor_t f2 = reinterpret_cast<binary_functor_t>(0);
-               expr_gen.node_allocator_->free(branch[0]);
-               expr_gen.node_allocator_->free(branch[1]);
+               details::free_node(*(expr_gen.node_allocator_),branch[0]);
+               details::free_node(*(expr_gen.node_allocator_),branch[1]);
                expression_node_ptr result = error_node();
                if (synthesize_sf4ext_expression::template compile<T0,T1,T2,T3>(expr_gen,id(expr_gen,o0,o1,o2),v0,c0,c1,v1,result))
                   return result;
@@ -11455,7 +11479,7 @@ namespace exprtk
                binary_functor_t f0 = reinterpret_cast<binary_functor_t>(0);
                binary_functor_t f1 = vovov->f0();
                binary_functor_t f2 = vovov->f1();
-               expr_gen.node_allocator_->free(branch[1]);
+               details::free_node(*(expr_gen.node_allocator_),branch[1]);
                expression_node_ptr result = error_node();
                if (synthesize_sf4ext_expression::template compile<T0,T1,T2,T3>(expr_gen,id(expr_gen,o0,o1,o2),v0,v1,v2,v3,result))
                   return result;
@@ -11497,7 +11521,7 @@ namespace exprtk
                binary_functor_t f0 = reinterpret_cast<binary_functor_t>(0);
                binary_functor_t f1 = vovoc->f0();
                binary_functor_t f2 = vovoc->f1();
-               expr_gen.node_allocator_->free(branch[1]);
+               details::free_node(*(expr_gen.node_allocator_),branch[1]);
                expression_node_ptr result = error_node();
                if (synthesize_sf4ext_expression::template compile<T0,T1,T2,T3>(expr_gen,id(expr_gen,o0,o1,o2),v0,v1,v2,c,result))
                   return result;
@@ -11539,7 +11563,7 @@ namespace exprtk
                binary_functor_t f0 = reinterpret_cast<binary_functor_t>(0);
                binary_functor_t f1 = vocov->f0();
                binary_functor_t f2 = vocov->f1();
-               expr_gen.node_allocator_->free(branch[1]);
+               details::free_node(*(expr_gen.node_allocator_),branch[1]);
                expression_node_ptr result = error_node();
                if (synthesize_sf4ext_expression::template compile<T0,T1,T2,T3>(expr_gen,id(expr_gen,o0,o1,o2),v0,v1,c,v2,result))
                   return result;
@@ -11581,7 +11605,7 @@ namespace exprtk
                binary_functor_t f0 = reinterpret_cast<binary_functor_t>(0);
                binary_functor_t f1 = covov->f0();
                binary_functor_t f2 = covov->f1();
-               expr_gen.node_allocator_->free(branch[1]);
+               details::free_node(*(expr_gen.node_allocator_),branch[1]);
                expression_node_ptr result = error_node();
                if (synthesize_sf4ext_expression::template compile<T0,T1,T2,T3>(expr_gen,id(expr_gen,o0,o1,o2),v0,c,v1,v2,result))
                   return result;
@@ -11623,8 +11647,8 @@ namespace exprtk
                binary_functor_t f0 = reinterpret_cast<binary_functor_t>(0);
                binary_functor_t f1 = vovov->f0();
                binary_functor_t f2 = vovov->f1();
-               expr_gen.node_allocator_->free(branch[0]);
-               expr_gen.node_allocator_->free(branch[1]);
+               details::free_node(*(expr_gen.node_allocator_),branch[0]);
+               details::free_node(*(expr_gen.node_allocator_),branch[1]);
                expression_node_ptr result = error_node();
                if (synthesize_sf4ext_expression::template compile<T0,T1,T2,T3>(expr_gen,id(expr_gen,o0,o1,o2),c,v0,v1,v2,result))
                   return result;
@@ -11666,8 +11690,8 @@ namespace exprtk
                binary_functor_t f0 = reinterpret_cast<binary_functor_t>(0);
                binary_functor_t f1 = vocov->f0();
                binary_functor_t f2 = vocov->f1();
-               expr_gen.node_allocator_->free(branch[0]);
-               expr_gen.node_allocator_->free(branch[1]);
+               details::free_node(*(expr_gen.node_allocator_),branch[0]);
+               details::free_node(*(expr_gen.node_allocator_),branch[1]);
                expression_node_ptr result = error_node();
                if (synthesize_sf4ext_expression::template compile<T0,T1,T2,T3>(expr_gen,id(expr_gen,o0,o1,o2),c0,v0,c1,v1,result))
                   return result;
@@ -11709,7 +11733,7 @@ namespace exprtk
                binary_functor_t f0 = reinterpret_cast<binary_functor_t>(0);
                binary_functor_t f1 = covoc->f0();
                binary_functor_t f2 = covoc->f1();
-               expr_gen.node_allocator_->free(branch[1]);
+               details::free_node(*(expr_gen.node_allocator_),branch[1]);
                expression_node_ptr result = error_node();
                if (synthesize_sf4ext_expression::template compile<T0,T1,T2,T3>(expr_gen,id(expr_gen,o0,o1,o2),v0,c0,v1,c1,result))
                   return result;
@@ -11751,8 +11775,8 @@ namespace exprtk
                binary_functor_t f0 = reinterpret_cast<binary_functor_t>(0);
                binary_functor_t f1 = vovoc->f0();
                binary_functor_t f2 = vovoc->f1();
-               expr_gen.node_allocator_->free(branch[0]);
-               expr_gen.node_allocator_->free(branch[1]);
+               details::free_node(*(expr_gen.node_allocator_),branch[0]);
+               details::free_node(*(expr_gen.node_allocator_),branch[1]);
                expression_node_ptr result = error_node();
                if (synthesize_sf4ext_expression::template compile<T0,T1,T2,T3>(expr_gen,id(expr_gen,o0,o1,o2),c0,v0,v1,c1,result))
                   return result;
@@ -11794,7 +11818,7 @@ namespace exprtk
                binary_functor_t f0 = reinterpret_cast<binary_functor_t>(0);
                binary_functor_t f1 = cocov->f0();
                binary_functor_t f2 = cocov->f1();
-               expr_gen.node_allocator_->free(branch[1]);
+               details::free_node(*(expr_gen.node_allocator_),branch[1]);
                expression_node_ptr result = error_node();
                if (synthesize_sf4ext_expression::template compile<T0,T1,T2,T3>(expr_gen,id(expr_gen,o0,o1,o2),v0,c0,c1,v1,result))
                   return result;
@@ -11836,7 +11860,7 @@ namespace exprtk
                binary_functor_t f0 = reinterpret_cast<binary_functor_t>(0);
                binary_functor_t f1 = vovov->f0();
                binary_functor_t f2 = vovov->f1();
-               expr_gen.node_allocator_->free(branch[1]);
+               details::free_node(*(expr_gen.node_allocator_),branch[1]);
                expression_node_ptr result = error_node();
                if (synthesize_sf4ext_expression::template compile<T0,T1,T2,T3>(expr_gen,id(expr_gen,o0,o1,o2),v0,v1,v2,v3,result))
                   return result;
@@ -11878,7 +11902,7 @@ namespace exprtk
                binary_functor_t f0 = reinterpret_cast<binary_functor_t>(0);
                binary_functor_t f1 = vovoc->f0();
                binary_functor_t f2 = vovoc->f1();
-               expr_gen.node_allocator_->free(branch[1]);
+               details::free_node(*(expr_gen.node_allocator_),branch[1]);
                expression_node_ptr result = error_node();
                if (synthesize_sf4ext_expression::template compile<T0,T1,T2,T3>(expr_gen,id(expr_gen,o0,o1,o2),v0,v1,v2,c,result))
                   return result;
@@ -11920,7 +11944,7 @@ namespace exprtk
                binary_functor_t f0 = reinterpret_cast<binary_functor_t>(0);
                binary_functor_t f1 = vocov->f0();
                binary_functor_t f2 = vocov->f1();
-               expr_gen.node_allocator_->free(branch[1]);
+               details::free_node(*(expr_gen.node_allocator_),branch[1]);
                expression_node_ptr result = error_node();
                if (synthesize_sf4ext_expression::template compile<T0,T1,T2,T3>(expr_gen,id(expr_gen,o0,o1,o2),v0,v1,c,v2,result))
                   return result;
@@ -11962,7 +11986,7 @@ namespace exprtk
                binary_functor_t f0 = reinterpret_cast<binary_functor_t>(0);
                binary_functor_t f1 = covov->f0();
                binary_functor_t f2 = covov->f1();
-               expr_gen.node_allocator_->free(branch[1]);
+               details::free_node(*(expr_gen.node_allocator_),branch[1]);
                expression_node_ptr result = error_node();
                if (synthesize_sf4ext_expression::template compile<T0,T1,T2,T3>(expr_gen,id(expr_gen,o0,o1,o2),v0,c,v1,v2,result))
                   return result;
@@ -12004,8 +12028,8 @@ namespace exprtk
                binary_functor_t f0 = reinterpret_cast<binary_functor_t>(0);
                binary_functor_t f1 = vovov->f0();
                binary_functor_t f2 = vovov->f1();
-               expr_gen.node_allocator_->free(branch[0]);
-               expr_gen.node_allocator_->free(branch[1]);
+               details::free_node(*(expr_gen.node_allocator_),branch[0]);
+               details::free_node(*(expr_gen.node_allocator_),branch[1]);
                expression_node_ptr result = error_node();
                if (synthesize_sf4ext_expression::template compile<T0,T1,T2,T3>(expr_gen,id(expr_gen,o0,o1,o2),c,v0,v1,v2,result))
                   return result;
@@ -12047,8 +12071,8 @@ namespace exprtk
                binary_functor_t f0 = reinterpret_cast<binary_functor_t>(0);
                binary_functor_t f1 = vocov->f0();
                binary_functor_t f2 = vocov->f1();
-               expr_gen.node_allocator_->free(branch[0]);
-               expr_gen.node_allocator_->free(branch[1]);
+               details::free_node(*(expr_gen.node_allocator_),branch[0]);
+               details::free_node(*(expr_gen.node_allocator_),branch[1]);
                expression_node_ptr result = error_node();
                if (synthesize_sf4ext_expression::template compile<T0,T1,T2,T3>(expr_gen,id(expr_gen,o0,o1,o2),c0,v0,c1,v1,result))
                   return result;
@@ -12090,7 +12114,7 @@ namespace exprtk
                binary_functor_t f0 = reinterpret_cast<binary_functor_t>(0);
                binary_functor_t f1 = covoc->f0();
                binary_functor_t f2 = covoc->f1();
-               expr_gen.node_allocator_->free(branch[1]);
+               details::free_node(*(expr_gen.node_allocator_),branch[1]);
                expression_node_ptr result = error_node();
                if (synthesize_sf4ext_expression::template compile<T0,T1,T2,T3>(expr_gen,id(expr_gen,o0,o1,o2),v0,c0,v1,c1,result))
                   return result;
@@ -12132,8 +12156,8 @@ namespace exprtk
                binary_functor_t f0 = reinterpret_cast<binary_functor_t>(0);
                binary_functor_t f1 = vovoc->f0();
                binary_functor_t f2 = vovoc->f1();
-               expr_gen.node_allocator_->free(branch[0]);
-               expr_gen.node_allocator_->free(branch[1]);
+               details::free_node(*(expr_gen.node_allocator_),branch[0]);
+               details::free_node(*(expr_gen.node_allocator_),branch[1]);
                expression_node_ptr result = error_node();
                if (synthesize_sf4ext_expression::template compile<T0,T1,T2,T3>(expr_gen,id(expr_gen,o0,o1,o2),c0,v0,v1,c1,result))
                   return result;
@@ -12191,7 +12215,7 @@ namespace exprtk
                binary_functor_t f0 = vovov->f0();
                binary_functor_t f1 = vovov->f1();
                binary_functor_t f2 = reinterpret_cast<binary_functor_t>(0);
-               expr_gen.node_allocator_->free(branch[0]);
+               details::free_node(*(expr_gen.node_allocator_),branch[0]);
                expression_node_ptr result = error_node();
                if (synthesize_sf4ext_expression::template compile<T0,T1,T2,T3>(expr_gen,id(expr_gen,o0,o1,o2),v0,v1,v2,v3,result))
                   return result;
@@ -12233,8 +12257,8 @@ namespace exprtk
                binary_functor_t f0 = vovov->f0();
                binary_functor_t f1 = vovov->f1();
                binary_functor_t f2 = reinterpret_cast<binary_functor_t>(0);
-               expr_gen.node_allocator_->free(branch[0]);
-               expr_gen.node_allocator_->free(branch[1]);
+               details::free_node(*(expr_gen.node_allocator_),branch[0]);
+               details::free_node(*(expr_gen.node_allocator_),branch[1]);
                expression_node_ptr result = error_node();
                if (synthesize_sf4ext_expression::template compile<T0,T1,T2,T3>(expr_gen,id(expr_gen,o0,o1,o2),v0,v1,v2,c,result))
                   return result;
@@ -12276,7 +12300,7 @@ namespace exprtk
                binary_functor_t f0 = vovoc->f0();
                binary_functor_t f1 = vovoc->f1();
                binary_functor_t f2 = reinterpret_cast<binary_functor_t>(0);
-               expr_gen.node_allocator_->free(branch[0]);
+               details::free_node(*(expr_gen.node_allocator_),branch[0]);
                expression_node_ptr result = error_node();
                if (synthesize_sf4ext_expression::template compile<T0,T1,T2,T3>(expr_gen,id(expr_gen,o0,o1,o2),v0,v1,c,v2,result))
                   return result;
@@ -12318,7 +12342,7 @@ namespace exprtk
                binary_functor_t f0 = vocov->f0();
                binary_functor_t f1 = vocov->f1();
                binary_functor_t f2 = reinterpret_cast<binary_functor_t>(0);
-               expr_gen.node_allocator_->free(branch[0]);
+               details::free_node(*(expr_gen.node_allocator_),branch[0]);
                expression_node_ptr result = error_node();
                if (synthesize_sf4ext_expression::template compile<T0,T1,T2,T3>(expr_gen,id(expr_gen,o0,o1,o2),v0,c,v1,v2,result))
                   return result;
@@ -12360,7 +12384,7 @@ namespace exprtk
                binary_functor_t f0 = covov->f0();
                binary_functor_t f1 = covov->f1();
                binary_functor_t f2 = reinterpret_cast<binary_functor_t>(0);
-               expr_gen.node_allocator_->free(branch[0]);
+               details::free_node(*(expr_gen.node_allocator_),branch[0]);
                expression_node_ptr result = error_node();
                if (synthesize_sf4ext_expression::template compile<T0,T1,T2,T3>(expr_gen,id(expr_gen,o0,o1,o2),c,v0,v1,v2,result))
                   return result;
@@ -12402,7 +12426,7 @@ namespace exprtk
                binary_functor_t f0 = covoc->f0();
                binary_functor_t f1 = covoc->f1();
                binary_functor_t f2 = reinterpret_cast<binary_functor_t>(0);
-               expr_gen.node_allocator_->free(branch[0]);
+               details::free_node(*(expr_gen.node_allocator_),branch[0]);
                expression_node_ptr result = error_node();
                if (synthesize_sf4ext_expression::template compile<T0,T1,T2,T3>(expr_gen,id(expr_gen,o0,o1,o2),c0,v0,c1,v1,result))
                   return result;
@@ -12444,8 +12468,8 @@ namespace exprtk
                binary_functor_t f0 = vocov->f0();
                binary_functor_t f1 = vocov->f1();
                binary_functor_t f2 = reinterpret_cast<binary_functor_t>(0);
-               expr_gen.node_allocator_->free(branch[0]);
-               expr_gen.node_allocator_->free(branch[1]);
+               details::free_node(*(expr_gen.node_allocator_),branch[0]);
+               details::free_node(*(expr_gen.node_allocator_),branch[1]);
                expression_node_ptr result = error_node();
                if (synthesize_sf4ext_expression::template compile<T0,T1,T2,T3>(expr_gen,id(expr_gen,o0,o1,o2),v0,c0,v1,c1,result))
                   return result;
@@ -12487,8 +12511,8 @@ namespace exprtk
                binary_functor_t f0 = covov->f0();
                binary_functor_t f1 = covov->f1();
                binary_functor_t f2 = reinterpret_cast<binary_functor_t>(0);
-               expr_gen.node_allocator_->free(branch[0]);
-               expr_gen.node_allocator_->free(branch[1]);
+               details::free_node(*(expr_gen.node_allocator_),branch[0]);
+               details::free_node(*(expr_gen.node_allocator_),branch[1]);
                expression_node_ptr result = error_node();
                if (synthesize_sf4ext_expression::template compile<T0,T1,T2,T3>(expr_gen,id(expr_gen,o0,o1,o2),c0,v0,v1,c1,result))
                   return result;
@@ -12530,7 +12554,7 @@ namespace exprtk
                binary_functor_t f0 = vococ->f0();
                binary_functor_t f1 = vococ->f1();
                binary_functor_t f2 = reinterpret_cast<binary_functor_t>(0);
-               expr_gen.node_allocator_->free(branch[0]);
+               details::free_node(*(expr_gen.node_allocator_),branch[0]);
                expression_node_ptr result = error_node();
                if (synthesize_sf4ext_expression::template compile<T0,T1,T2,T3>(expr_gen,id(expr_gen,o0,o1,o2),v0,c0,c1,v1,result))
                   return result;
@@ -12572,7 +12596,7 @@ namespace exprtk
                binary_functor_t f0 = vovov->f0();
                binary_functor_t f1 = vovov->f1();
                binary_functor_t f2 = reinterpret_cast<binary_functor_t>(0);
-               expr_gen.node_allocator_->free(branch[0]);
+               details::free_node(*(expr_gen.node_allocator_),branch[0]);
                expression_node_ptr result = error_node();
                if (synthesize_sf4ext_expression::template compile<T0,T1,T2,T3>(expr_gen,id(expr_gen,o0,o1,o2),v0,v1,v2,v3,result))
                   return result;
@@ -12614,8 +12638,8 @@ namespace exprtk
                binary_functor_t f0 = vovov->f0();
                binary_functor_t f1 = vovov->f1();
                binary_functor_t f2 = reinterpret_cast<binary_functor_t>(0);
-               expr_gen.node_allocator_->free(branch[0]);
-               expr_gen.node_allocator_->free(branch[1]);
+               details::free_node(*(expr_gen.node_allocator_),branch[0]);
+               details::free_node(*(expr_gen.node_allocator_),branch[1]);
                expression_node_ptr result = error_node();
                if (synthesize_sf4ext_expression::template compile<T0,T1,T2,T3>(expr_gen,id(expr_gen,o0,o1,o2),v0,v1,v2,c,result))
                   return result;
@@ -12657,7 +12681,7 @@ namespace exprtk
                binary_functor_t f0 = vovoc->f0();
                binary_functor_t f1 = vovoc->f1();
                binary_functor_t f2 = reinterpret_cast<binary_functor_t>(0);
-               expr_gen.node_allocator_->free(branch[0]);
+               details::free_node(*(expr_gen.node_allocator_),branch[0]);
                expression_node_ptr result = error_node();
                if (synthesize_sf4ext_expression::template compile<T0,T1,T2,T3>(expr_gen,id(expr_gen,o0,o1,o2),v0,v1,c,v2,result))
                   return result;
@@ -12699,7 +12723,7 @@ namespace exprtk
                binary_functor_t f0 = vocov->f0();
                binary_functor_t f1 = vocov->f1();
                binary_functor_t f2 = reinterpret_cast<binary_functor_t>(0);
-               expr_gen.node_allocator_->free(branch[0]);
+               details::free_node(*(expr_gen.node_allocator_),branch[0]);
                expression_node_ptr result = error_node();
                if (synthesize_sf4ext_expression::template compile<T0,T1,T2,T3>(expr_gen,id(expr_gen,o0,o1,o2),v0,c,v1,v2,result))
                   return result;
@@ -12741,7 +12765,7 @@ namespace exprtk
                binary_functor_t f0 = covov->f0();
                binary_functor_t f1 = covov->f1();
                binary_functor_t f2 = reinterpret_cast<binary_functor_t>(0);
-               expr_gen.node_allocator_->free(branch[0]);
+               details::free_node(*(expr_gen.node_allocator_),branch[0]);
                expression_node_ptr result = error_node();
                if (synthesize_sf4ext_expression::template compile<T0,T1,T2,T3>(expr_gen,id(expr_gen,o0,o1,o2),c,v0,v1,v2,result))
                   return result;
@@ -12783,7 +12807,7 @@ namespace exprtk
                binary_functor_t f0 = covoc->f0();
                binary_functor_t f1 = covoc->f1();
                binary_functor_t f2 = reinterpret_cast<binary_functor_t>(0);
-               expr_gen.node_allocator_->free(branch[0]);
+               details::free_node(*(expr_gen.node_allocator_),branch[0]);
                expression_node_ptr result = error_node();
                if (synthesize_sf4ext_expression::template compile<T0,T1,T2,T3>(expr_gen,id(expr_gen,o0,o1,o2),c0,v0,c1,v1,result))
                   return result;
@@ -12825,8 +12849,8 @@ namespace exprtk
                binary_functor_t f0 = vocov->f0();
                binary_functor_t f1 = vocov->f1();
                binary_functor_t f2 = reinterpret_cast<binary_functor_t>(0);
-               expr_gen.node_allocator_->free(branch[0]);
-               expr_gen.node_allocator_->free(branch[1]);
+               details::free_node(*(expr_gen.node_allocator_),branch[0]);
+               details::free_node(*(expr_gen.node_allocator_),branch[1]);
                expression_node_ptr result = error_node();
                if (synthesize_sf4ext_expression::template compile<T0,T1,T2,T3>(expr_gen,id(expr_gen,o0,o1,o2),v0,c0,v1,c1,result))
                   return result;
@@ -12868,8 +12892,8 @@ namespace exprtk
                binary_functor_t f0 = covov->f0();
                binary_functor_t f1 = covov->f1();
                binary_functor_t f2 = reinterpret_cast<binary_functor_t>(0);
-               expr_gen.node_allocator_->free(branch[0]);
-               expr_gen.node_allocator_->free(branch[1]);
+               details::free_node(*(expr_gen.node_allocator_),branch[0]);
+               details::free_node(*(expr_gen.node_allocator_),branch[1]);
                expression_node_ptr result = error_node();
                if (synthesize_sf4ext_expression::template compile<T0,T1,T2,T3>(expr_gen,id(expr_gen,o0,o1,o2),c0,v0,v1,c1,result))
                   return result;
@@ -12923,8 +12947,7 @@ namespace exprtk
             expression_node_ptr result = error_node();
             result = node_allocator_->allocate_rrrrr<typename details::uvouv_node<Type> >(v0,v1,u0,u1,f);
 
-            node_allocator_->free(branch[0]);
-            node_allocator_->free(branch[1]);
+            details::free_all_nodes(*node_allocator_,branch);
             return result;
          }
 
@@ -12964,7 +12987,7 @@ namespace exprtk
          {
             std::string& s0 = dynamic_cast<     details::stringvar_node<Type>*>(branch[0])->ref();
             std::string  s1 = dynamic_cast<details::string_literal_node<Type>*>(branch[1])->str();
-            node_allocator_->free(branch[1]);
+            details::free_node(*node_allocator_,branch[1]);
             return synthesize_sos_expression_impl<std::string&,const std::string>(opr,s0,s1);
          }
 
@@ -12972,7 +12995,7 @@ namespace exprtk
          {
             std::string  s0 = dynamic_cast<details::string_literal_node<Type>*>(branch[0])->str();
             std::string& s1 = dynamic_cast<     details::stringvar_node<Type>*>(branch[1])->ref();
-            node_allocator_->free(branch[0]);
+            details::free_node(*node_allocator_,branch[0]);
             return synthesize_sos_expression_impl<const std::string,std::string&>(opr,s0,s1);
          }
 
@@ -12994,11 +13017,10 @@ namespace exprtk
             {
                expression_node_ptr temp = synthesize_sos_expression_impl<const std::string,const std::string>(opr,s0,s1);
                Type v = temp->value();
-               node_allocator_->free(temp);
+               details::free_node(*node_allocator_,temp);
                result = node_allocator_->allocate<literal_node_t>(v);
             }
-            node_allocator_->free(branch[0]);
-            node_allocator_->free(branch[1]);
+            details::free_all_nodes(*node_allocator_,branch);
             return result;
          }
          #endif
@@ -13008,8 +13030,7 @@ namespace exprtk
          {
             if ((0 == branch[0]) || (0 == branch[1]))
             {
-               if (0 != branch[0]) node_allocator_->free(branch[0]);
-               if (0 != branch[1]) node_allocator_->free(branch[1]);
+               details::free_all_nodes(*node_allocator_,branch);
                return error_node();
             }
             else if (details::is_string_node(branch[0]))
@@ -13027,8 +13048,7 @@ namespace exprtk
          #else
          inline expression_node_ptr synthesize_string_expression(const details::operator_type&, expression_node_ptr (&)[2])
          {
-            if (0 != branch[0]) node_allocator_->free(branch[0]);
-            if (0 != branch[1]) node_allocator_->free(branch[1]);
+            details::free_all_nodes(*node_allocator_,branch);
             return error_node();
          }
          #endif
@@ -13040,9 +13060,7 @@ namespace exprtk
                return error_node();
             else if ((0 == branch[0]) || (0 == branch[1]) || (0 == branch[2]))
             {
-               if (0 != branch[0]) node_allocator_->free(branch[0]);
-               if (0 != branch[1]) node_allocator_->free(branch[1]);
-               if (0 != branch[2]) node_allocator_->free(branch[2]);
+               details::free_all_nodes(*node_allocator_,branch);
                return error_node();
             }
             else if (
@@ -13055,9 +13073,7 @@ namespace exprtk
                const std::string s1 = dynamic_cast<details::string_literal_node<Type>*>(branch[1])->str();
                const std::string s2 = dynamic_cast<details::string_literal_node<Type>*>(branch[2])->str();
                Type v = (((s0 <= s1) && (s1 <= s2)) ? Type(1) : Type(0));
-               node_allocator_->free(branch[0]);
-               node_allocator_->free(branch[1]);
-               node_allocator_->free(branch[2]);
+               details::free_all_nodes(*node_allocator_,branch);
                return node_allocator_->allocate_c<details::literal_node<Type> >(v);
             }
             else if (
@@ -13082,8 +13098,8 @@ namespace exprtk
                std::string& s1 = dynamic_cast<     details::stringvar_node<Type>*>(branch[1])->ref();
                std::string  s2 = dynamic_cast<details::string_literal_node<Type>*>(branch[2])->str();
                typedef typename details::sosos_node<Type,std::string,std::string&,std::string,details::inrange_op<Type> > inrange_t;
-               node_allocator_->free(branch[0]);
-               node_allocator_->free(branch[2]);
+               details::free_node(*node_allocator_,branch[0]);
+               details::free_node(*node_allocator_,branch[2]);
                return node_allocator_->allocate_type<inrange_t,std::string,std::string&,std::string>(s0,s1,s2);
             }
             else if (
@@ -13096,7 +13112,7 @@ namespace exprtk
                std::string   s1 = dynamic_cast<details::string_literal_node<Type>*>(branch[1])->str();
                std::string&  s2 = dynamic_cast<     details::stringvar_node<Type>*>(branch[2])->ref();
                typedef typename details::sosos_node<Type,std::string&,std::string,std::string&,details::inrange_op<Type> > inrange_t;
-               node_allocator_->free(branch[1]);
+               details::free_node(*node_allocator_,branch[1]);
                return node_allocator_->allocate_type<inrange_t,std::string&,std::string,std::string&>(s0,s1,s2);
             }
             else if (
@@ -13109,7 +13125,7 @@ namespace exprtk
                std::string& s1 = dynamic_cast<     details::stringvar_node<Type>*>(branch[1])->ref();
                std::string  s2 = dynamic_cast<details::string_literal_node<Type>*>(branch[2])->str();
                typedef typename details::sosos_node<Type,std::string&,std::string&,std::string,details::inrange_op<Type> > inrange_t;
-               node_allocator_->free(branch[2]);
+               details::free_node(*node_allocator_,branch[2]);
                return node_allocator_->allocate_type<inrange_t,std::string&,std::string&,std::string>(s0,s1,s2);
             }
             else if (
@@ -13122,7 +13138,7 @@ namespace exprtk
                std::string& s1 = dynamic_cast<     details::stringvar_node<Type>*>(branch[1])->ref();
                std::string& s2 = dynamic_cast<     details::stringvar_node<Type>*>(branch[2])->ref();
                typedef typename details::sosos_node<Type,std::string,std::string&,std::string&,details::inrange_op<Type> > inrange_t;
-               node_allocator_->free(branch[0]);
+               details::free_node(*node_allocator_,branch[0]);
                return node_allocator_->allocate_type<inrange_t,std::string,std::string&,std::string&>(s0,s1,s2);
             }
             else
@@ -13133,9 +13149,7 @@ namespace exprtk
          {
             if ((0 == branch[0]) || (0 == branch[1]) || (0 == branch[2]))
             {
-               if (0 != branch[0]) node_allocator_->free(branch[0]);
-               if (0 != branch[1]) node_allocator_->free(branch[1]);
-               if (0 != branch[2]) node_allocator_->free(branch[2]);
+               details::free_all_nodes(*node_allocator_,branch);
                return error_node();
             }
             return error_node();
@@ -13151,7 +13165,7 @@ namespace exprtk
                 (details::e_ilike == operation)
                )
                return error_node();
-            else if (!all_nodes_valid<N>(branch))
+            else if (!details::all_nodes_valid<N>(branch))
             {
                free_all_nodes(*node_allocator_,branch);
                return error_node();
@@ -13163,7 +13177,7 @@ namespace exprtk
                if (is_constant_foldable<N>(branch))
                {
                   Type v = expression_point->value();
-                  node_allocator_->free(expression_point);
+                  details::free_node(*node_allocator_,expression_point);
                   return node_allocator_->allocate<literal_node_t>(v);
                }
                else
@@ -13176,7 +13190,7 @@ namespace exprtk
          template <typename NodeType, std::size_t N>
          inline expression_node_ptr synthesize_expression(F* f, expression_node_ptr (&branch)[N])
          {
-            if (!all_nodes_valid<N>(branch))
+            if (!details::all_nodes_valid<N>(branch))
             {
                free_all_nodes(*node_allocator_,branch);
                return error_node();
@@ -13188,7 +13202,7 @@ namespace exprtk
             if (is_constant_foldable<N>(branch))
             {
                Type v = expression_point->value();
-               node_allocator_->free(expression_point);
+               details::free_node(*node_allocator_,expression_point);
                return node_allocator_->allocate<literal_node_t>(v);
             }
             else

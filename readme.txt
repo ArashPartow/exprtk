@@ -60,9 +60,9 @@ expressions that can be parsed and evaluated using the ExprTk library.
 (13) (x + y)z + 1 / 2 == (x + y) * z + 1 / 2
 (14) (sin(x/pi)cos(2y) + 1)==(sin(x / pi) * cos(2 * y) + 1)
 (15) 25x^5 - 35x^4 - 15x^3 + 40x^2 - 15x + 1
-(16) if(avg(x,y) <= x + y, x - y, x * y) + 2 * pi / x
+(16) if (avg(x,y) <= x + y, x - y, x * y) + 2 * pi / x
 (17) fib_i := fib_i + (x := y + 0 * (fib_i := x + (y := fib_i)))
-(18) while(x <= 100) { x := x + 1 }
+(18) while (x <= 100) { x := x + 1 }
 (19) x <= 'abc123' and (y in 'AString') or ('1x2y3z' != z)
 (20) (x like '*123*') or ('a123b' ilike y)
 
