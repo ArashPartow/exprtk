@@ -6474,6 +6474,12 @@ namespace exprtk
             return allocate<ResultNode>(operation,branch[0],branch[1],branch[2],branch[3],branch[4],branch[5]);
          }
 
+         template <typename node_type>
+         inline expression_node<typename node_type::value_type>* allocate() const
+         {
+            return new node_type();
+         }
+
          template <typename node_type, typename T1>
          inline expression_node<typename node_type::value_type>* allocate(T1& t1) const
          {
@@ -8104,7 +8110,9 @@ namespace exprtk
       {
          if (expression_string.empty())
          {
-            set_error(parser_error::make_error(parser_error::e_syntax, "ERR00 - Empty expression!"));
+            set_error(
+               make_error(parser_error::e_syntax,
+                          "ERR00 - Empty expression!"));
             return false;
          }
 
@@ -8137,7 +8145,9 @@ namespace exprtk
          }
          else
          {
-            set_error(parser_error::make_error(parser_error::e_syntax, "ERR01 - Incomplete expression!"));
+            set_error(
+               make_error(parser_error::e_syntax,
+                          "ERR01 - Incomplete expression!"));
             symbol_name_cache_.clear();
             if (0 != e)
             {
@@ -8764,8 +8774,18 @@ namespace exprtk
          }
          else if (!token_is(token_t::e_rcrlbracket))
             return error_node();
+
+         expression_node_ptr result;
+         if (0 == (result = expression_generator_.while_loop(condition,branch)))
+         {
+            set_error(
+               make_error(parser_error::e_syntax,
+               current_token_,
+               "ERR18 - Failed to parse branch for while-loop"));
+            return error_node();
+         }
          else
-            return expression_generator_.while_loop(condition,branch);
+            return result;
       }
 
       template <typename Type, std::size_t NumberOfParameters>
@@ -8818,7 +8838,7 @@ namespace exprtk
             set_error(
                make_error(parser_error::e_token,
                           current_token_,
-                          "ERR18 - Invalid special function[1]: " + current_token_.value));
+                          "ERR19 - Invalid special function[1]: " + current_token_.value));
             return error_node();
          }
 
@@ -8829,7 +8849,7 @@ namespace exprtk
             set_error(
                make_error(parser_error::e_token,
                           current_token_,
-                          "ERR19 - Invalid special function[2]: " + current_token_.value));
+                          "ERR20 - Invalid special function[2]: " + current_token_.value));
             return error_node();
          }
 
@@ -8915,7 +8935,7 @@ namespace exprtk
                            set_error(
                               make_error(parser_error::e_syntax,
                                          current_token_,
-                                         "ERR20 - Invalid number of parameters for function: " + symbol));
+                                         "ERR21 - Invalid number of parameters for function: " + symbol));
                            return error_node();
                          }
             }
@@ -8927,7 +8947,7 @@ namespace exprtk
                set_error(
                   make_error(parser_error::e_syntax,
                              current_token_,
-                             "ERR21 - Failed to generate node for function: '" + symbol + "'"));
+                             "ERR22 - Failed to generate node for function: '" + symbol + "'"));
                return error_node();
             }
          }
@@ -8936,7 +8956,7 @@ namespace exprtk
             set_error(
                make_error(parser_error::e_syntax,
                           current_token_,
-                          "ERR22 - Undefined variable or function: '" + symbol + "'"));
+                          "ERR23 - Undefined variable or function: '" + symbol + "'"));
             return error_node();
          }
       }
@@ -8971,7 +8991,7 @@ namespace exprtk
             set_error(
                make_error(parser_error::e_symtab,
                           current_token_,
-                          "ERR23 - Variable or function detected, yet symbol-table is invalid, Symbol: " + current_token_.value));
+                          "ERR24 - Variable or function detected, yet symbol-table is invalid, Symbol: " + current_token_.value));
             return error_node();
          }
       }
@@ -9046,7 +9066,7 @@ namespace exprtk
             set_error(
                make_error(parser_error::e_syntax,
                           current_token_,
-                          "ERR24 - Premature end of expression.[1]"));
+                          "ERR25 - Premature end of expression.[1]"));
             return error_node();
          }
          else
@@ -9054,7 +9074,7 @@ namespace exprtk
             set_error(
                make_error(parser_error::e_syntax,
                           current_token_,
-                          "ERR25 - Premature end of expression.[2]"));
+                          "ERR26 - Premature end of expression.[2]"));
             return error_node();
          }
       }
@@ -9616,7 +9636,20 @@ namespace exprtk
          inline expression_node_ptr while_loop(expression_node_ptr condition,
                                                expression_node_ptr branch) const
          {
-            return node_allocator_->allocate<while_loop_node_t>(condition,branch);
+            if (details::is_constant_node(condition))
+            {
+               expression_node_ptr result = error_node();
+               if (details::is_true(condition))
+                  //Infinite loops are not allowed.
+                  result = error_node();
+               else
+                  result = node_allocator_->allocate<details::null_node<Type> >();
+               free_node(*node_allocator_,condition);
+               free_node(*node_allocator_,branch);
+               return result;
+            }
+            else
+               return node_allocator_->allocate<while_loop_node_t>(condition,branch);
          }
 
          #define unary_opr_switch_statements \
