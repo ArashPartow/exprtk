@@ -40,7 +40,7 @@ const std::string expression_list[] = {
                                          "x + (cos(y - sin(2 / x * pi)) - sin(x - cos(2 * y / pi))) - y",
                                          "clamp(-1.0, sin(2 * pi * x) + cos(y / 2 * pi), +1.0)",
                                          "max(3.33, min(sqrt(1 - sin(2 * x) + cos(pi / y) / 3), 1.11))",
-                                         "if(avg(x,y) <= x + y, x - y, x * y) + 2 * pi / x"
+                                         "if((y + (x * 2.2)) <= (x + y + 1.1), x - y, x * y) + 2 * pi / x"
                                       };
 
 const std::size_t expression_list_size = sizeof(expression_list) / sizeof(std::string);
@@ -257,7 +257,7 @@ struct native
 
    static inline T func15(Type x, Type y)
    {
-      return ((avg(x,y) <= x + y) ? x - y : x * y) + T(2.0) * pi / x;
+      return (((y + (x * 2.2)) <= (x + y + 1.1)) ? x - y : x * y) + T(2.0) * pi / x;
    }
 };
 

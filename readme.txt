@@ -16,12 +16,13 @@ operations, functions and processes:
 (1) Basic operators: +, -, *, /, %, ^
 
 (2) Functions:       min, max, avg, sum, abs, ceil, floor, round,
-                     roundn, exp, log, log10, logn, root, sqrt,
-                     clamp, inrange, sgn, erf, erfc, frac, trunc
+                     roundn, exp, log, log10, logn, log1p, root,
+                     sqrt, clamp, inrange, sgn, erf, erfc, frac,
+                     trunc
 
 (3) Trigonometry:    sin, cos, tan, acos, asin, atan, atan2, cosh,
                      cot, csc, sec, sinh, tanh, rad2deg, deg2rad,
-                     deg2grad, grad2deg, hyp
+                     deg2grad, grad2deg, hypot
 
 (4) Equalities &
     Inequalities:    =, ==, <>, !=, <, <=, >, >=
@@ -34,10 +35,10 @@ operations, functions and processes:
 
 (7) Assignment:      :=
 
-(8) Calculus:        numerical integration and differentiation
+(8) String
+    processing:      in, like, ilike
 
-Note 1: Normal mathematical operator precedence is applied (BEDMAS).
-Note 2: The trigonometry functions assume radians as input.
+(9) Calculus:        numerical integration and differentiation
 
 
 
@@ -108,11 +109,200 @@ Expression Library can be found at:
 
 
 
+[BUILT-IN OPERATIONS & FUNCTIONS]
+
+(0) Basic Operators
++-----------+--------------------------------------------------------+
+| OPERATOR  | DEFINITION                                             |
++-----------+--------------------------------------------------------+
+|  +        | Addition between x and y. (eg: x + y)                  |
++-----------+--------------------------------------------------------+
+|  -        | Subtraction between x and y. (eg: x - y)               |
++-----------+--------------------------------------------------------+
+|  *        | Multiplication between x and y. (eg: x * y)            |
++-----------+--------------------------------------------------------+
+|  /        | Division between x and y (eg: x / y)                   |
++-----------+--------------------------------------------------------+
+|  %        | Modulus of x with respect to y. (eg: x % y)            |
++-----------+--------------------------------------------------------+
+|  ^        | x to the power of y. (eg: x ^ y)                       |
++-----------+--------------------------------------------------------+
+|  :=       | Assign the value of x to y. (eg: y := x)               |
+|           | where y is a variable type.                            |
++-----------+--------------------------------------------------------+
+
+(1) Equalities & Inequalities
++-----------+--------------------------------------------------------+
+| OPERATOR  | DEFINITION                                             |
++-----------+--------------------------------------------------------+
+| == or =   | True only if x is strictly equal to y. (eg: x == y)    |
++-----------+--------------------------------------------------------+
+| <> or !=  | True only if x does not equal y (eg: x <> y or x != y) |
++-----------+--------------------------------------------------------+
+|  <        | True only if x less than y. (eg: x < y)                |
++-----------+--------------------------------------------------------+
+|  <=       | True only if x less than or equal to y. (eg: x <= y)   |
++-----------+--------------------------------------------------------+
+|  >        | True only if x greater than y. (eg: x > y)             |
++-----------+--------------------------------------------------------+
+|  >=       | True only if x greater than or equal to y (eg: x >= y) |
++-----------+--------------------------------------------------------+
+
+(2) Boolean Operations
++-----------+--------------------------------------------------------+
+| OPERATOR  | DEFINITION                                             |
++-----------+--------------------------------------------------------+
+| true      | True state or any value other than zero (typically 1). |
++-----------+--------------------------------------------------------+
+| false     | False state, value of zero.                            |
++-----------|--------------------------------------------------------+
+| and       | Logical AND, True only if x and y are both true.       |
+|           | (eg: x and y)                                          |
++-----------+--------------------------------------------------------+
+| nand      | Logical NAND, True only if either x or y is false.     |
+|           | (eg: x nand y)                                         |
++-----------+--------------------------------------------------------+
+| nor       | Logical NOR, True only if the result of x or y is false|
+|           | (eg: x nor y)                                          |
++-----------+--------------------------------------------------------+
+| not       | Logical NOT, Negate the logical sense of the input.    |
+|           | (eg: not(x and y) == x nand y)                         |
++-----------+--------------------------------------------------------+
+| or        | Logical OR, True if either x or y is true. (eg: x or y)|
++-----------+--------------------------------------------------------+
+| xor       | Local XOR, True only if the logical states of x and y  |
+|           | differ. (eg: x xor y)                                  |
++-----------+--------------------------------------------------------+
+| if        | If x is true then return y else return z.              |
+|           | (eg: if(x, y, z) or if((x + 1) > 2y, z + 1, w / v))    |
++-----------+--------------------------------------------------------+
+
+(3) General Purpose Functions
++-----------+--------------------------------------------------------+
+| FUNCTION  | DEFINITION                                             |
++-----------+--------------------------------------------------------+
+| abs       | Absolute value of x.                                   |
++-----------+--------------------------------------------------------+
+| avg       | The average of all the inputs.                         |
+|           | (eg: avg(x,y,z,w) == (x+y+z+w)/4)                      |
++-----------+--------------------------------------------------------+
+| ceil      | Smallest integer that is greater than or equal to x.   |
++-----------+--------------------------------------------------------+
+| clamp     | Clamp x in range between r0 and r1, where r0 < r1.     |
+|           | (eg: clamp(r0,x,r1)                                    |
++-----------+--------------------------------------------------------+
+| equal     | Equality test between x and y using normalized epsilon |
++-----------+--------------------------------------------------------+
+| erf       | Error function of x                                    |
++-----------+--------------------------------------------------------+
+| erfc      | Complimentary error function of x                      |
++-----------+--------------------------------------------------------+
+| exp       | e to the power of x                                    |
++-----------+--------------------------------------------------------+
+| floor     | Largest integer that is less than or equal to x.       |
++-----------+--------------------------------------------------------+
+| frac      | Fractional portion of x                                |
++-----------+--------------------------------------------------------+
+| hypot     | Hypotenuse of x and y (eg: hypot(x,y))                 |
++-----------+--------------------------------------------------------+
+| log       | Natural logarithm of x                                 |
++-----------+--------------------------------------------------------+
+| log10     | Base 10 logarithm of x                                 |
++-----------+--------------------------------------------------------+
+| logn      | Base N logarithm of x (eg: logn(1235,8))               |
+|           | where n > 0 and is an integer.                         |
++-----------+--------------------------------------------------------+
+| log1p     | Natural logarithm of 1 + x  (eg: log1p(x))             |
+|           | where x is very small.                                 |
++-----------+--------------------------------------------------------+
+| nequal    | Not-equal test between x and y using normalized epsilon|
++-----------+--------------------------------------------------------+
+| root      | Nth-Root of x (eg: root(x,3))                          |
+|           | where n > 0 and is an integer.                         |
++-----------+--------------------------------------------------------+
+| round     | Round x to the nearest integer.                        |
++-----------+--------------------------------------------------------+
+| roundn    | Round x to the n decimal places (eg: roundn(x,4))      |
+|           | where n > 0 and is an integer.                         |
++-----------+--------------------------------------------------------+
+| sgn       | Sign of x, -1 where x < 0, +1 where x > 0, else zero.  |
++-----------+--------------------------------------------------------+
+| sqrt      | Square root of x, where x > 0                          |
++-----------+--------------------------------------------------------+
+| sum       | The sum of all the inputs.                             |
+|           | (eg: sum(x,y,z,w,v) == (x+y+z+w+v))                    |
++-----------+--------------------------------------------------------+
+| trunc     | Integer portion of x                                   |
++-----------+--------------------------------------------------------+
+
+(4) Trigonometry Functions
++-----------+--------------------------------------------------------+
+| FUNCTION  | DEFINITION                                             |
++-----------+--------------------------------------------------------+
+| acos      | Arc cosine of x expressed in radians. Interval [-1,+1] |
++-----------+--------------------------------------------------------+
+| asin      | Arc sine of x expressed in radians. Interval [-1,+1]   |
++-----------+--------------------------------------------------------+
+| atan      | Arc tangent of x expressed in radians. Interval [-1,+1]|
++-----------+--------------------------------------------------------+
+| atan2     | Arc tangent of x expressed in radians. Interval [-1,+1]|
++-----------+--------------------------------------------------------+
+| cos       | Cosine of x                                            |
++-----------+--------------------------------------------------------+
+| cosh      | Hyperbolic cosine of x                                 |
++-----------+--------------------------------------------------------+
+| cot       | Cotangent of x                                         |
++-----------+--------------------------------------------------------+
+| csc       | Cosecant of x                                          |
++-----------+--------------------------------------------------------+
+| sec       | Secant of x                                            |
++-----------+--------------------------------------------------------+
+| sin       | Sine of x                                              |
++-----------+--------------------------------------------------------+
+| sinh      | Hyperbolic sine of x                                   |
++-----------+--------------------------------------------------------+
+| tan       | Tangent of x                                           |
++-----------+--------------------------------------------------------+
+| tanh      | Hyperbolic tangent of x                                |
++-----------+--------------------------------------------------------+
+| rad2deg   | Convert x from radians to degrees                      |
++-----------+--------------------------------------------------------+
+| deg2rad   | Convert x from degrees to radians                      |
++-----------+--------------------------------------------------------+
+| deg2grad  | Convert x from degrees to gradians                     |
++-----------+--------------------------------------------------------+
+| grad2deg  | Convert x from gradians to degrees                     |
++-----------+--------------------------------------------------------+
+
+(5) String Processing
++-----------+--------------------------------------------------------+
+| FUNCTION  | DEFINITION                                             |
++-----------+--------------------------------------------------------+
+| in        | True only if x is a substring of y                     |
+|           | (eg: x in y or 'abc' in 'abcdefgh')                    |
++-----------+--------------------------------------------------------+
+| like      | True only if the string x matches the pattern y.       |
+|           | Available wildcard characters are '*' and '?' denoting |
+|           | zero or more and zero or one matches respectively.     |
+|           | (eg: x like y or 'abcdefgh' like 'a?d*')               |
++-----------+--------------------------------------------------------+
+| like      | True only if the string x matches the pattern y in a   |
+|           | case insensitive manner. Available wildcard characters |
+|           | are '*' and '?' denoting zero or more and zero or one  |
+|           | matches respectively.                                  |
+|           | (eg: x ilike y or 'abcdefgh' like 'a?d*')              |
++-----------+--------------------------------------------------------+
+
+
+
 [SPECIAL FUNCTIONS]
 The purpose  of special  functions in  ExprTk is  to provide  compiler
 generated equivalents of common mathematical expressions which can  be
 invoked by  using the  'special function'  syntax (eg:  $f12(x,y,z) or
-$f24(x,y,z,w)).
+$f24(x,y,z,w)). Where possible, for sub-expressions that are comprised
+of combinations of  variables and literal  values the ExprTk  compiler
+will perform a  best effort attempt  to replace such  expressions with
+special functions.
 
 Special functions dramatically decrease  the total evaluation time  of
 expressions which would otherwise  have been written using  the common
@@ -179,7 +369,32 @@ correctly optimize such expressions for a given architecture.
 
 
 
-[SIMPLE EXAMPLE]
+[EXPRTK NOTES]
+ (0) Supported types are float, double and long double.
+
+ (1) Standard mathematical operator precedence is applied (BEDMAS).
+
+ (2) All variables and functions are case-insensitive
+
+ (3) Expression lengths are limited only by storage capacity.
+
+ (4) Equal/Nequal routines use epsilons of 0.00000000001 and 0.000001
+     for double and float types respectively.
+
+ (5) All trigonometric functions assume radian input unless
+     stated otherwise.
+
+ (6) Expressions can contain white-space characters such as
+     space,  tabs, new-lines, control-feed et al.
+     ('\n', '\r', '\t', '\b', '\v', '\f')
+
+ (7) User defined functions can have up to 20 parameters.
+
+ (8) Polynomial functions can be at most of degree 10.
+
+
+
+[SIMPLE EXPRTK EXAMPLE]
 --- snip ---
 #include <cstdio>
 #include <string>
