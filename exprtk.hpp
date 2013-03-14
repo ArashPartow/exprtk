@@ -46,6 +46,7 @@
 #include <stdexcept>
 #include <string>
 #include <utility>
+#include <vector>
 
 
 namespace exprtk
@@ -224,7 +225,7 @@ namespace exprtk
       static const std::string reserved_words[] =
                                   {
                                      "and", "false", "for", "if", "ilike", "in", "like", "nand", "nor", "not",
-                                     "null", "or", "shl", "shr", "true", "while", "xor"
+                                     "null", "or", "shl", "shr", "true", "while", "xnor", "xor"
                                   };
 
       static const std::size_t reserved_words_size = sizeof(reserved_words) / sizeof(std::string);
@@ -237,7 +238,7 @@ namespace exprtk
                                      "in", "inrange", "like", "log", "log10", "logn", "log1p", "max", "min", "mod",
                                      "mul", "nand", "nor", "not", "not_equal", "null", "or", "pow", "rad2deg",
                                      "root", "round", "roundn", "sec", "sgn", "shl", "shr", "sin", "sinh", "sqrt",
-                                     "sum", "tan", "tanh", "true", "trunc", "while", "xor"
+                                     "sum", "tan", "tanh", "true", "trunc", "while", "xnor", "xor"
                                   };
 
       static const std::size_t reserved_symbols_size = sizeof(reserved_symbols) / sizeof(std::string);
@@ -402,6 +403,18 @@ namespace exprtk
 
             #undef exprtk_register_real_type_tag
             #undef exprtk_register_int_type_tag
+
+            template <typename T>
+            inline bool is_true_impl(const T v)
+            {
+               return (v != T(0));
+            }
+
+            template <typename T>
+            inline bool is_false_impl(const T v)
+            {
+               return (v == T(0));
+            }
 
             template <typename T>
             inline T equal_impl(const T v0, const T v1, real_type_tag)
@@ -608,6 +621,28 @@ namespace exprtk
             inline T xor_impl(const T v0, const T& v1, int_type_tag)
             {
                return v0 ^ v1;
+            }
+
+            template <typename T>
+            inline T xnor_impl(const T v0, const T& v1, real_type_tag)
+            {
+               const bool v0_true = is_true_impl(v0);
+               const bool v1_true = is_true_impl(v1);
+               if ((v0_true &&  v1_true) || (!v0_true && !v1_true))
+                  return T(1);
+               else
+                  return T(0);
+            }
+
+            template <typename T>
+            inline T xnor_impl(const T v0, const T& v1, int_type_tag)
+            {
+               const bool v0_true = is_true_impl(v0);
+               const bool v1_true = is_true_impl(v1);
+               if ((v0_true &&  v1_true) || (!v0_true && !v1_true))
+                  return T(1);
+               else
+                  return T(0);
             }
 
             template <typename T>
@@ -819,6 +854,13 @@ namespace exprtk
          {
             typename details::number_type<T>::type num_type;
             return details::xor_impl(v0,v1,num_type);
+         }
+
+         template <typename T>
+         inline T xnor_opr(const T v0, const T v1)
+         {
+            typename details::number_type<T>::type num_type;
+            return details::xnor_impl(v0,v1,num_type);
          }
 
          template <typename T>
@@ -2643,18 +2685,19 @@ namespace exprtk
          e_sum    , e_prod   , e_lt     , e_lte    ,
          e_eq     , e_equal  , e_ne     , e_nequal ,
          e_gte    , e_gt     , e_and    , e_nand   ,
-         e_or     , e_nor    , e_xor    , e_shr    ,
-         e_shl    , e_abs    , e_acos   , e_asin   ,
-         e_atan   , e_ceil   , e_cos    , e_cosh   ,
-         e_exp    , e_floor  , e_log    , e_log10  ,
-         e_log1p  , e_logn   , e_neg    , e_pos    ,
-         e_round  , e_roundn , e_root   , e_sqrt   ,
-         e_sin    , e_sinh   , e_sec    , e_csc    ,
-         e_tan    , e_tanh   , e_cot    , e_clamp  ,
-         e_inrange, e_sgn    , e_r2d    , e_d2r    ,
-         e_d2g    , e_g2d    , e_hypot  , e_notl   ,
-         e_erf    , e_erfc   , e_frac   , e_trunc  ,
-         e_assign , e_in     , e_like   , e_ilike  ,
+         e_or     , e_nor    , e_xor    , e_xnor   ,
+         e_shr    , e_shl    , e_abs    , e_acos   ,
+         e_asin   , e_atan   , e_ceil   , e_cos    ,
+         e_cosh   , e_exp    , e_floor  , e_log    ,
+         e_log10  , e_log1p  , e_logn   , e_neg    ,
+         e_pos    , e_round  , e_roundn , e_root   ,
+         e_sqrt   , e_sin    , e_sinh   , e_sec    ,
+         e_csc    , e_tan    , e_tanh   , e_cot    ,
+         e_clamp  , e_inrange, e_sgn    , e_r2d    ,
+         e_d2r    , e_d2g    , e_g2d    , e_hypot  ,
+         e_notl   , e_erf    , e_erfc   , e_frac   ,
+         e_trunc  , e_assign , e_in     , e_like   ,
+         e_ilike  ,
 
          // Do not add new functions/operators after this point.
          e_sf00 = 1000, e_sf01 = 1001, e_sf02 = 1002, e_sf03 = 1003,
@@ -2692,7 +2735,8 @@ namespace exprtk
          e_sf4ext24 = 2024, e_sf4ext25 = 2025, e_sf4ext26 = 2026, e_sf4ext27 = 2027,
          e_sf4ext28 = 2028, e_sf4ext29 = 2029, e_sf4ext30 = 2030, e_sf4ext31 = 2031,
          e_sf4ext32 = 2032, e_sf4ext33 = 2033, e_sf4ext34 = 2034, e_sf4ext35 = 2035,
-         e_sf4ext36 = 2036, e_sf4ext37 = 2037, e_sf4ext38 = 2038, e_sf4ext39 = 2039
+         e_sf4ext36 = 2036, e_sf4ext37 = 2037, e_sf4ext38 = 2038, e_sf4ext39 = 2039,
+         e_sf4ext40 = 2040, e_sf4ext41 = 2041, e_sf4ext42 = 2042, e_sf4ext43 = 2043
       };
 
       struct base_operation_t
@@ -2797,6 +2841,7 @@ namespace exprtk
                   case e_or     : return ((arg0 != T(0)) || (arg1 != T(0))) ? T(1) : T(0);
                   case e_nor    : return ((arg0 != T(0)) || (arg1 != T(0))) ? T(0) : T(1);
                   case e_xor    : return (arg0 != arg1) ? T(1) : T(0);
+                  case e_xnor   : return (arg0 != arg1) ? T(0) : T(1);
                   case e_root   : return root<T>(arg0,arg1);
                   case e_roundn : return roundn<T>(arg0,arg1);
                   case e_equal  : return equal<T>(arg0,arg1);
@@ -2836,6 +2881,7 @@ namespace exprtk
                   case e_or     : return ((arg0 != T(0)) || (arg1 != T(0))) ? T(1) : T(0);
                   case e_nor    : return ((arg0 != T(0)) || (arg1 != T(0))) ? T(0) : T(1);
                   case e_xor    : return arg0 ^ arg1;
+                  case e_xnor   : return !(arg0 ^ arg1);
                   case e_root   : return root<T>(arg0,arg1);
                   case e_equal  : return arg0 == arg1;
                   case e_nequal : return arg0 != arg1;
@@ -2880,22 +2926,23 @@ namespace exprtk
             e_mod         , e_pow         , e_lt          , e_lte         ,
             e_gt          , e_gte         , e_eq          , e_ne          ,
             e_and         , e_nand        , e_or          , e_nor         ,
-            e_xor         , e_in          , e_like        , e_ilike       ,
-            e_inranges    , e_ipow        , e_ipowinv     , e_abs         ,
-            e_acos        , e_asin        , e_atan        , e_ceil        ,
-            e_cos         , e_cosh        , e_exp         , e_floor       ,
-            e_log         , e_log10       , e_log1p       , e_neg         ,
-            e_pos         , e_round       , e_sin         , e_sinh        ,
-            e_sqrt        , e_tan         , e_tanh        , e_cot         ,
-            e_sec         , e_csc         , e_r2d         , e_d2r         ,
-            e_d2g         , e_g2d         , e_notl        , e_sgn         ,
-            e_erf         , e_erfc        , e_frac        , e_trunc       ,
-            e_uvouv       , e_vov         , e_cov         , e_voc         ,
-            e_vob         , e_bov         , e_cob         , e_boc         ,
-            e_vovov       , e_vovoc       , e_vocov       , e_covov       ,
-            e_covoc       , e_vovovov     , e_vovovoc     , e_vovocov     ,
-            e_vocovov     , e_covovov     , e_covocov     , e_vocovoc     ,
-            e_covovoc     , e_vococov
+            e_xor         , e_xnor        , e_in          , e_like        ,
+            e_ilike       , e_inranges    , e_ipow        , e_ipowinv     ,
+            e_abs         , e_acos        , e_asin        , e_atan        ,
+            e_ceil        , e_cos         , e_cosh        , e_exp         ,
+            e_floor       , e_log         , e_log10       , e_log1p       ,
+            e_neg         , e_pos         , e_round       , e_sin         ,
+            e_sinh        , e_sqrt        , e_tan         , e_tanh        ,
+            e_cot         , e_sec         , e_csc         , e_r2d         ,
+            e_d2r         , e_d2g         , e_g2d         , e_notl        ,
+            e_sgn         , e_erf         , e_erfc        , e_frac        ,
+            e_trunc       , e_uvouv       , e_vov         , e_cov         ,
+            e_voc         , e_vob         , e_bov         , e_cob         ,
+            e_boc         , e_vovov       , e_vovoc       , e_vocov       ,
+            e_covov       , e_covoc       , e_vovovov     , e_vovovoc     ,
+            e_vovocov     , e_vocovov     , e_covovov     , e_covocov     ,
+            e_vocovoc     , e_covovoc     , e_vococov     , e_sf3ext      ,
+            e_sf4ext
          };
 
          typedef T value_type;
@@ -3906,6 +3953,11 @@ namespace exprtk
       template <typename T> struct sfext37_op : public sf_base<T> { typedef typename sf_base<T>::Type Type; static inline T process(Type x, Type y, Type z, Type w) { return (x / y) / (z - w); } static inline std::string id() { return "(t/t)/(t-t)";} };
       template <typename T> struct sfext38_op : public sf_base<T> { typedef typename sf_base<T>::Type Type; static inline T process(Type x, Type y, Type z, Type w) { return (x * y) * (z - w); } static inline std::string id() { return "(t*t)*(t-t)";} };
       template <typename T> struct sfext39_op : public sf_base<T> { typedef typename sf_base<T>::Type Type; static inline T process(Type x, Type y, Type z, Type w) { return (x / y) * (z - w); } static inline std::string id() { return "(t/t)*(t-t)";} };
+      template <typename T> struct sfext40_op : public sf_base<T> { typedef typename sf_base<T>::Type Type; static inline T process(Type x, Type y, Type z, Type w) { return x + (y * (z / w)); } static inline std::string id() { return "t+(t*(t/t))";} };
+      template <typename T> struct sfext41_op : public sf_base<T> { typedef typename sf_base<T>::Type Type; static inline T process(Type x, Type y, Type z, Type w) { return x - (y * (z / w)); } static inline std::string id() { return "t-(t*(t/t))";} };
+      template <typename T> struct sfext42_op : public sf_base<T> { typedef typename sf_base<T>::Type Type; static inline T process(Type x, Type y, Type z, Type w) { return x + (y / (z * w)); } static inline std::string id() { return "t+(t/(t*t))";} };
+      template <typename T> struct sfext43_op : public sf_base<T> { typedef typename sf_base<T>::Type Type; static inline T process(Type x, Type y, Type z, Type w) { return x - (y / (z * w)); } static inline std::string id() { return "t-(t/(t*t))";} };
+
 
       template <typename T, typename SpecialFunction>
       class sf3_node : public trinary_node<T>
@@ -4602,6 +4654,15 @@ namespace exprtk
       };
 
       template <typename T>
+      struct xnor_op : public opr_base<T>
+      {
+         typedef typename opr_base<T>::Type Type;
+         static inline T process(Type t1, Type t2) { return numeric::xnor_opr<T>(t1,t2); }
+         static inline typename expression_node<T>::node_type type() { return expression_node<T>::e_nor; }
+         static inline details::operator_type operation() { return details::e_xnor; }
+      };
+
+      template <typename T>
       struct in_op : public opr_base<T>
       {
          typedef typename opr_base<T>::Type Type;
@@ -4776,6 +4837,8 @@ namespace exprtk
       public:
 
          virtual std::string type_id() const = 0;
+
+         virtual std::string type_id2() const { return ""; }
       };
 
       template <typename T>
@@ -5505,8 +5568,20 @@ namespace exprtk
          const tfunc_t f_;
       };
 
+      template <typename T, typename T0, typename T1, typename T2>
+      class sf3ext_type_node : public T0oT1oT2_base_node<T>
+      {
+      public:
+
+         virtual T0 t0() const = 0;
+
+         virtual T1 t1() const = 0;
+
+         virtual T2 t2() const = 0;
+      };
+
       template <typename T, typename T0, typename T1, typename T2, typename SF3Operation>
-      class T0oT1oT2_sf3ext : public T0oT1oT2_base_node<T>
+      class T0oT1oT2_sf3ext : public sf3ext_type_node<T,T0,T1,T2>
       {
       public:
 
@@ -5537,17 +5612,17 @@ namespace exprtk
             return SF3Operation::process(t0_,t1_,t2_);
          }
 
-         inline T0 t0() const
+         T0 t0() const
          {
             return t0_;
          }
 
-         inline T1 t1() const
+         T1 t1() const
          {
             return t1_;
          }
 
-         inline T2 t2() const
+         T2 t2() const
          {
             return t2_;
          }
@@ -5555,6 +5630,30 @@ namespace exprtk
          std::string type_id() const
          {
             return id();
+         }
+
+         std::string type_id2() const
+         {
+            std::string t[] = {
+                                param_to_str<is_const_ref<T0>::result>::result(),
+                                param_to_str<is_const_ref<T1>::result>::result(),
+                                param_to_str<is_const_ref<T2>::result>::result()
+                              };
+
+            std::string sf3id = id();
+
+            for (std::size_t i = 0; i < 3; ++i)
+            {
+               std::size_t index = std::string::npos;
+               if (std::string::npos != (index = sf3id.find("t")))
+               {
+                  sf3id[index] = t[i][0];
+               }
+               else
+                  break;
+            }
+
+            return sf3id;
          }
 
          static inline std::string id()
@@ -5577,6 +5676,20 @@ namespace exprtk
          T1 t1_;
          T2 t2_;
       };
+
+      template <typename T>
+      inline bool is_sf3ext_node(const expression_node<T>* n)
+      {
+         switch(n->type())
+         {
+            case expression_node<T>::e_vovov : return true;
+            case expression_node<T>::e_vovoc : return true;
+            case expression_node<T>::e_vocov : return true;
+            case expression_node<T>::e_covov : return true;
+            case expression_node<T>::e_covoc : return true;
+            default                          : return false;
+         }
+      }
 
       template <typename T, typename T0, typename T1, typename T2, typename T3>
       class T0oT1oT2oT3_sf4 : public T0oT1oT2_base_node<T>
@@ -5745,6 +5858,24 @@ namespace exprtk
          T3 t3_;
       };
 
+      template <typename T>
+      inline bool is_sf4ext_node(const expression_node<T>* n)
+      {
+         switch(n->type())
+         {
+            case expression_node<T>::e_vovovov : return true;
+            case expression_node<T>::e_vovovoc : return true;
+            case expression_node<T>::e_vovocov : return true;
+            case expression_node<T>::e_vocovov : return true;
+            case expression_node<T>::e_covovov : return true;
+            case expression_node<T>::e_covocov : return true;
+            case expression_node<T>::e_vocovoc : return true;
+            case expression_node<T>::e_covovoc : return true;
+            case expression_node<T>::e_vococov : return true;
+            default                            : return false;
+         }
+      }
+
       template <typename T, typename T0, typename T1>
       struct T0oT1_define
       {
@@ -5757,6 +5888,7 @@ namespace exprtk
          typedef details::T0oT1oT2<T,T0,T1,T2,typename T0oT1oT2process<T>::mode0> type0;
          typedef details::T0oT1oT2<T,T0,T1,T2,typename T0oT1oT2process<T>::mode1> type1;
          typedef details::T0oT1oT2_sf3<T,T0,T1,T2> sf3_type;
+         typedef details::sf3ext_type_node<T,T0,T1,T2> sf3_type_node;
       };
 
       template <typename T, typename T0, typename T1, typename T2, typename T3>
@@ -6819,11 +6951,118 @@ namespace exprtk
    {
    private:
 
+      template <typename Type>
+      class vector_holder
+      {
+      private:
+
+         typedef Type value_type;
+         typedef value_type* value_ptr;
+         typedef const value_ptr const_value_ptr;
+
+         class vector_holder_base
+         {
+         public:
+
+            virtual ~vector_holder_base(){}
+
+            inline value_ptr operator[](const std::size_t& index) const
+            {
+               return value_at(index);
+            }
+
+         protected:
+
+            virtual value_ptr value_at(const std::size_t&) const = 0;
+
+         };
+
+         class array_vector_impl : public vector_holder_base
+         {
+         public:
+
+            array_vector_impl(const T* vec, const std::size_t& vec_size)
+            : vec_(vec),
+              size_(vec_size)
+            {}
+
+         protected:
+
+            value_ptr value_at(const std::size_t& index) const
+            {
+               if (index < size_)
+                  return const_cast<const_value_ptr>(vec_ + index);
+               else
+                  return const_value_ptr(0);
+            }
+
+         private:
+
+            array_vector_impl operator=(const array_vector_impl&);
+
+            const T* vec_;
+            const std::size_t size_;
+         };
+
+         template <typename Allocator,
+                   template <typename,typename> class Sequence>
+         class sequence_vector_impl : public vector_holder_base
+         {
+         public:
+
+            typedef Sequence<Type,Allocator> sequence_t;
+
+            sequence_vector_impl(sequence_t& seq)
+            : sequence_(seq)
+            {}
+
+         protected:
+
+            value_ptr value_at(const std::size_t& index) const
+            {
+               return (index < sequence_.size()) ? (&sequence_[index]) : const_value_ptr(0);
+            }
+
+         private:
+
+            sequence_vector_impl operator=(const sequence_vector_impl&);
+
+            sequence_t& sequence_;
+         };
+
+      public:
+
+         vector_holder(Type* vec, const std::size_t& vec_size)
+         : vector_holder_base_(new(buffer)array_vector_impl(vec,vec_size))
+         {}
+
+         template <typename Allocator>
+         vector_holder(std::vector<Type,Allocator>& vec)
+         : vector_holder_base_(new(buffer)sequence_vector_impl<Allocator,std::vector>(vec))
+         {}
+
+         template <typename Allocator>
+         vector_holder(std::deque<Type,Allocator>& deq)
+         : vector_holder_base_(new(buffer)sequence_vector_impl<Allocator,std::deque>(deq))
+         {}
+
+         inline value_ptr operator[](const std::size_t& index) const
+         {
+            return (*vector_holder_base_)[index];
+         }
+
+      private:
+
+         mutable vector_holder_base* vector_holder_base_;
+         unsigned char buffer[64];
+      };
+
       template <typename Type, typename RawType>
       struct type_store
       {
          typedef typename details::variable_node<T>  variable_node_t;
          typedef ifunction<T>                        ifunction_t;
+         typedef vector_holder<T>                    vector_t;
          #ifndef exprtk_disable_string_capabilities
          typedef typename details::stringvar_node<T> stringvar_node_t;
          #endif
@@ -6871,6 +7110,71 @@ namespace exprtk
                else
                   return (*itr).second.first;
             }
+         }
+
+         template <typename Tie, typename RType>
+         inline bool add_impl(const std::string& symbol_name, RType t, const bool is_constant)
+         {
+            if (1 == symbol_name.size())
+            {
+               short_type_lut[static_cast<std::size_t>(std::tolower(symbol_name[0]))] = Tie::make(t,is_constant);
+               ++size;
+            }
+            else
+            {
+               for (std::size_t i = 0; i < details::reserved_symbols_size; ++i)
+               {
+                  if (details::imatch(symbol_name,details::reserved_symbols[i]))
+                  {
+                     return false;
+                  }
+               }
+               tm_itr_t itr = map.find(symbol_name);
+               if (map.end() == itr)
+               {
+                  map[symbol_name] = Tie::make(t,is_constant);
+                  ++size;
+               }
+            }
+            return true;
+         }
+
+         inline bool add(const std::string& symbol_name, T* v, const std::size_t& v_size, const bool is_constant = false)
+         {
+            struct tie
+            {
+               static inline std::pair<bool,vector_t*> make(std::pair<T*,std::size_t> v, const bool is_constant = false)
+               {
+                  return std::make_pair(is_constant,new vector_t(v.first,v.second));
+               }
+            };
+            return add_impl<tie,std::pair<T*,std::size_t> >(symbol_name,std::make_pair(v,v_size),is_constant);
+         }
+
+         template <typename Allocator>
+         inline bool add(const std::string& symbol_name, std::vector<T,Allocator>& v, const bool is_constant = false)
+         {
+            struct tie
+            {
+               static inline std::pair<bool,vector_t*> make(std::vector<T,Allocator>& v, const bool is_constant = false)
+               {
+                  return std::make_pair(is_constant,new vector_t(v));
+               }
+            };
+            return add_impl<tie,std::vector<T,Allocator>&>(symbol_name,v,is_constant);
+         }
+
+         template <typename Allocator>
+         inline bool add(const std::string& symbol_name, std::deque<T,Allocator>& v, const bool is_constant = false)
+         {
+            struct tie
+            {
+               static inline std::pair<bool,vector_t*> make(std::deque<T,Allocator>& v, const bool is_constant = false)
+               {
+                  return std::make_pair(is_constant,new vector_t(v));
+               }
+            };
+            return add_impl<tie,std::deque<T,Allocator>&>(symbol_name,v,is_constant);
          }
 
          inline bool add(const std::string& symbol_name, RawType& t, const bool is_constant = false)
@@ -6968,6 +7272,7 @@ namespace exprtk
                   struct deleter
                   {
                      static inline void process(std::pair<bool,variable_node_t*>& n)  { delete n.second; }
+                     static inline void process(std::pair<bool,vector_t*>& n)         { delete n.second; }
                      #ifndef exprtk_disable_string_capabilities
                      static inline void process(std::pair<bool,stringvar_node_t*>& n) { delete n.second; }
                      #endif
@@ -7112,6 +7417,7 @@ namespace exprtk
       #endif
       typedef ifunction<T> function_t;
       typedef function_t* function_ptr;
+      typedef vector_holder<T>* vector_ptr;
 
       static const std::size_t lut_size = 256;
 
@@ -7125,6 +7431,7 @@ namespace exprtk
             type_store<typename details::stringvar_node<T>,std::string> stringvar_store;
             #endif
             type_store<ifunction<T>,ifunction<T> > function_store;
+            type_store<vector_holder<T>,vector_holder<T> > vector_store;
 
             st_data()
             {
@@ -7253,6 +7560,14 @@ namespace exprtk
             return 0;
       }
 
+      inline std::size_t vector_count() const
+      {
+         if (valid())
+            return local_data().vector_store().size;
+         else
+            return 0;
+      }
+
       inline variable_ptr get_variable(const std::string& variable_name)
       {
          if (!valid())
@@ -7283,6 +7598,16 @@ namespace exprtk
             return reinterpret_cast<function_ptr>(0);
          else
             return local_data().function_store.get(function_name);
+      }
+
+      inline vector_ptr get_vector(const std::string& vector_name)
+      {
+         if (!valid())
+            return reinterpret_cast<vector_ptr>(0);
+         else if (!valid_symbol(vector_name))
+            return reinterpret_cast<vector_ptr>(0);
+         else
+            return local_data().vector_store.get(vector_name);
       }
 
       inline T& variable_ref(const std::string& symbol_name)
@@ -7414,6 +7739,44 @@ namespace exprtk
             return local_data().function_store.add(function_name,function);
       }
 
+      inline bool add_vector(const std::string& vector_name, T* v, const std::size_t& v_size)
+      {
+         if (!valid())
+            return false;
+         else if (!valid_symbol(vector_name))
+            return false;
+         else if (symbol_exists(vector_name))
+            return false;
+         else
+            return local_data().vector_store.add(vector_name,v,v_size);
+      }
+
+      template <typename Allocator>
+      inline bool add_vector(const std::string& vector_name, std::vector<T,Allocator>& v)
+      {
+         if (!valid())
+            return false;
+         else if (!valid_symbol(vector_name))
+            return false;
+         else if (symbol_exists(vector_name))
+            return false;
+         else
+            return local_data().vector_store.add(vector_name,v);
+      }
+
+      template <typename Allocator>
+      inline bool add_vector(const std::string& vector_name, std::deque<T,Allocator>& v)
+      {
+         if (!valid())
+            return false;
+         else if (!valid_symbol(vector_name))
+            return false;
+         else if (symbol_exists(vector_name))
+            return false;
+         else
+            return local_data().vector_store.add(vector_name,v);
+      }
+
       inline bool remove_variable(const std::string& variable_name)
       {
          if (!valid())
@@ -7438,6 +7801,14 @@ namespace exprtk
             return false;
          else
             return local_data().function_store.remove(function_name);
+      }
+
+      inline bool remove_vector(const std::string& vector_name)
+      {
+         if (!valid())
+            return false;
+         else
+            return local_data().vector_store.remove(vector_name);
       }
 
       inline bool add_constants()
@@ -7506,6 +7877,16 @@ namespace exprtk
             return local_data().stringvar_store.get_list(svlist);
       }
       #endif
+
+      template <typename Allocator,
+                template <typename, typename> class Sequence>
+      inline std::size_t get_vector_list(Sequence<std::string,Allocator>& vlist) const
+      {
+         if (!valid())
+            return 0;
+         else
+            return local_data().vector_store.get_list(vlist);
+      }
 
       inline bool symbol_exists(const std::string& symbol_name) const
       {
@@ -8353,6 +8734,7 @@ namespace exprtk
                                            static const std::string s_or    =    "or";
                                            static const std::string s_nor   =   "nor";
                                            static const std::string s_xor   =   "xor";
+                                           static const std::string s_xnor  =  "xnor";
                                            static const std::string s_in    =    "in";
                                            static const std::string s_like  =  "like";
                                            static const std::string s_ilike = "ilike";
@@ -8380,6 +8762,11 @@ namespace exprtk
                                            else if (details::imatch(current_token_.value,s_xor))
                                            {
                                               current_state.set(e_level03,e_level04,details::e_xor);
+                                              break;
+                                           }
+                                           else if (details::imatch(current_token_.value,s_xnor))
+                                           {
+                                              current_state.set(e_level03,e_level04,details::e_xnor);
                                               break;
                                            }
                                            else if (details::imatch(current_token_.value,s_in))
@@ -9285,6 +9672,7 @@ namespace exprtk
                case details::e_or   : return "or";
                case details::e_nor  : return "nor";
                case details::e_xor  : return "xor";
+               case details::e_xnor : return "xnor";
                default              : return "UNKNOWN";
             }
          }
@@ -9308,6 +9696,7 @@ namespace exprtk
                    (details::e_or   == operation) ||
                    (details::e_nor  == operation) ||
                    (details::e_xor  == operation) ||
+                   (details::e_xnor == operation) ||
                    false;
          }
 
@@ -9976,6 +10365,7 @@ namespace exprtk
          case_stmt(details::  e_or,details::  or_op) \
          case_stmt(details:: e_nor,details:: nor_op) \
          case_stmt(details:: e_xor,details:: xor_op) \
+         case_stmt(details::e_xnor,details::xnor_op) \
 
          #ifndef exprtk_disable_cardinal_pow_optimisation
          template <template <typename,typename> class IPowNode>
@@ -10059,6 +10449,15 @@ namespace exprtk
                                                       expression_node_ptr (&branch)[2])
             {
                const Type& v = dynamic_cast<details::variable_node<Type>*>(branch[0])->ref();
+               if (details::is_sf3ext_node(branch[1]))
+               {
+                  expression_node_ptr result = error_node();
+                  if (synthesize_sf4ext_expression::template compile_right<vtype>(expr_gen,v,operation,branch[1],result))
+                  {
+                     free_node(*expr_gen.node_allocator_,branch[1]);
+                     return result;
+                  }
+               }
                switch (operation)
                {
                   #define case_stmt(op0,op1) case op0 : return expr_gen.node_allocator_->template allocate_rc<typename details::vob_node<Type,op1<Type> > >(v,branch[1]);
@@ -10077,6 +10476,15 @@ namespace exprtk
                                                       expression_node_ptr (&branch)[2])
             {
                const Type& v = dynamic_cast<details::variable_node<Type>*>(branch[1])->ref();
+               if (details::is_sf3ext_node(branch[0]))
+               {
+                  expression_node_ptr result = error_node();
+                  if (synthesize_sf4ext_expression::template compile_left<vtype>(expr_gen,v,operation,branch[0],result))
+                  {
+                     free_node(*expr_gen.node_allocator_,branch[0]);
+                     return result;
+                  }
+               }
                switch (operation)
                {
                   #define case_stmt(op0,op1) case op0 : return expr_gen.node_allocator_->template allocate_cr<typename details::bov_node<Type,op1<Type> > >(branch[0],v);
@@ -10119,6 +10527,15 @@ namespace exprtk
                      }
                   }
                }
+               else if (details::is_sf3ext_node(branch[1]))
+               {
+                  expression_node_ptr result = error_node();
+                  if (synthesize_sf4ext_expression::template compile_right<ctype>(expr_gen,c,operation,branch[1],result))
+                  {
+                     free_node(*expr_gen.node_allocator_,branch[1]);
+                     return result;
+                  }
+               }
                switch (operation)
                {
                   #define case_stmt(op0,op1) case op0 : return expr_gen.node_allocator_->template allocate_rc<typename details::cob_node<Type,op1<Type> > >(c,branch[1]);
@@ -10159,6 +10576,15 @@ namespace exprtk
                         }
                         return bocnode;
                      }
+                  }
+               }
+               if (details::is_sf3ext_node(branch[0]))
+               {
+                  expression_node_ptr result = error_node();
+                  if (synthesize_sf4ext_expression::template compile_left<ctype>(expr_gen,c,operation,branch[0],result))
+                  {
+                     free_node(*expr_gen.node_allocator_,branch[0]);
+                     return result;
                   }
                }
                switch (operation)
@@ -10293,6 +10719,8 @@ namespace exprtk
                   result = synthesize_sf3ext_expression::process<T0,T1,T2>(expr_gen,sf3opr,t0,t1,t2);
                return true;
             }
+
+
          };
 
          struct synthesize_sf4ext_expression
@@ -10304,7 +10732,7 @@ namespace exprtk
             {
                switch (sf4opr)
                {
-                  #define case_stmt(op0,op1) case op0 : return details::T0oT1oT2oT3_sf4ext<T,T0,T1,T2,T3,op1<Type> >::allocate(*(expr_gen.node_allocator_),t0,t1,t2,t3);
+                  #define case_stmt(op0,op1) case op0 : return details::T0oT1oT2oT3_sf4ext<Type,T0,T1,T2,T3,op1<Type> >::allocate(*(expr_gen.node_allocator_),t0,t1,t2,t3);
                   case_stmt(details::e_sf46,details::sf46_op) case_stmt(details::e_sf47,details::sf47_op)
                   case_stmt(details::e_sf48,details::sf48_op) case_stmt(details::e_sf49,details::sf49_op)
                   case_stmt(details::e_sf50,details::sf50_op) case_stmt(details::e_sf51,details::sf51_op)
@@ -10343,6 +10771,8 @@ namespace exprtk
                   case_stmt(details::e_sf4ext34,details::sfext34_op) case_stmt(details::e_sf4ext35,details::sfext35_op)
                   case_stmt(details::e_sf4ext36,details::sfext36_op) case_stmt(details::e_sf4ext37,details::sfext37_op)
                   case_stmt(details::e_sf4ext38,details::sfext38_op) case_stmt(details::e_sf4ext39,details::sfext39_op)
+                  case_stmt(details::e_sf4ext40,details::sfext40_op) case_stmt(details::e_sf4ext41,details::sfext41_op)
+                  case_stmt(details::e_sf4ext42,details::sfext42_op) case_stmt(details::e_sf4ext43,details::sfext43_op)
                   #undef case_stmt
                   default : return error_node();
                }
@@ -10359,6 +10789,116 @@ namespace exprtk
                else
                   result = synthesize_sf4ext_expression::process<T0,T1,T2,T3>(expr_gen,sf4opr,t0,t1,t2,t3);
                return true;
+            }
+
+            // T o (sf3ext)
+            template <typename ExType>
+            static inline bool compile_right(expression_generator<Type>& expr_gen,
+                                             ExType t,
+                                             const details::operator_type& operation,
+                                             expression_node_ptr& sf3node,
+                                             expression_node_ptr& result)
+            {
+               if (!details::is_sf3ext_node(sf3node))
+                  return false;
+
+               typedef details::T0oT1oT2_base_node<Type>* sf3ext_base_ptr;
+               sf3ext_base_ptr n = dynamic_cast<sf3ext_base_ptr>(sf3node);
+               std::string id = "t" + expr_gen.to_str(operation) + "(" + n->type_id() + ")";
+               switch (n->type())
+               {
+                  case details::expression_node<Type>::e_covoc : return compile_right_impl
+                                                                        <typename covoc_t::sf3_type_node,ExType,ctype,vtype,ctype>(expr_gen,id,t,sf3node,result);
+
+                  case details::expression_node<Type>::e_covov : return compile_right_impl
+                                                                        <typename covov_t::sf3_type_node,ExType,ctype,vtype,vtype>(expr_gen,id,t,sf3node,result);
+
+                  case details::expression_node<Type>::e_vocov : return compile_right_impl
+                                                                        <typename vocov_t::sf3_type_node,ExType,vtype,ctype,vtype>(expr_gen,id,t,sf3node,result);
+
+                  case details::expression_node<Type>::e_vovoc : return compile_right_impl
+                                                                        <typename vovoc_t::sf3_type_node,ExType,vtype,vtype,ctype>(expr_gen,id,t,sf3node,result);
+
+                  case details::expression_node<Type>::e_vovov : return compile_right_impl
+                                                                        <typename vovov_t::sf3_type_node,ExType,vtype,vtype,vtype>(expr_gen,id,t,sf3node,result);
+
+                  default                                      : return false;
+               }
+            }
+
+            // (sf3ext) o T
+            template <typename ExType>
+            static inline bool compile_left(expression_generator<Type>& expr_gen,
+                                            ExType t,
+                                            const details::operator_type& operation,
+                                            expression_node_ptr& sf3node,
+                                            expression_node_ptr& result)
+            {
+               if (!details::is_sf3ext_node(sf3node))
+                  return false;
+
+               typedef details::T0oT1oT2_base_node<Type>* sf3ext_base_ptr;
+               sf3ext_base_ptr n = dynamic_cast<sf3ext_base_ptr>(sf3node);
+               std::string id = "(" + n->type_id() + ")" + expr_gen.to_str(operation) + "t";
+               switch (n->type())
+               {
+                  case details::expression_node<Type>::e_covoc : return compile_left_impl
+                                                                        <typename covoc_t::sf3_type_node,ExType,ctype,vtype,ctype>(expr_gen,id,t,sf3node,result);
+
+                  case details::expression_node<Type>::e_covov : return compile_left_impl
+                                                                        <typename covov_t::sf3_type_node,ExType,ctype,vtype,vtype>(expr_gen,id,t,sf3node,result);
+
+                  case details::expression_node<Type>::e_vocov : return compile_left_impl
+                                                                        <typename vocov_t::sf3_type_node,ExType,vtype,ctype,vtype>(expr_gen,id,t,sf3node,result);
+
+                  case details::expression_node<Type>::e_vovoc : return compile_left_impl
+                                                                        <typename vovoc_t::sf3_type_node,ExType,vtype,vtype,ctype>(expr_gen,id,t,sf3node,result);
+
+                  case details::expression_node<Type>::e_vovov : return compile_left_impl
+                                                                        <typename vovov_t::sf3_type_node,ExType,vtype,vtype,vtype>(expr_gen,id,t,sf3node,result);
+
+                  default                                      : return false;
+               }
+            }
+
+            template <typename SF3TypeNode, typename ExType, typename T0, typename T1, typename T2>
+            static inline bool compile_right_impl(expression_generator<Type>& expr_gen,
+                                                  const std::string& id,
+                                                  ExType t,
+                                                  expression_node_ptr& node,
+                                                  expression_node_ptr& result)
+            {
+               SF3TypeNode* n = dynamic_cast<SF3TypeNode*>(node);
+               if (n)
+               {
+                  T0 t0 = n->t0();
+                  T1 t1 = n->t1();
+                  T2 t2 = n->t2();
+                  return synthesize_sf4ext_expression::
+                           template compile<ExType,T0,T1,T2>(expr_gen,id,t,t0,t1,t2,result);
+               }
+               else
+                  return false;
+            }
+
+            template <typename SF3TypeNode, typename ExType, typename T0, typename T1, typename T2>
+            static inline bool compile_left_impl(expression_generator<Type>& expr_gen,
+                                                 const std::string& id,
+                                                 ExType t,
+                                                 expression_node_ptr& node,
+                                                 expression_node_ptr& result)
+            {
+               SF3TypeNode* n = dynamic_cast<SF3TypeNode*>(node);
+               if (n)
+               {
+                  T0 t0 = n->t0();
+                  T1 t1 = n->t1();
+                  T2 t2 = n->t2();
+                  return synthesize_sf4ext_expression::
+                           template compile<ExType,T0,T1,T2>(expr_gen,id,t0,t1,t2,t,result);
+               }
+               else
+                  return false;
             }
          };
 
@@ -12974,13 +13514,14 @@ namespace exprtk
                return branch[0];
             }
             else if (
-                     (details::e_lt   == operation) || (details::e_lte   == operation) ||
-                     (details::e_gt   == operation) || (details::e_gte   == operation) ||
-                     (details::e_eq   == operation) || (details::e_ne    == operation) ||
-                     (details::e_and  == operation) || (details::e_nand  == operation) ||
-                     (details::e_or   == operation) || (details::e_nor   == operation) ||
-                     (details::e_xor  == operation) || (details::e_in    == operation) ||
-                     (details::e_like == operation) || (details::e_ilike == operation)
+                     (details::e_lt    == operation) || (details::e_lte  == operation) ||
+                     (details::e_gt    == operation) || (details::e_gte  == operation) ||
+                     (details::e_eq    == operation) || (details::e_ne   == operation) ||
+                     (details::e_and   == operation) || (details::e_nand == operation) ||
+                     (details::e_or    == operation) || (details::e_nor  == operation) ||
+                     (details::e_xor   == operation) || (details::e_xnor == operation) ||
+                     (details::e_in    == operation) || (details::e_like == operation) ||
+                     (details::e_ilike == operation)
                     )
             {
                return node_allocator_->allocate_c<literal_node_t>(T(0));
@@ -13123,6 +13664,7 @@ namespace exprtk
          register_binary_op(details::  e_or,details::  or_op)
          register_binary_op(details:: e_nor,details:: nor_op)
          register_binary_op(details:: e_xor,details:: xor_op)
+         register_binary_op(details::e_xnor,details::xnor_op)
          #undef register_binary_op
       }
 
@@ -13146,6 +13688,7 @@ namespace exprtk
          register_binary_op(details::  e_or,details::  or_op)
          register_binary_op(details:: e_nor,details:: nor_op)
          register_binary_op(details:: e_xor,details:: xor_op)
+         register_binary_op(details::e_xnor,details::xnor_op)
          #undef register_binary_op
       }
 
@@ -13189,6 +13732,9 @@ namespace exprtk
          register_sf4ext(20) register_sf4ext(21) register_sf4ext(22) register_sf4ext(23)
          register_sf4ext(24) register_sf4ext(25) register_sf4ext(26) register_sf4ext(27)
          register_sf4ext(28) register_sf4ext(29) register_sf4ext(30) register_sf4ext(31)
+         register_sf4ext(32) register_sf4ext(33) register_sf4ext(34) register_sf4ext(35)
+         register_sf4ext(36) register_sf4ext(36) register_sf4ext(38) register_sf4ext(39)
+         register_sf4ext(40) register_sf4ext(41) register_sf4ext(42) register_sf4ext(43)
          #undef register_sf4ext
       }
 

@@ -13,32 +13,32 @@ extendible.
 The ExprTk evaluator  supports the following  fundamental mathematical
 operations, functions and processes:
 
-(1) Basic operators: +, -, *, /, %, ^
+(0) Basic operators: +, -, *, /, %, ^
 
-(2) Functions:       min, max, avg, sum, abs, ceil, floor, round,
+(1) Functions:       min, max, avg, sum, abs, ceil, floor, round,
                      roundn, exp, log, log10, logn, log1p, root,
                      sqrt, clamp, inrange, sgn, erf, erfc, frac,
                      trunc
 
-(3) Trigonometry:    sin, cos, tan, acos, asin, atan, atan2, cosh,
+(2) Trigonometry:    sin, cos, tan, acos, asin, atan, atan2, cosh,
                      cot, csc, sec, sinh, tanh, rad2deg, deg2rad,
                      deg2grad, grad2deg, hypot
 
-(4) Equalities &
+(3) Equalities &
     Inequalities:    =, ==, <>, !=, <, <=, >, >=
 
-(5) Boolean logic:   and, or, xor, not, nand, nor, shr, shl, true,
-                     false
+(4) Boolean logic:   and, or, xor, xnor, not, nand, nor, shr, shl,
+                     true, false
 
-(6) Conditional &
+(5) Conditional &
     Loop statement:  if-then-else, while
 
-(7) Assignment:      :=
+(6) Assignment:      :=
 
-(8) String
+(7) String
     processing:      in, like, ilike
 
-(9) Calculus:        numerical integration and differentiation
+(8) Calculus:        numerical integration and differentiation
 
 
 
@@ -106,6 +106,7 @@ Expression Library can be found at:
 (*) PGI C++ (10.x+)
 (*) Microsoft Visual Studio C++ Compiler (8.1+)
 (*) Comeau C++ Compiler (4.3+)
+(*) IBM XL C/C++ (10.x+)
 
 
 
@@ -135,7 +136,7 @@ Expression Library can be found at:
 +-----------+--------------------------------------------------------+
 | OPERATOR  | DEFINITION                                             |
 +-----------+--------------------------------------------------------+
-| == or =   | True only if x is strictly equal to y. (eg: x == y)    |
+| == or =   | True only if x is strictly equal to y. (eg: x == y)   |
 +-----------+--------------------------------------------------------+
 | <> or !=  | True only if x does not equal y (eg: x <> y or x != y) |
 +-----------+--------------------------------------------------------+
@@ -170,8 +171,11 @@ Expression Library can be found at:
 +-----------+--------------------------------------------------------+
 | or        | Logical OR, True if either x or y is true. (eg: x or y)|
 +-----------+--------------------------------------------------------+
-| xor       | Local XOR, True only if the logical states of x and y  |
+| xor       | Logical XOR, True only if the logical states of x and y|
 |           | differ. (eg: x xor y)                                  |
++-----------+--------------------------------------------------------+
+| xnor      | Logical XNOR, True iff the biconditional of x and y is |
+|           | satisfied. (eg: x xnor y)                              |
 +-----------+--------------------------------------------------------+
 | if        | If x is true then return y else return z.              |
 |           | (eg: if(x, y, z) or if((x + 1) > 2y, z + 1, w / v))    |
@@ -183,7 +187,7 @@ Expression Library can be found at:
 +-----------+--------------------------------------------------------+
 | abs       | Absolute value of x.                                   |
 +-----------+--------------------------------------------------------+
-| avg       | The average of all the inputs.                         |
+| avg       | Average of all the inputs.                             |
 |           | (eg: avg(x,y,z,w) == (x+y+z+w)/4)                      |
 +-----------+--------------------------------------------------------+
 | ceil      | Smallest integer that is greater than or equal to x.   |
@@ -203,17 +207,17 @@ Expression Library can be found at:
 +-----------+--------------------------------------------------------+
 | frac      | Fractional portion of x                                |
 +-----------+--------------------------------------------------------+
-| hypot     | Hypotenuse of x and y (eg: hypot(x,y))                 |
+| hypot     | Hypotenuse of x and y (eg: hypot(x,y) = sqrt(x*x +y*y))|
 +-----------+--------------------------------------------------------+
 | log       | Natural logarithm of x                                 |
 +-----------+--------------------------------------------------------+
 | log10     | Base 10 logarithm of x                                 |
 +-----------+--------------------------------------------------------+
+| log1p     | Natural logarithm of 1 + x, where x is very small.     |
+|           | (eg: log1p(x))                                         |
++-----------+--------------------------------------------------------+
 | logn      | Base N logarithm of x (eg: logn(1235,8))               |
 |           | where n > 0 and is an integer.                         |
-+-----------+--------------------------------------------------------+
-| log1p     | Natural logarithm of 1 + x  (eg: log1p(x))             |
-|           | where x is very small.                                 |
 +-----------+--------------------------------------------------------+
 | nequal    | Not-equal test between x and y using normalized epsilon|
 +-----------+--------------------------------------------------------+
@@ -229,7 +233,7 @@ Expression Library can be found at:
 +-----------+--------------------------------------------------------+
 | sqrt      | Square root of x, where x > 0                          |
 +-----------+--------------------------------------------------------+
-| sum       | The sum of all the inputs.                             |
+| sum       | Sum of all the inputs.                                 |
 |           | (eg: sum(x,y,z,w,v) == (x+y+z+w+v))                    |
 +-----------+--------------------------------------------------------+
 | trunc     | Integer portion of x                                   |
@@ -265,11 +269,11 @@ Expression Library can be found at:
 +-----------+--------------------------------------------------------+
 | tanh      | Hyperbolic tangent of x                                |
 +-----------+--------------------------------------------------------+
-| rad2deg   | Convert x from radians to degrees                      |
-+-----------+--------------------------------------------------------+
 | deg2rad   | Convert x from degrees to radians                      |
 +-----------+--------------------------------------------------------+
 | deg2grad  | Convert x from degrees to gradians                     |
++-----------+--------------------------------------------------------+
+| rad2deg   | Convert x from radians to degrees                      |
 +-----------+--------------------------------------------------------+
 | grad2deg  | Convert x from gradians to degrees                     |
 +-----------+--------------------------------------------------------+
@@ -284,25 +288,25 @@ Expression Library can be found at:
 | like      | True only if the string x matches the pattern y.       |
 |           | Available wildcard characters are '*' and '?' denoting |
 |           | zero or more and zero or one matches respectively.     |
-|           | (eg: x like y or 'abcdefgh' like 'a?d*')               |
+|           | (eg: x like y or 'abcdefgh' like 'a?d*h')              |
 +-----------+--------------------------------------------------------+
 | like      | True only if the string x matches the pattern y in a   |
 |           | case insensitive manner. Available wildcard characters |
 |           | are '*' and '?' denoting zero or more and zero or one  |
 |           | matches respectively.                                  |
-|           | (eg: x ilike y or 'abcdefgh' like 'a?d*')              |
+|           | (eg: x ilike y or 'a1B2c3D4e5F6g7H' like 'a?d*h')      |
 +-----------+--------------------------------------------------------+
 
 
 
 [SPECIAL FUNCTIONS]
-The purpose  of special  functions in  ExprTk is  to provide  compiler
-generated equivalents of common mathematical expressions which can  be
-invoked by  using the  'special function'  syntax (eg:  $f12(x,y,z) or
-$f24(x,y,z,w)). Where possible, for sub-expressions that are comprised
-of combinations of  variables and literal  values the ExprTk  compiler
-will perform a  best effort attempt  to replace such  expressions with
-special functions.
+Special functions dramatically decrease  the total evaluation time  of
+expressions, which would otherwise have been written using the  common
+form, by reducing the total number of nodes in the evaluation tree  of
+an expression  and by  also leveraging  the C++  compiler's ability to
+select an appropriate set of instructions for the given expression and
+architecture so as to provide the most optimal and precision sensitive
+result.
 
 Special functions dramatically decrease  the total evaluation time  of
 expressions which would otherwise  have been written using  the common
@@ -370,27 +374,42 @@ correctly optimize such expressions for a given architecture.
 
 
 [EXPRTK NOTES]
- (0) Supported types are float, double and long double.
+ (00) Supported types are float, double and long double.
 
- (1) Standard mathematical operator precedence is applied (BEDMAS).
+ (01) Standard mathematical operator precedence is applied (BEDMAS).
 
- (2) All variables and functions are case-insensitive
+ (02) Supported user defined types are numeric and string variables
+      and functions.
 
- (3) Expression lengths are limited only by storage capacity.
+ (03) All variable and function names are case-insensitive
 
- (4) Equal/Nequal routines use epsilons of 0.00000000001 and 0.000001
-     for double and float types respectively.
+ (04) Variable and function names must begin with a letter
+     (A-Z or a-z), then can be comprised of any combination of
+     letters, digits and underscores. (eg: x, var1 or power_func99)
 
- (5) All trigonometric functions assume radian input unless
-     stated otherwise.
+ (05) Expression lengths are limited only by storage capacity.
 
- (6) Expressions can contain white-space characters such as
-     space,  tabs, new-lines, control-feed et al.
-     ('\n', '\r', '\t', '\b', '\v', '\f')
+ (06) Equal/Nequal routines use epsilons of 0.0000000001 and 0.000001
+      for double and float types respectively.
 
- (7) User defined functions can have up to 20 parameters.
+ (07) All trigonometric functions assume radian input unless
+      stated otherwise.
 
- (8) Polynomial functions can be at most of degree 10.
+ (08) Expressions may contain white-space characters such as
+      space,  tabs, new-lines, control-feed et al.
+      ('\n', '\r', '\t', '\b', '\v', '\f')
+
+ (09) Strings may be constructed from any letters, digits or special
+      characters such as (~!@#$%^&*()[]|=+ ,./?<>;:"`~_), and must
+      be enclosed with single-quotes.
+      eg: 'Frankly, my dear, I don't give a damn!'
+
+ (10) User defined functions can have up to 20 parameters.
+
+ (11) Polynomial functions can be at most of degree 10.
+
+ (12) Where appropriate constant folding optimisations will be
+      applied. (eg: The expression '2+(3-(x/y))' becomes '5-(x/y)')
 
 
 
