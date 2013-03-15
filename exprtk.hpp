@@ -10895,7 +10895,7 @@ namespace exprtk
                   T1 t1 = n->t1();
                   T2 t2 = n->t2();
                   return synthesize_sf4ext_expression::
-                           template compile<ExType,T0,T1,T2>(expr_gen,id,t0,t1,t2,t,result);
+                           template compile<T0,T1,T2,ExType>(expr_gen,id,t0,t1,t2,t,result);
                }
                else
                   return false;
