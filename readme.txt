@@ -318,58 +318,58 @@ correctly optimize such expressions for a given architecture.
  +-------------+-------------+    +--------------+------------------+
  |  Prototype  |  Operation  |    |  Prototype   |    Operation     |
  +-------------+-------------+    +--------------+------------------+
-   $f00(x,y,z) |  (x + y) / z      $f46(x,y,z,w) | x + ((y + z) / w)
-   $f01(x,y,z) |  (x + y) * z      $f47(x,y,z,w) | x + ((y + z) * w)
-   $f02(x,y,z) |  (x + y) - z      $f48(x,y,z,w) | x + ((y - z) / w)
-   $f03(x,y,z) |  (x + y) + z      $f49(x,y,z,w) | x + ((y - z) * w)
-   $f04(x,y,z) |  (x - y) / z      $f50(x,y,z,w) | x + ((y * z) / w)
-   $f05(x,y,z) |  (x - y) * z      $f51(x,y,z,w) | x + ((y * z) * w)
-   $f06(x,y,z) |  (x * y) + z      $f52(x,y,z,w) | x + ((y / z) + w)
-   $f07(x,y,z) |  (x * y) - z      $f53(x,y,z,w) | x + ((y / z) / w)
-   $f08(x,y,z) |  (x * y) / z      $f54(x,y,z,w) | x + ((y / z) * w)
-   $f09(x,y,z) |  (x * y) * z      $f55(x,y,z,w) | x - ((y + z) / w)
-   $f10(x,y,z) |  (x / y) + z      $f56(x,y,z,w) | x - ((y + z) * w)
-   $f11(x,y,z) |  (x / y) - z      $f57(x,y,z,w) | x - ((y - z) / w)
-   $f12(x,y,z) |  (x / y) / z      $f58(x,y,z,w) | x - ((y - z) * w)
-   $f13(x,y,z) |  (x / y) * z      $f59(x,y,z,w) | x - ((y * z) / w)
-   $f14(x,y,z) |  x / (y + z)      $f60(x,y,z,w) | x - ((y * z) * w)
-   $f15(x,y,z) |  x / (y - z)      $f61(x,y,z,w) | x - ((y / z) / w)
-   $f16(x,y,z) |  x / (y * z)      $f62(x,y,z,w) | x - ((y / z) * w)
-   $f17(x,y,z) |  x / (y / z)      $f63(x,y,z,w) | ((x + y) * z) - w
-   $f18(x,y,z) |  x * (y + z)      $f64(x,y,z,w) | ((x - y) * z) - w
-   $f19(x,y,z) |  x * (y - z)      $f65(x,y,z,w) | ((x * y) * z) - w
-   $f20(x,y,z) |  x * (y * z)      $f66(x,y,z,w) | ((x / y) * z) - w
-   $f21(x,y,z) |  x * (y / z)      $f67(x,y,z,w) | ((x + y) / z) - w
-   $f22(x,y,z) |  x - (y / z)      $f68(x,y,z,w) | ((x - y) / z) - w
-   $f23(x,y,z) |  x - (y / z)      $f69(x,y,z,w) | ((x * y) / z) - w
-   $f24(x,y,z) |  x - (y * z)      $f70(x,y,z,w) | ((x / y) / z) - w
-   $f25(x,y,z) |  x + (y * z)      $f71(x,y,z,w) | (x * y) + (z * w)
-   $f26(x,y,z) |  x + (y / z)      $f72(x,y,z,w) | (x * y) - (z * w)
-   $f27(x,y,z) |  x + (y + z)      $f73(x,y,z,w) | (x * y) + (z / w)
-   $f28(x,y,z) |  x + (y - z)      $f74(x,y,z,w) | (x * y) - (z / w)
-   $f29(x,y,z) |  x * y^2 + z      $f75(x,y,z,w) | (x / y) + (z / w)
-   $f30(x,y,z) |  x * y^3 + z      $f76(x,y,z,w) | (x / y) - (z / w)
-   $f31(x,y,z) |  x * y^4 + z      $f77(x,y,z,w) | (x / y) - (z * w)
-   $f32(x,y,z) |  x * y^5 + z      $f78(x,y,z,w) | x / (y + (z * w))
-   $f33(x,y,z) |  x * y^6 + z      $f79(x,y,z,w) | x / (y - (z * w))
-   $f34(x,y,z) |  x * y^7 + z      $f80(x,y,z,w) | x * (y + (z * w))
-   $f35(x,y,z) |  x * y^8 + z      $f81(x,y,z,w) | x * (y - (z * w))
-   $f36(x,y,z) |  x * y^9 + z      $f82(x,y,z,w) | x * y^2 + z * w^2
-   $f37(x,y,z) |  x * log(y)+z     $f83(x,y,z,w) | x * y^3 + z * w^3
-   $f38(x,y,z) |  x * log(y)-z     $f84(x,y,z,w) | x * y^4 + z * w^4
-   $f39(x,y,z) |  x * log10(y)+z   $f85(x,y,z,w) | x * y^5 + z * w^5
-   $f40(x,y,z) |  x * log10(y)-z   $f86(x,y,z,w) | x * y^6 + z * w^6
-   $f41(x,y,z) |  x * sin(y)+z     $f87(x,y,z,w) | x * y^7 + z * w^7
-   $f42(x,y,z) |  x * sin(y)-z     $f88(x,y,z,w) | x * y^8 + z * w^8
-   $f43(x,y,z) |  x * cos(y)+z     $f89(x,y,z,w) | x * y^9 + z * w^9
-   $f44(x,y,z) |  x * cos(y)-z     $f90(x,y,z,w) | (x and y) ? z : w
-   $f45(x,y,z) |  x ? y : z        $f91(x,y,z,w) | (x  or y) ? z : w
-                                   $f92(x,y,z,w) | (x <   y) ? z : w
-                                   $f93(x,y,z,w) | (x <=  y) ? z : w
-                                   $f94(x,y,z,w) | (x >   y) ? z : w
-                                   $f95(x,y,z,w) | (x >=  y) ? z : w
-                                   $f96(x,y,z,w) | (x ==  y) ? z : w
-                                   $f97(x,y,z,w) | x*sin(y) + z*cos(w)
+   $f00(x,y,z) | (x + y) / z       $f47(x,y,z,w) | x + ((y + z) / w)
+   $f01(x,y,z) | (x + y) * z       $f48(x,y,z,w) | x + ((y + z) * w)
+   $f02(x,y,z) | (x + y) - z       $f49(x,y,z,w) | x + ((y - z) / w)
+   $f03(x,y,z) | (x + y) + z       $f50(x,y,z,w) | x + ((y - z) * w)
+   $f04(x,y,z) | (x - y) / z       $f51(x,y,z,w) | x + ((y * z) / w)
+   $f05(x,y,z) | (x - y) * z       $f52(x,y,z,w) | x + ((y * z) * w)
+   $f06(x,y,z) | (x * y) + z       $f53(x,y,z,w) | x + ((y / z) + w)
+   $f07(x,y,z) | (x * y) - z       $f54(x,y,z,w) | x + ((y / z) / w)
+   $f08(x,y,z) | (x * y) / z       $f55(x,y,z,w) | x + ((y / z) * w)
+   $f09(x,y,z) | (x * y) * z       $f56(x,y,z,w) | x - ((y + z) / w)
+   $f10(x,y,z) | (x / y) + z       $f57(x,y,z,w) | x - ((y + z) * w)
+   $f11(x,y,z) | (x / y) - z       $f58(x,y,z,w) | x - ((y - z) / w)
+   $f12(x,y,z) | (x / y) / z       $f59(x,y,z,w) | x - ((y - z) * w)
+   $f13(x,y,z) | (x / y) * z       $f60(x,y,z,w) | x - ((y * z) / w)
+   $f14(x,y,z) | x / (y + z)       $f61(x,y,z,w) | x - ((y * z) * w)
+   $f15(x,y,z) | x / (y - z)       $f62(x,y,z,w) | x - ((y / z) / w)
+   $f16(x,y,z) | x / (y * z)       $f63(x,y,z,w) | x - ((y / z) * w)
+   $f17(x,y,z) | x / (y / z)       $f64(x,y,z,w) | ((x + y) * z) - w
+   $f18(x,y,z) | x * (y + z)       $f65(x,y,z,w) | ((x - y) * z) - w
+   $f19(x,y,z) | x * (y - z)       $f66(x,y,z,w) | ((x * y) * z) - w
+   $f20(x,y,z) | x * (y * z)       $f67(x,y,z,w) | ((x / y) * z) - w
+   $f21(x,y,z) | x * (y / z)       $f68(x,y,z,w) | ((x + y) / z) - w
+   $f22(x,y,z) | x - (y + z)       $f69(x,y,z,w) | ((x - y) / z) - w
+   $f23(x,y,z) | x - (y - z)       $f70(x,y,z,w) | ((x * y) / z) - w
+   $f24(x,y,z) | x - (y / z)       $f71(x,y,z,w) | ((x / y) / z) - w
+   $f25(x,y,z) | x - (y * z)       $f72(x,y,z,w) | (x * y) + (z * w)
+   $f26(x,y,z) | x + (y * z)       $f73(x,y,z,w) | (x * y) - (z * w)
+   $f27(x,y,z) | x + (y / z)       $f74(x,y,z,w) | (x * y) + (z / w)
+   $f28(x,y,z) | x + (y + z)       $f75(x,y,z,w) | (x * y) - (z / w)
+   $f29(x,y,z) | x + (y - z)       $f76(x,y,z,w) | (x / y) + (z / w)
+   $f30(x,y,z) | x * y^2 + z       $f77(x,y,z,w) | (x / y) - (z / w)
+   $f31(x,y,z) | x * y^3 + z       $f78(x,y,z,w) | (x / y) - (z * w)
+   $f32(x,y,z) | x * y^4 + z       $f79(x,y,z,w) | x / (y + (z * w))
+   $f33(x,y,z) | x * y^5 + z       $f80(x,y,z,w) | x / (y - (z * w))
+   $f34(x,y,z) | x * y^6 + z       $f81(x,y,z,w) | x * (y + (z * w))
+   $f35(x,y,z) | x * y^7 + z       $f82(x,y,z,w) | x * (y - (z * w))
+   $f36(x,y,z) | x * y^8 + z       $f83(x,y,z,w) | x*y^2 + z*w^2
+   $f37(x,y,z) | x * y^9 + z       $f84(x,y,z,w) | x*y^3 + z*w^3
+   $f38(x,y,z) | x * log(y)+z      $f85(x,y,z,w) | x*y^4 + z*w^4
+   $f39(x,y,z) | x * log(y)-z      $f86(x,y,z,w) | x*y^5 + z*w^5
+   $f40(x,y,z) | x * log10(y)+z    $f87(x,y,z,w) | x*y^6 + z*w^6
+   $f41(x,y,z) | x * log10(y)-z    $f88(x,y,z,w) | x*y^7 + z*w^7
+   $f42(x,y,z) | x * sin(y)+z      $f89(x,y,z,w) | x*y^8 + z*w^8
+   $f43(x,y,z) | x * sin(y)-z      $f90(x,y,z,w) | x*y^9 + z*w^9
+   $f44(x,y,z) | x * cos(y)+z      $f91(x,y,z,w) | (x and y) ? z
+   $f45(x,y,z) | x * cos(y)-z      $f92(x,y,z,w) | (x or  y) ? z : w
+   $f46(x,y,z) | x ? y : z         $f93(x,y,z,w) | (x <   y) ? z : w
+                                   $f94(x,y,z,w) | (x <=  y) ? z : w
+                                   $f95(x,y,z,w) | (x >   y) ? z : w
+                                   $f96(x,y,z,w) | (x >=  y) ? z : w
+                                   $f97(x,y,z,w) | (x ==  y) ? z : w
+                                   $f98(x,y,z,w) | x * sin(y) + z * cos(w)
 
 
 
@@ -406,10 +406,20 @@ correctly optimize such expressions for a given architecture.
 
  (10) User defined functions can have up to 20 parameters.
 
- (11) Polynomial functions can be at most of degree 10.
+ (11) The inbuilt polynomial functions can be at most of degree 10.
 
  (12) Where appropriate constant folding optimisations will be
       applied. (eg: The expression '2+(3-(x/y))' becomes '5-(x/y)')
+
+ (13) String processing capabilities are available by default.
+      To turn them off, the following needs to be defined at
+      compile time: exprtk_disable_string_capabilities
+
+ (14) Expressions may contain trailing comments that must be prefixed
+      with '//' and are terminated by the next occurrence of new-line
+      or line-break. To disallow comments, the following needs to be
+      defined at compile time: exprtk_disable_comments
+      (eg: '2+(3-(x/y)) // This is an expression')
 
 
 
