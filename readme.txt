@@ -136,7 +136,7 @@ Expression Library can be found at:
 +-----------+--------------------------------------------------------+
 | OPERATOR  | DEFINITION                                             |
 +-----------+--------------------------------------------------------+
-| == or =   | True only if x is strictly equal to y. (eg: x == y)   |
+| == or =   | True only if x is strictly equal to y. (eg: x == y)    |
 +-----------+--------------------------------------------------------+
 | <> or !=  | True only if x does not equal y (eg: x <> y or x != y) |
 +-----------+--------------------------------------------------------+
@@ -406,7 +406,7 @@ correctly optimize such expressions for a given architecture.
 
  (10) User defined functions can have up to 20 parameters.
 
- (11) The inbuilt polynomial functions can be at most of degree 10.
+ (11) The inbuilt polynomial functions can be at most of degree 12.
 
  (12) Where appropriate constant folding optimisations will be
       applied. (eg: The expression '2+(3-(x/y))' becomes '5-(x/y)')
@@ -415,11 +415,10 @@ correctly optimize such expressions for a given architecture.
       To turn them off, the following needs to be defined at
       compile time: exprtk_disable_string_capabilities
 
- (14) Expressions may contain trailing comments that must be prefixed
-      with '//' and are terminated by the next occurrence of new-line
-      or line-break. To disallow comments, the following needs to be
-      defined at compile time: exprtk_disable_comments
-      (eg: '2+(3-(x/y)) // This is an expression')
+ (14) Expressions may contain any of the following comment styles:
+      1. // .... \n
+      2. #  .... \n
+      3. /* .... */
 
 
 

@@ -1496,25 +1496,69 @@ inline bool run_test07()
       return false;
    }
 
-   for (x = T(-200.0); x < T(200); x+=T(0.0001))
+   for (x = T(-200.0); x < T(200); x += T(0.0001))
    {
-      T result1 = exprtk::derivative(expression,x);
-      T result2 = exprtk::derivative(expression,"x");
-      T real_result = T(2.0) * std::cos(T(2.0) * x + T(1.0/3.0));
-
-      if (not_equal(result1,result2,T(0.000000001)))
       {
-         printf("run_test07() - Derivative Error:  result1 != result2\n");
-         return false;
+         T deriv1_real_result = T(2.0) * std::cos(T(2.0) * x + T(1.0/3.0));
+         T deriv1_result1 = exprtk::derivative(expression,x);
+         T deriv1_result2 = exprtk::derivative(expression,"x");
+
+         if (not_equal(deriv1_result1,deriv1_result2,T(0.00001)))
+         {
+            printf("run_test07() - 1st Derivative Error:  result1 != result2\n");
+            return false;
+         }
+
+         if (not_equal(deriv1_result1,deriv1_real_result,T(0.00001)))
+         {
+            printf("run_test07() - 1st Derivative Error:  x: %19.15f\tExpected: %19.15f\tResult: %19.15f\n",
+                   x,
+                   deriv1_real_result,
+                   deriv1_result1);
+            return false;
+         }
       }
 
-      if (not_equal(result1,real_result,T(0.000000001)))
       {
-         printf("run_test07() - Derivative Error:  x: %19.15f\tExpected: %19.15f\tResult: %19.15f\n",
-                x,
-                real_result,
-                result1);
-         return false;
+         T deriv2_real_result = T(-4.0) * std::sin(T(2.0) * x + T(1.0/3.0));
+         T deriv2_result1 = exprtk::second_derivative(expression,x);
+         T deriv2_result2 = exprtk::second_derivative(expression,"x");
+
+         if (not_equal(deriv2_result1,deriv2_result2,T(0.0000001)))
+         {
+            printf("run_test07() - 2nd Derivative Error:  result1 != result2\n");
+            return false;
+         }
+
+         if (not_equal(deriv2_result1,deriv2_real_result,T(0.01)))
+         {
+            printf("run_test07() - 2nd Derivative Error:  x: %19.15f\tExpected: %19.15f\tResult: %19.15f\n",
+                   x,
+                   deriv2_real_result,
+                   deriv2_result1);
+            return false;
+         }
+      }
+
+      {
+         T deriv3_real_result = T(-8.0) * std::cos(T(2.0) * x + T(1.0/3.0));
+         T deriv3_result1 = exprtk::third_derivative(expression,x);
+         T deriv3_result2 = exprtk::third_derivative(expression,"x");
+
+         if (not_equal(deriv3_result1,deriv3_result2,T(0.0000001)))
+         {
+            printf("run_test07() - 3rd Derivative Error:  result1 != result2\n");
+            return false;
+         }
+
+         if (not_equal(deriv3_result1,deriv3_real_result,T(0.01)))
+         {
+            printf("run_test07() - 3rd Derivative Error:  x: %19.15f\tExpected: %19.15f\tResult: %19.15f\n",
+                   x,
+                   deriv3_real_result,
+                   deriv3_result1);
+            return false;
+         }
       }
    }
 
@@ -2332,15 +2376,18 @@ inline bool run_test12()
    typedef exprtk::expression<T> expression_t;
    static const std::string expression_string[] =
                             {
-                               "equal(poly1(x,2.2,1.1),(2.2x^1+1.1))",
-                               "equal(poly2(x,3.3,2.2,1.1),(3.3x^2+2.2x^1+1.1))",
-                               "equal(poly3(x,4.4,3.3,2.2,1.1),(4.4x^3+3.3x^2+2.2x^1+1.1))",
-                               "equal(poly4(x,5.5,4.4,3.3,2.2,1.1),(5.5x^4+4.4x^3+3.3x^2+2.2x^1+1.1))",
-                               "equal(poly5(x,6.6,5.5,4.4,3.3,2.2,1.1),(6.6x^5+5.5x^4+4.4x^3+3.3x^2+2.2x^1+1.1))",
-                               "equal(poly6(x,7.7,6.6,5.5,4.4,3.3,2.2,1.1),(7.7x^6+6.6x^5+5.5x^4+4.4x^3+3.3x^2+2.2x^1+1.1))",
-                               "equal(poly7(x,8.8,7.7,6.6,5.5,4.4,3.3,2.2,1.1),(8.8x^7+7.7x^6+6.6x^5+5.5x^4+4.4x^3+3.3x^2+2.2x^1+1.1))",
-                               "equal(poly8(x,9.9,8.8,7.7,6.6,5.5,4.4,3.3,2.2,1.1),(9.9x^8+8.8x^7+7.7x^6+6.6x^5+5.5x^4+4.4x^3+3.3x^2+2.2x^1+1.1))",
-                               "equal(poly9(x,1.1,9.9,8.8,7.7,6.6,5.5,4.4,3.3,2.2,1.1),(1.1x^9+9.9x^8+8.8x^7+7.7x^6+6.6x^5+5.5x^4+4.4x^3+3.3x^2+2.2x^1+1.1))"
+                               "equal(poly01(x,2.2,1.1),(2.2x^1+1.1))",
+                               "equal(poly02(x,3.3,2.2,1.1),(3.3x^2+2.2x^1+1.1))",
+                               "equal(poly03(x,4.4,3.3,2.2,1.1),(4.4x^3+3.3x^2+2.2x^1+1.1))",
+                               "equal(poly04(x,5.5,4.4,3.3,2.2,1.1),(5.5x^4+4.4x^3+3.3x^2+2.2x^1+1.1))",
+                               "equal(poly05(x,6.6,5.5,4.4,3.3,2.2,1.1),(6.6x^5+5.5x^4+4.4x^3+3.3x^2+2.2x^1+1.1))",
+                               "equal(poly06(x,7.7,6.6,5.5,4.4,3.3,2.2,1.1),(7.7x^6+6.6x^5+5.5x^4+4.4x^3+3.3x^2+2.2x^1+1.1))",
+                               "equal(poly07(x,8.8,7.7,6.6,5.5,4.4,3.3,2.2,1.1),(8.8x^7+7.7x^6+6.6x^5+5.5x^4+4.4x^3+3.3x^2+2.2x^1+1.1))",
+                               "equal(poly08(x,9.9,8.8,7.7,6.6,5.5,4.4,3.3,2.2,1.1),(9.9x^8+8.8x^7+7.7x^6+6.6x^5+5.5x^4+4.4x^3+3.3x^2+2.2x^1+1.1))",
+                               "equal(poly09(x,1.1,9.9,8.8,7.7,6.6,5.5,4.4,3.3,2.2,1.1),(1.1x^9+9.9x^8+8.8x^7+7.7x^6+6.6x^5+5.5x^4+4.4x^3+3.3x^2+2.2x^1+1.1))"
+                               "equal(poly10(x,2.2,1.1,9.9,8.8,7.7,6.6,5.5,4.4,3.3,2.2,1.1),(2.2x^10+1.1x^9+9.9x^8+8.8x^7+7.7x^6+6.6x^5+5.5x^4+4.4x^3+3.3x^2+2.2x^1+1.1))"
+                               "equal(poly11(x,3.3,2.2,1.1,9.9,8.8,7.7,6.6,5.5,4.4,3.3,2.2,1.1),(3.3x^11+2.2x^10+1.1x^9+9.9x^8+8.8x^7+7.7x^6+6.6x^5+5.5x^4+4.4x^3+3.3x^2+2.2x^1+1.1))"
+                               "equal(poly12(x,4.4,3.3,2.2,1.1,9.9,8.8,7.7,6.6,5.5,4.4,3.3,2.2,1.1),(4.4x^12+3.3x^11+2.2x^10+1.1x^9+9.9x^8+8.8x^7+7.7x^6+6.6x^5+5.5x^4+4.4x^3+3.3x^2+2.2x^1+1.1))"
                             };
    static const std::size_t expression_string_size = sizeof(expression_string) / sizeof(std::string);
 
@@ -2356,20 +2403,24 @@ inline bool run_test12()
    exprtk::polynomial<T, 8> poly08;
    exprtk::polynomial<T, 9> poly09;
    exprtk::polynomial<T,10> poly10;
+   exprtk::polynomial<T,11> poly11;
+   exprtk::polynomial<T,12> poly12;
 
    exprtk::symbol_table<T> symbol_table;
 
    symbol_table.add_variable("x",x);
-   symbol_table.add_function( "poly1", poly01);
-   symbol_table.add_function( "poly2", poly02);
-   symbol_table.add_function( "poly3", poly03);
-   symbol_table.add_function( "poly4", poly04);
-   symbol_table.add_function( "poly5", poly05);
-   symbol_table.add_function( "poly6", poly06);
-   symbol_table.add_function( "poly7", poly07);
-   symbol_table.add_function( "poly8", poly08);
-   symbol_table.add_function( "poly9", poly09);
+   symbol_table.add_function("poly01", poly01);
+   symbol_table.add_function("poly02", poly02);
+   symbol_table.add_function("poly03", poly03);
+   symbol_table.add_function("poly04", poly04);
+   symbol_table.add_function("poly05", poly05);
+   symbol_table.add_function("poly06", poly06);
+   symbol_table.add_function("poly07", poly07);
+   symbol_table.add_function("poly08", poly08);
+   symbol_table.add_function("poly09", poly09);
    symbol_table.add_function("poly10", poly10);
+   symbol_table.add_function("poly11", poly11);
+   symbol_table.add_function("poly12", poly12);
 
    expression_t expression;
    expression.register_symbol_table(symbol_table);

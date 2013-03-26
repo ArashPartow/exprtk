@@ -1504,7 +1504,7 @@ namespace exprtk
             s_end_    = str.data() + str.size();
             eof_token_.set_operator(token_t::e_eof,s_end_,s_end_,base_itr_);
             token_list_.clear();
-            while (s_end_ != s_itr_)
+            while (!is_end(s_itr_))
             {
                scan_token();
                if (token_list_.back().is_error())
@@ -1564,9 +1564,14 @@ namespace exprtk
 
       private:
 
+         inline bool is_end(const char* itr)
+         {
+            return (s_end_ == itr);
+         }
+
          inline void skip_whitespace()
          {
-            while ((s_end_ != s_itr_) && details::is_whitespace(*s_itr_))
+            while (!is_end(s_itr_) && details::is_whitespace(*s_itr_))
             {
                ++s_itr_;
             }
@@ -1575,15 +1580,48 @@ namespace exprtk
          inline void skip_comments()
          {
             #ifndef exprtk_disable_comments
-            if ((s_end_ == s_itr_) || (s_end_ == (s_itr_ + 1)))
+            //The following comment styles are supported:
+            // 1. // .... \n
+            // 2. #  .... \n
+            // 3. /* .... */
+            struct test
+            {
+               static inline bool comment_start(const char c0, const char c1, int& mode, int& incr)
+               {
+                  mode = 0;
+                       if ('#' == c0)    { mode = 1; incr = 1; }
+                  else if ('/' == c0)
+                  {
+                          if ('/' == c1) { mode = 1; incr = 2; }
+                     else if ('*' == c1) { mode = 2; incr = 2; }
+                  }
+                  return (mode != 0);
+               }
+
+               static inline bool comment_end(const char c0, const char c1, const int mode)
+               {
+                  return ((1 == mode) && ('\n' == c0)) ||
+                         ((2 == mode) && ( '*' == c0) && ('/' == c1));
+               }
+            };
+
+            int mode = 0;
+            int increment = 0;
+            if (is_end(s_itr_) || is_end((s_itr_ + 1)))
                return;
-            else if (('/' != *s_itr_) || ('/' != *(s_itr_ + 1)))
+            else if (!test::comment_start(*s_itr_,*(s_itr_ + 1),mode,increment))
                return;
-            while ((s_end_ != s_itr_) && ('\n' != *s_itr_))
+            s_itr_ += increment;
+            while (!is_end(s_itr_) && !test::comment_end(*s_itr_,*(s_itr_ + 1),mode))
             {
                ++s_itr_;
             }
-            skip_whitespace();
+            if (is_end(s_itr_))
+            {
+               s_itr_ += mode;
+               skip_whitespace();
+               skip_comments();
+            }
             #endif
          }
 
@@ -1591,7 +1629,7 @@ namespace exprtk
          {
             skip_whitespace();
             skip_comments();
-            if (s_end_ == s_itr_)
+            if (is_end(s_itr_))
             {
                return;
             }
@@ -1635,7 +1673,7 @@ namespace exprtk
          {
             token_t t;
 
-            if ((s_itr_ + 1) != s_end_)
+            if (!is_end(s_itr_ + 1))
             {
                token_t::token_type ttype = token_t::e_none;
                char c0 = s_itr_[0];
@@ -1675,7 +1713,7 @@ namespace exprtk
          {
             const char* begin = s_itr_;
             while (
-                   (s_end_ != s_itr_) &&
+                   (!is_end(s_itr_)) &&
                    (details::is_letter_or_digit(*s_itr_) || ((*s_itr_) == '_'))
                   )
             {
@@ -1705,7 +1743,7 @@ namespace exprtk
             bool post_e_sign_found = false;
             token_t t;
 
-            while (s_end_ != s_itr_)
+            while (!is_end(s_itr_))
             {
                if ('.' == (*s_itr_))
                {
@@ -1723,7 +1761,7 @@ namespace exprtk
                {
                   const char& c = *(s_itr_ + 1);
 
-                  if (s_end_ == (s_itr_ + 1))
+                  if (is_end(s_itr_ + 1))
                   {
                      t.set_error(token::e_err_number,begin,s_itr_,base_itr_);
                      token_list_.push_back(t);
@@ -1778,7 +1816,6 @@ namespace exprtk
             {
                t.set_error(token::e_err_sfunc,begin,s_itr_,base_itr_);
                token_list_.push_back(t);
-
                return;
             }
 
@@ -1791,7 +1828,6 @@ namespace exprtk
             {
                t.set_error(token::e_err_sfunc,begin,s_itr_,base_itr_);
                token_list_.push_back(t);
-
                return;
             }
 
@@ -1812,14 +1848,13 @@ namespace exprtk
             {
                t.set_error(token::e_err_string,begin,s_itr_,base_itr_);
                token_list_.push_back(t);
-
                return;
             }
             ++s_itr_;
 
             bool escaped = false;
 
-            while (s_end_ != s_itr_)
+            while (!is_end(s_itr_))
             {
                if ('\\' == *s_itr_)
                {
@@ -1834,16 +1869,16 @@ namespace exprtk
                }
                else if (escaped)
                   escaped = false;
-
                ++s_itr_;
             }
 
-            if (s_end_ == s_itr_)
+            if (is_end(s_itr_))
             {
                t.set_error(token::e_err_string,begin,s_itr_,base_itr_);
                token_list_.push_back(t);
                return;
             }
+
             t.set_string(begin,s_itr_,base_itr_);
             token_list_.push_back(t);
             ++s_itr_;
@@ -10775,7 +10810,7 @@ namespace exprtk
                if (!expr_gen.sf3_optimizable(id,sf3opr))
                   return false;
                else
-                  result = synthesize_sf3ext_expression::process<T0,T1,T2>(expr_gen,sf3opr,t0,t1,t2);
+                  result = synthesize_sf3ext_expression::template process<T0,T1,T2>(expr_gen,sf3opr,t0,t1,t2);
                return true;
             }
 
@@ -10846,7 +10881,7 @@ namespace exprtk
                if (!expr_gen.sf4_optimizable(id,sf4opr))
                   return false;
                else
-                  result = synthesize_sf4ext_expression::process<T0,T1,T2,T3>(expr_gen,sf4opr,t0,t1,t2,t3);
+                  result = synthesize_sf4ext_expression::template process<T0,T1,T2,T3>(expr_gen,sf4opr,t0,t1,t2,t3);
                return true;
             }
 
@@ -13874,7 +13909,7 @@ namespace exprtk
    template <typename T>
    inline T derivative(expression<T>& e,
                        T& x,
-                       const T& h = T(0.00001))
+                       const T& h = T(0.00000001))
    {
       T x_init = x;
       x = x_init + T(2.0) * h;
@@ -13890,9 +13925,46 @@ namespace exprtk
    }
 
    template <typename T>
+   inline T second_derivative(expression<T>& e,
+                              T& x,
+                              const T& h = T(0.00001))
+   {
+      T y = e.value();
+      T x_init = x;
+      x = x_init + T(2.0) * h;
+      T y0 = e.value();
+      x = x_init + h;
+      T y1 = e.value();
+      x = x_init - h;
+      T y2 = e.value();
+      x = x_init - T(2.0) * h;
+      T y3 = e.value();
+      x = x_init;
+      return (-y0 + T(16.0) * (y1 + y2) - T(30.0) * y - y3) / (T(12.0) * h * h);
+   }
+
+   template <typename T>
+   inline T third_derivative(expression<T>& e,
+                             T& x,
+                             const T& h = T(0.0001))
+   {
+      T x_init = x;
+      x = x_init + T(2.0) * h;
+      T y0 = e.value();
+      x = x_init + h;
+      T y1 = e.value();
+      x = x_init - h;
+      T y2 = e.value();
+      x = x_init - T(2.0) * h;
+      T y3 = e.value();
+      x = x_init;
+      return (y0 + T(2.0) * (y2 - y1) - y3) / (T(2.0) * h * h * h);
+   }
+
+   template <typename T>
    inline T derivative(expression<T>& e,
                        const std::string& variable_name,
-                       const T& h = T(0.00001))
+                       const T& h = T(0.00000001))
    {
       symbol_table<T>& sym_table = e.get_symbol_table();
       if (!sym_table.valid())
@@ -13904,7 +13976,48 @@ namespace exprtk
          T x_original = x;
          T result = derivative(e,x,h);
          x = x_original;
+         return result;
+      }
+      else
+         return std::numeric_limits<T>::quiet_NaN();
+   }
 
+   template <typename T>
+   inline T second_derivative(expression<T>& e,
+                              const std::string& variable_name,
+                              const T& h = T(0.00001))
+   {
+      symbol_table<T>& sym_table = e.get_symbol_table();
+      if (!sym_table.valid())
+         return std::numeric_limits<T>::quiet_NaN();
+      details::variable_node<T>* var = sym_table.get_variable(variable_name);
+      if (var)
+      {
+         T& x = var->ref();
+         T x_original = x;
+         T result = second_derivative(e,x,h);
+         x = x_original;
+         return result;
+      }
+      else
+         return std::numeric_limits<T>::quiet_NaN();
+   }
+
+   template <typename T>
+   inline T third_derivative(expression<T>& e,
+                             const std::string& variable_name,
+                             const T& h = T(0.0001))
+   {
+      symbol_table<T>& sym_table = e.get_symbol_table();
+      if (!sym_table.valid())
+         return std::numeric_limits<T>::quiet_NaN();
+      details::variable_node<T>* var = sym_table.get_variable(variable_name);
+      if (var)
+      {
+         T& x = var->ref();
+         T x_original = x;
+         T result = third_derivative(e,x,h);
+         x = x_original;
          return result;
       }
       else
@@ -14015,6 +14128,32 @@ namespace exprtk
 
       template <typename Type, std::size_t NumberOfCoefficients>
       struct poly_impl { };
+
+      template <typename Type>
+      struct poly_impl <Type,12>
+      {
+         static inline T evaluate(const Type x,
+                                  const Type c12, const Type c11, const Type c10, const Type c9, const Type c8,
+                                  const Type  c7, const Type  c6, const Type  c5, const Type c4, const Type c3,
+                                  const Type  c2, const Type  c1, const Type  c0)
+         {
+            // p(x) = c_12x^12 + c_11x^11 + c_10x^10 + c_9x^9 + c_8x^8 + c_7x^7 + c_6x^6 + c_5x^5 + c_4x^4 + c_3x^3 + c_2x^2 + c_1x^1 + c_0x^0
+            return ((((((((((((c12 * x + c11) * x + c10) * x + c9) * x + c8) * x + c7) * x + c6) * x + c5) * x + c4) * x + c3) * x + c2) * x + c1) * x + c0);
+         }
+      };
+
+      template <typename Type>
+      struct poly_impl <Type,11>
+      {
+         static inline T evaluate(const Type x,
+                                  const Type c11, const Type c10, const Type c9, const Type c8, const Type c7,
+                                  const Type c6,  const Type  c5, const Type c4, const Type c3, const Type c2,
+                                  const Type c1,  const Type  c0)
+         {
+            // p(x) = c_11x^11 + c_10x^10 + c_9x^9 + c_8x^8 + c_7x^7 + c_6x^6 + c_5x^5 + c_4x^4 + c_3x^3 + c_2x^2 + c_1x^1 + c_0x^0
+            return ((((((((((( c11 * x + c10) * x + c9) * x + c8) * x + c7) * x + c6) * x + c5) * x + c4) * x + c3) * x + c2) * x + c1) * x + c0);
+         }
+      };
 
       template <typename Type>
       struct poly_impl <Type,10>
@@ -14181,6 +14320,16 @@ namespace exprtk
       inline virtual T operator()(const T& x, const T& c10, const T& c9, const T& c8, const T& c7, const T& c6, const T& c5, const T& c4, const T& c3, const T& c2, const T& c1, const T& c0)
       {
          return ((10 == N) ? poly_impl<T,10>::evaluate(x,c10,c9,c8,c7,c6,c5,c4,c3,c2,c1,c0) : std::numeric_limits<T>::quiet_NaN());
+      }
+
+      inline virtual T operator()(const T& x, const T& c11, const T& c10, const T& c9, const T& c8, const T& c7, const T& c6, const T& c5, const T& c4, const T& c3, const T& c2, const T& c1, const T& c0)
+      {
+         return ((11 == N) ? poly_impl<T,11>::evaluate(x,c11,c10,c9,c8,c7,c6,c5,c4,c3,c2,c1,c0) : std::numeric_limits<T>::quiet_NaN());
+      }
+
+      inline virtual T operator()(const T& x, const T& c12, const T& c11, const T& c10, const T& c9, const T& c8, const T& c7, const T& c6, const T& c5, const T& c4, const T& c3, const T& c2, const T& c1, const T& c0)
+      {
+         return ((12 == N) ? poly_impl<T,12>::evaluate(x,c12,c11,c10,c9,c8,c7,c6,c5,c4,c3,c2,c1,c0) : std::numeric_limits<T>::quiet_NaN());
       }
 
       inline virtual T operator()()
