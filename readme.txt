@@ -300,13 +300,10 @@ Expression Library can be found at:
 
 
 [SPECIAL FUNCTIONS]
-Special functions dramatically decrease  the total evaluation time  of
-expressions, which would otherwise have been written using the  common
-form, by reducing the total number of nodes in the evaluation tree  of
-an expression  and by  also leveraging  the C++  compiler's ability to
-select an appropriate set of instructions for the given expression and
-architecture so as to provide the most optimal and precision sensitive
-result.
+The purpose  of special  functions in  ExprTk is  to provide  compiler
+generated equivalents of common mathematical expressions which can  be
+invoked by  using the  'special function'  syntax (eg:  $f12(x,y,z) or
+$f24(x,y,z,w)).
 
 Special functions dramatically decrease  the total evaluation time  of
 expressions which would otherwise  have been written using  the common
