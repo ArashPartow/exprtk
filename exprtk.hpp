@@ -1616,7 +1616,7 @@ namespace exprtk
             {
                ++s_itr_;
             }
-            if (is_end(s_itr_))
+            if (!is_end(s_itr_))
             {
                s_itr_ += mode;
                skip_whitespace();
