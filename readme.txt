@@ -140,11 +140,11 @@ Expression Library can be found at:
 +-----------+--------------------------------------------------------+
 | <> or !=  | True only if x does not equal y (eg: x <> y or x != y) |
 +-----------+--------------------------------------------------------+
-|  <        | True only if x less than y. (eg: x < y)                |
+|  <        | True only if x is less than y. (eg: x < y)             |
 +-----------+--------------------------------------------------------+
-|  <=       | True only if x less than or equal to y. (eg: x <= y)   |
+|  <=       | True only if x is less than or equal to y. (eg: x <= y)|
 +-----------+--------------------------------------------------------+
-|  >        | True only if x greater than y. (eg: x > y)             |
+|  >        | True only if x is greater than y. (eg: x > y)          |
 +-----------+--------------------------------------------------------+
 |  >=       | True only if x greater than or equal to y (eg: x >= y) |
 +-----------+--------------------------------------------------------+
@@ -218,6 +218,10 @@ Expression Library can be found at:
 +-----------+--------------------------------------------------------+
 | logn      | Base N logarithm of x (eg: logn(1235,8))               |
 |           | where n > 0 and is an integer.                         |
++-----------+--------------------------------------------------------+
+| max       | Largest value of all the inputs. (eg: max(x,y,z,w))    |
++-----------+--------------------------------------------------------+
+| min       | Smallest value of all the inputs. (eg: min(x,y,z,w))   |
 +-----------+--------------------------------------------------------+
 | nequal    | Not-equal test between x and y using normalized epsilon|
 +-----------+--------------------------------------------------------+

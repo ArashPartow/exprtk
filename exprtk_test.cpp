@@ -423,86 +423,118 @@ static const test_t test_list[] =
                            test_t("equal(1.1,2.2)",0.0),
                            test_t("not_equal(1.1,1.1)",0.0),
                            test_t("not_equal(1.1,2.2)",1.0),
-                           test_t("1  and 1",1.0),
-                           test_t("1  and 0",0.0),
-                           test_t("0  and 1",0.0),
-                           test_t("0  and 0",0.0),
+                           test_t("1 and 1",1.0),
+                           test_t("1 and 0",0.0),
+                           test_t("0 and 1",0.0),
+                           test_t("0 and 0",0.0),
+                           test_t("1.0 and 1.0",1.0),
+                           test_t("1.0 and 0.0",0.0),
+                           test_t("0.0 and 1.0",0.0),
+                           test_t("0.0 and 0.0",0.0),
+                           test_t("(1 and 1)",1.0),
+                           test_t("(1 and 0)",0.0),
+                           test_t("(0 and 1)",0.0),
+                           test_t("(0 and 0)",0.0),
+                           test_t("(1.0 and 1.0)",1.0),
+                           test_t("(1.0 and 0.0)",0.0),
+                           test_t("(0.0 and 1.0)",0.0),
+                           test_t("(0.0 and 0.0)",0.0),
+                           test_t("1 or 1",1.0),
+                           test_t("1 or 0",1.0),
+                           test_t("0 or 1",1.0),
+                           test_t("0 or 0",0.0),
+                           test_t("1.0 or 1.0",1.0),
+                           test_t("1.0 or 0.0",1.0),
+                           test_t("0.0 or 1.0",1.0),
+                           test_t("0.0 or 0.0",0.0),
+                           test_t("(1 or 1)",1.0),
+                           test_t("(1 or 0)",1.0),
+                           test_t("(0 or 1)",1.0),
+                           test_t("(0 or 0)",0.0),
+                           test_t("(1.0 or 1.0)",1.0),
+                           test_t("(1.0 or 0.0)",1.0),
+                           test_t("(0.0 or 1.0)",1.0),
+                           test_t("(0.0 or 0.0)",0.0),
                            test_t("1 nand 1",0.0),
                            test_t("1 nand 0",1.0),
                            test_t("0 nand 1",1.0),
                            test_t("0 nand 0",1.0),
-                           test_t("1  or 1",1.0),
-                           test_t("1  or 0",1.0),
-                           test_t("0  or 1",1.0),
-                           test_t("0  or 0",0.0),
-                           test_t("1  nor 1",0.0),
-                           test_t("1  nor 0",0.0),
-                           test_t("0  nor 1",0.0),
-                           test_t("0  nor 0",1.0),
-                           test_t("0 xor 0",0.0),
-                           test_t("0 xor 1",1.0),
-                           test_t("1 xor 0",1.0),
-                           test_t("1 xor 1",0.0),
-                           test_t("1.0  and 1.0",1.0),
-                           test_t("1.0  and 0.0",0.0),
-                           test_t("0.0  and 1.0",0.0),
-                           test_t("0.0  and 0.0",0.0),
                            test_t("1.0 nand 1.0",0.0),
                            test_t("1.0 nand 0.0",1.0),
                            test_t("0.0 nand 1.0",1.0),
                            test_t("0.0 nand 0.0",1.0),
-                           test_t("1.0  or 1.0",1.0),
-                           test_t("1.0  or 0.0",1.0),
-                           test_t("0.0  or 1.0",1.0),
-                           test_t("0.0  or 0.0",0.0),
-                           test_t("1.0  nor 1.0",0.0),
-                           test_t("1.0  nor 0.0",0.0),
-                           test_t("0.0  nor 1.0",0.0),
-                           test_t("0.0  nor 0.0",1.0),
-                           test_t("0.0 xor 0.0",0.0),
-                           test_t("0.0 xor 1.0",1.0),
-                           test_t("1.0 xor 0.0",1.0),
-                           test_t("1.0 xor 1.0",0.0),
-                           test_t("(1  and 1)",1.0),
-                           test_t("(1  and 0)",0.0),
-                           test_t("(0  and 1)",0.0),
-                           test_t("(0  and 0)",0.0),
                            test_t("(1 nand 1)",0.0),
                            test_t("(1 nand 0)",1.0),
                            test_t("(0 nand 1)",1.0),
                            test_t("(0 nand 0)",1.0),
-                           test_t("(1  or 1)",1.0),
-                           test_t("(1  or 0)",1.0),
-                           test_t("(0  or 1)",1.0),
-                           test_t("(0  or 0)",0.0),
-                           test_t("(1  nor 1)",0.0),
-                           test_t("(1  nor 0)",0.0),
-                           test_t("(0  nor 1)",0.0),
-                           test_t("(0  nor 0)",1.0),
-                           test_t("(0 xor 0)",0.0),
-                           test_t("(0 xor 1)",1.0),
-                           test_t("(1 xor 0)",1.0),
-                           test_t("(1 xor 1)",0.0),
-                           test_t("(1.0  and 1.0)",1.0),
-                           test_t("(1.0  and 0.0)",0.0),
-                           test_t("(0.0  and 1.0)",0.0),
-                           test_t("(0.0  and 0.0)",0.0),
                            test_t("(1.0 nand 1.0)",0.0),
                            test_t("(1.0 nand 0.0)",1.0),
                            test_t("(0.0 nand 1.0)",1.0),
                            test_t("(0.0 nand 0.0)",1.0),
-                           test_t("(1.0  or 1.0)",1.0),
-                           test_t("(1.0  or 0.0)",1.0),
-                           test_t("(0.0  or 1.0)",1.0),
-                           test_t("(0.0  or 0.0)",0.0),
-                           test_t("(1.0  nor 1.0)",0.0),
-                           test_t("(1.0  nor 0.0)",0.0),
-                           test_t("(0.0  nor 1.0)",0.0),
-                           test_t("(0.0  nor 0.0)",1.0),
+                           test_t("1 nor 1",0.0),
+                           test_t("1 nor 0",0.0),
+                           test_t("0 nor 1",0.0),
+                           test_t("0 nor 0",1.0),
+                           test_t("1.0 nor 1.0",0.0),
+                           test_t("1.0 nor 0.0",0.0),
+                           test_t("0.0 nor 1.0",0.0),
+                           test_t("0.0 nor 0.0",1.0),
+                           test_t("(1 nor 1)",0.0),
+                           test_t("(1 nor 0)",0.0),
+                           test_t("(0 nor 1)",0.0),
+                           test_t("(0 nor 0)",1.0),
+                           test_t("(1.0 nor 1.0)",0.0),
+                           test_t("(1.0 nor 0.0)",0.0),
+                           test_t("(0.0 nor 1.0)",0.0),
+                           test_t("(0.0 nor 0.0)",1.0),
+                           test_t("0 xor 0",0.0),
+                           test_t("0 xor 1",1.0),
+                           test_t("1 xor 0",1.0),
+                           test_t("1 xor 1",0.0),
+                           test_t("0.0 xor 0.0",0.0),
+                           test_t("0.0 xor 1.0",1.0),
+                           test_t("1.0 xor 0.0",1.0),
+                           test_t("1.0 xor 1.0",0.0),
+                           test_t("(0 xor 0)",0.0),
+                           test_t("(0 xor 1)",1.0),
+                           test_t("(1 xor 0)",1.0),
+                           test_t("(1 xor 1)",0.0),
                            test_t("(0.0 xor 0.0)",0.0),
                            test_t("(0.0 xor 1.0)",1.0),
                            test_t("(1.0 xor 0.0)",1.0),
                            test_t("(1.0 xor 1.0)",0.0),
+                           test_t("1 & 1",1.0),
+                           test_t("1 & 0",0.0),
+                           test_t("0 & 1",0.0),
+                           test_t("0 & 0",0.0),
+                           test_t("1.0 & 1.0",1.0),
+                           test_t("1.0 & 0.0",0.0),
+                           test_t("0.0 & 1.0",0.0),
+                           test_t("0.0 & 0.0",0.0),
+                           test_t("(1 & 1)",1.0),
+                           test_t("(1 & 0)",0.0),
+                           test_t("(0 & 1)",0.0),
+                           test_t("(0 & 0)",0.0),
+                           test_t("(1.0 & 1.0)",1.0),
+                           test_t("(1.0 & 0.0)",0.0),
+                           test_t("(0.0 & 1.0)",0.0),
+                           test_t("(0.0 & 0.0)",0.0),
+                           test_t("1 | 1",1.0),
+                           test_t("1 | 0",1.0),
+                           test_t("0 | 1",1.0),
+                           test_t("0 | 0",0.0),
+                           test_t("1.0 | 1.0",1.0),
+                           test_t("1.0 | 0.0",1.0),
+                           test_t("0.0 | 1.0",1.0),
+                           test_t("0.0 | 0.0",0.0),
+                           test_t("(1 | 1)",1.0),
+                           test_t("(1 | 0)",1.0),
+                           test_t("(0 | 1)",1.0),
+                           test_t("(0 | 0)",0.0),
+                           test_t("(1.0 | 1.0)",1.0),
+                           test_t("(1.0 | 0.0)",1.0),
+                           test_t("(0.0 | 1.0)",1.0),
+                           test_t("(0.0 | 0.0)",0.0),
                            test_t("(1 nand 1) == not(1 and 1)",1.0),
                            test_t("(1 nand 0) == not(1 and 0)",1.0),
                            test_t("(0 nand 1) == not(0 and 1)",1.0),
@@ -511,6 +543,30 @@ static const test_t test_list[] =
                            test_t("(1 nor 0) == not(1 or 0)",1.0),
                            test_t("(0 nor 1) == not(0 or 1)",1.0),
                            test_t("(0 nor 0) == not(0 or 0)",1.0),
+                           test_t("(1.0 nand 1.0) == not(1.0 and 1.0)",1.0),
+                           test_t("(1.0 nand 0.0) == not(1.0 and 0.0)",1.0),
+                           test_t("(0.0 nand 1.0) == not(0.0 and 1.0)",1.0),
+                           test_t("(0.0 nand 0.0) == not(0.0 and 0.0)",1.0),
+                           test_t("(1.0 nor 1.0) == not(1.0 or 1.0)",1.0),
+                           test_t("(1.0 nor 0.0) == not(1.0 or 0.0)",1.0),
+                           test_t("(0.0 nor 1.0) == not(0.0 or 1.0)",1.0),
+                           test_t("(0.0 nor 0.0) == not(0.0 or 0.0)",1.0),
+                           test_t("(1 nand 1) == not(1 & 1)",1.0),
+                           test_t("(1 nand 0) == not(1 & 0)",1.0),
+                           test_t("(0 nand 1) == not(0 & 1)",1.0),
+                           test_t("(0 nand 0) == not(0 & 0)",1.0),
+                           test_t("(1 nor 1) == not(1 | 1)",1.0),
+                           test_t("(1 nor 0) == not(1 | 0)",1.0),
+                           test_t("(0 nor 1) == not(0 | 1)",1.0),
+                           test_t("(0 nor 0) == not(0 | 0)",1.0),
+                           test_t("(1.0 nand 1.0) == not(1.0 & 1.0)",1.0),
+                           test_t("(1.0 nand 0.0) == not(1.0 & 0.0)",1.0),
+                           test_t("(0.0 nand 1.0) == not(0.0 & 1.0)",1.0),
+                           test_t("(0.0 nand 0.0) == not(0.0 & 0.0)",1.0),
+                           test_t("(1.0 nor 1.0) == not(1.0 | 1.0)",1.0),
+                           test_t("(1.0 nor 0.0) == not(1.0 | 0.0)",1.0),
+                           test_t("(0.0 nor 1.0) == not(0.0 | 1.0)",1.0),
+                           test_t("(0.0 nor 0.0) == not(0.0 | 0.0)",1.0),
                            test_t("abs(1)",1.0),
                            test_t("abs(-1)",1.0),
                            test_t("abs(1.0)",1.0),
@@ -637,6 +693,14 @@ static const test_t test_list[] =
                            test_t("(false and true) == false",1.0),
                            test_t("(true or false) == true",1.0),
                            test_t("(false or true) == true",1.0),
+                           test_t("(true & true) == true",1.0),
+                           test_t("(false & false) == false",1.0),
+                           test_t("(true | true) == true",1.0),
+                           test_t("(false | false) == false",1.0),
+                           test_t("(true & false) == false",1.0),
+                           test_t("(false & true) == false",1.0),
+                           test_t("(true | false) == true",1.0),
+                           test_t("(false | true) == true",1.0),
                            test_t("clamp(-1,1,+1)",1.0),
                            test_t("clamp(-1,-1.5,+1.0)",-1.0),
                            test_t("clamp(-1,+1.5,+1.0)",+1.0),
@@ -773,7 +837,16 @@ static const test_t test_list[] =
                            test_t("1/1*1/2*1/3*1/4*1/5*1/6*1/7*1/8*1/9",0.00000275573192239859),
                            test_t("(1/1)*(1/2)*(1/3)*(1/4)*(1/5)*(1/6)*(1/7)*(1/8)*(1/9)",0.00000275573192239859),
                            test_t("1.0/1.0*1.0/2.0*1.0/3.0*1.0/4.0*1.0/5.0*1.0/6.0*1.0/7.0*1.0/8.0*1.0/9",0.00000275573192239859),
-                           test_t("(1.0/1.0)*(1.0/2.0)*(1.0/3.0)*(1.0/4.0)*(1.0/5.0)*(1.0/6.0)*(1.0/7.0)*(1.0/8.0)*(1.0/9)",0.00000275573192239859)
+                           test_t("(1.0/1.0)*(1.0/2.0)*(1.0/3.0)*(1.0/4.0)*(1.0/5.0)*(1.0/6.0)*(1.0/7.0)*(1.0/8.0)*(1.0/9)",0.00000275573192239859),
+                           test_t("equal(poly01(1.2345,2.2,1.1),(2.2*1.2345^1+1.1))",1.0),
+                           test_t("equal(poly02(1.2345,3.3,2.2,1.1),(3.3*1.2345^2+2.2*1.2345^1+1.1))",1.0),
+                           test_t("equal(poly03(1.2345,4.4,3.3,2.2,1.1),(4.4*1.2345^3+3.3*1.2345^2+2.2*1.2345^1+1.1))",1.0),
+                           test_t("equal(poly04(1.2345,5.5,4.4,3.3,2.2,1.1),(5.5*1.2345^4+4.4*1.2345^3+3.3*1.2345^2+2.2*1.2345^1+1.1))",1.0),
+                           test_t("equal(poly05(1.2345,6.6,5.5,4.4,3.3,2.2,1.1),(6.6*1.2345^5+5.5*1.2345^4+4.4*1.2345^3+3.3*1.2345^2+2.2*1.2345^1+1.1))",1.0),
+                           test_t("equal(poly06(1.2345,7.7,6.6,5.5,4.4,3.3,2.2,1.1),(7.7*1.2345^6+6.6*1.2345^5+5.5*1.2345^4+4.4*1.2345^3+3.3*1.2345^2+2.2*1.2345^1+1.1))",1.0),
+                           test_t("equal(poly07(1.2345,8.8,7.7,6.6,5.5,4.4,3.3,2.2,1.1),(8.8*1.2345^7+7.7*1.2345^6+6.6*1.2345^5+5.5*1.2345^4+4.4*1.2345^3+3.3*1.2345^2+2.2*1.2345^1+1.1))",1.0),
+                           test_t("equal(poly08(1.2345,9.9,8.8,7.7,6.6,5.5,4.4,3.3,2.2,1.1),(9.9*1.2345^8+8.8*1.2345^7+7.7*1.2345^6+6.6*1.2345^5+5.5*1.2345^4+4.4*1.2345^3+3.3*1.2345^2+2.2*1.2345^1+1.1))",1.0),
+                           test_t("equal(poly09(1.2345,1.1,9.9,8.8,7.7,6.6,5.5,4.4,3.3,2.2,1.1),(1.1*1.2345^9+9.9*1.2345^8+8.8*1.2345^7+7.7*1.2345^6+6.6*1.2345^5+5.5*1.2345^4+4.4*1.2345^3+3.3*1.2345^2+2.2*1.2345^1+1.1))",1.0)
                         };
 
 static const std::size_t test_list_size = sizeof(test_list) / sizeof(test_t);
@@ -807,6 +880,32 @@ inline bool test_expression(const std::string& expression_string, const T& expec
 {
    exprtk::symbol_table<T> symbol_table;
    symbol_table.add_constants();
+
+   exprtk::polynomial<T, 1> poly01;
+   exprtk::polynomial<T, 2> poly02;
+   exprtk::polynomial<T, 3> poly03;
+   exprtk::polynomial<T, 4> poly04;
+   exprtk::polynomial<T, 5> poly05;
+   exprtk::polynomial<T, 6> poly06;
+   exprtk::polynomial<T, 7> poly07;
+   exprtk::polynomial<T, 8> poly08;
+   exprtk::polynomial<T, 9> poly09;
+   exprtk::polynomial<T,10> poly10;
+   exprtk::polynomial<T,11> poly11;
+   exprtk::polynomial<T,12> poly12;
+
+   symbol_table.add_function("poly01", poly01);
+   symbol_table.add_function("poly02", poly02);
+   symbol_table.add_function("poly03", poly03);
+   symbol_table.add_function("poly04", poly04);
+   symbol_table.add_function("poly05", poly05);
+   symbol_table.add_function("poly06", poly06);
+   symbol_table.add_function("poly07", poly07);
+   symbol_table.add_function("poly08", poly08);
+   symbol_table.add_function("poly09", poly09);
+   symbol_table.add_function("poly10", poly10);
+   symbol_table.add_function("poly11", poly11);
+   symbol_table.add_function("poly12", poly12);
 
    exprtk::expression<T> expression;
    expression.register_symbol_table(symbol_table);
@@ -2384,9 +2483,9 @@ inline bool run_test12()
                                "equal(poly06(x,7.7,6.6,5.5,4.4,3.3,2.2,1.1),(7.7x^6+6.6x^5+5.5x^4+4.4x^3+3.3x^2+2.2x^1+1.1))",
                                "equal(poly07(x,8.8,7.7,6.6,5.5,4.4,3.3,2.2,1.1),(8.8x^7+7.7x^6+6.6x^5+5.5x^4+4.4x^3+3.3x^2+2.2x^1+1.1))",
                                "equal(poly08(x,9.9,8.8,7.7,6.6,5.5,4.4,3.3,2.2,1.1),(9.9x^8+8.8x^7+7.7x^6+6.6x^5+5.5x^4+4.4x^3+3.3x^2+2.2x^1+1.1))",
-                               "equal(poly09(x,1.1,9.9,8.8,7.7,6.6,5.5,4.4,3.3,2.2,1.1),(1.1x^9+9.9x^8+8.8x^7+7.7x^6+6.6x^5+5.5x^4+4.4x^3+3.3x^2+2.2x^1+1.1))"
-                               "equal(poly10(x,2.2,1.1,9.9,8.8,7.7,6.6,5.5,4.4,3.3,2.2,1.1),(2.2x^10+1.1x^9+9.9x^8+8.8x^7+7.7x^6+6.6x^5+5.5x^4+4.4x^3+3.3x^2+2.2x^1+1.1))"
-                               "equal(poly11(x,3.3,2.2,1.1,9.9,8.8,7.7,6.6,5.5,4.4,3.3,2.2,1.1),(3.3x^11+2.2x^10+1.1x^9+9.9x^8+8.8x^7+7.7x^6+6.6x^5+5.5x^4+4.4x^3+3.3x^2+2.2x^1+1.1))"
+                               "equal(poly09(x,1.1,9.9,8.8,7.7,6.6,5.5,4.4,3.3,2.2,1.1),(1.1x^9+9.9x^8+8.8x^7+7.7x^6+6.6x^5+5.5x^4+4.4x^3+3.3x^2+2.2x^1+1.1))",
+                               "equal(poly10(x,2.2,1.1,9.9,8.8,7.7,6.6,5.5,4.4,3.3,2.2,1.1),(2.2x^10+1.1x^9+9.9x^8+8.8x^7+7.7x^6+6.6x^5+5.5x^4+4.4x^3+3.3x^2+2.2x^1+1.1))",
+                               "equal(poly11(x,3.3,2.2,1.1,9.9,8.8,7.7,6.6,5.5,4.4,3.3,2.2,1.1),(3.3x^11+2.2x^10+1.1x^9+9.9x^8+8.8x^7+7.7x^6+6.6x^5+5.5x^4+4.4x^3+3.3x^2+2.2x^1+1.1))",
                                "equal(poly12(x,4.4,3.3,2.2,1.1,9.9,8.8,7.7,6.6,5.5,4.4,3.3,2.2,1.1),(4.4x^12+3.3x^11+2.2x^10+1.1x^9+9.9x^8+8.8x^7+7.7x^6+6.6x^5+5.5x^4+4.4x^3+3.3x^2+2.2x^1+1.1))"
                             };
    static const std::size_t expression_string_size = sizeof(expression_string) / sizeof(std::string);
@@ -2583,6 +2682,8 @@ inline bool run_test14()
    exprtk::polynomial<T, 8> poly08;
    exprtk::polynomial<T, 9> poly09;
    exprtk::polynomial<T,10> poly10;
+   exprtk::polynomial<T,11> poly11;
+   exprtk::polynomial<T,12> poly12;
 
    exprtk::symbol_table<T> symbol_table;
    symbol_table.add_constants();
@@ -2590,21 +2691,23 @@ inline bool run_test14()
    symbol_table.add_variable("y",y);
    symbol_table.add_variable("z",z);
    symbol_table.add_variable("w",w);
-   symbol_table.add_function( "poly1", poly01);
-   symbol_table.add_function( "poly2", poly02);
-   symbol_table.add_function( "poly3", poly03);
-   symbol_table.add_function( "poly4", poly04);
-   symbol_table.add_function( "poly5", poly05);
-   symbol_table.add_function( "poly6", poly06);
-   symbol_table.add_function( "poly7", poly07);
-   symbol_table.add_function( "poly8", poly08);
-   symbol_table.add_function( "poly9", poly09);
+   symbol_table.add_function("poly01", poly01);
+   symbol_table.add_function("poly02", poly02);
+   symbol_table.add_function("poly03", poly03);
+   symbol_table.add_function("poly04", poly04);
+   symbol_table.add_function("poly05", poly05);
+   symbol_table.add_function("poly06", poly06);
+   symbol_table.add_function("poly07", poly07);
+   symbol_table.add_function("poly08", poly08);
+   symbol_table.add_function("poly09", poly09);
    symbol_table.add_function("poly10", poly10);
+   symbol_table.add_function("poly11", poly11);
+   symbol_table.add_function("poly12", poly12);
 
    expression_t expression;
    expression.register_symbol_table(symbol_table);
 
-   exprtk::parser<double> parser;
+   exprtk::parser<T> parser;
 
    std::deque<std::string> expr_str_list;
 
@@ -2613,7 +2716,7 @@ inline bool run_test14()
       return true;
    }
 
-   std::deque<exprtk::expression<double> > expression_list;
+   std::deque<exprtk::expression<T> > expression_list;
    bool failure = false;
    static const std::size_t rounds = 5;
 
@@ -2621,7 +2724,7 @@ inline bool run_test14()
    {
       for (std::size_t i = 0; i < expr_str_list.size(); ++i)
       {
-         exprtk::expression<double> current_expression;
+         exprtk::expression<T> current_expression;
 
          current_expression.register_symbol_table(symbol_table);
 
@@ -2638,7 +2741,7 @@ inline bool run_test14()
 
       for (std::size_t i = 0; i < expression_list.size(); ++i)
       {
-         double result = expression_list[i].value();
+         T result = expression_list[i].value();
          if (result != T(1))
          {
             failure = true;
@@ -2651,6 +2754,99 @@ inline bool run_test14()
 
       if (failure)
          break;
+   }
+
+   return !failure;
+}
+
+template <typename T>
+inline bool run_test15()
+{
+   typedef exprtk::expression<T> expression_t;
+
+   T x = T(1.1);
+   T y = T(2.2);
+   T z = T(3.3);
+
+   exprtk::symbol_table<T> symbol_table;
+   symbol_table.add_constants();
+   symbol_table.add_variable("x",x);
+   symbol_table.add_variable("y",y);
+   symbol_table.add_variable("z",z);
+
+   std::deque<std::string> expr_str_list;
+
+   expr_str_list.push_back("2 - (x + y) / z//Comment 01   ");
+   expr_str_list.push_back("2 - (x + y) / z#Comment 02    ");
+   expr_str_list.push_back("2 - (x + y) / z //Comment 03  ");
+   expr_str_list.push_back("2 - (x + y) / z #Comment 04   ");
+   expr_str_list.push_back("2 - (x + y) / z//Comment 05 \n");
+   expr_str_list.push_back("2 - (x + y) / z#Comment 06  \n");
+   expr_str_list.push_back("2 - (x + y) / z //Comment 07\n");
+   expr_str_list.push_back("2 - (x + y) / z #Comment 08 \n");
+   expr_str_list.push_back("/* Comment 09*/2 - (x + y) / z");
+   expr_str_list.push_back("/* Comment 10*/2 - (x + y) / z\n");
+   expr_str_list.push_back("/* Comment 11*/2 - (x + y) / z/* Comment 12*/");
+   expr_str_list.push_back("/* Comment 13*/2 - (x + y) / z/* Comment 14*/\n");
+   expr_str_list.push_back("2 - /* Comment 15 */(x + y) / z");
+   expr_str_list.push_back("2 - /* Comment 15 */(x + y) /* Comment 16 *// z \n");
+   expr_str_list.push_back("2 - /* Comment 17 */(x + y) /* Comment 18 */ / z //Comment 19\n");
+   expr_str_list.push_back("2 - /* Comment 20 */(x + y) /* Comment 21 */ / z #Comment 22\n");
+   expr_str_list.push_back("2 - /* Comment 23 */(x + y) /* Comment 24 */ / z //Comment 25");
+   expr_str_list.push_back("2 - /* Comment 26 */(x + y) /* Comment 27 */ / z #Comment 28");
+
+   std::deque<expression_t> expression_list;
+
+   for (std::size_t i = 0; i < expr_str_list.size(); ++i)
+   {
+      expression_t expression;
+      expression.register_symbol_table(symbol_table);
+
+      exprtk::parser<T> parser;
+
+      if (!parser.compile(expr_str_list[i],expression))
+      {
+         printf("run_test15() - Error: %s   Expression: %s\n",
+                parser.error().c_str(),
+                expr_str_list[i].c_str());
+         return false;
+      }
+      else
+         expression_list.push_back(expression);
+   }
+
+   expression_t base_expression;
+   const std::string base_expr_str = "2 - (x + y) / z";
+
+   {
+      base_expression.register_symbol_table(symbol_table);
+
+      exprtk::parser<T> parser;
+
+      if (!parser.compile(base_expr_str,base_expression))
+      {
+         printf("run_test15() - Error: %s   Expression: %s\n",
+                parser.error().c_str(),
+                base_expr_str.c_str());
+         return false;
+      }
+   }
+
+   bool failure = false;
+
+   for (std::size_t i = 0; i < expression_list.size(); ++i)
+   {
+      T base_result = base_expression.value();
+      T result      = expression_list[i].value();
+
+      if (not_equal(base_result,result))
+      {
+         printf("run_test15() - Error in evaluation! (1)  Base: %20.10f\tResult: %20.10f\tExpression: %s\n",
+                base_result,
+                result,
+                expr_str_list[i].c_str());
+         failure = true;
+      }
    }
 
    return !failure;
@@ -2688,6 +2884,7 @@ int main()
    perform_test(double,12)
    perform_test(double,13)
    perform_test(double,14)
+   perform_test(double,15)
 
    #undef perform_test
 

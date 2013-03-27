@@ -225,8 +225,9 @@ namespace exprtk
 
       static const std::string reserved_words[] =
                                   {
-                                     "and", "false", "for", "if", "ilike", "in", "like", "nand", "nor", "not",
-                                     "null", "or", "shl", "shr", "true", "while", "xnor", "xor", "&", "|"
+                                     "and", "false", "for", "if", "ilike", "in", "like", "nand", "nor",
+                                     "not", "null", "or", "shl", "shr", "true", "while", "xnor", "xor",
+                                     "&", "|"
                                   };
 
       static const std::size_t reserved_words_size = sizeof(reserved_words) / sizeof(std::string);
@@ -234,12 +235,13 @@ namespace exprtk
       static const std::string reserved_symbols[] =
                                   {
                                      "abs", "acos", "and", "asin", "atan", "atan2", "avg", "ceil", "clamp",
-                                     "cos", "cosh", "cot", "csc", "deg2grad", "deg2rad", "equal", "erf", "erfc",
-                                     "exp", "false", "floor", "for", "frac", "grad2deg", "hypot", "if", "ilike",
-                                     "in", "inrange", "like", "log", "log10", "logn", "log1p", "max", "min", "mod",
-                                     "mul", "nand", "nor", "not", "not_equal", "null", "or", "pow", "rad2deg",
-                                     "root", "round", "roundn", "sec", "sgn", "shl", "shr", "sin", "sinh", "sqrt",
-                                     "sum", "tan", "tanh", "true", "trunc", "while", "xnor", "xor", "&", "|"
+                                     "cos", "cosh", "cot", "csc", "deg2grad", "deg2rad", "equal", "erf",
+                                     "erfc", "exp", "false", "floor", "for", "frac", "grad2deg", "hypot",
+                                     "if", "ilike", "in", "inrange", "like", "log", "log10", "logn", "log1p",
+                                     "max", "min", "mod", "mul", "nand", "nor", "not", "not_equal", "null",
+                                     "or", "pow", "rad2deg", "root", "round", "roundn", "sec", "sgn", "shl",
+                                     "shr", "sin", "sinh", "sqrt", "sum", "tan", "tanh", "true", "trunc",
+                                     "while", "xnor", "xor", "&", "|"
                                   };
 
       static const std::size_t reserved_symbols_size = sizeof(reserved_symbols) / sizeof(std::string);
