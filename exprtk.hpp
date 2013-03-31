@@ -225,9 +225,8 @@ namespace exprtk
 
       static const std::string reserved_words[] =
                                   {
-                                     "and", "false", "for", "if", "ilike", "in", "like", "nand", "nor",
-                                     "not", "null", "or", "shl", "shr", "true", "while", "xnor", "xor",
-                                     "&", "|"
+                                     "and", "false", "for", "if", "ilike", "in", "like", "nand", "nor", "not",
+                                     "null", "or", "shl", "shr", "true", "while", "xnor", "xor", "&", "|"
                                   };
 
       static const std::size_t reserved_words_size = sizeof(reserved_words) / sizeof(std::string);
@@ -235,13 +234,13 @@ namespace exprtk
       static const std::string reserved_symbols[] =
                                   {
                                      "abs", "acos", "and", "asin", "atan", "atan2", "avg", "ceil", "clamp",
-                                     "cos", "cosh", "cot", "csc", "deg2grad", "deg2rad", "equal", "erf",
-                                     "erfc", "exp", "false", "floor", "for", "frac", "grad2deg", "hypot",
-                                     "if", "ilike", "in", "inrange", "like", "log", "log10", "logn", "log1p",
-                                     "max", "min", "mod", "mul", "nand", "nor", "not", "not_equal", "null",
-                                     "or", "pow", "rad2deg", "root", "round", "roundn", "sec", "sgn", "shl",
-                                     "shr", "sin", "sinh", "sqrt", "sum", "tan", "tanh", "true", "trunc",
-                                     "while", "xnor", "xor", "&", "|"
+                                     "cos", "cosh", "cot", "csc", "deg2grad", "deg2rad", "equal", "erf", "erfc",
+                                     "exp", "false", "floor", "for", "frac", "grad2deg", "hypot", "if", "ilike",
+                                     "in", "inrange", "like", "log", "log10", "logn", "log1p", "mand", "max",
+                                     "min", "mod", "mor", "mul", "nand", "nor", "not", "not_equal", "null", "or",
+                                     "pow", "rad2deg", "root", "round", "roundn", "sec", "sgn", "shl", "shr", "sin",
+                                     "sinh", "sqrt", "sum", "tan", "tanh", "true", "trunc", "while", "xnor", "xor",
+                                     "&", "|"
                                   };
 
       static const std::size_t reserved_symbols_size = sizeof(reserved_symbols) / sizeof(std::string);
@@ -2737,25 +2736,26 @@ namespace exprtk
    {
       enum operator_type
       {
-         e_default, e_null   , e_add    , e_sub    ,
-         e_mul    , e_div    , e_mod    , e_pow    ,
-         e_atan2  , e_min    , e_max    , e_avg    ,
-         e_sum    , e_prod   , e_lt     , e_lte    ,
-         e_eq     , e_equal  , e_ne     , e_nequal ,
-         e_gte    , e_gt     , e_and    , e_nand   ,
-         e_or     , e_nor    , e_xor    , e_xnor   ,
-         e_shr    , e_shl    , e_abs    , e_acos   ,
-         e_asin   , e_atan   , e_ceil   , e_cos    ,
-         e_cosh   , e_exp    , e_floor  , e_log    ,
-         e_log10  , e_log1p  , e_logn   , e_neg    ,
-         e_pos    , e_round  , e_roundn , e_root   ,
-         e_sqrt   , e_sin    , e_sinh   , e_sec    ,
-         e_csc    , e_tan    , e_tanh   , e_cot    ,
-         e_clamp  , e_inrange, e_sgn    , e_r2d    ,
-         e_d2r    , e_d2g    , e_g2d    , e_hypot  ,
-         e_notl   , e_erf    , e_erfc   , e_frac   ,
-         e_trunc  , e_assign , e_in     , e_like   ,
-         e_ilike  ,
+         e_default , e_null    , e_add     , e_sub     ,
+         e_mul     , e_div     , e_mod     , e_pow     ,
+         e_atan2   , e_min     , e_max     , e_avg     ,
+         e_sum     , e_prod    , e_lt      , e_lte     ,
+         e_eq      , e_equal   , e_ne      , e_nequal  ,
+         e_gte     , e_gt      , e_and     , e_nand    ,
+         e_or      , e_nor     , e_xor     , e_xnor    ,
+         e_mand    , e_mor     , e_scand   , e_scor    ,
+         e_shr     , e_shl     , e_abs     , e_acos    ,
+         e_asin    , e_atan    , e_ceil    , e_cos     ,
+         e_cosh    , e_exp     , e_floor   , e_log     ,
+         e_log10   , e_log1p   , e_logn    , e_neg     ,
+         e_pos     , e_round   , e_roundn  , e_root    ,
+         e_sqrt    , e_sin     , e_sinh    , e_sec     ,
+         e_csc     , e_tan     , e_tanh    , e_cot     ,
+         e_clamp   , e_inrange , e_sgn     , e_r2d     ,
+         e_d2r     , e_d2g     , e_g2d     , e_hypot   ,
+         e_notl    , e_erf     , e_erfc    , e_frac    ,
+         e_trunc   , e_assign  , e_in      , e_like    ,
+         e_ilike   ,
 
          // Do not add new functions/operators after this point.
          e_sf00 = 1000, e_sf01 = 1001, e_sf02 = 1002, e_sf03 = 1003,
@@ -2905,9 +2905,6 @@ namespace exprtk
                   case e_equal  : return equal<T>(arg0,arg1);
                   case e_nequal : return nequal<T>(arg0,arg1);
                   case e_hypot  : return hypot<T>(arg0,arg1);
-                  case e_avg    : return (arg0 + arg1)/T(2);
-                  case e_sum    : return (arg0 + arg1);
-                  case e_prod   : return (arg0 * arg1);
                   case e_shr    : return shr<T>(arg0,arg1);
                   case e_shl    : return shl<T>(arg0,arg1);
                   default       : return std::numeric_limits<T>::quiet_NaN();
@@ -2944,9 +2941,6 @@ namespace exprtk
                   case e_equal  : return arg0 == arg1;
                   case e_nequal : return arg0 != arg1;
                   case e_hypot  : return hypot<T>(arg0,arg1);
-                  case e_avg    : return (arg0 + arg1) >> 1;
-                  case e_sum    : return (arg0 + arg1);
-                  case e_prod   : return (arg0 * arg1);
                   case e_shr    : return arg0 >> arg1;
                   case e_shl    : return arg0 << arg1;
                   default       : return std::numeric_limits<T>::quiet_NaN();
@@ -2978,29 +2972,29 @@ namespace exprtk
          {
             e_none        , e_null        , e_constant    , e_unary       ,
             e_binary      , e_binary_ext  , e_trinary     , e_quaternary  ,
-            e_quinary     , e_senary      , e_conditional , e_while       ,
-            e_variable    , e_stringvar   , e_stringconst , e_function    ,
-            e_add         , e_sub         , e_mul         , e_div         ,
-            e_mod         , e_pow         , e_lt          , e_lte         ,
-            e_gt          , e_gte         , e_eq          , e_ne          ,
-            e_and         , e_nand        , e_or          , e_nor         ,
-            e_xor         , e_xnor        , e_in          , e_like        ,
-            e_ilike       , e_inranges    , e_ipow        , e_ipowinv     ,
-            e_abs         , e_acos        , e_asin        , e_atan        ,
-            e_ceil        , e_cos         , e_cosh        , e_exp         ,
-            e_floor       , e_log         , e_log10       , e_log1p       ,
-            e_neg         , e_pos         , e_round       , e_sin         ,
-            e_sinh        , e_sqrt        , e_tan         , e_tanh        ,
-            e_cot         , e_sec         , e_csc         , e_r2d         ,
-            e_d2r         , e_d2g         , e_g2d         , e_notl        ,
-            e_sgn         , e_erf         , e_erfc        , e_frac        ,
-            e_trunc       , e_uvouv       , e_vov         , e_cov         ,
-            e_voc         , e_vob         , e_bov         , e_cob         ,
-            e_boc         , e_vovov       , e_vovoc       , e_vocov       ,
-            e_covov       , e_covoc       , e_vovovov     , e_vovovoc     ,
-            e_vovocov     , e_vocovov     , e_covovov     , e_covocov     ,
-            e_vocovoc     , e_covovoc     , e_vococov     , e_sf3ext      ,
-            e_sf4ext
+            e_quinary     , e_senary      , e_vararg      , e_conditional ,
+            e_while       , e_variable    , e_stringvar   , e_stringconst ,
+            e_function    , e_vafunction  , e_add         , e_sub         ,
+            e_mul         , e_div         , e_mod         , e_pow         ,
+            e_lt          , e_lte         , e_gt          , e_gte         ,
+            e_eq          , e_ne          , e_and         , e_nand        ,
+            e_or          , e_nor         , e_xor         , e_xnor        ,
+            e_in          , e_like        , e_ilike       , e_inranges    ,
+            e_ipow        , e_ipowinv     , e_abs         , e_acos        ,
+            e_asin        , e_atan        , e_ceil        , e_cos         ,
+            e_cosh        , e_exp         , e_floor       , e_log         ,
+            e_log10       , e_log1p       , e_neg         , e_pos         ,
+            e_round       , e_sin         , e_sinh        , e_sqrt        ,
+            e_tan         , e_tanh        , e_cot         , e_sec         ,
+            e_csc         , e_r2d         , e_d2r         , e_d2g         ,
+            e_g2d         , e_notl        , e_sgn         , e_erf         ,
+            e_erfc        , e_frac        , e_trunc       , e_uvouv       ,
+            e_vov         , e_cov         , e_voc         , e_vob         ,
+            e_bov         , e_cob         , e_boc         , e_vovov       ,
+            e_vovoc       , e_vocov       , e_covov       , e_covoc       ,
+            e_vovovov     , e_vovovoc     , e_vovocov     , e_vocovov     ,
+            e_covovov     , e_covocov     , e_vocovoc     , e_covovoc     ,
+            e_vococov     , e_sf3ext      , e_sf4ext
          };
 
          typedef T value_type;
@@ -3028,7 +3022,6 @@ namespace exprtk
          {
             return e_none;
          }
-
       };
 
       inline bool is_true(const double v)
@@ -3105,10 +3098,37 @@ namespace exprtk
          return true;
       }
 
+      template <typename T,
+                typename Allocator,
+                template <typename,typename> class Sequence>
+      inline bool all_nodes_valid(const Sequence<expression_node<T>*,Allocator>& b)
+      {
+         for (std::size_t i = 0; i < b.size(); ++i)
+         {
+            if (0 == b[i]) return false;
+         }
+         return true;
+      }
+
       template <std::size_t N, typename T>
       inline bool all_nodes_variables(expression_node<T>* (&b)[N])
       {
          for (std::size_t i = 0; i < N; ++i)
+         {
+            if (0 == b[i])
+               return false;
+            else if (!is_variable_node(b[i]))
+               return false;
+         }
+         return true;
+      }
+
+      template <typename T,
+                typename Allocator,
+                template <typename,typename> class Sequence>
+      inline bool all_nodes_variables(Sequence<expression_node<T>*,Allocator>& b)
+      {
+         for (std::size_t i = 0; i < b.size(); ++i)
          {
             if (0 == b[i])
                return false;
@@ -3123,15 +3143,21 @@ namespace exprtk
       {
          for (std::size_t i = 0; i < N; ++i)
          {
-            if (0 != b[i])
-            {
-               if (!is_variable_node(b[i]))
-               {
-                  node_allocator.free(b[i]);
-                  b[i] = 0;
-               }
-            }
+            free_node(node_allocator,b[i]);
          }
+      }
+
+      template <typename NodeAllocator,
+                typename T,
+                typename Allocator,
+                template <typename,typename> class Sequence>
+      inline void free_all_nodes(NodeAllocator& node_allocator, Sequence<expression_node<T>*,Allocator>& b)
+      {
+         for (std::size_t i = 0; i < b.size(); ++i)
+         {
+            free_node(node_allocator,b[i]);
+         }
+         b.clear();
       }
 
       template <typename NodeAllocator, typename T>
@@ -3484,9 +3510,6 @@ namespace exprtk
                case e_inrange : return (arg1 < arg0) ? T(0) : ((arg1 > arg2) ? T(0) : T(1));
                case e_min     : return std::min<T>(std::min<T>(arg0,arg1),arg2);
                case e_max     : return std::max<T>(std::max<T>(arg0,arg1),arg2);
-               case e_avg     : return (arg0 + arg1 + arg2) / T(3.0);
-               case e_sum     : return (arg0 + arg1 + arg2);
-               case e_prod    : return (arg0 * arg1 * arg2);
                default        : return std::numeric_limits<T>::quiet_NaN();
             }
          }
@@ -3535,9 +3558,6 @@ namespace exprtk
             {
                case e_min  : return std::min<T>(std::min<T>(arg0,arg1),std::min<T>(arg2,arg3));
                case e_max  : return std::max<T>(std::max<T>(arg0,arg1),std::max<T>(arg2,arg3));
-               case e_avg  : return (arg0 + arg1 + arg2 + arg3) / T(4.0);
-               case e_sum  : return (arg0 + arg1 + arg2 + arg3);
-               case e_prod : return (arg0 * arg1 * arg2 * arg3);
                default     : return std::numeric_limits<T>::quiet_NaN();
             }
          }
@@ -3589,9 +3609,6 @@ namespace exprtk
             {
                case e_min  : return std::min<T>(std::min<T>(std::min<T>(arg0,arg1),std::min<T>(arg2,arg3)),arg4);
                case e_max  : return std::max<T>(std::max<T>(std::max<T>(arg0,arg1),std::max<T>(arg2,arg3)),arg4);
-               case e_avg  : return (arg0 + arg1 + arg2 + arg3 + arg4) / T(5.0);
-               case e_sum  : return (arg0 + arg1 + arg2 + arg3 + arg4);
-               case e_prod : return (arg0 * arg1 * arg2 * arg3 * arg4);
                default     : return std::numeric_limits<T>::quiet_NaN();
             }
          }
@@ -3644,9 +3661,6 @@ namespace exprtk
             {
                case e_min     : return std::min<T>(std::min<T>(std::min<T>(arg0,arg1),std::min<T>(arg2,arg3)),std::min<T>(arg4,arg5));
                case e_max     : return std::max<T>(std::max<T>(std::max<T>(arg0,arg1),std::max<T>(arg2,arg3)),std::max<T>(arg4,arg5));
-               case e_avg     : return (arg0 + arg1 + arg2 + arg3 + arg4 + arg5) / T(6.0);
-               case e_sum     : return (arg0 + arg1 + arg2 + arg3 + arg4 + arg5);
-               case e_prod    : return (arg0 * arg1 * arg2 * arg3 * arg4 * arg5);
                case e_default :
                default        : return std::numeric_limits<T>::quiet_NaN();
             }
@@ -4134,6 +4148,111 @@ namespace exprtk
          const T& v3_;
       };
 
+      template <typename T, typename VarArgFunction>
+      class vararg_node : public expression_node<T>
+      {
+      public:
+
+         typedef expression_node<T>* expression_ptr;
+
+         template <typename Allocator,
+                   template <typename,typename> class Sequence>
+         vararg_node(const Sequence<expression_ptr,Allocator>& arglist)
+         {
+            arg_list_.resize(arglist.size());
+            delete_branch_.resize(arglist.size());
+            for (std::size_t i = 0; i < arglist.size(); ++i)
+            {
+               if (arglist[i])
+               {
+                       arg_list_[i] = arglist[i];
+                  delete_branch_[i] = static_cast<unsigned char>(branch_deletable(arg_list_[i]) ? 1 : 0);
+               }
+               else
+               {
+                  arg_list_.clear();
+                  delete_branch_.clear();
+                  return;
+               }
+            }
+         }
+
+        ~vararg_node()
+         {
+            for (std::size_t i = 0; i < arg_list_.size(); ++i)
+            {
+               if (arg_list_[i] && delete_branch_[i])
+               {
+                  delete arg_list_[i];
+                  arg_list_[i] = 0;
+               }
+            }
+         }
+
+         inline T value() const
+         {
+            if (!arg_list_.empty())
+               return VarArgFunction::process(arg_list_);
+            else
+               return std::numeric_limits<T>::quiet_NaN();
+         }
+
+         inline typename expression_node<T>::node_type type() const
+         {
+            return expression_node<T>::e_vararg;
+         }
+
+      private:
+
+         std::vector<expression_ptr> arg_list_;
+         std::vector<unsigned char> delete_branch_;
+      };
+
+      template <typename T, typename VarArgFunction>
+      class vararg_varnode : public expression_node<T>
+      {
+      public:
+
+         typedef expression_node<T>* expression_ptr;
+
+         template <typename Allocator,
+                   template <typename,typename> class Sequence>
+         vararg_varnode(const Sequence<expression_ptr,Allocator>& arglist)
+         {
+            arg_list_.resize(arglist.size());
+            for (std::size_t i = 0; i < arglist.size(); ++i)
+            {
+               if (arglist[i] && is_variable_node(arglist[i]))
+               {
+                  variable_node<T>* var_node_ptr = dynamic_cast<variable_node<T>*>(arglist[i]);
+                  arg_list_[i] = (&var_node_ptr->ref());
+               }
+               else
+               {
+                  arg_list_.clear();
+                  return;
+               }
+            }
+         }
+
+         inline T value() const
+         {
+            if (!arg_list_.empty())
+               return VarArgFunction::process(arg_list_);
+            else
+               return std::numeric_limits<T>::quiet_NaN();
+         }
+
+         inline typename expression_node<T>::node_type type() const
+         {
+            return expression_node<T>::e_vararg;
+         }
+
+      private:
+
+         std::vector<const T*> arg_list_;
+      };
+
       template <typename T>
       class assignment_node : public binary_node<T>
       {
@@ -4159,8 +4278,51 @@ namespace exprtk
                   return result;
                }
             }
-
             return std::numeric_limits<T>::quiet_NaN();
+         }
+      };
+
+      template <typename T>
+      class scand_node : public binary_node<T>
+      {
+      public:
+
+         typedef expression_node<T>* expression_ptr;
+
+         scand_node(const operator_type& operation,
+                    expression_ptr branch0,
+                    expression_ptr branch1)
+         : binary_node<T>(operation,branch0,branch1)
+         {}
+
+         inline T value() const
+         {
+            return (
+                    (T(0) != binary_node<T>::branch_[0].first->value()) &&
+                    (T(0) != binary_node<T>::branch_[1].first->value())
+                   ) ? T(1) : T(0);
+         }
+      };
+
+      template <typename T>
+      class scor_node : public binary_node<T>
+      {
+      public:
+
+         typedef expression_node<T>* expression_ptr;
+
+         scor_node(const operator_type& operation,
+                   expression_ptr branch0,
+                   expression_ptr branch1)
+         : binary_node<T>(operation,branch0,branch1)
+         {}
+
+         inline T value() const
+         {
+            return (
+                    (T(0) != binary_node<T>::branch_[0].first->value()) ||
+                    (T(0) != binary_node<T>::branch_[1].first->value())
+                   ) ? T(1) : T(0);
          }
       };
 
@@ -4493,6 +4655,69 @@ namespace exprtk
          std::size_t parameter_count_;
       };
 
+      template <typename T, typename VarArgFunction>
+      class vararg_function_node : public expression_node<T>
+      {
+      public:
+
+         typedef expression_node<T>* expression_ptr;
+
+         vararg_function_node(VarArgFunction*  func,
+                              const std::vector<expression_ptr>& arg_list)
+         : function_(func),
+           arg_list_(arg_list)
+         {
+            value_list_.resize(arg_list.size(),std::numeric_limits<T>::quiet_NaN());
+         }
+
+        ~vararg_function_node()
+         {
+            for (std::size_t i = 0; i < arg_list_.size(); ++i)
+            {
+               if (arg_list_[i] && !details::is_variable_node(arg_list_[i]))
+               {
+                  delete arg_list_[i];
+                  arg_list_[i] = 0;
+               }
+            }
+         }
+
+         inline bool operator <(const vararg_function_node<T,VarArgFunction>& fn) const
+         {
+            return this < (&fn);
+         }
+
+         inline T value() const
+         {
+            if (function_)
+            {
+               populate_value_list();
+               return (*function_)(value_list_);
+            }
+            else
+               return std::numeric_limits<T>::quiet_NaN();
+         }
+
+         inline typename expression_node<T>::node_type type() const
+         {
+            return expression_node<T>::e_vafunction;
+         }
+
+      private:
+
+         inline void populate_value_list() const
+         {
+            for (std::size_t i = 0; i < arg_list_.size(); ++i)
+            {
+               value_list_[i] = arg_list_[i]->value();
+            }
+         }
+
+         VarArgFunction* function_;
+         std::vector<expression_ptr> arg_list_;
+         mutable std::vector<T> value_list_;
+      };
+
       #define exprtk_def_unary_op(OpName) \
       template <typename T> \
       struct OpName##_op \
@@ -4762,6 +4987,515 @@ namespace exprtk
          }
          static inline typename expression_node<T>::node_type type() { return expression_node<T>::e_inranges; }
          static inline details::operator_type operation() { return details::e_inrange; }
+      };
+
+      template <typename T>
+      inline T value(details::expression_node<T>* n)
+      {
+         return n->value();
+      }
+
+      template <typename T>
+      inline T value(T* t)
+      {
+         return (*t);
+      }
+
+      template <typename T>
+      struct vararg_add_op : public opr_base<T>
+      {
+         typedef typename opr_base<T>::Type Type;
+
+         template <typename Type,
+                   typename Allocator,
+                   template <typename,typename> class Sequence>
+         static inline T process(const Sequence<Type,Allocator>& arglist)
+         {
+            if (arglist.size() > 5)
+            {
+               T result = T(0);
+               for (std::size_t i = 0; i < arglist.size(); ++i)
+               {
+                  result += value(arglist[i]);
+               }
+               return result;
+            }
+            else
+            {
+               switch (arglist.size())
+               {
+                  case 0  : return T(0);
+                  case 1  : return process_1(arglist);
+                  case 2  : return process_2(arglist);
+                  case 3  : return process_3(arglist);
+                  case 4  : return process_4(arglist);
+                  case 5  : return process_5(arglist);
+                  default : return std::numeric_limits<T>::quiet_NaN();
+               }
+            }
+         }
+
+         template <typename Sequence>
+         static inline T process_1(const Sequence& arglist)
+         {
+            return value(arglist[0]);
+         }
+
+         template <typename Sequence>
+         static inline T process_2(const Sequence& arglist)
+         {
+            return value(arglist[0]) + value(arglist[1]);
+         }
+
+         template <typename Sequence>
+         static inline T process_3(const Sequence& arglist)
+         {
+            return value(arglist[0]) + value(arglist[1]) +
+                   value(arglist[2]);
+         }
+
+         template <typename Sequence>
+         static inline T process_4(const Sequence& arglist)
+         {
+            return value(arglist[0]) + value(arglist[1]) +
+                   value(arglist[2]) + value(arglist[3]);
+         }
+
+         template <typename Sequence>
+         static inline T process_5(const Sequence& arglist)
+         {
+            return value(arglist[0]) + value(arglist[1]) +
+                   value(arglist[2]) + value(arglist[3]) +
+                   value(arglist[4]);
+         }
+      };
+
+      template <typename T>
+      struct vararg_mul_op : public opr_base<T>
+      {
+         typedef typename opr_base<T>::Type Type;
+
+         template <typename Type,
+                   typename Allocator,
+                   template <typename,typename> class Sequence>
+         static inline T process(const Sequence<Type,Allocator>& arglist)
+         {
+            if (arglist.size() > 5)
+            {
+               T result = T(value(arglist[0]));
+               for (std::size_t i = 1; i < arglist.size(); ++i)
+               {
+                  result *= value(arglist[i]);
+               }
+               return result;
+            }
+            else
+            {
+               switch (arglist.size())
+               {
+                  case 0  : return T(0);
+                  case 1  : return process_1(arglist);
+                  case 2  : return process_2(arglist);
+                  case 3  : return process_3(arglist);
+                  case 4  : return process_4(arglist);
+                  case 5  : return process_5(arglist);
+                  default : return std::numeric_limits<T>::quiet_NaN();
+               }
+            }
+         }
+
+         template <typename Sequence>
+         static inline T process_1(const Sequence& arglist)
+         {
+            return value(arglist[0]);
+         }
+
+         template <typename Sequence>
+         static inline T process_2(const Sequence& arglist)
+         {
+            return value(arglist[0]) * value(arglist[1]);
+         }
+
+         template <typename Sequence>
+         static inline T process_3(const Sequence& arglist)
+         {
+            return value(arglist[0]) * value(arglist[1]) *
+                   value(arglist[2]);
+         }
+
+         template <typename Sequence>
+         static inline T process_4(const Sequence& arglist)
+         {
+            return value(arglist[0]) * value(arglist[1]) *
+                   value(arglist[2]) * value(arglist[3]);
+         }
+
+         template <typename Sequence>
+         static inline T process_5(const Sequence& arglist)
+         {
+            return value(arglist[0]) * value(arglist[1]) *
+                   value(arglist[2]) * value(arglist[3]) *
+                   value(arglist[4]);
+         }
+      };
+
+      template <typename T>
+      struct vararg_avg_op : public opr_base<T>
+      {
+         typedef typename opr_base<T>::Type Type;
+
+         template <typename Type,
+                   typename Allocator,
+                   template <typename,typename> class Sequence>
+         static inline T process(const Sequence<Type,Allocator>& arglist)
+         {
+            if (arglist.size() > 5)
+            {
+               return vararg_add_op<T>::process(arglist) / arglist.size();
+            }
+            else
+            {
+               switch (arglist.size())
+               {
+                  case 0  : return T(0);
+                  case 1  : return process_1(arglist);
+                  case 2  : return process_2(arglist);
+                  case 3  : return process_3(arglist);
+                  case 4  : return process_4(arglist);
+                  case 5  : return process_5(arglist);
+                  default : return std::numeric_limits<T>::quiet_NaN();
+               }
+            }
+         }
+
+         template <typename Sequence>
+         static inline T process_1(const Sequence& arglist)
+         {
+            return value(arglist[0]);
+         }
+
+         template <typename Sequence>
+         static inline T process_2(const Sequence& arglist)
+         {
+            return (value(arglist[0]) + value(arglist[1])) / T(2);
+         }
+
+         template <typename Sequence>
+         static inline T process_3(const Sequence& arglist)
+         {
+            return (value(arglist[0]) + value(arglist[1]) + value(arglist[2])) / T(3);
+         }
+
+         template <typename Sequence>
+         static inline T process_4(const Sequence& arglist)
+         {
+            return (value(arglist[0]) + value(arglist[1]) +
+                    value(arglist[2]) + value(arglist[3])) / T(4);
+         }
+
+         template <typename Sequence>
+         static inline T process_5(const Sequence& arglist)
+         {
+            return (value(arglist[0]) + value(arglist[1]) +
+                    value(arglist[2]) + value(arglist[3]) +
+                    value(arglist[4])) / T(5);
+         }
+      };
+
+      template <typename T>
+      struct vararg_min_op : public opr_base<T>
+      {
+         typedef typename opr_base<T>::Type Type;
+
+         template <typename Type,
+                   typename Allocator,
+                   template <typename,typename> class Sequence>
+         static inline T process(const Sequence<Type,Allocator>& arglist)
+         {
+            if (arglist.size() > 5)
+            {
+               T result = T(value(arglist[0]));
+               for (std::size_t i = 1; i < arglist.size(); ++i)
+               {
+                  const T v = value(arglist[i]);
+                  if (v < result)
+                     result = v;
+               }
+               return result;
+            }
+            else
+            {
+               switch (arglist.size())
+               {
+                  case 0  : return T(0);
+                  case 1  : return process_1(arglist);
+                  case 2  : return process_2(arglist);
+                  case 3  : return process_3(arglist);
+                  case 4  : return process_4(arglist);
+                  case 5  : return process_5(arglist);
+                  default : return std::numeric_limits<T>::quiet_NaN();
+               }
+            }
+         }
+
+         template <typename Sequence>
+         static inline T process_1(const Sequence& arglist)
+         {
+            return value(arglist[0]);
+         }
+
+         template <typename Sequence>
+         static inline T process_2(const Sequence& arglist)
+         {
+            return std::min<T>(value(arglist[0]),value(arglist[1]));
+         }
+
+         template <typename Sequence>
+         static inline T process_3(const Sequence& arglist)
+         {
+            return std::min<T>(std::min<T>(value(arglist[0]),value(arglist[1])),value(arglist[2]));
+         }
+
+         template <typename Sequence>
+         static inline T process_4(const Sequence& arglist)
+         {
+            return std::min<T>(
+                        std::min<T>(value(arglist[0]),value(arglist[1])),
+                        std::min<T>(value(arglist[2]),value(arglist[3])));
+         }
+
+         template <typename Sequence>
+         static inline T process_5(const Sequence& arglist)
+         {
+            return std::min<T>(
+                   std::min<T>(std::min<T>(value(arglist[0]),value(arglist[1])),
+                               std::min<T>(value(arglist[2]),value(arglist[3]))),
+                               value(arglist[4]));
+         }
+      };
+
+      template <typename T>
+      struct vararg_max_op : public opr_base<T>
+      {
+         typedef typename opr_base<T>::Type Type;
+
+         template <typename Type,
+                   typename Allocator,
+                   template <typename,typename> class Sequence>
+         static inline T process(const Sequence<Type,Allocator>& arglist)
+         {
+            if (arglist.size() > 5)
+            {
+               T result = T(value(arglist[0]));
+               for (std::size_t i = 1; i < arglist.size(); ++i)
+               {
+                  const T v = value(arglist[i]);
+                  if (v > result)
+                     result = v;
+               }
+               return result;
+            }
+            else
+            {
+               switch (arglist.size())
+               {
+                  case 0  : return T(0);
+                  case 1  : return process_1(arglist);
+                  case 2  : return process_2(arglist);
+                  case 3  : return process_3(arglist);
+                  case 4  : return process_4(arglist);
+                  case 5  : return process_5(arglist);
+                  default : return std::numeric_limits<T>::quiet_NaN();
+               }
+            }
+         }
+
+         template <typename Sequence>
+         static inline T process_1(const Sequence& arglist)
+         {
+            return value(arglist[0]);
+         }
+
+         template <typename Sequence>
+         static inline T process_2(const Sequence& arglist)
+         {
+            return std::max<T>(value(arglist[0]),value(arglist[1]));
+         }
+
+         template <typename Sequence>
+         static inline T process_3(const Sequence& arglist)
+         {
+            return std::max<T>(std::max<T>(value(arglist[0]),value(arglist[1])),value(arglist[2]));
+         }
+
+         template <typename Sequence>
+         static inline T process_4(const Sequence& arglist)
+         {
+            return std::max<T>(
+                        std::max<T>(value(arglist[0]),value(arglist[1])),
+                        std::max<T>(value(arglist[2]),value(arglist[3])));
+         }
+
+         template <typename Sequence>
+         static inline T process_5(const Sequence& arglist)
+         {
+            return std::max<T>(
+                   std::max<T>(std::max<T>(value(arglist[0]),value(arglist[1])),
+                               std::max<T>(value(arglist[2]),value(arglist[3]))),
+                               value(arglist[4]));
+         }
+      };
+
+      template <typename T>
+      struct vararg_mand_op : public opr_base<T>
+      {
+         typedef typename opr_base<T>::Type Type;
+
+         template <typename Type,
+                   typename Allocator,
+                   template <typename,typename> class Sequence>
+         static inline T process(const Sequence<Type,Allocator>& arglist)
+         {
+            if (arglist.size() > 5)
+            {
+               for (std::size_t i = 0; i < arglist.size(); ++i)
+               {
+                  if (T(0) == value(arglist[i]))
+                     return T(0);
+               }
+               return T(1);
+            }
+            else
+            {
+               switch (arglist.size())
+               {
+                  case 1  : return process_1(arglist);
+                  case 2  : return process_2(arglist);
+                  case 3  : return process_3(arglist);
+                  case 4  : return process_4(arglist);
+                  case 5  : return process_5(arglist);
+                  default : return T(0);
+               }
+            }
+         }
+
+         template <typename Sequence>
+         static inline T process_1(const Sequence& arglist)
+         {
+            return (T(0) != value(arglist[0])) ? T(1) : T(0);
+         }
+
+         template <typename Sequence>
+         static inline T process_2(const Sequence& arglist)
+         {
+            return (
+                    (T(0) != value(arglist[0])) && (T(0) != value(arglist[1]))
+                   ) ? T(1) : T(0);
+         }
+
+         template <typename Sequence>
+         static inline T process_3(const Sequence& arglist)
+         {
+            return (
+                    (T(0) != value(arglist[0])) && (T(0) != value(arglist[1])) &&
+                    (T(0) != value(arglist[2]))
+                   ) ? T(1) : T(0);
+         }
+
+         template <typename Sequence>
+         static inline T process_4(const Sequence& arglist)
+         {
+            return (
+                    (T(0) != value(arglist[0])) && (T(0) != value(arglist[1])) &&
+                    (T(0) != value(arglist[2])) && (T(0) != value(arglist[3]))
+                   ) ? T(1) : T(0);
+         }
+
+         template <typename Sequence>
+         static inline T process_5(const Sequence& arglist)
+         {
+            return (
+                    (T(0) != value(arglist[0])) && (T(0) != value(arglist[1])) &&
+                    (T(0) != value(arglist[2])) && (T(0) != value(arglist[3])) &&
+                    (T(0) != value(arglist[4]))
+                   ) ? T(1) : T(0);
+         }
+      };
+
+      template <typename T>
+      struct vararg_mor_op : public opr_base<T>
+      {
+         typedef typename opr_base<T>::Type Type;
+
+         template <typename Type,
+                   typename Allocator,
+                   template <typename,typename> class Sequence>
+         static inline T process(const Sequence<Type,Allocator>& arglist)
+         {
+            if (arglist.size() > 5)
+            {
+               for (std::size_t i = 0; i < arglist.size(); ++i)
+               {
+                  if (T(0) != value(arglist[i]))
+                     return T(1);
+               }
+               return T(0);
+            }
+            else
+            {
+               switch (arglist.size())
+               {
+                  case 1  : return process_1(arglist);
+                  case 2  : return process_2(arglist);
+                  case 3  : return process_3(arglist);
+                  case 4  : return process_4(arglist);
+                  case 5  : return process_5(arglist);
+                  default : return T(0);
+               }
+            }
+         }
+
+         template <typename Sequence>
+         static inline T process_1(const Sequence& arglist)
+         {
+            return (T(0) != value(arglist[0])) ? T(1) : T(0);
+         }
+
+         template <typename Sequence>
+         static inline T process_2(const Sequence& arglist)
+         {
+            return (
+                    (T(0) != value(arglist[0])) || (T(0) != value(arglist[1]))
+                   ) ? T(1) : T(0);
+         }
+
+         template <typename Sequence>
+         static inline T process_3(const Sequence& arglist)
+         {
+            return (
+                    (T(0) != value(arglist[0])) || (T(0) != value(arglist[1])) ||
+                    (T(0) != value(arglist[2]))
+                   ) ? T(1) : T(0);
+         }
+
+         template <typename Sequence>
+         static inline T process_4(const Sequence& arglist)
+         {
+            return (
+                    (T(0) != value(arglist[0])) || (T(0) != value(arglist[1])) ||
+                    (T(0) != value(arglist[2])) || (T(0) != value(arglist[3]))
+                   ) ? T(1) : T(0);
+         }
+
+         template <typename Sequence>
+         static inline T process_5(const Sequence& arglist)
+         {
+            return (
+                    (T(0) != value(arglist[0])) || (T(0) != value(arglist[1])) ||
+                    (T(0) != value(arglist[2])) || (T(0) != value(arglist[3])) ||
+                    (T(0) != value(arglist[4]))
+                   ) ? T(1) : T(0);
+         }
       };
 
       template <typename T>
@@ -6591,6 +7325,15 @@ namespace exprtk
             return new node_type();
          }
 
+         template <typename node_type,
+                   typename Type,
+                   typename Allocator,
+                   template<typename,typename> class Sequence>
+         inline expression_node<typename node_type::value_type>* allocate(const Sequence<Type,Allocator>& seq) const
+         {
+            return new node_type(seq);
+         }
+
          template <typename node_type, typename T1>
          inline expression_node<typename node_type::value_type>* allocate(T1& t1) const
          {
@@ -6832,11 +7575,6 @@ namespace exprtk
          register_op(     "frac",e_frac    , 1)
          register_op(    "trunc",e_trunc   , 1)
          register_op(    "atan2",e_atan2   , 2)
-         register_op(      "min",e_min     , 2)
-         register_op(      "max",e_max     , 2)
-         register_op(      "avg",e_avg     , 2)
-         register_op(      "sum",e_sum     , 2)
-         register_op(      "mul",e_prod    , 2)
          register_op(      "mod",e_mod     , 2)
          register_op(     "logn",e_logn    , 2)
          register_op(      "pow",e_pow     , 2)
@@ -6849,26 +7587,6 @@ namespace exprtk
          register_op(      "shl",e_shl     , 2)
          register_op(    "clamp",e_clamp   , 3)
          register_op(  "inrange",e_inrange , 3)
-         register_op(      "min",e_min     , 3)
-         register_op(      "max",e_max     , 3)
-         register_op(      "avg",e_avg     , 3)
-         register_op(      "sum",e_sum     , 3)
-         register_op(      "mul",e_prod    , 3)
-         register_op(      "min",e_min     , 4)
-         register_op(      "max",e_max     , 4)
-         register_op(      "avg",e_avg     , 4)
-         register_op(      "sum",e_sum     , 4)
-         register_op(      "mul",e_prod    , 4)
-         register_op(      "min",e_min     , 5)
-         register_op(      "max",e_max     , 5)
-         register_op(      "avg",e_avg     , 5)
-         register_op(      "sum",e_sum     , 5)
-         register_op(      "mul",e_prod    , 5)
-         register_op(      "min",e_min     , 6)
-         register_op(      "max",e_max     , 6)
-         register_op(      "avg",e_avg     , 6)
-         register_op(      "sum",e_sum     , 6)
-         register_op(      "mul",e_prod    , 6)
          #undef register_op
       }
 
@@ -7002,7 +7720,20 @@ namespace exprtk
       {
          return std::numeric_limits<T>::quiet_NaN();
       }
+   };
 
+   template <typename T>
+   class ivararg_function
+   {
+   public:
+
+      virtual ~ivararg_function()
+      {}
+
+      inline virtual T operator()(const std::vector<T>&)
+      {
+         return std::numeric_limits<T>::quiet_NaN();
+      }
    };
 
    template <typename T>
@@ -7121,6 +7852,7 @@ namespace exprtk
       {
          typedef typename details::variable_node<T>  variable_node_t;
          typedef ifunction<T>                        ifunction_t;
+         typedef ivararg_function<T>                 ivararg_function_t;
          typedef vector_holder<T>                    vector_t;
          #ifndef exprtk_disable_string_capabilities
          typedef typename details::stringvar_node<T> stringvar_node_t;
@@ -7253,6 +7985,11 @@ namespace exprtk
                #endif
 
                static inline std::pair<bool,function_t*> make(function_t& t, const bool is_constant = false)
+               {
+                  return std::make_pair(is_constant,&t);
+               }
+
+               static inline std::pair<bool,vararg_function_t*> make(vararg_function_t& t, const bool is_constant = false)
                {
                   return std::make_pair(is_constant,&t);
                }
@@ -7476,7 +8213,9 @@ namespace exprtk
       typedef stringvar_t* stringvar_ptr;
       #endif
       typedef ifunction<T> function_t;
+      typedef ivararg_function<T> vararg_function_t;
       typedef function_t* function_ptr;
+      typedef vararg_function_t* vararg_function_ptr;
       typedef vector_holder<T>* vector_ptr;
 
       static const std::size_t lut_size = 256;
@@ -7491,6 +8230,7 @@ namespace exprtk
             type_store<typename details::stringvar_node<T>,std::string> stringvar_store;
             #endif
             type_store<ifunction<T>,ifunction<T> > function_store;
+            type_store<ivararg_function<T>,ivararg_function<T> > vararg_function_store;
             type_store<vector_holder<T>,vector_holder<T> > vector_store;
 
             st_data()
@@ -7660,6 +8400,16 @@ namespace exprtk
             return local_data().function_store.get(function_name);
       }
 
+      inline vararg_function_ptr get_vararg_function(const std::string& vararg_function_name)
+      {
+         if (!valid())
+            return reinterpret_cast<vararg_function_ptr>(0);
+         else if (!valid_symbol(vararg_function_name))
+            return reinterpret_cast<vararg_function_ptr>(0);
+         else
+            return local_data().vararg_function_store.get(vararg_function_name);
+      }
+
       inline vector_ptr get_vector(const std::string& vector_name)
       {
          if (!valid())
@@ -7799,6 +8549,18 @@ namespace exprtk
             return local_data().function_store.add(function_name,function);
       }
 
+      inline bool add_vararg_function(const std::string& vararg_function_name, vararg_function_t& vararg_function)
+      {
+         if (!valid())
+            return false;
+         else if (!valid_symbol(vararg_function_name))
+            return false;
+         else if (symbol_exists(vararg_function_name))
+            return false;
+         else
+            return local_data().vararg_function_store.add(vararg_function_name,vararg_function);
+      }
+
       inline bool add_vector(const std::string& vector_name, T* v, const std::size_t& v_size)
       {
          if (!valid())
@@ -7861,6 +8623,14 @@ namespace exprtk
             return false;
          else
             return local_data().function_store.remove(function_name);
+      }
+
+      inline bool remove_vararg_function(const std::string& vararg_function_name)
+      {
+         if (!valid())
+            return false;
+         else
+            return local_data().vararg_function_store.remove(vararg_function_name);
       }
 
       inline bool remove_vector(const std::string& vector_name)
@@ -7994,6 +8764,14 @@ namespace exprtk
             return false;
          else
             return local_data().function_store.symbol_exists(function_name);
+      }
+
+      inline bool is_vararg_function(const std::string& vararg_function_name) const
+      {
+         if (!valid())
+            return false;
+         else
+            return local_data().vararg_function_store.symbol_exists(vararg_function_name);
       }
 
       inline bool valid() const
@@ -8323,7 +9101,9 @@ namespace exprtk
       typedef const T&                                       cref_t;
       typedef const T                                       const_t;
       typedef ifunction                <T>                        F;
+      typedef ivararg_function         <T>                      VAF;
       typedef ifunction                <T>              ifunction_t;
+      typedef ivararg_function         <T>       ivararg_function_t;
       typedef details::expression_node <T>        expression_node_t;
       typedef details::literal_node    <T>           literal_node_t;
       typedef details::string_literal_node<T> string_literal_node_t;
@@ -8340,6 +9120,8 @@ namespace exprtk
       typedef details::stringvar_node  <T>         stringvar_node_t;
       #endif
       typedef details::assignment_node <T>        assignment_node_t;
+      typedef details::scand_node <T>                  scand_node_t;
+      typedef details::scor_node <T>                    scor_node_t;
       typedef lexer::token                                  token_t;
       typedef expression_node_t*                expression_node_ptr;
 
@@ -8543,7 +9325,10 @@ namespace exprtk
                   default                         : diagnostic + "Unknown compiler error";
                                                     break;
                }
-               set_error(make_error(parser_error::e_lexer,lexer_[i],diagnostic + ": " + lexer_[i].value));
+               set_error(
+                  make_error(parser_error::e_lexer,
+                             lexer_[i],
+                             diagnostic + ": " + lexer_[i].value));
             }
          }
       }
@@ -8714,6 +9499,27 @@ namespace exprtk
             return (base_ops_map_.end() != base_ops_map_.find(symbol));
       }
 
+      inline bool valid_vararg_operation(const std::string& symbol)
+      {
+         static const std::string s_sum  = "sum" ;
+         static const std::string s_mul  = "mul" ;
+         static const std::string s_avg  = "avg" ;
+         static const std::string s_min  = "min" ;
+         static const std::string s_max  = "max" ;
+         static const std::string s_mand = "mand";
+         static const std::string s_mor  = "mor" ;
+         return
+               (
+                  details::imatch(symbol,s_sum ) ||
+                  details::imatch(symbol,s_mul ) ||
+                  details::imatch(symbol,s_avg ) ||
+                  details::imatch(symbol,s_min ) ||
+                  details::imatch(symbol,s_max ) ||
+                  details::imatch(symbol,s_mand) ||
+                  details::imatch(symbol,s_mor )
+               );
+      }
+
       inline void store_token()
       {
          lexer_.store();
@@ -8801,12 +9607,18 @@ namespace exprtk
                                            static const std::string s_and1  =     "&";
                                            static const std::string s_or1   =     "|";
 
-                                           if (
-                                               details::imatch(current_token_.value,s_and ) ||
-                                               details::imatch(current_token_.value,s_and1)
-                                              )
+                                           if (details::imatch(current_token_.value,s_and))
                                            {
                                               current_state.set(e_level01,e_level02,details::e_and);
+                                              break;
+                                           }
+                                           else if (details::imatch(current_token_.value,s_and1))
+                                           {
+                                              #ifndef exprtk_disable_sc_andor
+                                              current_state.set(e_level01,e_level02,details::e_scand);
+                                              #else
+                                              current_state.set(e_level01,e_level02,details::e_and);
+                                              #endif
                                               break;
                                            }
                                            else if (details::imatch(current_token_.value,s_nand))
@@ -8814,12 +9626,18 @@ namespace exprtk
                                               current_state.set(e_level01,e_level02,details::e_nand);
                                               break;
                                            }
-                                           else if (
-                                                    details::imatch(current_token_.value,s_or ) ||
-                                                    details::imatch(current_token_.value,s_or1)
-                                                   )
+                                           else if (details::imatch(current_token_.value,s_or))
                                            {
                                               current_state.set(e_level03,e_level04,details::e_or);
+                                              break;
+                                           }
+                                           else if (details::imatch(current_token_.value,s_or1))
+                                           {
+                                              #ifndef exprtk_disable_sc_andor
+                                              current_state.set(e_level03,e_level04,details::e_scor);
+                                              #else
+                                              current_state.set(e_level03,e_level04,details::e_or);
+                                              #endif
                                               break;
                                            }
                                            else if (details::imatch(current_token_.value,s_nor))
@@ -8919,6 +9737,71 @@ namespace exprtk
 
          scoped_delete<Type,N>& operator=(const scoped_delete<Type,N>&);
       };
+
+      template <typename Type>
+      struct scoped_deq_delete
+      {
+         typedef Type* ptr_t;
+
+         scoped_deq_delete(parser<T>& pr, std::deque<ptr_t>& deq)
+         : delete_ptr(true),
+           parser_(pr),
+           deq_(deq)
+         {}
+
+        ~scoped_deq_delete()
+         {
+            if (delete_ptr)
+            {
+               for (std::size_t i = 0; i < deq_.size(); ++i)
+               {
+                  free_node(parser_.node_allocator_,deq_[i]);
+               }
+               deq_.clear();
+            }
+         }
+
+         bool delete_ptr;
+         parser<T>& parser_;
+         std::deque<ptr_t>& deq_;
+
+      private:
+
+         scoped_deq_delete<Type>& operator=(const scoped_deq_delete<Type>&);
+      };
+
+      template <typename Type>
+      struct scoped_vec_delete
+      {
+         typedef Type* ptr_t;
+
+         scoped_vec_delete(parser<T>& pr, std::vector<ptr_t>& vec)
+         : delete_ptr(true),
+           parser_(pr),
+           vec_(vec)
+         {}
+
+        ~scoped_vec_delete()
+         {
+            if (delete_ptr)
+            {
+               for (std::size_t i = 0; i < vec_.size(); ++i)
+               {
+                  free_node(parser_.node_allocator_,vec_[i]);
+               }
+               vec_.clear();
+            }
+         }
+
+         bool delete_ptr;
+         parser<T>& parser_;
+         std::vector<ptr_t>& vec_;
+
+      private:
+
+         scoped_vec_delete<Type>& operator=(const scoped_vec_delete<Type>&);
+      };
+
 
       template <std::size_t NumberofParameters>
       inline expression_node_ptr parse_function_call(const details::operator_type& opt_type, bool& internal_error)
@@ -9174,12 +10057,117 @@ namespace exprtk
          {
             set_error(
                make_error(parser_error::e_syntax,
-               current_token_,
-               "ERR19 - Failed to parse branch for while-loop"));
+                          current_token_,
+                          "ERR19 - Failed to parse branch for while-loop"));
             return error_node();
          }
          else
             return result;
+      }
+
+      inline expression_node_ptr parse_vararg_function()
+      {
+         std::deque<expression_node_ptr> arg_list;
+         expression_node_ptr result = error_node();
+
+         details::operator_type opt_type = details::e_default;
+         const std::string symbol = current_token_.value;
+
+              if (details::imatch(symbol,"sum" )) opt_type = details::e_sum;
+         else if (details::imatch(symbol,"mul" )) opt_type = details::e_prod;
+         else if (details::imatch(symbol,"avg" )) opt_type = details::e_avg;
+         else if (details::imatch(symbol,"min" )) opt_type = details::e_min;
+         else if (details::imatch(symbol,"max" )) opt_type = details::e_max;
+         else if (details::imatch(symbol,"mand")) opt_type = details::e_mand;
+         else if (details::imatch(symbol,"mor" )) opt_type = details::e_mor;
+         else
+         {
+            set_error(
+               make_error(parser_error::e_syntax,
+                          current_token_,
+                          "ERR20 - Unsupported vararg function: " + symbol));
+            return error_node();
+         }
+
+         scoped_deq_delete<expression_node_t> sdd(*this,arg_list);
+
+         next_token();
+         if (!token_is(token_t::e_lbracket))
+         {
+            set_error(
+               make_error(parser_error::e_syntax,
+                          current_token_,
+                          "ERR21 - Expected '(' for call to vararg function: " + symbol));
+            return error_node();
+         }
+
+         for (;;)
+         {
+            expression_node_ptr arg = parse_expression();
+            if (0 == arg)
+               return error_node();
+            else
+               arg_list.push_back(arg);
+            if (token_is(token_t::e_rbracket))
+               break;
+            else if (!token_is(token_t::e_comma))
+            {
+               set_error(
+                  make_error(parser_error::e_syntax,
+                             current_token_,
+                             "ERR22 - Expected ',' for call to vararg function: " + symbol));
+               return error_node();
+            }
+         }
+
+         result = expression_generator_.vararg_function(opt_type,arg_list);
+
+         sdd.delete_ptr = (0 == result);
+         return result;
+      }
+
+      inline expression_node_ptr parse_vararg_function_call(ivararg_function<T>* vararg_function, const std::string& vararg_function_name)
+      {
+         std::vector<expression_node_ptr> arg_list;
+         expression_node_ptr result = error_node();
+
+         const std::string symbol = current_token_.value;
+
+         scoped_vec_delete<expression_node_t> sdd(*this,arg_list);
+
+         next_token();
+         if (!token_is(token_t::e_lbracket))
+         {
+            set_error(
+               make_error(parser_error::e_syntax,
+                          current_token_,
+                          "ERR21 - Expected '(' for call to vararg function: " + vararg_function_name));
+            return error_node();
+         }
+
+         for (;;)
+         {
+            expression_node_ptr arg = parse_expression();
+            if (0 == arg)
+               return error_node();
+            else
+               arg_list.push_back(arg);
+            if (token_is(token_t::e_rbracket))
+               break;
+            else if (!token_is(token_t::e_comma))
+            {
+               set_error(
+                  make_error(parser_error::e_syntax,
+                             current_token_,
+                             "ERR22 - Expected ',' for call to vararg function: " + vararg_function_name));
+               return error_node();
+            }
+         }
+
+         result = expression_generator_.vararg_function_call(vararg_function,arg_list);
+
+         sdd.delete_ptr = (0 == result);
+         return result;
       }
 
       template <typename Type, std::size_t NumberOfParameters>
@@ -9216,7 +10204,7 @@ namespace exprtk
                return p.error_node();
             else
                result = p.expression_generator_.special_function(opt_type,branch);
-            sd.delete_ptr = false;
+            sd.delete_ptr = (0 == result);
             return result;
          }
       };
@@ -9232,7 +10220,7 @@ namespace exprtk
             set_error(
                make_error(parser_error::e_token,
                           current_token_,
-                          "ERR20 - Invalid special function[1]: " + current_token_.value));
+                          "ERR23 - Invalid special function[1]: " + current_token_.value));
             return error_node();
          }
 
@@ -9243,7 +10231,7 @@ namespace exprtk
             set_error(
                make_error(parser_error::e_token,
                           current_token_,
-                          "ERR21 - Invalid special function[2]: " + current_token_.value));
+                          "ERR24 - Invalid special function[2]: " + current_token_.value));
             return error_node();
          }
 
@@ -9335,7 +10323,7 @@ namespace exprtk
                            set_error(
                               make_error(parser_error::e_syntax,
                                          current_token_,
-                                         "ERR22 - Invalid number of parameters for function: " + symbol));
+                                         "ERR25 - Invalid number of parameters for function: " + symbol));
                            return error_node();
                          }
             }
@@ -9347,7 +10335,27 @@ namespace exprtk
                set_error(
                   make_error(parser_error::e_syntax,
                              current_token_,
-                             "ERR23 - Failed to generate node for function: '" + symbol + "'"));
+                             "ERR26 - Failed to generate node for function: '" + symbol + "'"));
+               return error_node();
+            }
+         }
+
+         // Are we dealing with a vararg function?
+         ivararg_function<T>* vararg_function = symbol_table_.get_vararg_function(symbol);
+
+         if (vararg_function)
+         {
+            expression_node_ptr vararg_func_node = error_node();
+            vararg_func_node = parse_vararg_function_call(vararg_function,symbol);
+
+            if (vararg_func_node)
+               return vararg_func_node;
+            else
+            {
+               set_error(
+                  make_error(parser_error::e_syntax,
+                             current_token_,
+                             "ERR27 - Failed to generate node for vararg function: '" + symbol + "'"));
                return error_node();
             }
          }
@@ -9356,18 +10364,22 @@ namespace exprtk
             set_error(
                make_error(parser_error::e_syntax,
                           current_token_,
-                          "ERR24 - Undefined variable or function: '" + symbol + "'"));
+                          "ERR28 - Undefined variable or function: '" + symbol + "'"));
             return error_node();
          }
       }
 
       inline expression_node_ptr parse_symbol()
       {
-         static const std::string symbol_if = "if";
+         static const std::string symbol_if    = "if";
          static const std::string symbol_while = "while";
-         static const std::string symbol_null = "null";
+         static const std::string symbol_null  = "null";
 
-         if (valid_base_operation(current_token_.value))
+         if (valid_vararg_operation(current_token_.value))
+         {
+            return parse_vararg_function();
+         }
+         else if (valid_base_operation(current_token_.value))
          {
             return parse_base_operation();
          }
@@ -9396,7 +10408,7 @@ namespace exprtk
             set_error(
                make_error(parser_error::e_symtab,
                           current_token_,
-                          "ERR25 - Variable or function detected, yet symbol-table is invalid, Symbol: " + current_token_.value));
+                          "ERR29 - Variable or function detected, yet symbol-table is invalid, Symbol: " + current_token_.value));
             return error_node();
          }
       }
@@ -9471,7 +10483,7 @@ namespace exprtk
             set_error(
                make_error(parser_error::e_syntax,
                           current_token_,
-                          "ERR26 - Premature end of expression.[1]"));
+                          "ERR30 - Premature end of expression.[1]"));
             return error_node();
          }
          else
@@ -9479,7 +10491,7 @@ namespace exprtk
             set_error(
                make_error(parser_error::e_syntax,
                           current_token_,
-                          "ERR27 - Premature end of expression.[2]"));
+                          "ERR31 - Premature end of expression.[2]"));
             return error_node();
          }
       }
@@ -9936,6 +10948,18 @@ namespace exprtk
             return (b0_string && b1_string && b2_string && (details::e_inrange == operation));
          }
 
+         #ifndef exprtk_disable_sc_andor
+         inline bool is_shortcircuit_expression(const details::operator_type& operation)
+         {
+            return ((details::e_scand == operation) || (details::e_scor == operation));
+         }
+         #else
+         inline bool is_shortcircuit_expression(const details::operator_type&)
+         {
+            return false;
+         }
+         #endif
+
          inline bool is_null_present(expression_node_ptr (&branch)[2])
          {
             return details::is_null_node(branch[0]) ||
@@ -9953,6 +10977,8 @@ namespace exprtk
                return error_node();
             else if (details::e_assign == operation)
                return synthesize_assignment_expression(operation,branch);
+            else if (is_shortcircuit_expression(operation))
+               return synthesize_shortcircuit_expression(operation,branch);
             else if (is_string_operation(operation,branch))
                return synthesize_string_expression(operation,branch);
             else if (is_null_present(branch))
@@ -10383,6 +11409,76 @@ namespace exprtk
             }
          }
 
+         template <typename Allocator,
+            template <typename,typename> class Sequence>
+         inline expression_node_ptr const_optimize_varargfunc(const details::operator_type& operation, Sequence<expression_node_ptr,Allocator>& arglist)
+         {
+            expression_node_ptr temp_node = error_node();
+            switch (operation)
+            {
+               #define case_stmt(op0,op1) case op0 : temp_node = node_allocator_->allocate<details::vararg_node<Type,op1<Type> > >(arglist); break;
+               case_stmt(details::e_sum,  details::vararg_add_op )
+               case_stmt(details::e_prod, details::vararg_mul_op )
+               case_stmt(details::e_avg,  details::vararg_avg_op )
+               case_stmt(details::e_min,  details::vararg_min_op )
+               case_stmt(details::e_max,  details::vararg_max_op )
+               case_stmt(details::e_mand, details::vararg_mand_op)
+               case_stmt(details::e_mor,  details::vararg_mor_op )
+               #undef case_stmt
+               default : return error_node();
+            }
+            T v = temp_node->value();
+            details::free_node(*node_allocator_,temp_node);
+            return node_allocator_->allocate<literal_node_t>(v);
+         }
+
+         template <typename Allocator,
+                   template <typename,typename> class Sequence>
+         inline expression_node_ptr varnode_optimize_varargfunc(const details::operator_type& operation, Sequence<expression_node_ptr,Allocator>& arglist)
+         {
+            switch (operation)
+            {
+               #define case_stmt(op0,op1) case op0 : return node_allocator_->allocate<details::vararg_varnode<Type,op1<Type> > >(arglist);
+               case_stmt(details::e_sum,  details::vararg_add_op )
+               case_stmt(details::e_prod, details::vararg_mul_op )
+               case_stmt(details::e_avg,  details::vararg_avg_op )
+               case_stmt(details::e_min,  details::vararg_min_op )
+               case_stmt(details::e_max,  details::vararg_max_op )
+               case_stmt(details::e_mand, details::vararg_mand_op)
+               case_stmt(details::e_mor,  details::vararg_mor_op )
+               #undef case_stmt
+               default : return error_node();
+            }
+         }
+
+         template <typename Allocator,
+                   template <typename,typename> class Sequence>
+         inline expression_node_ptr vararg_function(const details::operator_type& operation, Sequence<expression_node_ptr,Allocator>& arglist)
+         {
+            if (!all_nodes_valid(arglist))
+            {
+               details::free_all_nodes(*node_allocator_,arglist);
+               return error_node();
+            }
+            else if (is_constant_foldable(arglist))
+               return const_optimize_varargfunc(operation,arglist);
+            else if (all_nodes_variables(arglist))
+               return varnode_optimize_varargfunc(operation,arglist);
+            switch (operation)
+            {
+               #define case_stmt(op0,op1) case op0 : return node_allocator_->allocate<details::vararg_node<Type,op1<Type> > >(arglist);
+               case_stmt(details::e_sum,  details::vararg_add_op )
+               case_stmt(details::e_prod, details::vararg_mul_op )
+               case_stmt(details::e_avg,  details::vararg_avg_op )
+               case_stmt(details::e_min,  details::vararg_min_op )
+               case_stmt(details::e_max,  details::vararg_max_op )
+               case_stmt(details::e_mand, details::vararg_mand_op)
+               case_stmt(details::e_mor,  details::vararg_mor_op )
+               #undef case_stmt
+               default : return error_node();
+            }
+         }
+
          template <std::size_t N>
          inline expression_node_ptr function(ifunction_t* f, expression_node_ptr (&b)[N])
          {
@@ -10392,23 +11488,32 @@ namespace exprtk
                return error_node();
             else
             {
-               // Has the function call been completely optimized?
+               // Can the function call be completely optimized?
                if (details::is_constant_node(result))
                   return result;
                else if (!all_nodes_valid(b))
                   return error_node();
                else if (N != f->param_count)
+               {
+                  details::free_all_nodes(*node_allocator_,b);
                   return error_node();
+               }
                function_N_node_t* func_node_ptr = dynamic_cast<function_N_node_t*>(result);
                if (func_node_ptr)
                {
                   if (func_node_ptr->init_branches(b))
                      return result;
                   else
+                  {
+                     details::free_all_nodes(*node_allocator_,b);
                      return error_node();
+                  }
                }
                else
+               {
+                  details::free_all_nodes(*node_allocator_,b);
                   return error_node();
+               }
             }
          }
 
@@ -10416,6 +11521,26 @@ namespace exprtk
          {
             typedef typename details::function_N_node<T,ifunction_t,0> function_N_node_t;
             return node_allocator_->allocate<function_N_node_t>(f);
+         }
+
+         inline expression_node_ptr vararg_function_call(ivararg_function_t* vaf,
+                                                         std::vector<expression_node_ptr>& arglist)
+         {
+            if (!all_nodes_valid(arglist))
+            {
+               details::free_all_nodes(*node_allocator_,arglist);
+               return error_node();
+            }
+
+            expression_node_ptr result = node_allocator_->allocate<details::vararg_function_node<Type,ivararg_function<T> > >(vaf,arglist);
+
+            if (is_constant_foldable(arglist))
+            {
+               T v = result->value();
+               details::free_node(*node_allocator_,result);
+               result = node_allocator_->allocate<literal_node_t>(v);
+            }
+            return result;
          }
 
       private:
@@ -10433,6 +11558,21 @@ namespace exprtk
             return true;
          }
 
+         template <typename NodePtr,
+                   typename Allocator,
+                   template <typename,typename> class Sequence>
+         inline bool is_constant_foldable(const Sequence<NodePtr,Allocator>& b) const
+         {
+            for (std::size_t i = 0; i < b.size(); ++i)
+            {
+               if (0 == b[i])
+                  return false;
+               else if (!details::is_constant_node(b[i]))
+                  return false;
+            }
+            return true;
+         }
+
          inline expression_node_ptr synthesize_assignment_expression(const details::operator_type& operation, expression_node_ptr (&branch)[2])
          {
             if (details::is_variable_node(branch[0]))
@@ -10440,6 +11580,46 @@ namespace exprtk
             else
                return error_node();
          }
+
+         #ifndef exprtk_disable_sc_andor
+         inline expression_node_ptr synthesize_shortcircuit_expression(const details::operator_type& operation, expression_node_ptr (&branch)[2])
+         {
+            expression_node_ptr result = error_node();
+            if (details::is_constant_node(branch[0]))
+            {
+               if ((details::e_scand == operation) && (T(0) == branch[0]->value()))
+                  result = node_allocator_->allocate_c<literal_node_t>(T(0));
+               else if ((details::e_scor == operation) && (T(0) != branch[0]->value()))
+                  result = node_allocator_->allocate_c<literal_node_t>(T(1));
+            }
+
+            if (details::is_constant_node(branch[1]) && (0 == result))
+            {
+               if ((details::e_scand == operation) && (T(0) == branch[1]->value()))
+                  result = node_allocator_->allocate_c<literal_node_t>(T(0));
+               else if ((details::e_scor == operation) && (T(0) != branch[1]->value()))
+                  result = node_allocator_->allocate_c<literal_node_t>(T(1));
+            }
+
+            if (result)
+            {
+               free_node(*node_allocator_,branch[0]);
+               free_node(*node_allocator_,branch[1]);
+               return result;
+            }
+            else if (details::e_scand == operation)
+               return synthesize_expression<scand_node_t,2>(operation,branch);
+            else if (details::e_scor == operation)
+               return synthesize_expression<scor_node_t,2>(operation,branch);
+            else
+               return error_node();
+         }
+         #else
+         inline expression_node_ptr synthesize_shortcircuit_expression(const details::operator_type&, expression_node_ptr (&)[2])
+         {
+            return error_node();
+         }
+         #endif
 
          #define basic_opr_switch_statements \
          case_stmt(details:: e_add,details:: add_op) \
@@ -14029,9 +15209,9 @@ namespace exprtk
    /*
       Note: The following 'compute' routines are very simple helpers,
       for quickly setting up the required pieces of code in order to
-      evaluate an expression. By virtue of how they the operate there
-      will be an overhead with regards to their setup and teardown and
-      hence should not be used in time critical sections of code.
+      evaluate an expression. By virtue of how they operate there will
+      be an overhead with regards to their setup and teardown and hence
+      should not be used in time critical sections of code.
       Furthermore they only assume a small sub set of variables - no
       string variables or user defined functions.
    */
@@ -14691,7 +15871,7 @@ namespace exprtk
    namespace information
    {
       static const char* library = "Mathematical Expression Toolkit";
-      static const char* version = "2.7182818284590452353602874713";
+      static const char* version = "2.718281828459045235360287471352";
       static const char* date    = "20130330";
 
       static inline std::string data()

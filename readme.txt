@@ -160,6 +160,14 @@ Expression Library can be found at:
 | and       | Logical AND, True only if x and y are both true.       |
 |           | (eg: x and y)                                          |
 +-----------+--------------------------------------------------------+
+| mand      | Multi-input logical AND, True only if all inputs are   |
+|           | true. Left to right short-circuiting of expressions.   |
+|           | (eg: mand(x > y,z < w,u or v,w and x))                 |
++-----------|--------------------------------------------------------+
+| mor       | Multi-input logical OR, True if at least one of the    |
+|           | inputs are true. Left to right short-circuiting of     |
+|           | expressions. (eg: mand(x > y,z < w,u or v,w and x))    |
++-----------+--------------------------------------------------------+
 | nand      | Logical NAND, True only if either x or y is false.     |
 |           | (eg: x nand y)                                         |
 +-----------+--------------------------------------------------------+
@@ -179,6 +187,12 @@ Expression Library can be found at:
 +-----------+--------------------------------------------------------+
 | if        | If x is true then return y else return z.              |
 |           | (eg: if(x, y, z) or if((x + 1) > 2y, z + 1, w / v))    |
++-----------|--------------------------------------------------------+
+| &         | Similar to AND but with left to right expression short |
+|           | circuiting optimisation. (eg: (x & y) == (y and x))    |
++-----------|--------------------------------------------------------+
+| |         | Similar to OR but with left to right expression short  |
+|           | circuiting optimisation. (eg: (x | y) == (y or x))     |
 +-----------+--------------------------------------------------------+
 
 (3) General Purpose Functions
@@ -188,7 +202,7 @@ Expression Library can be found at:
 | abs       | Absolute value of x.                                   |
 +-----------+--------------------------------------------------------+
 | avg       | Average of all the inputs.                             |
-|           | (eg: avg(x,y,z,w) == (x+y+z+w)/4)                      |
+|           | (eg: avg(x,y,z,w,u,v) == (x+y+z+w+u+v)/6)              |
 +-----------+--------------------------------------------------------+
 | ceil      | Smallest integer that is greater than or equal to x.   |
 +-----------+--------------------------------------------------------+
@@ -219,9 +233,12 @@ Expression Library can be found at:
 | logn      | Base N logarithm of x (eg: logn(1235,8))               |
 |           | where n > 0 and is an integer.                         |
 +-----------+--------------------------------------------------------+
-| max       | Largest value of all the inputs. (eg: max(x,y,z,w))    |
+| max       | Largest value of all the inputs. (eg: max(x,y,z,w,u,v))|
 +-----------+--------------------------------------------------------+
-| min       | Smallest value of all the inputs. (eg: min(x,y,z,w))   |
+| min       | Smallest value of all the inputs. (eg: min(x,y,z,w,u)) |
++-----------+--------------------------------------------------------+
+| mul       | Product of all the inputs.                             |
+|           | (eg: mul(x,y,z,w,u,v,t) == (x*y*z*w*u*v*t))            |
 +-----------+--------------------------------------------------------+
 | nequal    | Not-equal test between x and y using normalized epsilon|
 +-----------+--------------------------------------------------------+
@@ -238,7 +255,7 @@ Expression Library can be found at:
 | sqrt      | Square root of x, where x > 0                          |
 +-----------+--------------------------------------------------------+
 | sum       | Sum of all the inputs.                                 |
-|           | (eg: sum(x,y,z,w,v) == (x+y+z+w+v))                    |
+|           | (eg: sum(x,y,z,w,u,v,t) == (x+y+z+w+u+v+t))            |
 +-----------+--------------------------------------------------------+
 | trunc     | Integer portion of x                                   |
 +-----------+--------------------------------------------------------+
@@ -405,7 +422,9 @@ correctly optimize such expressions for a given architecture.
       be enclosed with single-quotes.
       eg: 'Frankly, my dear, I don't give a damn!'
 
- (10) User defined functions can have up to 20 parameters.
+ (10) User defined normal functions can have up to 20 parameters.
+      Where as user defined vararg-functions can have unlimited an
+      number of parameters.
 
  (11) The inbuilt polynomial functions can be at most of degree 12.
 
