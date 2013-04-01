@@ -472,7 +472,7 @@ int main()
    typedef exprtk::parser<double>             parser_t;
    typedef exprtk::parser_error::type          error_t;
 
-   std::string expression_str = "z := 2 myfunc[4 + sin(x/pi)^3,y^2]";
+   std::string expression_str = "z := 2 myfunc([4+sin(x/pi)^3],y^2)";
 
    double x = 1.1;
    double y = 2.2;
