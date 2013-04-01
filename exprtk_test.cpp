@@ -3234,7 +3234,11 @@ inline bool run_test18()
                                   "equal(va_func(x+t,y+v,z+u,w+w,u+z,v+y,t+x),2*(x+y+z+w+u+v+t))",
                                   "equal(1+va_func(1,x,3,y,5,z,7,w,9),(1+x+3+y+5+z+7+w+9)+1)",
                                   "equal(va_func(va_func(x,y,z,w,u,v,t),va_func(x,y,z,w,u,v,t)),2*(x+y+z+w+u+v+t))",
-                                  "equal(va_func(va_func(x),va_func(y),va_func(z)),va_func(x,y,z))"
+                                  "equal(va_func(va_func(x),va_func(y),va_func(z)),va_func(x,y,z))",
+                                  "equal(va_func(va_func(va_func(va_func(va_func(va_func(va_func(va_func(x)))))))),x)",
+                                  "equal(va_func(va_func(va_func(va_func(va_func(va_func(va_func(va_func(123.456)))))))),123.456)",
+                                  "equal(va_func(va_func(va_func(va_func(va_func(va_func(va_func(va_func(x+1)))))))),x+1)",
+                                  "equal(va_func(va_func(va_func(va_func(va_func(va_func(va_func(va_func(x+y)))))))),x+y)"
                                };
    static const std::size_t expr_str_list_size = sizeof(expr_str_list) / sizeof(std::string);
 

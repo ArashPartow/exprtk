@@ -407,35 +407,40 @@ correctly optimize such expressions for a given architecture.
 
  (05) Expression lengths are limited only by storage capacity.
 
- (06) Equal/Nequal routines use epsilons of 0.0000000001 and 0.000001
+ (06) The life-time of objects registered with a symbol-table must
+      span at least the life-time of expressions generated using
+      that symbol-table, otherwise the result will be undefined
+      behavior.
+
+ (07) Equal/Nequal routines use epsilons of 0.0000000001 and 0.000001
       for double and float types respectively.
 
- (07) All trigonometric functions assume radian input unless
+ (08) All trigonometric functions assume radian input unless
       stated otherwise.
 
- (08) Expressions may contain white-space characters such as
+ (09) Expressions may contain white-space characters such as
       space,  tabs, new-lines, control-feed et al.
       ('\n', '\r', '\t', '\b', '\v', '\f')
 
- (09) Strings may be constructed from any letters, digits or special
+ (10) Strings may be constructed from any letters, digits or special
       characters such as (~!@#$%^&*()[]|=+ ,./?<>;:"`~_), and must
       be enclosed with single-quotes.
       eg: 'Frankly, my dear, I don't give a damn!'
 
- (10) User defined normal functions can have up to 20 parameters.
-      Where as user defined vararg-functions can have unlimited an
+ (11) User defined normal functions can have up to 20 parameters,
+      where as user defined vararg-functions can have an unlimited
       number of parameters.
 
- (11) The inbuilt polynomial functions can be at most of degree 12.
+ (12) The inbuilt polynomial functions can be at most of degree 12.
 
- (12) Where appropriate constant folding optimisations will be
+ (13) Where appropriate constant folding optimisations will be
       applied. (eg: The expression '2+(3-(x/y))' becomes '5-(x/y)')
 
- (13) String processing capabilities are available by default.
+ (14) String processing capabilities are available by default.
       To turn them off, the following needs to be defined at
       compile time: exprtk_disable_string_capabilities
 
- (14) Expressions may contain any of the following comment styles:
+ (15) Expressions may contain any of the following comment styles:
       1. // .... \n
       2. #  .... \n
       3. /* .... */
@@ -449,6 +454,17 @@ correctly optimize such expressions for a given architecture.
 
 #include "exprtk.hpp"
 
+template <typename T>
+struct myfunc : public exprtk::ifunction<T>
+{
+   myfunc() : exprtk::ifunction<T>(2) {}
+
+   inline T operator()(const T& v1, const T& v2)
+   {
+      return T(1) + (v1 * v2) / T(3);
+   }
+};
+
 int main()
 {
    typedef exprtk::symbol_table<double> symbol_table_t;
@@ -456,17 +472,20 @@ int main()
    typedef exprtk::parser<double>             parser_t;
    typedef exprtk::parser_error::type          error_t;
 
-   std::string expression_str = "z := 2 [sin(x/pi)^3 + cos(pi/y)^4]";
+   std::string expression_str = "z := 2 myfunc[4 + sin(x/pi)^3,y^2]";
 
    double x = 1.1;
    double y = 2.2;
    double z = 3.3;
+
+   myfunc<double> mf;
 
    symbol_table_t symbol_table;
    symbol_table.add_constants();
    symbol_table.add_variable("x",x);
    symbol_table.add_variable("y",y);
    symbol_table.add_variable("z",z);
+   symbol_table.add_function("myfunc",mf);
 
    expression_t expression;
    expression.register_symbol_table(symbol_table);
