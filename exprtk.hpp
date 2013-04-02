@@ -9093,7 +9093,8 @@ namespace exprtk
          e_level10,
          e_level11,
          e_level12,
-         e_level13
+         e_level13,
+         e_level14
       };
 
       struct state_t;
@@ -10476,7 +10477,7 @@ namespace exprtk
          else if (token_t::e_add == current_token_.type)
          {
             next_token();
-            return expression_generator_(details::e_pos,parse_expression(e_level09));
+            return parse_expression(e_level13);
          }
          else if (token_t::e_eof == current_token_.type)
          {
