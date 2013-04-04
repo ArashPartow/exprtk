@@ -37,6 +37,7 @@
 #include <algorithm>
 #include <cctype>
 #include <cmath>
+#include <cstdio>
 #include <deque>
 #include <limits>
 #include <list>
