@@ -1,11 +1,11 @@
 C++ Mathematical Expression Toolkit Library
 
 [INTRODUCTION]
-The C++ Mathematical Expression Library  (ExprTk) is a simple to  use,
-easy  to  integrate and  extremely  efficient mathematical  expression
-parsing and  evaluation engine.  The parsing  engine supports  various
-kinds of functional and logic  processing semantics and is very easily
-extendible.
+The C++ Mathematical Expression  Toolkit Library (ExprTk) is  a simple
+to  use,  easy  to  integrate  and  extremely  efficient  mathematical
+expression parsing and evaluation engine. The parsing engine  supports
+numerous forms  of functional  and logic  processing semantics  and is
+very easily extendible.
 
 
 
@@ -15,20 +15,19 @@ operations, functions and processes:
 
 (0) Basic operators: +, -, *, /, %, ^
 
-(1) Functions:       min, max, avg, sum, abs, ceil, floor, round,
-                     roundn, exp, log, log10, logn, log1p, root,
-                     sqrt, clamp, inrange, sgn, erf, erfc, frac,
+(1) Functions:       abs, avg, ceil, clamp, erf, erfc, exp, floor,
+                     frac, inrange, log, log10, log1p, log2, logn,
+                     max, min, root, round, roundn, sgn, sqrt, sum,
                      trunc
 
-(2) Trigonometry:    sin, cos, tan, acos, asin, atan, atan2, cosh,
-                     cot, csc, sec, sinh, tanh, rad2deg, deg2rad,
-                     deg2grad, grad2deg, hypot
-
+(2) Trigonometry:    acos, asin, atan, atan2, cos, cosh, cot, csc,
+                     deg2grad, deg2rad, grad2deg, hypot, rad2deg,
+                     sec, sin, sinh, tan, tanh
 (3) Equalities &
     Inequalities:    =, ==, <>, !=, <, <=, >, >=
 
-(4) Boolean logic:   and, or, xor, xnor, not, nand, nor, shr, shl,
-                     true, false
+(4) Boolean logic:   and, mand, mor, nand, nor, not, or, shl, shr,
+                     xnor, xor, true, false
 
 (5) Conditional &
     Loop statement:  if-then-else, while
@@ -70,25 +69,27 @@ expressions that can be parsed and evaluated using the ExprTk library.
 
 
 [COPYRIGHT NOTICE]
-Free use of the  Mathematical Expression Toolkit Library  is permitted
-under the guidelines and in  accordance with the most current  version
-of the Common Public License.
+Free  use  of  the  C++  Mathematical  Expression  Toolkit  Library is
+permitted under the guidelines and in accordance with the most current
+version of the Common Public License.
 
 http://www.opensource.org/licenses/cpl1.0.php
 
 
 
 [DOWNLOADS & UPDATES]
-All  updates  and  the most  recent version  of the  C++ Mathematical
-Expression Library can be found at:
-(1) http://www.partow.net/programming/exprtk/index.html
-(2) svn checkout http://exprtk.googlecode.com/svn/ exprtk
+The most  recent version  of the  C++ Mathematical  Expression Toolkit
+Library including all updates and tests can be found at the  following
+locations:
+
+ (1) http://www.partow.net/programming/exprtk/index.html
+ (2) svn checkout http://exprtk.googlecode.com/svn/ exprtk
 
 
 
 [INSTALLATION]
-(1) exprtk.hpp should be  placed in  a project or system include path
-(e.g: /usr/include/).
+The header  file exprtk.hpp  should be  placed in  a project or system
+include path (e.g: /usr/include/).
 
 
 
@@ -229,6 +230,8 @@ Expression Library can be found at:
 +-----------+--------------------------------------------------------+
 | log1p     | Natural logarithm of 1 + x, where x is very small.     |
 |           | (eg: log1p(x))                                         |
++-----------+--------------------------------------------------------+
+| log2      | Base 2 logarithm of x                                  |
 +-----------+--------------------------------------------------------+
 | logn      | Base N logarithm of x (eg: logn(1235,8))               |
 |           | where n > 0 and is an integer.                         |
@@ -392,55 +395,59 @@ correctly optimize such expressions for a given architecture.
 
 
 [EXPRTK NOTES]
- (00) Supported types are float, double and long double.
+ (00) Precision and performance of expression evaluations are the
+      dominant principles of the ExprTk library.
 
- (01) Standard mathematical operator precedence is applied (BEDMAS).
+ (01) Supported types are float, double and long double.
 
- (02) Supported user defined types are numeric and string variables
+ (02) Standard mathematical operator precedence is applied (BEDMAS).
+
+ (03) Supported user defined types are numeric and string variables
       and functions.
 
- (03) All variable and function names are case-insensitive
+ (04) All variable and function names are case-insensitive
 
- (04) Variable and function names must begin with a letter
-     (A-Z or a-z), then can be comprised of any combination of
-     letters, digits and underscores. (eg: x, var1 or power_func99)
+ (05) Variable and function names must begin with a letter
+      (A-Z or a-z), then can be comprised of any combination of
+      letters, digits and underscores. (eg: x, var1 or power_func99)
 
- (05) Expression lengths are limited only by storage capacity.
+ (06) Expression lengths are limited only by storage capacity.
 
- (06) The life-time of objects registered with a symbol-table must
-      span at least the life-time of expressions generated using
-      that symbol-table, otherwise the result will be undefined
-      behavior.
+ (07) The life-time of objects registered with or created from a
+      specific symbol-table must span at least the life-time of
+      expressions generated using that symbol-table, otherwise
+      the result will be undefined behavior.
 
- (07) Equal/Nequal routines use epsilons of 0.0000000001 and 0.000001
-      for double and float types respectively.
+ (08) Equal/Nequal are normalized equality routines, which use
+      epsilons of 0.0000000001 and 0.000001 for double and float
+      types respectively.
 
- (08) All trigonometric functions assume radian input unless
+ (09) All trigonometric functions assume radian input unless
       stated otherwise.
 
- (09) Expressions may contain white-space characters such as
+ (10) Expressions may contain white-space characters such as
       space,  tabs, new-lines, control-feed et al.
       ('\n', '\r', '\t', '\b', '\v', '\f')
 
- (10) Strings may be constructed from any letters, digits or special
+ (11) Strings may be constructed from any letters, digits or special
       characters such as (~!@#$%^&*()[]|=+ ,./?<>;:"`~_), and must
       be enclosed with single-quotes.
       eg: 'Frankly, my dear, I don't give a damn!'
 
- (11) User defined normal functions can have up to 20 parameters,
+ (12) User defined normal functions can have up to 20 parameters,
       where as user defined vararg-functions can have an unlimited
       number of parameters.
 
- (12) The inbuilt polynomial functions can be at most of degree 12.
+ (13) The inbuilt polynomial functions can be at most of degree 12.
 
- (13) Where appropriate constant folding optimisations will be
+ (14) Where appropriate constant folding optimisations will be
       applied. (eg: The expression '2+(3-(x/y))' becomes '5-(x/y)')
 
- (14) String processing capabilities are available by default.
+ (15) String processing capabilities are available by default.
       To turn them off, the following needs to be defined at
       compile time: exprtk_disable_string_capabilities
 
- (15) Expressions may contain any of the following comment styles:
+ (16) Expressions may contain any of the following comment styles:
       1. // .... \n
       2. #  .... \n
       3. /* .... */

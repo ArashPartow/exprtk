@@ -236,11 +236,11 @@ namespace exprtk
                                      "abs", "acos", "and", "asin", "atan", "atan2", "avg", "ceil", "clamp",
                                      "cos", "cosh", "cot", "csc", "deg2grad", "deg2rad", "equal", "erf", "erfc",
                                      "exp", "false", "floor", "for", "frac", "grad2deg", "hypot", "if", "ilike",
-                                     "in", "inrange", "like", "log", "log10", "logn", "log1p", "mand", "max",
-                                     "min", "mod", "mor", "mul", "nand", "nor", "not", "not_equal", "null", "or",
-                                     "pow", "rad2deg", "root", "round", "roundn", "sec", "sgn", "shl", "shr", "sin",
-                                     "sinh", "sqrt", "sum", "tan", "tanh", "true", "trunc", "while", "xnor", "xor",
-                                     "&", "|"
+                                     "in", "inrange", "like", "log", "log10", "log2", "logn", "log1p", "mand",
+                                     "max", "min", "mod", "mor", "mul", "nand", "nor", "not", "not_equal", "null",
+                                     "or", "pow", "rad2deg", "root", "round", "roundn", "sec", "sgn", "shl", "shr",
+                                     "sin", "sinh", "sqrt", "sum", "tan", "tanh", "true", "trunc", "while", "xnor",
+                                     "xor", "&", "|"
                                   };
 
       static const std::size_t reserved_symbols_size = sizeof(reserved_symbols) / sizeof(std::string);
@@ -376,6 +376,7 @@ namespace exprtk
             static const double _1_pi   =  0.318309886183790671538;
             static const double _2_pi   =  0.636619772367581343076;
             static const double _180_pi = 57.295779513082320876798;
+            static const double log2    =  0.693147180559945309417;
          }
 
          namespace details
@@ -708,6 +709,7 @@ namespace exprtk
             template <typename T> inline T floor_impl(const T v, real_type_tag) { return std::floor(v); }
             template <typename T> inline T   log_impl(const T v, real_type_tag) { return std::log  (v); }
             template <typename T> inline T log10_impl(const T v, real_type_tag) { return std::log10(v); }
+            template <typename T> inline T  log2_impl(const T v, real_type_tag) { return std::log(v)/T(numeric::constant::log2); }
             template <typename T> inline T   neg_impl(const T v, real_type_tag) { return -v;            }
             template <typename T> inline T   pos_impl(const T v, real_type_tag) { return +v;            }
             template <typename T> inline T   sin_impl(const T v, real_type_tag) { return std::sin  (v); }
@@ -730,6 +732,7 @@ namespace exprtk
             template <typename T> inline T   exp_impl(const T v, int_type_tag) { return std::exp  (v); }
             template <typename T> inline T   log_impl(const T v, int_type_tag) { return std::log  (v); }
             template <typename T> inline T log10_impl(const T v, int_type_tag) { return std::log10(v); }
+            template <typename T> inline T  log2_impl(const T v, int_type_tag) { return std::log(v)/T(numeric::constant::log2); }
             template <typename T> inline T   neg_impl(const T v, int_type_tag) { return -v;            }
             template <typename T> inline T   pos_impl(const T v, int_type_tag) { return +v;            }
             template <typename T> inline T  ceil_impl(const T v, int_type_tag) { return v;             }
@@ -924,6 +927,7 @@ namespace exprtk
          exprtk_define_unary_function(floor)
          exprtk_define_unary_function(log  )
          exprtk_define_unary_function(log10)
+         exprtk_define_unary_function(log2 )
          exprtk_define_unary_function(log1p)
          exprtk_define_unary_function(neg  )
          exprtk_define_unary_function(pos  )
@@ -1508,12 +1512,19 @@ namespace exprtk
             while (!is_end(s_itr_))
             {
                scan_token();
-               if (token_list_.back().is_error())
+               if (token_list_.empty())
+                  return true;
+               else if (token_list_.back().is_error())
                {
                   return false;
                }
             }
             return true;
+         }
+
+         inline bool empty() const
+         {
+            return token_list_.empty();
          }
 
          inline std::size_t size() const
@@ -2747,15 +2758,15 @@ namespace exprtk
          e_shr     , e_shl     , e_abs     , e_acos    ,
          e_asin    , e_atan    , e_ceil    , e_cos     ,
          e_cosh    , e_exp     , e_floor   , e_log     ,
-         e_log10   , e_log1p   , e_logn    , e_neg     ,
-         e_pos     , e_round   , e_roundn  , e_root    ,
-         e_sqrt    , e_sin     , e_sinh    , e_sec     ,
-         e_csc     , e_tan     , e_tanh    , e_cot     ,
-         e_clamp   , e_inrange , e_sgn     , e_r2d     ,
-         e_d2r     , e_d2g     , e_g2d     , e_hypot   ,
-         e_notl    , e_erf     , e_erfc    , e_frac    ,
-         e_trunc   , e_assign  , e_in      , e_like    ,
-         e_ilike   ,
+         e_log10   , e_log2    , e_log1p   , e_logn    ,
+         e_neg     , e_pos     , e_round   , e_roundn  ,
+         e_root    , e_sqrt    , e_sin     , e_sinh    ,
+         e_sec     , e_csc     , e_tan     , e_tanh    ,
+         e_cot     , e_clamp   , e_inrange , e_sgn     ,
+         e_r2d     , e_d2r     , e_d2g     , e_g2d     ,
+         e_hypot   , e_notl    , e_erf     , e_erfc    ,
+         e_frac    , e_trunc   , e_assign  , e_in      ,
+         e_like    , e_ilike   ,
 
          // Do not add new functions/operators after this point.
          e_sf00 = 1000, e_sf01 = 1001, e_sf02 = 1002, e_sf03 = 1003,
@@ -2828,6 +2839,7 @@ namespace exprtk
                   case e_floor : return numeric::floor(arg);
                   case e_log   : return numeric::log  (arg);
                   case e_log10 : return numeric::log10(arg);
+                  case e_log2  : return numeric::log2 (arg);
                   case e_log1p : return numeric::log1p(arg);
                   case e_neg   : return numeric::neg  (arg);
                   case e_pos   : return numeric::pos  (arg);
@@ -2863,6 +2875,7 @@ namespace exprtk
                   case e_exp   : return numeric::exp  (arg);
                   case e_log   : return numeric::log  (arg);
                   case e_log10 : return numeric::log10(arg);
+                  case e_log2  : return numeric::log2 (arg);
                   case e_log1p : return numeric::log1p(arg);
                   case e_neg   : return numeric::neg  (arg);
                   case e_pos   : return numeric::pos  (arg);
@@ -2983,18 +2996,18 @@ namespace exprtk
             e_ipow        , e_ipowinv     , e_abs         , e_acos        ,
             e_asin        , e_atan        , e_ceil        , e_cos         ,
             e_cosh        , e_exp         , e_floor       , e_log         ,
-            e_log10       , e_log1p       , e_neg         , e_pos         ,
-            e_round       , e_sin         , e_sinh        , e_sqrt        ,
-            e_tan         , e_tanh        , e_cot         , e_sec         ,
-            e_csc         , e_r2d         , e_d2r         , e_d2g         ,
-            e_g2d         , e_notl        , e_sgn         , e_erf         ,
-            e_erfc        , e_frac        , e_trunc       , e_uvouv       ,
-            e_vov         , e_cov         , e_voc         , e_vob         ,
-            e_bov         , e_cob         , e_boc         , e_vovov       ,
-            e_vovoc       , e_vocov       , e_covov       , e_covoc       ,
-            e_vovovov     , e_vovovoc     , e_vovocov     , e_vocovov     ,
-            e_covovov     , e_covocov     , e_vocovoc     , e_covovoc     ,
-            e_vococov     , e_sf3ext      , e_sf4ext
+            e_log10       , e_log2        , e_log1p       , e_neg         ,
+            e_pos         , e_round       , e_sin         , e_sinh        ,
+            e_sqrt        , e_tan         , e_tanh        , e_cot         ,
+            e_sec         , e_csc         , e_r2d         , e_d2r         ,
+            e_d2g         , e_g2d         , e_notl        , e_sgn         ,
+            e_erf         , e_erfc        , e_frac        , e_trunc       ,
+            e_uvouv       , e_vov         , e_cov         , e_voc         ,
+            e_vob         , e_bov         , e_cob         , e_boc         ,
+            e_vovov       , e_vovoc       , e_vocov       , e_covov       ,
+            e_covoc       , e_vovovov     , e_vovovoc     , e_vovocov     ,
+            e_vocovov     , e_covovov     , e_covocov     , e_vocovoc     ,
+            e_covovoc     , e_vococov     , e_sf3ext      , e_sf4ext
          };
 
          typedef T value_type;
@@ -4747,6 +4760,7 @@ namespace exprtk
       exprtk_def_unary_op(g2d  )
       exprtk_def_unary_op(log  )
       exprtk_def_unary_op(log10)
+      exprtk_def_unary_op(log2 )
       exprtk_def_unary_op(log1p)
       exprtk_def_unary_op(neg  )
       exprtk_def_unary_op(notl )
@@ -7554,6 +7568,7 @@ namespace exprtk
          register_op(    "floor",e_floor   , 1)
          register_op(      "log",e_log     , 1)
          register_op(    "log10",e_log10   , 1)
+         register_op(     "log2",e_log2    , 1)
          register_op(    "log1p",e_log1p   , 1)
          register_op(    "round",e_round   , 1)
          register_op(      "sin",e_sin     , 1)
@@ -9255,6 +9270,9 @@ namespace exprtk
 
       inline bool compile(const std::string& expression_string, expression<T>& expr)
       {
+         error_list_.clear();
+         expression_generator_.set_allocator(node_allocator_);
+
          if (expression_string.empty())
          {
             set_error(
@@ -9263,12 +9281,17 @@ namespace exprtk
             return false;
          }
 
-         error_list_.clear();
-         expression_generator_.set_allocator(node_allocator_);
-
          if (!lexer_.process(expression_string))
          {
             process_lexer_errors();
+            return false;
+         }
+
+         if (lexer_.empty())
+         {
+            set_error(
+               make_error(parser_error::e_syntax,
+                          "ERR01 - Empty expression!"));
             return false;
          }
 
@@ -9294,7 +9317,7 @@ namespace exprtk
          {
             set_error(
                make_error(parser_error::e_syntax,
-                          "ERR01 - Incomplete expression!"));
+                          "ERR02 - Incomplete expression!"));
             symbol_name_cache_.clear();
             if (0 != e)
             {
@@ -9310,7 +9333,7 @@ namespace exprtk
          {
             if (lexer_[i].is_error())
             {
-               std::string diagnostic = "ERR02 - ";
+               std::string diagnostic = "ERR03 - ";
                switch (lexer_[i].type)
                {
                   case lexer::token::e_error      : diagnostic + "General token error";
@@ -9400,7 +9423,7 @@ namespace exprtk
                      set_error(
                         make_error(parser_error::e_token,
                                    bracket_checker_ptr->error_token(),
-                                   "ERR03 - Mismatched brackets: " + bracket_checker_ptr->error_token().value));
+                                   "ERR04 - Mismatched brackets: " + bracket_checker_ptr->error_token().value));
                   }
                   else if (0 != (numeric_checker_ptr = dynamic_cast<lexer::helper::numeric_checker*>(helper_assembly_.error_token_scanner)))
                   {
@@ -9410,7 +9433,7 @@ namespace exprtk
                         set_error(
                            make_error(parser_error::e_token,
                                       error_token,
-                                      "ERR04 - Invalid numeric token: " + error_token.value));
+                                      "ERR05 - Invalid numeric token: " + error_token.value));
                      }
                   }
                   else if (0 != (sequence_validator_ptr = dynamic_cast<lexer::helper::sequence_validator*>(helper_assembly_.error_token_scanner)))
@@ -9421,7 +9444,7 @@ namespace exprtk
                         set_error(
                            make_error(parser_error::e_token,
                                       error_token.first,
-                                      "ERR05 - Invalid token sequence: " +
+                                      "ERR06 - Invalid token sequence: " +
                                       error_token.first.value + " " +
                                       error_token.second.value));
                      }
@@ -9860,7 +9883,7 @@ namespace exprtk
             set_error(
                make_error(parser_error::e_syntax,
                           current_token_,
-                          "ERR06 - Expecting argument list for function: '" + function_name + "'"));
+                          "ERR07 - Expecting argument list for function: '" + function_name + "'"));
             return error_node();
          }
 
@@ -9872,7 +9895,7 @@ namespace exprtk
                set_error(
                   make_error(parser_error::e_syntax,
                              current_token_,
-                             "ERR07 - Failed to parse argument " + details::to_str(i) + " for function: '" + function_name + "'"));
+                             "ERR08 - Failed to parse argument " + details::to_str(i) + " for function: '" + function_name + "'"));
                return error_node();
             }
             else if (i < static_cast<int>(NumberofParameters - 1))
@@ -9882,7 +9905,7 @@ namespace exprtk
                   set_error(
                      make_error(parser_error::e_syntax,
                                 current_token_,
-                                "ERR08 - Invalid number of arguments for function: '" + function_name + "'"));
+                                "ERR09 - Invalid number of arguments for function: '" + function_name + "'"));
                   return error_node();
                }
             }
@@ -9893,7 +9916,7 @@ namespace exprtk
             set_error(
                make_error(parser_error::e_syntax,
                           current_token_,
-                          "ERR09 - Invalid number of arguments for function: '" + function_name + "'"));
+                          "ERR10 - Invalid number of arguments for function: '" + function_name + "'"));
             return error_node();
          }
          else
@@ -9912,7 +9935,7 @@ namespace exprtk
             set_error(
                make_error(parser_error::e_syntax,
                current_token_,
-               "ERR10 - Expecting '()' to proceed: '" + function_name + "'"));
+               "ERR11 - Expecting '()' to proceed: '" + function_name + "'"));
             return error_node();
          }
          else
@@ -9929,7 +9952,7 @@ namespace exprtk
             set_error(
                make_error(parser_error::e_syntax,
                           current_token_,
-                          "ERR11 - No entries found for base operation: " + operation_name));
+                          "ERR12 - No entries found for base operation: " + operation_name));
             return error_node();
          }
 
@@ -9952,7 +9975,7 @@ namespace exprtk
                            set_error(
                               make_error(parser_error::e_syntax,
                                          current_token_,
-                                         "ERR12 - Impossible argument count for base function: " + operation_name));
+                                         "ERR13 - Impossible argument count for base function: " + operation_name));
 
                            return error_node();
                         }
@@ -9973,7 +9996,7 @@ namespace exprtk
          set_error(
             make_error(parser_error::e_syntax,
                        current_token_,
-                       "ERR13 - Invalid parameter count for function: " + operation_name));
+                       "ERR14 - Invalid parameter count for function: " + operation_name));
          return error_node();
       }
 
@@ -9993,7 +10016,7 @@ namespace exprtk
             set_error(
                make_error(parser_error::e_syntax,
                           current_token_,
-                          "ERR14 - Failed to parse condition for if-statement"));
+                          "ERR15 - Failed to parse condition for if-statement"));
             return error_node();
          }
          else if (!token_is(token_t::e_comma))
@@ -10003,7 +10026,7 @@ namespace exprtk
             set_error(
                make_error(parser_error::e_syntax,
                           current_token_,
-                          "ERR15 - Failed to parse consequent for if-statement"));
+                          "ERR16 - Failed to parse consequent for if-statement"));
             return error_node();
          }
          else if (!token_is(token_t::e_comma))
@@ -10013,7 +10036,7 @@ namespace exprtk
             set_error(
                make_error(parser_error::e_syntax,
                           current_token_,
-                          "ERR16 - Failed to parse alternative for if-statement"));
+                          "ERR17 - Failed to parse alternative for if-statement"));
             return error_node();
          }
          else if (!token_is(token_t::e_rbracket))
@@ -10035,7 +10058,7 @@ namespace exprtk
             set_error(
                make_error(parser_error::e_syntax,
                           current_token_,
-                          "ERR17 - Failed to parse condition for while-loop"));
+                          "ERR18 - Failed to parse condition for while-loop"));
             return error_node();
          }
          else if (!token_is(token_t::e_rbracket))
@@ -10047,7 +10070,7 @@ namespace exprtk
             set_error(
                make_error(parser_error::e_syntax,
                           current_token_,
-                          "ERR18 - Failed to parse branch for while-loop"));
+                          "ERR19 - Failed to parse branch for while-loop"));
             return error_node();
          }
          else if (!token_is(token_t::e_rcrlbracket))
@@ -10059,7 +10082,7 @@ namespace exprtk
             set_error(
                make_error(parser_error::e_syntax,
                           current_token_,
-                          "ERR19 - Failed to parse branch for while-loop"));
+                          "ERR20 - Failed to parse branch for while-loop"));
             return error_node();
          }
          else
@@ -10086,7 +10109,7 @@ namespace exprtk
             set_error(
                make_error(parser_error::e_syntax,
                           current_token_,
-                          "ERR20 - Unsupported vararg function: " + symbol));
+                          "ERR21 - Unsupported vararg function: " + symbol));
             return error_node();
          }
 
@@ -10098,7 +10121,7 @@ namespace exprtk
             set_error(
                make_error(parser_error::e_syntax,
                           current_token_,
-                          "ERR21 - Expected '(' for call to vararg function: " + symbol));
+                          "ERR22 - Expected '(' for call to vararg function: " + symbol));
             return error_node();
          }
 
@@ -10116,7 +10139,7 @@ namespace exprtk
                set_error(
                   make_error(parser_error::e_syntax,
                              current_token_,
-                             "ERR22 - Expected ',' for call to vararg function: " + symbol));
+                             "ERR23 - Expected ',' for call to vararg function: " + symbol));
                return error_node();
             }
          }
@@ -10142,7 +10165,7 @@ namespace exprtk
             set_error(
                make_error(parser_error::e_syntax,
                           current_token_,
-                          "ERR21 - Expected '(' for call to vararg function: " + vararg_function_name));
+                          "ERR24 - Expected '(' for call to vararg function: " + vararg_function_name));
             return error_node();
          }
 
@@ -10160,7 +10183,7 @@ namespace exprtk
                set_error(
                   make_error(parser_error::e_syntax,
                              current_token_,
-                             "ERR22 - Expected ',' for call to vararg function: " + vararg_function_name));
+                             "ERR25 - Expected ',' for call to vararg function: " + vararg_function_name));
                return error_node();
             }
          }
@@ -10221,7 +10244,7 @@ namespace exprtk
             set_error(
                make_error(parser_error::e_token,
                           current_token_,
-                          "ERR23 - Invalid special function[1]: " + current_token_.value));
+                          "ERR26 - Invalid special function[1]: " + current_token_.value));
             return error_node();
          }
 
@@ -10232,7 +10255,7 @@ namespace exprtk
             set_error(
                make_error(parser_error::e_token,
                           current_token_,
-                          "ERR24 - Invalid special function[2]: " + current_token_.value));
+                          "ERR27 - Invalid special function[2]: " + current_token_.value));
             return error_node();
          }
 
@@ -10324,7 +10347,7 @@ namespace exprtk
                            set_error(
                               make_error(parser_error::e_syntax,
                                          current_token_,
-                                         "ERR25 - Invalid number of parameters for function: " + symbol));
+                                         "ERR28 - Invalid number of parameters for function: " + symbol));
                            return error_node();
                          }
             }
@@ -10336,7 +10359,7 @@ namespace exprtk
                set_error(
                   make_error(parser_error::e_syntax,
                              current_token_,
-                             "ERR26 - Failed to generate node for function: '" + symbol + "'"));
+                             "ERR29 - Failed to generate node for function: '" + symbol + "'"));
                return error_node();
             }
          }
@@ -10356,7 +10379,7 @@ namespace exprtk
                set_error(
                   make_error(parser_error::e_syntax,
                              current_token_,
-                             "ERR27 - Failed to generate node for vararg function: '" + symbol + "'"));
+                             "ERR30 - Failed to generate node for vararg function: '" + symbol + "'"));
                return error_node();
             }
          }
@@ -10365,7 +10388,7 @@ namespace exprtk
             set_error(
                make_error(parser_error::e_syntax,
                           current_token_,
-                          "ERR28 - Undefined variable or function: '" + symbol + "'"));
+                          "ERR31 - Undefined variable or function: '" + symbol + "'"));
             return error_node();
          }
       }
@@ -10409,7 +10432,7 @@ namespace exprtk
             set_error(
                make_error(parser_error::e_symtab,
                           current_token_,
-                          "ERR29 - Variable or function detected, yet symbol-table is invalid, Symbol: " + current_token_.value));
+                          "ERR32 - Variable or function detected, yet symbol-table is invalid, Symbol: " + current_token_.value));
             return error_node();
          }
       }
@@ -10484,7 +10507,7 @@ namespace exprtk
             set_error(
                make_error(parser_error::e_syntax,
                           current_token_,
-                          "ERR30 - Premature end of expression.[1]"));
+                          "ERR33 - Premature end of expression.[1]"));
             return error_node();
          }
          else
@@ -10492,7 +10515,7 @@ namespace exprtk
             set_error(
                make_error(parser_error::e_syntax,
                           current_token_,
-                          "ERR31 - Premature end of expression.[2]"));
+                          "ERR34 - Premature end of expression.[2]"));
             return error_node();
          }
       }
@@ -10659,18 +10682,18 @@ namespace exprtk
                    (details::e_ceil  == operation) || (details::e_cos   == operation) ||
                    (details::e_cosh  == operation) || (details::e_exp   == operation) ||
                    (details::e_floor == operation) || (details::e_log   == operation) ||
-                   (details::e_log10 == operation) || (details::e_log1p == operation) ||
-                   (details::e_neg   == operation) || (details::e_pos   == operation) ||
-                   (details::e_round == operation) || (details::e_sin   == operation) ||
-                   (details::e_sinh  == operation) || (details::e_sqrt  == operation) ||
-                   (details::e_tan   == operation) || (details::e_tanh  == operation) ||
-                   (details::e_cot   == operation) || (details::e_sec   == operation) ||
-                   (details::e_csc   == operation) || (details::e_r2d   == operation) ||
-                   (details::e_d2r   == operation) || (details::e_d2g   == operation) ||
-                   (details::e_g2d   == operation) || (details::e_notl  == operation) ||
-                   (details::e_sgn   == operation) || (details::e_erf   == operation) ||
-                   (details::e_erfc  == operation) || (details::e_frac  == operation) ||
-                   (details::e_trunc == operation);
+                   (details::e_log10 == operation) || (details::e_log2  == operation) ||
+                   (details::e_log1p == operation) || (details::e_neg   == operation) ||
+                   (details::e_pos   == operation) || (details::e_round == operation) ||
+                   (details::e_sin   == operation) || (details::e_sinh  == operation) ||
+                   (details::e_sqrt  == operation) || (details::e_tan   == operation) ||
+                   (details::e_tanh  == operation) || (details::e_cot   == operation) ||
+                   (details::e_sec   == operation) || (details::e_csc   == operation) ||
+                   (details::e_r2d   == operation) || (details::e_d2r   == operation) ||
+                   (details::e_d2g   == operation) || (details::e_g2d   == operation) ||
+                   (details::e_notl  == operation) || (details::e_sgn   == operation) ||
+                   (details::e_erf   == operation) || (details::e_erfc  == operation) ||
+                   (details::e_frac  == operation) || (details::e_trunc == operation);
          }
 
          inline bool sf3_optimizable(const std::string sf3id, trinary_functor_t& tfunc)
@@ -11125,6 +11148,7 @@ namespace exprtk
          case_stmt(details::e_floor,details::floor_op) \
          case_stmt(details::  e_log,details::  log_op) \
          case_stmt(details::e_log10,details::log10_op) \
+         case_stmt(details:: e_log2,details:: log2_op) \
          case_stmt(details::e_log1p,details::log1p_op) \
          case_stmt(details::  e_neg,details::  neg_op) \
          case_stmt(details::  e_pos,details::  pos_op) \
@@ -14896,6 +14920,7 @@ namespace exprtk
          register_unary_op(details::e_floor,details::floor_op)
          register_unary_op(details::  e_log,details::  log_op)
          register_unary_op(details::e_log10,details::log10_op)
+         register_unary_op(details:: e_log2,details:: log2_op)
          register_unary_op(details::e_log1p,details::log1p_op)
          register_unary_op(details::  e_neg,details::  neg_op)
          register_unary_op(details::  e_pos,details::  pos_op)
