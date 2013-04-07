@@ -3345,6 +3345,163 @@ inline bool run_test18()
    return !failure;
 }
 
+template <typename T>
+inline bool run_test19()
+{
+   typedef exprtk::symbol_table<T>      symbol_table_t;
+   typedef exprtk::expression<T>          expression_t;
+   typedef exprtk::parser<T>                  parser_t;
+   typedef exprtk::parser_error::type          error_t;
+   typedef exprtk::function_compositor<T> compositor_t;
+   typedef typename compositor_t::function  function_t;
+
+   {
+      T x = T(123.123);
+
+      compositor_t fc;
+
+      // f(x) = x + 2
+      fc.add("f","x + 2","x");
+
+      // g(x) = x^2-3
+      fc.add("g","x^2 - 3","x");
+
+      // fof(x) = f(f(x))
+      fc.add("fof","f(f(x))","x");
+
+      // gog(x) = g(g(x))
+      fc.add("gog","g(g(x))","x");
+
+      // fog(x) = f(g(x))
+      fc.add("fog","f(g(x))","x");
+
+      // gof(x) = g(f(x))
+      fc.add("gof","g(f(x))","x");
+
+      exprtk::symbol_table<T>& symbol_table = fc.symbol_table();
+      symbol_table.add_constants();
+      symbol_table.add_variable("x",x);
+
+      static const std::string expr_str_list[] =
+                                 {
+                                   "equal(f(x),(x + 2))",
+                                   "equal(g(x),(x^2 - 3))",
+                                   "equal(fof(x),(x + 4))",
+                                   "equal(gog(x),(x^4 - 6x^2 + 6))",
+                                   "equal(fog(x),(x^2 - 1))",
+                                   "equal(gof(x),(x^2 + 4x + 1))",
+                                 };
+      static const std::size_t expr_str_list_size = sizeof(expr_str_list) / sizeof(std::string);
+
+      std::deque<expression_t> expression_list;
+
+      for (std::size_t i = 0; i < expr_str_list_size; ++i)
+      {
+         expression_t expression;
+         expression.register_symbol_table(symbol_table);
+
+         exprtk::parser<T> parser;
+
+         if (!parser.compile(expr_str_list[i],expression))
+         {
+            printf("run_test19() - Error: %s   Expression: %s\n",
+                   parser.error().c_str(),
+                   expr_str_list[i].c_str());
+            return false;
+         }
+         else
+            expression_list.push_back(expression);
+      }
+
+      bool failure = false;
+
+      for (std::size_t i = 0; i < expression_list.size(); ++i)
+      {
+         if (T(1) != expression_list[i].value())
+         {
+            printf("run_test19() - Error in evaluation! (1) Expression: %s\n",
+                   expr_str_list[i].c_str());
+            failure = true;
+         }
+      }
+
+      if (failure)
+         return false;
+   }
+
+   const std::size_t rounds = 100;
+   for (std::size_t r = 0; r < rounds; ++r)
+   {
+      T x = T(1);
+      T y = T(2);
+      T z = T(3);
+      T w = T(4);
+      T u = T(5);
+      T v = T(6);
+
+      compositor_t fc;
+
+      // f0() = 6
+      fc.add("f0"," 3 * 2");
+
+      // f1(x) = 5 * (f0 + x)
+      fc.add("f1"," 5 * (f0+x)","x");
+
+      // f2(x,y) = 7 * (f1(x) + f1(y))
+      fc.add("f2"," 7 * (f1(x)+f1(y))","x","y");
+
+      // f3(x,y,z) = 9 * (2(x,y) + f2(y,z) + f2(x,z))
+      fc.add("f3"," 9 * (f2(x,y)+f2(y,z)+f2(x,z))","x","y","z");
+
+      // f4(x,y,z,w) = 11 * (f3(x,y,z) + f3(y,z,w) + f3(z,w,z))
+      fc.add("f4","11 * (f3(x,y,z)+f3(y,z,w)+f3(z,w,x))","x","y","z","w");
+
+      // f5(x,y,z,w,u) = 13 * (f4(x,y,z,w) + f4(y,z,w,u) + f4(z,w,u,x) + f4(w,u,x,y))
+      fc.add("f5","13 * (f4(x,y,z,w)+f4(y,z,w,u)+f4(z,w,u,x)+f4(w,u,x,y))","x","y","z","w","u");
+
+      // f6(x,y,z,w,u,v) = 17 * (f5(x,y,z,w,u) + f5(y,z,w,u,v) + f5(z,w,u,v,x) + f5(w,u,v,x,y))
+      fc.add(function_t("f6")
+               .expression("17 * (f5(x,y,z,w,u)+f5(y,z,w,u,v)+f5(z,w,u,v,x)+f5(w,u,v,x,y))")
+               .var("x").var("y").var("z")
+               .var("w").var("u").var("v"));
+
+      exprtk::symbol_table<T>& symbol_table = fc.symbol_table();
+      symbol_table.add_constants();
+      symbol_table.add_variable("x",x);
+      symbol_table.add_variable("y",y);
+      symbol_table.add_variable("z",z);
+      symbol_table.add_variable("w",w);
+      symbol_table.add_variable("u",u);
+      symbol_table.add_variable("v",v);
+
+      expression_t expression;
+      expression.register_symbol_table(symbol_table);
+
+      exprtk::parser<T> parser;
+
+      std::string expression_str = "f6(x,y,z,w,u,v) + 2";
+
+      if (!parser.compile(expression_str,expression))
+      {
+         printf("run_test19() - Error: %s   Expression: %s\n",
+                parser.error().c_str(),
+                expression_str.c_str());
+         return false;
+      }
+
+      T result = expression.value();
+
+      if (T(2122700582) != result)
+      {
+         printf("run_test19() - Error in evaluation! (2) Expression: %s\n",
+                expression_str.c_str());
+         return false;
+      }
+   }
+
+   return true;
+}
+
 int main()
 {
    #define perform_test(Type,Number) \
@@ -3381,6 +3538,7 @@ int main()
    perform_test(double,16)
    perform_test(double,17)
    perform_test(double,18)
+   perform_test(double,19)
 
    #undef perform_test
 

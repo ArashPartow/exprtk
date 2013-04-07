@@ -2394,6 +2394,15 @@ namespace exprtk
 
          public:
 
+            bool remove(const std::string& target_symbol)
+            {
+               replace_map_t::iterator itr = replace_map_.find(target_symbol);
+               if (replace_map_.end() == itr)
+                  return false;
+               replace_map_.erase(itr);
+               return true;
+            }
+
             bool add_replace(const std::string& target_symbol,
                              const std::string& replace_symbol,
                              const lexer::token::token_type token_type = lexer::token::e_symbol)
@@ -9337,17 +9346,17 @@ namespace exprtk
                std::string diagnostic = "ERR03 - ";
                switch (lexer_[i].type)
                {
-                  case lexer::token::e_error      : diagnostic + "General token error";
+                  case lexer::token::e_error      : diagnostic += "General token error";
                                                     break;
-                  case lexer::token::e_err_symbol : diagnostic + "Symbol error";
+                  case lexer::token::e_err_symbol : diagnostic += "Symbol error";
                                                     break;
-                  case lexer::token::e_err_number : diagnostic + "Invalid numeric token";
+                  case lexer::token::e_err_number : diagnostic += "Invalid numeric token";
                                                     break;
-                  case lexer::token::e_err_string : diagnostic + "Invalid string token";
+                  case lexer::token::e_err_string : diagnostic += "Invalid string token";
                                                     break;
-                  case lexer::token::e_err_sfunc  : diagnostic + "Invalid special function token";
+                  case lexer::token::e_err_sfunc  : diagnostic += "Invalid special function token";
                                                     break;
-                  default                         : diagnostic + "Unknown compiler error";
+                  default                         : diagnostic += "Unknown compiler error";
                                                     break;
                }
                set_error(
@@ -9502,12 +9511,22 @@ namespace exprtk
 
       inline bool replace_symbol(const std::string& old_symbol, const std::string& new_symbol)
       {
-         if (details::is_reserved_word(old_symbol))
+         if (!replacer_enabled())
             return false;
-         else if (!replacer_enabled())
+         else if (details::is_reserved_word(old_symbol))
             return false;
          else
             return symbol_replacer_.add_replace(old_symbol,new_symbol,lexer::token::e_symbol);
+      }
+
+      inline bool remove_replace_symbol(const std::string& symbol)
+      {
+         if (!replacer_enabled())
+            return false;
+         else if (details::is_reserved_word(symbol))
+            return false;
+         else
+            return symbol_replacer_.remove(symbol);
       }
 
    private:
@@ -15556,6 +15575,564 @@ namespace exprtk
          return std::numeric_limits<T>::quiet_NaN();
       }
 
+   };
+
+   template <typename T>
+   class function_compositor
+   {
+   public:
+
+      typedef exprtk::expression<T>   expression_t;
+      typedef exprtk::symbol_table<T> symbol_table_t;
+      typedef exprtk::parser<T>       parser_t;
+
+      struct function
+      {
+         function(const std::string& n)
+         : name_(n)
+         {}
+
+         inline function& name(const std::string& n)
+         {
+            name_ = n;
+            return (*this);
+         }
+
+         inline function& expression(const std::string& e)
+         {
+            expression_ = e;
+            return (*this);
+         }
+
+         inline function& var(const std::string& v)
+         {
+            v_.push_back(v);
+            return (*this);
+         }
+
+         std::string name_;
+         std::string expression_;
+         std::deque<std::string> v_;
+      };
+
+   private:
+
+      struct base_func : public exprtk::ifunction<T>
+      {
+         typedef const T& type;
+
+         base_func()
+         : exprtk::ifunction<T>(0)
+         {
+            clear();
+         }
+
+         base_func(T& v0)
+         : exprtk::ifunction<T>(1)
+         {
+            clear();
+            v[0] = &v0;
+         }
+
+         base_func(T& v0, T& v1)
+         : exprtk::ifunction<T>(2)
+         {
+            clear();
+            v[0] = &v0; v[1] = &v1;
+         }
+
+         base_func(T& v0, T& v1, T& v2)
+         : exprtk::ifunction<T>(3)
+         {
+            clear();
+            v[0] = &v0; v[1] = &v1;
+            v[2] = &v2;
+         }
+
+         base_func(T& v0, T& v1, T& v2, T& v3)
+         : exprtk::ifunction<T>(4)
+         {
+            clear();
+            v[0] = &v0; v[1] = &v1;
+            v[2] = &v2; v[3] = &v3;
+         }
+
+         base_func(T& v0, T& v1, T& v2, T& v3, T& v4)
+         : exprtk::ifunction<T>(5)
+         {
+            clear();
+            v[0] = &v0; v[1] = &v1;
+            v[2] = &v2; v[3] = &v3;
+            v[4] = &v4;
+         }
+
+         base_func(T& v0, T& v1, T& v2, T& v3, T& v4, T& v5)
+         : exprtk::ifunction<T>(6)
+         {
+            clear();
+            v[0] = &v0; v[1] = &v1;
+            v[2] = &v2; v[3] = &v3;
+            v[4] = &v4; v[5] = &v5;
+         }
+
+         inline void update(const T& v0)
+         {
+            (*v[0]) = v0;
+         }
+
+         inline void update(const T& v0, const T& v1)
+         {
+            (*v[0]) = v0; (*v[1]) = v1;
+         }
+
+         inline void update(const T& v0, const T& v1, const T& v2)
+         {
+            (*v[0]) = v0; (*v[1]) = v1;
+            (*v[2]) = v2;
+         }
+
+         inline void update(const T& v0, const T& v1, const T& v2, const T& v3)
+         {
+            (*v[0]) = v0; (*v[1]) = v1;
+            (*v[2]) = v2; (*v[3]) = v3;
+         }
+
+         inline void update(const T& v0, const T& v1, const T& v2, const T& v3, const T& v4)
+         {
+            (*v[0]) = v0; (*v[1]) = v1;
+            (*v[2]) = v2; (*v[3]) = v3;
+            (*v[4]) = v4;
+         }
+
+         inline void update(const T& v0, const T& v1, const T& v2, const T& v3, const T& v4, const T& v5)
+         {
+            (*v[0]) = v0; (*v[1]) = v1;
+            (*v[2]) = v2; (*v[3]) = v3;
+            (*v[4]) = v4; (*v[5]) = v5;
+         }
+
+         enum { max_parameters = 6 };
+
+         inline void clear()
+         {
+            std::fill_n(v,(int)max_parameters,reinterpret_cast<T*>(0));
+         }
+
+         T* v[max_parameters];
+      };
+
+      struct func_0param : public base_func
+      {
+         func_0param() : base_func() {}
+
+         func_0param(expression_t& expr)
+         : base_func(),
+           expression(expr)
+         {}
+
+         inline T operator()()
+         {
+            return expression.value();
+         }
+
+         expression_t expression;
+      };
+
+      typedef const T& type;
+
+      struct func_1param : public base_func
+      {
+         func_1param() : base_func() {}
+
+         func_1param(expression_t& expr, T& v0)
+         : base_func(v0),
+           expression(expr)
+         {}
+
+         inline T operator()(type v0)
+         {
+            base_func::update(v0);
+            return expression.value();
+         }
+
+         expression_t expression;
+      };
+
+      struct func_2param : public base_func
+      {
+         func_2param() : base_func() {}
+
+         func_2param(expression_t& expr, T& v0, T& v1)
+         : base_func(v0,v1),
+           expression(expr)
+         {}
+
+         inline T operator()(type v0, type v1)
+         {
+            base_func::update(v0,v1);
+            return expression.value();
+         }
+
+         expression_t expression;
+      };
+
+      struct func_3param : public base_func
+      {
+         func_3param() : base_func() {}
+
+         func_3param(expression_t& expr, T& v0, T& v1, T& v2)
+         : base_func(v0,v1,v2),
+           expression(expr)
+         {}
+
+         inline T operator()(type v0, type v1, type v2)
+         {
+            base_func::update(v0,v1,v2);
+            return expression.value();
+         }
+
+         expression_t expression;
+      };
+
+      struct func_4param : public base_func
+      {
+         func_4param() : base_func() {}
+
+         func_4param(expression_t& expr, T& v0, T& v1, T& v2, T& v3)
+         : base_func(v0,v1,v2,v3),
+           expression(expr)
+         {}
+
+         inline T operator()(type v0, type v1, type v2, type v3)
+         {
+            base_func::update(v0,v1,v2,v3);
+            return expression.value();
+         }
+
+         expression_t expression;
+      };
+
+      struct func_5param : public base_func
+      {
+         func_5param() : base_func() {}
+
+         func_5param(expression_t& expr, T& v0, T& v1, T& v2, T& v3, T& v4)
+         : base_func(v0,v1,v2,v3,v4),
+           expression(expr)
+         {}
+
+         inline T operator()(type v0, type v1, type v2, type v3, type v4)
+         {
+            base_func::update(v0,v1,v2,v3,v4);
+            return expression.value();
+         }
+
+         expression_t expression;
+      };
+
+      struct func_6param : public base_func
+      {
+         func_6param() : base_func() {}
+
+         func_6param(expression_t& expr, T& v0, T& v1, T& v2, T& v3, T& v4, T& v5)
+         : base_func(v0,v1,v2,v3,v4,v5),
+           expression(expr)
+         {}
+
+         inline T operator()(type v0, type v1, type v2, type v3, type v4, type v5)
+         {
+            base_func::update(v0,v1,v2,v3,v4,v5);
+            return expression.value();
+         }
+
+         expression_t expression;
+      };
+
+   public:
+
+      function_compositor()
+      : suffix_index_(1),
+        id_(get_id())
+      {}
+
+      function_compositor(const symbol_table_t& st)
+      : symbol_table_(st),
+        suffix_index_(1),
+        id_(get_id())
+      {}
+
+      inline symbol_table_t& symbol_table()
+      {
+         return symbol_table_;
+      }
+
+      void clear()
+      {
+         symbol_table_.clear();
+         expr_map_.clear();
+         f0p_map_.clear();
+         f1p_map_.clear();
+         f2p_map_.clear();
+         f3p_map_.clear();
+         f4p_map_.clear();
+         f5p_map_.clear();
+         f6p_map_.clear();
+         suffix_index_ = 1;
+      }
+
+      inline bool add(const function& f)
+      {
+         switch(f.v_.size())
+         {
+            case 0  : return add(f.name_,f.expression_);
+            case 1  : return add(f.name_,f.expression_,f.v_[0]);
+            case 2  : return add(f.name_,f.expression_,f.v_[0],f.v_[1]);
+            case 3  : return add(f.name_,f.expression_,f.v_[0],f.v_[1],f.v_[2]);
+            case 4  : return add(f.name_,f.expression_,f.v_[0],f.v_[1],f.v_[2],f.v_[3]);
+            case 5  : return add(f.name_,f.expression_,f.v_[0],f.v_[1],f.v_[2],f.v_[3],f.v_[4]);
+            case 6  : return add(f.name_,f.expression_,f.v_[0],f.v_[1],f.v_[2],f.v_[3],f.v_[4],f.v_[5]);
+            default : return false;
+         }
+      }
+
+      inline bool add(const std::string& name,
+                      const std::string& expression)
+      {
+         if (expr_map_.end() != expr_map_.find(name)) return false;
+         std::vector<std::pair<std::string,std::string> > var_transform_list;
+         if (!compile_expression(name,expression,var_transform_list))
+            return false;
+         else
+            f0p_map_[name] = func_0param(expr_map_[name]);
+         return symbol_table_.add_function(name,f0p_map_[name]);
+      }
+
+      inline bool add(const std::string& name,
+                      const std::string& expression,
+                      const std::string& v0)
+      {
+         const std::size_t n = 1;
+         T* v[n] = { 0 };
+         std::string sv[n];
+         if (expr_map_.end() != expr_map_.find(name)) return false;
+         else if (!add_variable(v0,v[0],sv[0])) return false;
+         std::vector<std::pair<std::string,std::string> > var_transform_list;
+         var_transform_list.push_back(std::make_pair(v0,sv[0]));
+         if (!compile_expression(name,expression,var_transform_list))
+            return false;
+         else
+            f1p_map_[name] = func_1param(expr_map_[name],(*v[0]));
+         return symbol_table_.add_function(name,f1p_map_[name]);
+      }
+
+      inline bool add(const std::string& name,
+                      const std::string& expression,
+                      const std::string& v0, const std::string& v1)
+      {
+         const std::size_t n = 2;
+         T* v[n] = { 0 };
+         std::string sv[n];
+         if (expr_map_.end() != expr_map_.find(name)) return false;
+         else if (!add_variable(v0,v[0],sv[0])) return false;
+         else if (!add_variable(v1,v[1],sv[1])) return false;
+         std::vector<std::pair<std::string,std::string> > var_transform_list;
+         var_transform_list.push_back(std::make_pair(v0,sv[0]));
+         var_transform_list.push_back(std::make_pair(v1,sv[1]));
+         if (!compile_expression(name,expression,var_transform_list))
+            return false;
+         else
+            f2p_map_[name] = func_2param(expr_map_[name],(*v[0]),(*v[1]));
+         return symbol_table_.add_function(name,f2p_map_[name]);
+      }
+
+      inline bool add(const std::string& name,
+                      const std::string& expression,
+                      const std::string& v0, const std::string& v1, const std::string& v2)
+      {
+         const std::size_t n = 3;
+         T* v[n] = { 0 };
+         std::string sv[n];
+         if (expr_map_.end() != expr_map_.find(name)) return false;
+         else if (!add_variable(v0,v[0],sv[0])) return false;
+         else if (!add_variable(v1,v[1],sv[1])) return false;
+         else if (!add_variable(v2,v[2],sv[2])) return false;
+         std::vector<std::pair<std::string,std::string> > var_transform_list;
+         var_transform_list.push_back(std::make_pair(v0,sv[0]));
+         var_transform_list.push_back(std::make_pair(v1,sv[1]));
+         var_transform_list.push_back(std::make_pair(v2,sv[2]));
+         if (!compile_expression(name,expression,var_transform_list))
+            return false;
+         else
+            f3p_map_[name] = func_3param(expr_map_[name],(*v[0]),(*v[1]),(*v[2]));
+         return symbol_table_.add_function(name,f3p_map_[name]);
+      }
+
+      inline bool add(const std::string& name,
+                      const std::string& expression,
+                      const std::string& v0, const std::string& v1, const std::string& v2,
+                      const std::string& v3)
+      {
+         const std::size_t n = 4;
+         T* v[n] = { 0 };
+         std::string sv[n];
+         if (expr_map_.end() != expr_map_.find(name)) return false;
+         else if (!add_variable(v0,v[0],sv[0])) return false;
+         else if (!add_variable(v1,v[1],sv[1])) return false;
+         else if (!add_variable(v2,v[2],sv[2])) return false;
+         else if (!add_variable(v3,v[3],sv[3])) return false;
+         std::vector<std::pair<std::string,std::string> > var_transform_list;
+         var_transform_list.push_back(std::make_pair(v0,sv[0]));
+         var_transform_list.push_back(std::make_pair(v1,sv[1]));
+         var_transform_list.push_back(std::make_pair(v2,sv[2]));
+         var_transform_list.push_back(std::make_pair(v3,sv[3]));
+         if (!compile_expression(name,expression,var_transform_list))
+            return false;
+         else
+            f4p_map_[name] = func_4param(expr_map_[name],(*v[0]),(*v[1]),(*v[2]),(*v[3]));
+         return symbol_table_.add_function(name,f4p_map_[name]);
+      }
+
+      inline bool add(const std::string& name,
+                      const std::string& expression,
+                      const std::string& v0, const std::string& v1, const std::string& v2,
+                      const std::string& v3, const std::string& v4)
+      {
+         const std::size_t n = 5;
+         T* v[n] = { 0 };
+         std::string sv[n];
+         if (expr_map_.end() != expr_map_.find(name)) return false;
+         else if (!add_variable(v0,v[0],sv[0])) return false;
+         else if (!add_variable(v1,v[1],sv[1])) return false;
+         else if (!add_variable(v2,v[2],sv[2])) return false;
+         else if (!add_variable(v3,v[3],sv[3])) return false;
+         else if (!add_variable(v3,v[4],sv[4])) return false;
+         std::vector<std::pair<std::string,std::string> > var_transform_list;
+         var_transform_list.push_back(std::make_pair(v0,sv[0]));
+         var_transform_list.push_back(std::make_pair(v1,sv[1]));
+         var_transform_list.push_back(std::make_pair(v2,sv[2]));
+         var_transform_list.push_back(std::make_pair(v3,sv[3]));
+         var_transform_list.push_back(std::make_pair(v4,sv[4]));
+         if (!compile_expression(name,expression,var_transform_list))
+            return false;
+         else
+            f5p_map_[name] = func_5param(expr_map_[name],(*v[0]),(*v[1]),(*v[2]),(*v[3]),(*v[4]));
+         return symbol_table_.add_function(name,f5p_map_[name]);
+      }
+
+      inline bool add(const std::string& name,
+                      const std::string& expression,
+                      const std::string& v0, const std::string& v1, const std::string& v2,
+                      const std::string& v3, const std::string& v4, const std::string& v5)
+      {
+         const std::size_t n = 6;
+         T* v[n] = { 0 };
+         std::string sv[n];
+         if (expr_map_.end() != expr_map_.find(name)) return false;
+         else if (!add_variable(v0,v[0],sv[0])) return false;
+         else if (!add_variable(v1,v[1],sv[1])) return false;
+         else if (!add_variable(v2,v[2],sv[2])) return false;
+         else if (!add_variable(v3,v[3],sv[3])) return false;
+         else if (!add_variable(v3,v[4],sv[4])) return false;
+         else if (!add_variable(v3,v[5],sv[5])) return false;
+         std::vector<std::pair<std::string,std::string> > var_transform_list;
+         var_transform_list.push_back(std::make_pair(v0,sv[0]));
+         var_transform_list.push_back(std::make_pair(v1,sv[1]));
+         var_transform_list.push_back(std::make_pair(v2,sv[2]));
+         var_transform_list.push_back(std::make_pair(v3,sv[3]));
+         var_transform_list.push_back(std::make_pair(v4,sv[4]));
+         var_transform_list.push_back(std::make_pair(v5,sv[5]));
+         if (!compile_expression(name,expression,var_transform_list))
+            return false;
+         else
+            f6p_map_[name] = func_6param(expr_map_[name],(*v[0]),(*v[1]),(*v[2]),(*v[3]),(*v[4]),(*v[5]));
+         return symbol_table_.add_function(name,f6p_map_[name]);
+      }
+
+   private:
+
+      template <typename Allocator,
+                template <typename,typename> class Sequence>
+      bool compile_expression(const std::string& name,
+                              const std::string& expression,
+                              const Sequence<std::pair<std::string,std::string>,Allocator>& var_transform_list)
+      {
+         expression_t compiled_expression;
+         compiled_expression.register_symbol_table(symbol_table_);
+
+         for (std::size_t i = 0; i < var_transform_list.size(); ++i)
+         {
+            parser_.remove_replace_symbol(var_transform_list[i].first);
+            if (!parser_.replace_symbol(var_transform_list[i].first,var_transform_list[i].second))
+               return false;
+         }
+
+         if (!parser_.compile(expression,compiled_expression))
+         {
+            return false;
+         }
+
+         for (std::size_t i = 0; i < var_transform_list.size(); ++i)
+         {
+            parser_.remove_replace_symbol(var_transform_list[i].first);
+         }
+
+         expr_map_[name] = compiled_expression;
+         return true;
+      }
+
+      bool add_variable(const std::string& v, T*& t, std::string& new_var)
+      {
+         static const unsigned int max_suffix_index = 1000000000;
+         while (suffix_index_ < max_suffix_index)
+         {
+            new_var = generate_name(v);
+
+            bool used =  symbol_table_.is_variable       (new_var) ||
+                         symbol_table_.is_stringvar      (new_var) ||
+                         symbol_table_.is_function       (new_var) ||
+                         symbol_table_.is_vararg_function(new_var);
+
+            if (!used)
+            {
+               symbol_table_.create_variable(new_var,T(0));
+               t = 0;
+               t = &symbol_table_.get_variable(new_var)->ref();
+               return (0 != t);
+            }
+            else
+               ++suffix_index_;
+         }
+         return false;
+      }
+
+      std::string generate_name(const std::string v)
+      {
+         //eg: x --> function_compositor_1__x_123
+         return std::string("function_compositor") + exprtk::details::to_str(id_) + "__" +
+                v +
+                exprtk::details::to_str(static_cast<int>(suffix_index_));
+      }
+
+      unsigned int get_id()
+      {
+         static unsigned int base_id = 1;
+         return ++base_id;
+      }
+
+   private:
+
+      symbol_table_t symbol_table_;
+      parser_t parser_;
+      std::map<std::string,expression_t> expr_map_;
+      std::map<std::string,func_0param>  f0p_map_;
+      std::map<std::string,func_1param>  f1p_map_;
+      std::map<std::string,func_2param>  f2p_map_;
+      std::map<std::string,func_3param>  f3p_map_;
+      std::map<std::string,func_4param>  f4p_map_;
+      std::map<std::string,func_5param>  f5p_map_;
+      std::map<std::string,func_6param>  f6p_map_;
+      unsigned int suffix_index_;
+      unsigned int id_;
    };
 
    template <typename T>
