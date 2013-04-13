@@ -956,7 +956,19 @@ static const test_t test_list[] =
                      test_t("equal((-pi^2^-3),(-pi^(+1/+8)))",1.0),
                      test_t("equal((-pi^(2^-3)),(-pi^(+1/+8)))",1.0),
                      test_t("equal((-pi^-2^-3),1/(-pi^(+1/+8)))",1.0),
-                     test_t("equal((-pi^(-2^-3)),1/(-pi^(+1/+8)))",1.0)
+                     test_t("equal((-pi^(-2^-3)),1/(-pi^(+1/+8)))",1.0),
+                     test_t("switch { case (1 <= 2) : 1; default: 1.12345; }",1.0),
+                     test_t("switch { case (1 >  2) : 0; case (1 <= 2) : 1; default: 1.12345; }",1.0),
+                     test_t("switch { case (1 <= 2) : switch { case (1 <= 2) : 1; default: 1.12345; }; default: 1.12345; }",1.0),
+                     test_t("switch { case [1 <= 2] : 1; default: 1.12345; }",1.0),
+                     test_t("switch { case [1 >  2] : 0; case [1 <= 2] : 1; default: 1.12345; }",1.0),
+                     test_t("switch { case [1 <= 2] : switch { case [1 <= 2] : 1; default: 1.12345; }; default: 1.12345; }",1.0),
+                     test_t("switch { case {1 <= 2} : 1; default: 1.12345; }",1.0),
+                     test_t("switch { case {1 >  2} : 0; case {1 <= 2} : 1; default: 1.12345; }",1.0),
+                     test_t("switch { case {1 <= 2} : switch { case {1 <= 2} : 1; default: 1.12345; }; default: 1.12345; }",1.0),
+                     test_t("switch { case [(1 <= 2)] : {1}; default: 1.12345; }",1.0),
+                     test_t("switch { case ([1 >  2]) : [0]; case ([1 <= 2]) : 1; default: 1.12345; }",1.0),
+                     test_t("switch { case {(1 <= 2)} : switch { case ({1 <= 2}) : 1; default: 1.12345; }; default: 1.12345; }",1.0)
                   };
 
 static const std::size_t test_list_size = sizeof(test_list) / sizeof(test_t);
@@ -1251,6 +1263,18 @@ inline bool run_test01()
                               test_xy<T>("0 * (sec  (x) + csc  (y) + tanh (x) + cot  (y))",T(1.0),T(1.0),T(0.0)),
                               test_xy<T>("0 * (erf  (x) + erfc (y) + sgn  (y) + frac (y))",T(1.0),T(1.0),T(0.0)),
                               test_xy<T>("0 * (deg2grad(x) + grad2deg(y) + rad2deg(x) + deg2rad(y))",T(1.0),T(1.0),T(0.0)),
+                              test_xy<T>("switch { case (x <= y) : (y - x); default: 1.12345; }",T(1.0),T(2.0),T(1.0)),
+                              test_xy<T>("switch { case (x >  y) : 0; case (x <= y) : (y - x); default: 1.12345; }",T(1.0),T(2.0),T(1.0)),
+                              test_xy<T>("switch { case (x <= y) : switch { case (x <= y) : (y - x); default: 1.12345; }; default: 1.12345; }",T(1.0),T(2.0),T(1.0)),
+                              test_xy<T>("switch { case [x <= y] : [y - x]; default: 1.12345; }",T(1.0),T(2.0),T(1.0)),
+                              test_xy<T>("switch { case [x >  y] : 0; case [x <= y] : [y - x]; default: 1.12345; }",T(1.0),T(2.0),T(1.0)),
+                              test_xy<T>("switch { case [x <= y] : switch { case [x <= y] : {y - x}; default: 1.12345; }; default: 1.12345; }",T(1.0),T(2.0),T(1.0)),
+                              test_xy<T>("switch { case {x <= y} : x; default: 1.12345; }",T(1.0),T(2.0),T(1.0)),
+                              test_xy<T>("switch { case {x >  y} : 0; case {x <= y} : {y - x}; default: 1.12345; }",T(1.0),T(2.0),T(1.0)),
+                              test_xy<T>("switch { case {x <= y} : switch { case {x <= y} : x; default: 1.12345; }; default: 1.12345; }",T(1.0),T(2.0),T(1.0)),
+                              test_xy<T>("switch { case [(x <= y)] : {y - x}; default: 1.12345; }",T(1.0),T(2.0),T(1.0)),
+                              test_xy<T>("switch { case ([x >  y]) : [0]; case ([x <= y]) : [y - x]; default: 1.12345; }",T(1.0),T(2.0),T(1.0)),
+                              test_xy<T>("switch { case {(x <= y)} : switch { case ({x <= y}) : x; default: 1.12345; }; default: 1.12345; }",T(1.0),T(2.0),T(1.0))
                            };
 
    static const std::size_t test_list_size = sizeof(test_list) / sizeof(test_xy<T>);
@@ -3358,27 +3382,27 @@ inline bool run_test19()
    {
       T x = T(123.123);
 
-      compositor_t fc;
+      compositor_t compositor;
 
       // f(x) = x + 2
-      fc.add("f","x + 2","x");
+      compositor.add("f","x + 2","x");
 
       // g(x) = x^2-3
-      fc.add("g","x^2 - 3","x");
+      compositor.add("g","x^2 - 3","x");
 
       // fof(x) = f(f(x))
-      fc.add("fof","f(f(x))","x");
+      compositor.add("fof","f(f(x))","x");
 
       // gog(x) = g(g(x))
-      fc.add("gog","g(g(x))","x");
+      compositor.add("gog","g(g(x))","x");
 
       // fog(x) = f(g(x))
-      fc.add("fog","f(g(x))","x");
+      compositor.add("fog","f(g(x))","x");
 
       // gof(x) = g(f(x))
-      fc.add("gof","g(f(x))","x");
+      compositor.add("gof","g(f(x))","x");
 
-      exprtk::symbol_table<T>& symbol_table = fc.symbol_table();
+      exprtk::symbol_table<T>& symbol_table = compositor.symbol_table();
       symbol_table.add_constants();
       symbol_table.add_variable("x",x);
 
@@ -3439,33 +3463,43 @@ inline bool run_test19()
       T u = T(5);
       T v = T(6);
 
-      compositor_t fc;
+      compositor_t compositor;
 
       // f0() = 6
-      fc.add("f0"," 3 * 2");
+      compositor
+         .add("f0"," 3 * 2");
 
       // f1(x) = 5 * (f0 + x)
-      fc.add("f1"," 5 * (f0+x)","x");
+      compositor
+         .add("f1","5 * (f0+x)","x");
 
       // f2(x,y) = 7 * (f1(x) + f1(y))
-      fc.add("f2"," 7 * (f1(x)+f1(y))","x","y");
+      compositor
+         .add("f2","7 * (f1(x) + f1(y))","x","y");
 
       // f3(x,y,z) = 9 * (2(x,y) + f2(y,z) + f2(x,z))
-      fc.add("f3"," 9 * (f2(x,y)+f2(y,z)+f2(x,z))","x","y","z");
+      compositor
+         .add("f3","9 * (f2(x,y) + f2(y,z) + f2(x,z))","x","y","z");
 
       // f4(x,y,z,w) = 11 * (f3(x,y,z) + f3(y,z,w) + f3(z,w,z))
-      fc.add("f4","11 * (f3(x,y,z)+f3(y,z,w)+f3(z,w,x))","x","y","z","w");
+      compositor
+         .add("f4","11 * (f3(x,y,z) + f3(y,z,w) + f3(z,w,x))","x","y","z","w");
 
       // f5(x,y,z,w,u) = 13 * (f4(x,y,z,w) + f4(y,z,w,u) + f4(z,w,u,x) + f4(w,u,x,y))
-      fc.add("f5","13 * (f4(x,y,z,w)+f4(y,z,w,u)+f4(z,w,u,x)+f4(w,u,x,y))","x","y","z","w","u");
+      compositor
+         .add("f5",
+              "13 * (f4(x,y,z,w) + f4(y,z,w,u) + f4(z,w,u,x) + f4(w,u,x,y))",
+              "x","y","z","w","u");
 
       // f6(x,y,z,w,u,v) = 17 * (f5(x,y,z,w,u) + f5(y,z,w,u,v) + f5(z,w,u,v,x) + f5(w,u,v,x,y))
-      fc.add(function_t("f6")
-               .expression("17 * (f5(x,y,z,w,u)+f5(y,z,w,u,v)+f5(z,w,u,v,x)+f5(w,u,v,x,y))")
+      compositor
+         .add(
+            function_t("f6")
+            .expression("17 * (f5(x,y,z,w,u) + f5(y,z,w,u,v) + f5(z,w,u,v,x) + f5(w,u,v,x,y))")
                .var("x").var("y").var("z")
                .var("w").var("u").var("v"));
 
-      exprtk::symbol_table<T>& symbol_table = fc.symbol_table();
+      exprtk::symbol_table<T>& symbol_table = compositor.symbol_table();
       symbol_table.add_constants();
       symbol_table.add_variable("x",x);
       symbol_table.add_variable("y",y);
@@ -3497,6 +3531,263 @@ inline bool run_test19()
                 expression_str.c_str());
          return false;
       }
+   }
+
+   {
+      T x = T(0);
+
+      compositor_t compositor;
+
+      compositor
+         .add("is_prime_impl1",
+              "if(y == 1,true,              "
+              "   if(0 == (x % y),false,    "
+              "      is_prime_impl1(x,y-1)))",
+              "x","y");
+
+      compositor
+         .add("is_prime_impl2",
+              "switch                                        "
+              "{                                             "
+              "  case y == 1       : true;                   "
+              "  case (x % y) == 0 : false;                  "
+              "  default           : is_prime_impl2(x,y - 1);"
+              "}                                             ",
+              "x","y");
+
+      compositor
+         .add("is_prime1",
+              "if(frac(x) != 0, false,                                "
+              "   if(x <= 0, false,                                   "
+              "      is_prime_impl1(x,min(x - 1,trunc(sqrt(x)) + 1))))",
+              "x");
+
+      compositor
+         .add("is_prime2",
+              "switch                                                                "
+              "{                                                                     "
+              "  case x <= 0       : false;                                          "
+              "  case frac(x) != 0 : false;                                          "
+              "  default           : is_prime_impl2(x,min(x - 1,trunc(sqrt(x)) + 1));"
+              "}                                                                     ",
+              "x");
+
+      compositor
+         .add("is_prime_impl3",
+              "while (y > 0)                            "
+              "{                                        "
+              "  switch                                 "
+              "  {                                      "
+              "    case y == 1       : true  + (y := 0);"
+              "    case (x % y) == 0 : false + (y := 0);"
+              "    default           : y := y - 1;      "
+              "  }                                      "
+              "}                                        ",
+              "x","y");
+
+      compositor
+         .add("is_prime3",
+              "switch                                                                "
+              "{                                                                     "
+              "  case x <= 0       : false;                                          "
+              "  case frac(x) != 0 : false;                                          "
+              "  default           : is_prime_impl3(x,min(x - 1,trunc(sqrt(x)) + 1));"
+              "}                                                                     ",
+              "x");
+
+      exprtk::symbol_table<T>& symbol_table = compositor.symbol_table();
+      symbol_table.add_constants();
+      symbol_table.add_variable("x",x);
+
+      std::string expression_str1 = "is_prime1(x)";
+      std::string expression_str2 = "is_prime2(x)";
+      std::string expression_str3 = "is_prime3(x)";
+
+      expression_t expression1;
+      expression_t expression2;
+      expression_t expression3;
+      expression1.register_symbol_table(symbol_table);
+      expression2.register_symbol_table(symbol_table);
+      expression3.register_symbol_table(symbol_table);
+
+      exprtk::parser<T> parser;
+
+      if (!parser.compile(expression_str1,expression1))
+      {
+         printf("run_test19() - Error: %s   Expression1: %s\n",
+                parser.error().c_str(),
+                expression_str1.c_str());
+         return false;
+      }
+
+      if (!parser.compile(expression_str2,expression2))
+      {
+         printf("run_test19() - Error: %s   Expression2: %s\n",
+                parser.error().c_str(),
+                expression_str2.c_str());
+         return false;
+      }
+
+      if (!parser.compile(expression_str3,expression3))
+      {
+         printf("run_test19() - Error: %s   Expression3: %s\n",
+                parser.error().c_str(),
+                expression_str3.c_str());
+         return false;
+      }
+
+      bool failure = false;
+
+      const std::size_t prime_list[] =
+                           {
+                                   2,       3,       5,       7,      11,      13,      17,      19,
+                                 877,     947,    1087,    1153,    1229,    1297,    1381,    1453,
+                                1523,    1597,    1663,    1741,    1823,    1901,    1993,    2063,
+                                2131,    2221,    2293,    2371,    2437,    2539,    2621,    2689,
+                                2749,    2833,    2909,    3001,    3083,    3187,    3259,    3343,
+                                3433,    3517,    3581,    3659,    3733,    3823,    3911,    4001,
+                                4073,    4153,    4241,    4327,    4421,    4507,    4591,    4663,
+                                4759,    4861,    4943,    5009,    5099,    5189,    5281,    5393,
+                                5449,    5527,    5641,    5701,    5801,    5861,    5953,    6067,
+                                6143,    6229,    6311,    6373,    6481,    6577,    6679,    6763,
+                                6841,    6947,    7001,    7109,    7211,    7307,    7417,    7507,
+                              104309,  104311,  104323,  104327,  104347,  104369,  104381,  104383,
+                              104393,  104399,  104417,  104459,  104471,  104473,  104479,  104491,
+                              104513,  104527,  104537,  104543,  104549,  104551,  104561,  104579,
+                              104593,  104597,  104623,  104639,  104651,  104659,  104677,  104681,
+                              104683,  104693,  104701,  104707,  104711,  104717,  104723,  104729,
+                             1000621, 1000639, 1000651, 1000667, 1000669, 1001023, 1001027, 1001041
+                           };
+      const std::size_t prime_list_size = sizeof(prime_list) / sizeof(std::size_t);
+
+      for (std::size_t i = 0; i < prime_list_size; ++i)
+      {
+         x = prime_list[i];
+         T result1 = expression1.value();
+         T result2 = expression2.value();
+         T result3 = expression3.value();
+
+         if ((result1 != result2) || (result1 != result3))
+         {
+            printf("run_test19() - Error in evaluation! (3)  Results don't match!  Prime: %d  "
+                   "Expression1: %s  Expression2: %s  Expression3: %s\n",
+                   prime_list[i],
+                   expression_str1.c_str(),
+                   expression_str2.c_str(),
+                   expression_str3.c_str());
+            failure = true;
+         }
+
+         if (T(1) != result1)
+         {
+            printf("run_test19() - Error in evaluation! (3)  Prime: %d  "
+                   "Expression1: %s  Expression2: %s  Expression3: %s\n",
+                   (int)prime_list[i],
+                   expression_str1.c_str(),
+                   expression_str2.c_str(),
+                   expression_str3.c_str());
+            failure = true;
+         }
+      }
+
+      if (failure)
+         return false;
+   }
+
+   {
+      T x = T(0);
+
+      compositor_t compositor;
+
+      compositor
+         .add("fibonacci1",
+              "if(x == 0,0,                                 "
+              "   if(x == 1,1,                              "
+              "      fibonacci1(x - 1) + fibonacci1(x - 2)))",
+              "x");
+
+      compositor
+         .add("fibonacci2",
+              "switch                                                 "
+              "{                                                      "
+              "   case x == 0 : 0;                                    "
+              "   case x == 1 : 1;                                    "
+              "   default     : fibonacci2(x - 1) + fibonacci2(x - 2);"
+              "}                                                      ",
+              "x");
+
+      exprtk::symbol_table<T>& symbol_table = compositor.symbol_table();
+      symbol_table.add_constants();
+      symbol_table.add_variable("x",x);
+
+      std::string expression_str1 = "fibonacci1(x)";
+      std::string expression_str2 = "fibonacci2(x)";
+
+      expression_t expression1;
+      expression_t expression2;
+      expression1.register_symbol_table(symbol_table);
+      expression2.register_symbol_table(symbol_table);
+
+      exprtk::parser<T> parser;
+
+      if (!parser.compile(expression_str1,expression1))
+      {
+         printf("run_test19() - Error: %s   Expression1: %s\n",
+                parser.error().c_str(),
+                expression_str1.c_str());
+         return false;
+      }
+
+      if (!parser.compile(expression_str2,expression2))
+      {
+         printf("run_test19() - Error: %s   Expression2: %s\n",
+                parser.error().c_str(),
+                expression_str2.c_str());
+         return false;
+      }
+
+      bool failure = false;
+
+      const std::size_t fibonacci_list[] =
+                           {
+                                    0,       1,      1,       2,
+                                    3,       5,      8,      13,
+                                   21,      34,     55,      89,
+                                  144,     233,    377,     610,
+                                  987,    1597,   2584,    4181,
+                                 6765,   10946,  17711,   28657,
+                                46368,   75025, 121393,  196418,
+                               317811,  514229, 832040, 1346269
+                           };
+      const std::size_t fibonacci_list_size = sizeof(fibonacci_list) / sizeof(std::size_t);
+
+      for (std::size_t i = 0; i < fibonacci_list_size; ++i)
+      {
+         x = i;
+         T result1 = expression1.value();
+         T result2 = expression2.value();
+         if (result1 != result2)
+         {
+            printf("run_test19() - Error in evaluation! (3)  Results don't match!  Prime: %d  Expression1: %s  Expression2: %s\n",
+                   fibonacci_list[i],
+                   expression_str1.c_str(),
+                   expression_str2.c_str());
+            failure = true;
+         }
+
+         if (fibonacci_list[i] != expression1.value())
+         {
+            printf("run_test19() - Error in evaluation! (4)  fibonacci(%d) = %d Expression1: %s  Expression2: %s\n",
+                    i,
+                   fibonacci_list[i],
+                   expression_str1.c_str(),
+                   expression_str2.c_str());
+            failure = true;
+         }
+      }
+
+      if (failure)
+         return false;
    }
 
    return true;

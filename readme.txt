@@ -29,8 +29,9 @@ operations, functions and processes:
 (4) Boolean logic:   and, mand, mor, nand, nor, not, or, shl, shr,
                      xnor, xor, true, false
 
-(5) Conditional &
-    Loop statement:  if-then-else, while
+(5) Conditional,
+    Switch &
+    Loop statements: if-then-else, switch-case, while
 
 (6) Assignment:      :=
 
@@ -188,6 +189,19 @@ include path (e.g: /usr/include/).
 +-----------+--------------------------------------------------------+
 | if        | If x is true then return y else return z.              |
 |           | (eg: if(x, y, z) or if((x + 1) > 2y, z + 1, w / v))    |
++-----------+--------------------------------------------------------+
+| switch    | The first true case condition that is encountered will |
+|           | determine the result of the switch. If none of the case|
+|           | conditions hold true, the default action is assumed as |
+|           | the final return value. This is sometimes also known as|
+|           | a multi-way branch mechanism.                          |
+|           | eg:                                                    |
+|           | switch                                                 |
+|           | {                                                      |
+|           |   case x > (y+z) : 2*x/abs(y-z);                       |
+|           |   case x < 3     : sin(x + y)                          |
+|           |   default        : 1 + x;                              |
+|           | }                                                      |
 +-----------|--------------------------------------------------------+
 | &         | Similar to AND but with left to right expression short |
 |           | circuiting optimisation. (eg: (x & y) == (y and x))    |
@@ -447,7 +461,10 @@ correctly optimize such expressions for a given architecture.
       To turn them off, the following needs to be defined at
       compile time: exprtk_disable_string_capabilities
 
- (16) Expressions may contain any of the following comment styles:
+ (16) Composited functions can call themselves or any other functions
+      that have been previously defined.
+
+ (17) Expressions may contain any of the following comment styles:
       1. // .... \n
       2. #  .... \n
       3. /* .... */
