@@ -24,6 +24,15 @@ LINKER_OPT       = -L/usr/lib -lstdc++
 
 BUILD_LIST+=exprtk_test
 BUILD_LIST+=exprtk_benchmark
+BUILD_LIST+=exprtk_simple_example_01
+BUILD_LIST+=exprtk_simple_example_02
+BUILD_LIST+=exprtk_simple_example_03
+BUILD_LIST+=exprtk_simple_example_04
+BUILD_LIST+=exprtk_simple_example_05
+BUILD_LIST+=exprtk_simple_example_06
+BUILD_LIST+=exprtk_simple_example_07
+BUILD_LIST+=exprtk_simple_example_08
+BUILD_LIST+=exprtk_simple_example_09
 
 all: $(BUILD_LIST)
 
@@ -33,6 +42,33 @@ exprtk_test: exprtk_test.cpp exprtk.hpp
 exprtk_benchmark: exprtk_benchmark.cpp exprtk.hpp
 	$(COMPILER) $(OPTIONS) exprtk_benchmark exprtk_benchmark.cpp $(LINKER_OPT)
 
+exprtk_simple_example_01: exprtk_simple_example_01.cpp exprtk.hpp
+	$(COMPILER) $(OPTIONS) exprtk_simple_example_01 exprtk_simple_example_01.cpp $(LINKER_OPT)
+
+exprtk_simple_example_02: exprtk_simple_example_02.cpp exprtk.hpp
+	$(COMPILER) $(OPTIONS) exprtk_simple_example_02 exprtk_simple_example_02.cpp $(LINKER_OPT)
+
+exprtk_simple_example_03: exprtk_simple_example_03.cpp exprtk.hpp
+	$(COMPILER) $(OPTIONS) exprtk_simple_example_03 exprtk_simple_example_03.cpp $(LINKER_OPT)
+
+exprtk_simple_example_04: exprtk_simple_example_04.cpp exprtk.hpp
+	$(COMPILER) $(OPTIONS) exprtk_simple_example_04 exprtk_simple_example_04.cpp $(LINKER_OPT)
+
+exprtk_simple_example_05: exprtk_simple_example_05.cpp exprtk.hpp
+	$(COMPILER) $(OPTIONS) exprtk_simple_example_05 exprtk_simple_example_05.cpp $(LINKER_OPT)
+
+exprtk_simple_example_06: exprtk_simple_example_06.cpp exprtk.hpp
+	$(COMPILER) $(OPTIONS) exprtk_simple_example_06 exprtk_simple_example_06.cpp $(LINKER_OPT)
+
+exprtk_simple_example_07: exprtk_simple_example_07.cpp exprtk.hpp
+	$(COMPILER) $(OPTIONS) exprtk_simple_example_07 exprtk_simple_example_07.cpp $(LINKER_OPT)
+
+exprtk_simple_example_08: exprtk_simple_example_08.cpp exprtk.hpp
+	$(COMPILER) $(OPTIONS) exprtk_simple_example_08 exprtk_simple_example_08.cpp $(LINKER_OPT)
+
+exprtk_simple_example_09: exprtk_simple_example_09.cpp exprtk.hpp
+	$(COMPILER) $(OPTIONS) exprtk_simple_example_09 exprtk_simple_example_09.cpp $(LINKER_OPT)
+
 pgo: exprtk_test.cpp exprtk_benchmark.cpp exprtk.hpp
 	$(COMPILER) $(BASE_OPTIONS) -O3 -march=native -fprofile-generate -o exprtk_benchmark exprtk_benchmark.cpp $(LINKER_OPT)
 	./exprtk_benchmark
@@ -41,10 +77,28 @@ pgo: exprtk_test.cpp exprtk_benchmark.cpp exprtk.hpp
 strip_bin:
 	strip -s exprtk_test
 	strip -s exprtk_benchmark
+	strip -s exprtk_simple_example_01
+	strip -s exprtk_simple_example_02
+	strip -s exprtk_simple_example_03
+	strip -s exprtk_simple_example_04
+	strip -s exprtk_simple_example_05
+	strip -s exprtk_simple_example_06
+	strip -s exprtk_simple_example_07
+	strip -s exprtk_simple_example_08
+	strip -s exprtk_simple_example_09
 
 valgrind_check:
 	valgrind --leak-check=full --show-reachable=yes --track-origins=yes -v ./exprtk_test
 	valgrind --leak-check=full --show-reachable=yes --track-origins=yes -v ./exprtk_benchmark
+	valgrind --leak-check=full --show-reachable=yes --track-origins=yes -v ./exprtk_simple_example_01
+	valgrind --leak-check=full --show-reachable=yes --track-origins=yes -v ./exprtk_simple_example_02
+	valgrind --leak-check=full --show-reachable=yes --track-origins=yes -v ./exprtk_simple_example_03
+	valgrind --leak-check=full --show-reachable=yes --track-origins=yes -v ./exprtk_simple_example_04
+	valgrind --leak-check=full --show-reachable=yes --track-origins=yes -v ./exprtk_simple_example_05
+	valgrind --leak-check=full --show-reachable=yes --track-origins=yes -v ./exprtk_simple_example_06
+	valgrind --leak-check=full --show-reachable=yes --track-origins=yes -v ./exprtk_simple_example_07
+	valgrind --leak-check=full --show-reachable=yes --track-origins=yes -v ./exprtk_simple_example_08
+	valgrind --leak-check=full --show-reachable=yes --track-origins=yes -v ./exprtk_simple_example_09
 
 clean:
 	rm -f core.* *~ *.o *.bak *stackdump gmon.out *.gcda *.gcno *.gcnor *.gch

@@ -276,6 +276,11 @@ include path (e.g: /usr/include/).
 +-----------+--------------------------------------------------------+
 | trunc     | Integer portion of x                                   |
 +-----------+--------------------------------------------------------+
+| ~         | Evaluate each sub-expression, then return as the result|
+|           | the value of the last sub-expression. This is known as |
+|           | multiple sequence point evaluation.                    |
+|           | (eg: ~(x+1,y/z,abs(y^3),sin(w/u)) == (sin(w/u)))       |
++-----------+--------------------------------------------------------+
 
 (4) Trigonometry Functions
 +-----------+--------------------------------------------------------+

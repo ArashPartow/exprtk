@@ -121,6 +121,7 @@ namespace exprtk
                 ('.' != c)           &&
                 ('_' != c)           &&
                 ('$' != c)           &&
+                ('~' != c)           &&
                 ('\'' != c);
       }
 
@@ -1674,6 +1675,14 @@ namespace exprtk
                return;
             }
             #endif
+            else if ('~' == (*s_itr_))
+            {
+               token_t t;
+               t.set_symbol(s_itr_,s_itr_ + 1,base_itr_);
+               token_list_.push_back(t);
+               ++s_itr_;
+               return;
+            }
             else
             {
                token_t t;
@@ -2768,7 +2777,7 @@ namespace exprtk
          e_r2d     , e_d2r     , e_d2g     , e_g2d     ,
          e_hypot   , e_notl    , e_erf     , e_erfc    ,
          e_frac    , e_trunc   , e_assign  , e_in      ,
-         e_like    , e_ilike   ,
+         e_like    , e_ilike   , e_multi   ,
 
          // Do not add new functions/operators after this point.
          e_sf00 = 1000, e_sf01 = 1001, e_sf02 = 1002, e_sf03 = 1003,
@@ -5588,6 +5597,84 @@ namespace exprtk
                     (T(0) != value(arglist[2])) || (T(0) != value(arglist[3])) ||
                     (T(0) != value(arglist[4]))
                    ) ? T(1) : T(0);
+         }
+      };
+
+      template <typename T>
+      struct vararg_multi_op : public opr_base<T>
+      {
+         typedef typename opr_base<T>::Type Type;
+
+         template <typename Type,
+                   typename Allocator,
+                   template <typename,typename> class Sequence>
+         static inline T process(const Sequence<Type,Allocator>& arglist)
+         {
+            if (arglist.size() > 5)
+            {
+               if (arglist.empty())
+                  return std::numeric_limits<T>::quiet_NaN();
+               else
+               {
+                  for (std::size_t i = 0; i < (arglist.size() - 1); ++i)
+                  {
+                     value(arglist[i]);
+                  }
+               }
+               return value(arglist.back());
+            }
+            else
+            {
+               switch (arglist.size())
+               {
+                  case 1  : return process_1(arglist);
+                  case 2  : return process_2(arglist);
+                  case 3  : return process_3(arglist);
+                  case 4  : return process_4(arglist);
+                  case 5  : return process_5(arglist);
+                  default : return std::numeric_limits<T>::quiet_NaN();
+               }
+            }
+         }
+
+         template <typename Sequence>
+         static inline T process_1(const Sequence& arglist)
+         {
+            return value(arglist[0]);
+         }
+
+         template <typename Sequence>
+         static inline T process_2(const Sequence& arglist)
+         {
+                   value(arglist[0]);
+            return value(arglist[1]);
+         }
+
+         template <typename Sequence>
+         static inline T process_3(const Sequence& arglist)
+         {
+                   value(arglist[0]);
+                   value(arglist[1]);
+            return value(arglist[2]);
+         }
+
+         template <typename Sequence>
+         static inline T process_4(const Sequence& arglist)
+         {
+                   value(arglist[0]);
+                   value(arglist[1]);
+                   value(arglist[2]);
+            return value(arglist[3]);
+         }
+
+         template <typename Sequence>
+         static inline T process_5(const Sequence& arglist)
+         {
+                   value(arglist[0]);
+                   value(arglist[1]);
+                   value(arglist[2]);
+                   value(arglist[3]);
+            return value(arglist[4]);
          }
       };
 
@@ -9614,22 +9701,24 @@ namespace exprtk
 
       inline bool valid_vararg_operation(const std::string& symbol)
       {
-         static const std::string s_sum  = "sum" ;
-         static const std::string s_mul  = "mul" ;
-         static const std::string s_avg  = "avg" ;
-         static const std::string s_min  = "min" ;
-         static const std::string s_max  = "max" ;
-         static const std::string s_mand = "mand";
-         static const std::string s_mor  = "mor" ;
+         static const std::string s_sum   = "sum" ;
+         static const std::string s_mul   = "mul" ;
+         static const std::string s_avg   = "avg" ;
+         static const std::string s_min   = "min" ;
+         static const std::string s_max   = "max" ;
+         static const std::string s_mand  = "mand";
+         static const std::string s_mor   = "mor" ;
+         static const std::string s_multi = "~"   ;
          return
                (
-                  details::imatch(symbol,s_sum ) ||
-                  details::imatch(symbol,s_mul ) ||
-                  details::imatch(symbol,s_avg ) ||
-                  details::imatch(symbol,s_min ) ||
-                  details::imatch(symbol,s_max ) ||
-                  details::imatch(symbol,s_mand) ||
-                  details::imatch(symbol,s_mor )
+                  details::imatch(symbol,s_sum  ) ||
+                  details::imatch(symbol,s_mul  ) ||
+                  details::imatch(symbol,s_avg  ) ||
+                  details::imatch(symbol,s_min  ) ||
+                  details::imatch(symbol,s_max  ) ||
+                  details::imatch(symbol,s_mand ) ||
+                  details::imatch(symbol,s_mor  ) ||
+                  details::imatch(symbol,s_multi)
                );
       }
 
@@ -10290,6 +10379,7 @@ namespace exprtk
          else if (details::imatch(symbol,"max" )) opt_type = details::e_max;
          else if (details::imatch(symbol,"mand")) opt_type = details::e_mand;
          else if (details::imatch(symbol,"mor" )) opt_type = details::e_mor;
+         else if (details::imatch(symbol,"~"   )) opt_type = details::e_multi;
          else
          {
             set_error(
@@ -11679,13 +11769,14 @@ namespace exprtk
             switch (operation)
             {
                #define case_stmt(op0,op1) case op0 : temp_node = node_allocator_->allocate<details::vararg_node<Type,op1<Type> > >(arglist); break;
-               case_stmt(details::e_sum,  details::vararg_add_op )
-               case_stmt(details::e_prod, details::vararg_mul_op )
-               case_stmt(details::e_avg,  details::vararg_avg_op )
-               case_stmt(details::e_min,  details::vararg_min_op )
-               case_stmt(details::e_max,  details::vararg_max_op )
-               case_stmt(details::e_mand, details::vararg_mand_op)
-               case_stmt(details::e_mor,  details::vararg_mor_op )
+               case_stmt(details::e_sum,  details::vararg_add_op  )
+               case_stmt(details::e_prod, details::vararg_mul_op  )
+               case_stmt(details::e_avg,  details::vararg_avg_op  )
+               case_stmt(details::e_min,  details::vararg_min_op  )
+               case_stmt(details::e_max,  details::vararg_max_op  )
+               case_stmt(details::e_mand, details::vararg_mand_op )
+               case_stmt(details::e_mor,  details::vararg_mor_op  )
+               case_stmt(details::e_multi,details::vararg_multi_op)
                #undef case_stmt
                default : return error_node();
             }
@@ -11701,13 +11792,14 @@ namespace exprtk
             switch (operation)
             {
                #define case_stmt(op0,op1) case op0 : return node_allocator_->allocate<details::vararg_varnode<Type,op1<Type> > >(arglist);
-               case_stmt(details::e_sum,  details::vararg_add_op )
-               case_stmt(details::e_prod, details::vararg_mul_op )
-               case_stmt(details::e_avg,  details::vararg_avg_op )
-               case_stmt(details::e_min,  details::vararg_min_op )
-               case_stmt(details::e_max,  details::vararg_max_op )
-               case_stmt(details::e_mand, details::vararg_mand_op)
-               case_stmt(details::e_mor,  details::vararg_mor_op )
+               case_stmt(details::e_sum,  details::vararg_add_op  )
+               case_stmt(details::e_prod, details::vararg_mul_op  )
+               case_stmt(details::e_avg,  details::vararg_avg_op  )
+               case_stmt(details::e_min,  details::vararg_min_op  )
+               case_stmt(details::e_max,  details::vararg_max_op  )
+               case_stmt(details::e_mand, details::vararg_mand_op )
+               case_stmt(details::e_mor,  details::vararg_mor_op  )
+               case_stmt(details::e_multi,details::vararg_multi_op)
                #undef case_stmt
                default : return error_node();
             }
@@ -11729,13 +11821,14 @@ namespace exprtk
             switch (operation)
             {
                #define case_stmt(op0,op1) case op0 : return node_allocator_->allocate<details::vararg_node<Type,op1<Type> > >(arglist);
-               case_stmt(details::e_sum,  details::vararg_add_op )
-               case_stmt(details::e_prod, details::vararg_mul_op )
-               case_stmt(details::e_avg,  details::vararg_avg_op )
-               case_stmt(details::e_min,  details::vararg_min_op )
-               case_stmt(details::e_max,  details::vararg_max_op )
-               case_stmt(details::e_mand, details::vararg_mand_op)
-               case_stmt(details::e_mor,  details::vararg_mor_op )
+               case_stmt(details::e_sum,  details::vararg_add_op  )
+               case_stmt(details::e_prod, details::vararg_mul_op  )
+               case_stmt(details::e_avg,  details::vararg_avg_op  )
+               case_stmt(details::e_min,  details::vararg_min_op  )
+               case_stmt(details::e_max,  details::vararg_max_op  )
+               case_stmt(details::e_mand, details::vararg_mand_op )
+               case_stmt(details::e_mor,  details::vararg_mor_op  )
+               case_stmt(details::e_multi,details::vararg_multi_op)
                #undef case_stmt
                default : return error_node();
             }

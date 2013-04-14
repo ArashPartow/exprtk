@@ -3574,15 +3574,15 @@ inline bool run_test19()
 
       compositor
          .add("is_prime_impl3",
-              "while (y > 0)                            "
-              "{                                        "
-              "  switch                                 "
-              "  {                                      "
-              "    case y == 1       : true  + (y := 0);"
-              "    case (x % y) == 0 : false + (y := 0);"
-              "    default           : y := y - 1;      "
-              "  }                                      "
-              "}                                        ",
+              "while (y > 0)                           "
+              "{                                       "
+              "  switch                                "
+              "  {                                     "
+              "    case y == 1       : ~(y := 0,true); "
+              "    case (x % y) == 0 : ~(y := 0,false);"
+              "    default           : y := y - 1;     "
+              "  }                                     "
+              "}                                       ",
               "x","y");
 
       compositor
@@ -3671,7 +3671,7 @@ inline bool run_test19()
          {
             printf("run_test19() - Error in evaluation! (3)  Results don't match!  Prime: %d  "
                    "Expression1: %s  Expression2: %s  Expression3: %s\n",
-                   prime_list[i],
+                   static_cast<unsigned int>(prime_list[i]),
                    expression_str1.c_str(),
                    expression_str2.c_str(),
                    expression_str3.c_str());
@@ -3682,7 +3682,7 @@ inline bool run_test19()
          {
             printf("run_test19() - Error in evaluation! (3)  Prime: %d  "
                    "Expression1: %s  Expression2: %s  Expression3: %s\n",
-                   (int)prime_list[i],
+                   static_cast<unsigned int>(prime_list[i]),
                    expression_str1.c_str(),
                    expression_str2.c_str(),
                    expression_str3.c_str());
@@ -3716,17 +3716,44 @@ inline bool run_test19()
               "}                                                      ",
               "x");
 
+      compositor
+         .add("fibonacci_impl3",
+              "switch                                 "
+              "{                                      "
+              "  case x == 0 : 0;                     "
+              "  case x == 1 : 1;                     "
+              "  default : while (~(x := (x - 1)) > 0)"
+              "            {~                         "
+              "              (                        "
+              "                w := z,                "
+              "                z := z + y,            "
+              "                y := w,                "
+              "                z                      "
+              "              )                        "
+              "            };                         "
+              "}                                      ",
+              "x","y","z","w");
+
+      compositor
+         .add("fibonacci3",
+              "fibonacci_impl3(x,0,1,0)",
+              "x");
+
+
       exprtk::symbol_table<T>& symbol_table = compositor.symbol_table();
       symbol_table.add_constants();
       symbol_table.add_variable("x",x);
 
       std::string expression_str1 = "fibonacci1(x)";
       std::string expression_str2 = "fibonacci2(x)";
+      std::string expression_str3 = "fibonacci3(x)";
 
       expression_t expression1;
       expression_t expression2;
+      expression_t expression3;
       expression1.register_symbol_table(symbol_table);
       expression2.register_symbol_table(symbol_table);
+      expression3.register_symbol_table(symbol_table);
 
       exprtk::parser<T> parser;
 
@@ -3743,6 +3770,14 @@ inline bool run_test19()
          printf("run_test19() - Error: %s   Expression2: %s\n",
                 parser.error().c_str(),
                 expression_str2.c_str());
+         return false;
+      }
+
+      if (!parser.compile(expression_str3,expression3))
+      {
+         printf("run_test19() - Error: %s   Expression3: %s\n",
+                parser.error().c_str(),
+                expression_str3.c_str());
          return false;
       }
 
@@ -3766,22 +3801,29 @@ inline bool run_test19()
          x = i;
          T result1 = expression1.value();
          T result2 = expression2.value();
-         if (result1 != result2)
+         T result3 = expression3.value();
+
+         if ((result1 != result2) || (result1 != result3))
          {
-            printf("run_test19() - Error in evaluation! (3)  Results don't match!  Prime: %d  Expression1: %s  Expression2: %s\n",
-                   fibonacci_list[i],
+            printf("run_test19() - Error in evaluation! (3)  Results don't match!  fibonacci(%d) = %d "
+                   "Expression1: %s  Expression2: %s  Expression3: %s\n",
+                   static_cast<unsigned int>(i),
+                   static_cast<unsigned int>(fibonacci_list[i]),
                    expression_str1.c_str(),
-                   expression_str2.c_str());
+                   expression_str2.c_str(),
+                   expression_str3.c_str());
             failure = true;
          }
 
          if (fibonacci_list[i] != expression1.value())
          {
-            printf("run_test19() - Error in evaluation! (4)  fibonacci(%d) = %d Expression1: %s  Expression2: %s\n",
-                    i,
-                   fibonacci_list[i],
+            printf("run_test19() - Error in evaluation! (4)  fibonacci(%d) = %d "
+                   "Expression1: %s  Expression2: %s  Expression3: %s\n",
+                   static_cast<unsigned int>(i),
+                   static_cast<unsigned int>(fibonacci_list[i]),
                    expression_str1.c_str(),
-                   expression_str2.c_str());
+                   expression_str2.c_str(),
+                   expression_str3.c_str());
             failure = true;
          }
       }
