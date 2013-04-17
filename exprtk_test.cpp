@@ -3578,7 +3578,7 @@ inline bool run_test19()
               "{                                       "
               "  switch                                "
               "  {                                     "
-              "    case y == 1       : ~(y := 0,true); "
+              "    case y == 1       : ~(y := 0, true);"
               "    case (x % y) == 0 : ~(y := 0,false);"
               "    default           : y := y - 1;     "
               "  }                                     "
@@ -3718,20 +3718,18 @@ inline bool run_test19()
 
       compositor
          .add("fibonacci_impl3",
-              "switch                                 "
-              "{                                      "
-              "  case x == 0 : 0;                     "
-              "  case x == 1 : 1;                     "
-              "  default : while (~(x := (x - 1)) > 0)"
-              "            {~                         "
-              "              (                        "
-              "                w := z,                "
-              "                z := z + y,            "
-              "                y := w,                "
-              "                z                      "
-              "              )                        "
-              "            };                         "
-              "}                                      ",
+              "switch                                "
+              "{                                     "
+              "  case x == 0 : 0;                    "
+              "  case x == 1 : 1;                    "
+              "  default : while ((x := (x - 1)) > 0)"
+              "            {                         "
+              "              w := z;                 "
+              "              z := z + y;             "
+              "              y := w;                 "
+              "              z                       "
+              "            };                        "
+              "}                                     ",
               "x","y","z","w");
 
       compositor

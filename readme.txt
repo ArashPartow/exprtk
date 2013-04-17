@@ -277,9 +277,11 @@ include path (e.g: /usr/include/).
 | trunc     | Integer portion of x                                   |
 +-----------+--------------------------------------------------------+
 | ~         | Evaluate each sub-expression, then return as the result|
-|           | the value of the last sub-expression. This is known as |
-|           | multiple sequence point evaluation.                    |
-|           | (eg: ~(x+1,y/z,abs(y^3),sin(w/u)) == (sin(w/u)))       |
+|           | the value of the last sub-expression. This is sometimes|
+|           | known as multiple sequence point evaluation.           |
+|           | eg:                                                    |
+|           | ~(i:=x+1, j:=y/z, k:=sin(w/u)) == (sin(w/u)))          |
+|           | ~{i:=x+1; j:=y/z; k:=sin(w/u)} == (sin(w/u)))          |
 +-----------+--------------------------------------------------------+
 
 (4) Trigonometry Functions
@@ -467,7 +469,7 @@ correctly optimize such expressions for a given architecture.
       compile time: exprtk_disable_string_capabilities
 
  (16) Composited functions can call themselves or any other functions
-      that have been previously defined.
+      that have been defined prior to their own definition.
 
  (17) Expressions may contain any of the following comment styles:
       1. // .... \n
