@@ -1,6 +1,6 @@
 C++ Mathematical Expression Toolkit Library
 
-[INTRODUCTION]
+[00 - INTRODUCTION]
 The C++ Mathematical Expression  Toolkit Library (ExprTk) is  a simple
 to  use,  easy  to  integrate  and  extremely  efficient  mathematical
 expression parsing and evaluation engine. The parsing engine  supports
@@ -9,7 +9,7 @@ very easily extendible.
 
 
 
-[CAPABILITIES]
+[01 - CAPABILITIES]
 The ExprTk evaluator  supports the following  fundamental mathematical
 operations, functions and processes:
 
@@ -42,7 +42,7 @@ operations, functions and processes:
 
 
 
-[EXAMPLE EXPRESSIONS]
+[02 - EXAMPLE EXPRESSIONS]
 The  following  is  a  short  sample  of  the  types  of  mathematical
 expressions that can be parsed and evaluated using the ExprTk library.
 
@@ -69,7 +69,7 @@ expressions that can be parsed and evaluated using the ExprTk library.
 
 
 
-[COPYRIGHT NOTICE]
+[03 - COPYRIGHT NOTICE]
 Free  use  of  the  C++  Mathematical  Expression  Toolkit  Library is
 permitted under the guidelines and in accordance with the most current
 version of the Common Public License.
@@ -78,7 +78,7 @@ http://www.opensource.org/licenses/cpl1.0.php
 
 
 
-[DOWNLOADS & UPDATES]
+[04 - DOWNLOADS & UPDATES]
 The most  recent version  of the  C++ Mathematical  Expression Toolkit
 Library including all updates and tests can be found at the  following
 locations:
@@ -88,20 +88,20 @@ locations:
 
 
 
-[INSTALLATION]
+[05 - INSTALLATION]
 The header  file exprtk.hpp  should be  placed in  a project or system
 include path (e.g: /usr/include/).
 
 
 
-[COMPILATION]
+[06 - COMPILATION]
 (1) For a complete build: make clean all
 (2) For a PGO build: make clean pgo
 (3) To strip executables: make strip_bin
 
 
 
-[COMPILER COMPATIBILITY]
+[07 - COMPILER COMPATIBILITY]
 (*) GNU Compiler Collection (4.3+)
 (*) Intel® C++ Compiler (9.x+)
 (*) Clang/LLVM (1.1+)
@@ -112,7 +112,7 @@ include path (e.g: /usr/include/).
 
 
 
-[BUILT-IN OPERATIONS & FUNCTIONS]
+[08 - BUILT-IN OPERATIONS & FUNCTIONS]
 
 (0) Basic Operators
 +-----------+--------------------------------------------------------+
@@ -344,7 +344,7 @@ include path (e.g: /usr/include/).
 
 
 
-[SPECIAL FUNCTIONS]
+[09 - SPECIAL FUNCTIONS]
 The purpose  of special  functions in  ExprTk is  to provide  compiler
 generated equivalents of common mathematical expressions which can  be
 invoked by  using the  'special function'  syntax (eg:  $f12(x,y,z) or
@@ -415,7 +415,7 @@ correctly optimize such expressions for a given architecture.
 
 
 
-[EXPRTK NOTES]
+[10 - EXPRTK NOTES]
  (00) Precision and performance of expression evaluations are the
       dominant principles of the ExprTk library.
 
@@ -478,7 +478,7 @@ correctly optimize such expressions for a given architecture.
 
 
 
-[SIMPLE EXPRTK EXAMPLE]
+[11 - SIMPLE EXPRTK EXAMPLE]
 --- snip ---
 #include <cstdio>
 #include <string>
@@ -553,9 +553,19 @@ int main()
 
 
 
-[FILES]
+[12 - FILES]
 (00) Makefile
 (01) readme.txt
 (02) exprtk.hpp
 (03) exprtk_test.cpp
 (04) exprtk_benchmark.cpp
+(05) exprtk_simple_example_01.cpp
+(06) exprtk_simple_example_02.cpp
+(07) exprtk_simple_example_03.cpp
+(08) exprtk_simple_example_04.cpp
+(09) exprtk_simple_example_05.cpp
+(10) exprtk_simple_example_06.cpp
+(11) exprtk_simple_example_07.cpp
+(12) exprtk_simple_example_08.cpp
+(13) exprtk_simple_example_09.cpp
+(14) exprtk_simple_example_10.cpp

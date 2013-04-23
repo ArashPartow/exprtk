@@ -3830,6 +3830,165 @@ inline bool run_test19()
          return false;
    }
 
+   {
+      T x = T(0);
+
+      exprtk::symbol_table<T> symbol_table;
+
+      symbol_table.add_constants();
+      symbol_table.add_variable("x",x);
+
+      compositor_t compositor(symbol_table);
+
+      compositor
+         .add("newton_sqrt_impl",
+              "switch                                "
+              "{                                     "
+              "  case x < 0  : -inf;                 "
+              "  case x == 0 : 0;                    "
+              "  case x == 1 : 1;                    "
+              "  default:                            "
+              "  ~{                                  "
+              "     z := 100;                        "
+              "     y := x / 2;                      "
+              "     while ((z := (z - 1)) > 0)       "
+              "     {                                "
+              "       if (equal(y * y,x), z := 0, 0);"
+              "       y := (1 / 2) * (y + (x / y))   "
+              "     }                                "
+              "   };                                 "
+              "}                                     ",
+              "x","y","z");
+
+      compositor
+         .add("newton_sqrt",
+              "newton_sqrt_impl(x,0,0)","x");
+
+      std::string expression_str = "newton_sqrt(x)";
+
+      expression_t expression;
+
+      expression.register_symbol_table(symbol_table);
+
+      exprtk::parser<T> parser;
+
+      if (!parser.compile(expression_str,expression))
+      {
+         printf("run_test19() - Error: %s   Expression: %s\n",
+                parser.error().c_str(),
+                expression_str.c_str());
+         return false;
+      }
+
+      bool failure = false;
+
+      for (std::size_t i = 0; i < 100; ++i)
+      {
+         x = i;
+         T result = expression.value();
+
+         if (not_equal(result,std::sqrt(x),T(0.0000001)))
+         {
+            printf("run_test19() - Computation Error  "
+                   "Expression: [%s]\tExpected: %12.8f\tResult: %12.8f\n",
+                   expression_str.c_str(),
+                   std::sqrt(x),
+                   result);
+            failure = true;
+         }
+      }
+
+      if (failure)
+         return false;
+   }
+
+   return true;
+}
+
+template <typename T>
+struct my_usr : public exprtk::parser<T>::unknown_symbol_resolver
+{
+
+   typedef typename exprtk::parser<T>::unknown_symbol_resolver usr_t;
+
+   bool process(const std::string& unknown_symbol,
+                typename usr_t::symbol_type& st,
+                T& default_value,
+                std::string& error_message)
+   {
+      if (unknown_symbol[0] == 'v')
+      {
+         st = usr_t::e_variable_type;
+         default_value = next_value();
+         error_message = "";
+         return true;
+      }
+      else if (unknown_symbol[0] == 'w')
+      {
+         st = usr_t::e_constant_type;
+         default_value = next_value();
+         error_message = "";
+         return true;
+      }
+      else
+      {
+         error_message = "Unknown symbol...";
+         return false;
+      }
+   }
+
+   T next_value(const bool reset = false)
+   {
+      static T value = 0;
+      if (reset)
+         return (value = 0);
+      else
+         return ++value;
+   }
+};
+
+template <typename T>
+inline bool run_test20()
+{
+   typedef exprtk::expression<T> expression_t;
+
+   for (std::size_t i = 0; i < 400; ++i)
+   {
+      exprtk::symbol_table<T> symbol_table;
+      symbol_table.add_constants();
+
+      expression_t expression;
+      expression.register_symbol_table(symbol_table);
+
+      exprtk::parser<T> parser;
+
+      my_usr<T> musr;
+      musr.next_value(true);
+      parser.enable_unknown_symbol_resolver(&musr);
+
+      std::string expr_str = "v01+w02+v03+w04+v05+w06+v07+w08+v09+w10+"
+                             "v11+w12+v13+w14+v15+w16+v17+w18+v19+w20+"
+                             "v21+w22+v23+w24+v25+w26+v27+w28+v29+w30";
+
+      if (!parser.compile(expr_str,expression))
+      {
+         printf("run_test18() - Error: %s   Expression: %s\n",
+                parser.error().c_str(),
+                expr_str.c_str());
+         return false;
+      }
+
+      T sum_1_30 = T((1 + 30) * 15);
+      T result   = expression.value();
+
+      if (sum_1_30 != result)
+      {
+         printf("run_test20() - Error in evaluation! (1) Expression: %s\n",
+                expr_str.c_str());
+         return false;
+      }
+   }
+
    return true;
 }
 
@@ -3870,6 +4029,7 @@ int main()
    perform_test(double,17)
    perform_test(double,18)
    perform_test(double,19)
+   perform_test(double,20)
 
    #undef perform_test
 

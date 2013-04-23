@@ -1,32 +1,32 @@
 /*
- ****************************************************************
- *         C++ Mathematical Expression Toolkit Library          *
- *                                                              *
- * Author: Arash Partow (1999-2013)                             *
- * URL: http://www.partow.net/programming/exprtk/index.html     *
- *                                                              *
- * Copyright notice:                                            *
- * Free use of the C++ Mathematical Expression Toolkit Library  *
- * is permitted under the guidelines and in accordance with the *
- * most current version of the Common Public License.           *
- * http://www.opensource.org/licenses/cpl1.0.php                *
- *                                                              *
- * Example expressions:                                         *
- * (00) (y+x/y)*(x-y/x)                                         *
- * (01) (x^2/sin(2*pi/y))-x/2                                   *
- * (02) sqrt(1-(x^2))                                           *
- * (03) 1-sin(2*x)+cos(pi/y)                                    *
- * (04) a*exp(2*t)+c                                            *
- * (05) if(((x+2)==3)and((y+5)<=9),1+w,2/z)                     *
- * (06) if(avg(x,y)<=x+y,x-y,x*y)+2*pi/x                        *
- * (07) z:=x+sin(2*pi/y)                                        *
- * (08) u:=2*(pi*z)/(w:=x+cos(y/pi))                            *
- * (09) clamp(-1,sin(2*pi*x)+cos(y/2*pi),+1)                    *
- * (10) inrange(-2,m,+2)==if(({-2<=m} and [m<=+2]),1,0)         *
- * (11) (12.34sin(x)cos(2y)7+1)==(12.34*sin(x)*cos(2*y)*7+1)    *
- * (12) (x ilike 's*ri?g') and [y<(3z^7+w)]                     *
- *                                                              *
- ****************************************************************
+ ******************************************************************
+ *           C++ Mathematical Expression Toolkit Library          *
+ *                                                                *
+ * Author: Arash Partow (1999-2013)                               *
+ * URL: http://www.partow.net/programming/exprtk/index.html       *
+ *                                                                *
+ * Copyright notice:                                              *
+ * Free use of the C++ Mathematical Expression Toolkit Library is *
+ * permitted under the guidelines and in accordance with the most *
+ * current version of the Common Public License.                  *
+ * http://www.opensource.org/licenses/cpl1.0.php                  *
+ *                                                                *
+ * Example expressions:                                           *
+ * (00) (y+x/y)*(x-y/x)                                           *
+ * (01) (x^2/sin(2*pi/y))-x/2                                     *
+ * (02) sqrt(1-(x^2))                                             *
+ * (03) 1-sin(2*x)+cos(pi/y)                                      *
+ * (04) a*exp(2*t)+c                                              *
+ * (05) if(((x+2)==3)and((y+5)<=9),1+w,2/z)                       *
+ * (06) if(avg(x,y)<=x+y,x-y,x*y)+2*pi/x                          *
+ * (07) z:=x+sin(2*pi/y)                                          *
+ * (08) u:=2*(pi*z)/(w:=x+cos(y/pi))                              *
+ * (09) clamp(-1,sin(2*pi*x)+cos(y/2*pi),+1)                      *
+ * (10) inrange(-2,m,+2)==if(({-2<=m} and [m<=+2]),1,0)           *
+ * (11) (12.34sin(x)cos(2y)7+1)==(12.34*sin(x)*cos(2*y)*7+1)      *
+ * (12) (x ilike 's*ri?g') and [y<(3z^7+w)]                       *
+ *                                                                *
+ ******************************************************************
 */
 
 
@@ -2304,7 +2304,7 @@ namespace exprtk
 
             void reset()
             {
-               //msvc doesn't support swap properly.
+               //why? because msvc doesn't support swap properly.
                stack_ = std::stack<char>();
                state_ = true;
                error_token_.clear();
@@ -9400,6 +9400,27 @@ namespace exprtk
          e_commutative_check = 32
       };
 
+      struct unknown_symbol_resolver
+      {
+
+         enum symbol_type
+         {
+            e_variable_type = 0,
+            e_constant_type = 1
+         };
+
+         virtual ~unknown_symbol_resolver()
+         {}
+
+         virtual bool process(const std::string& /*unknown_symbol*/, symbol_type& st, T& default_value, std::string& error_message)
+         {
+            st = e_variable_type;
+            default_value = T(0);
+            error_message = "";
+            return true;
+         }
+      };
+
       static const std::size_t precompile_all_opts = e_replacer         +
                                                      e_joiner           +
                                                      e_numeric_check    +
@@ -9409,7 +9430,9 @@ namespace exprtk
 
       parser(const std::size_t precompile_options = precompile_all_opts)
       : symbol_name_caching_(false),
-        precompile_options_(precompile_options)
+        precompile_options_(precompile_options),
+        resolve_unknown_symbol_(false),
+        unknown_symbol_resolver_(reinterpret_cast<unknown_symbol_resolver*>(0))
       {
          init_precompilation();
          load_operations_map(base_ops_map_);
@@ -9727,6 +9750,21 @@ namespace exprtk
             return false;
          else
             return symbol_replacer_.remove(symbol);
+      }
+
+      inline void enable_unknown_symbol_resolver(unknown_symbol_resolver* usr = reinterpret_cast<unknown_symbol_resolver*>(0))
+      {
+         resolve_unknown_symbol_ = true;
+         if (usr)
+            unknown_symbol_resolver_ = usr;
+         else
+            unknown_symbol_resolver_ = &default_usr_;
+      }
+
+      inline void disable_unknown_symbol_resolver()
+      {
+         resolve_unknown_symbol_ = false;
+         unknown_symbol_resolver_ = &default_usr_;
       }
 
    private:
@@ -10799,14 +10837,60 @@ namespace exprtk
                return error_node();
             }
          }
-         else
+
+         // Should we handle unknown symbols?
+         if (resolve_unknown_symbol_ && unknown_symbol_resolver_)
          {
-            set_error(
-               make_error(parser_error::e_syntax,
-                          current_token_,
-                          "ERR40 - Undefined variable or function: '" + symbol + "'"));
-            return error_node();
+            T default_value = T(0);
+            std::string error_message;
+            typename unknown_symbol_resolver::symbol_type symbol_type;
+
+            if (unknown_symbol_resolver_->process(symbol,symbol_type,default_value,error_message))
+            {
+               bool create_result = false;
+               switch (symbol_type)
+               {
+                  case unknown_symbol_resolver::e_variable_type : create_result = symbol_table_.create_variable(symbol,default_value);
+                                                                  break;
+
+                  case unknown_symbol_resolver::e_constant_type : create_result = symbol_table_.add_constant(symbol,default_value);
+                                                                  break;
+
+                  default                                       : create_result = false;
+               }
+
+               if (create_result)
+               {
+                  expression_node_ptr variable = symbol_table_.get_variable(symbol);
+                  if (variable)
+                  {
+                     if (symbol_name_caching_)
+                     {
+                        symbol_name_cache_.push_back(symbol);
+                     }
+                     if (symbol_table_.is_constant_node(symbol))
+                     {
+                        variable = expression_generator_(variable->value());
+                     }
+                     next_token();
+                     return variable;
+                  }
+               }
+
+               set_error(
+                  make_error(parser_error::e_symtab,
+                             current_token_,
+                             "ERR40 - Failed to create variable: '" + symbol + "'"));
+
+               return error_node();
+            }
          }
+
+         set_error(
+            make_error(parser_error::e_syntax,
+                       current_token_,
+                       "ERR41 - Undefined variable or function: '" + symbol + "'"));
+         return error_node();
       }
 
       inline expression_node_ptr parse_symbol()
@@ -11747,6 +11831,7 @@ namespace exprtk
             else if (all_nodes_variables(branch))
                return varnode_optimize_sf3(operation,branch);
             else
+            {
                switch (operation)
                {
                   #define case_stmt(op0,op1) case op0 : return node_allocator_->allocate<details::sf3_node<Type,op1<Type> > >(operation,branch);
@@ -11777,6 +11862,7 @@ namespace exprtk
                   #undef case_stmt
                   default : return error_node();
                }
+            }
          }
 
          inline expression_node_ptr const_optimize_sf4(const details::operator_type& operation, expression_node_ptr (&branch)[4])
@@ -15524,6 +15610,9 @@ namespace exprtk
       std::size_t precompile_options_;
       std::deque<std::string> symbol_name_cache_;
       std::deque<parser_error::type> error_list_;
+      bool resolve_unknown_symbol_;
+      unknown_symbol_resolver* unknown_symbol_resolver_;
+      unknown_symbol_resolver default_usr_;
       base_ops_map_t base_ops_map_;
       unary_op_map_t unary_op_map_;
       binary_op_map_t binary_op_map_;
