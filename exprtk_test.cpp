@@ -968,7 +968,15 @@ static const test_t test_list[] =
                      test_t("switch { case {1 <= 2} : switch { case {1 <= 2} : 1; default: 1.12345; }; default: 1.12345; }",1.0),
                      test_t("switch { case [(1 <= 2)] : {1}; default: 1.12345; }",1.0),
                      test_t("switch { case ([1 >  2]) : [0]; case ([1 <= 2]) : 1; default: 1.12345; }",1.0),
-                     test_t("switch { case {(1 <= 2)} : switch { case ({1 <= 2}) : 1; default: 1.12345; }; default: 1.12345; }",1.0)
+                     test_t("switch { case {(1 <= 2)} : switch { case ({1 <= 2}) : 1; default: 1.12345; }; default: 1.12345; }",1.0),
+                     test_t("repeat 1.1 + 2.2 until (1 < 2)",3.3),
+                     test_t("repeat (1.1 + 2.2) until (1 < 2)",3.3),
+                     test_t("repeat 1.1 + 2.2; until (1 < 2)",3.3),
+                     test_t("repeat (1.1 + 2.2); until (1 < 2)",3.3),
+                     test_t("repeat 1.1234; 1 < 2; 1.1 + 2.2 until (1 < 2)",3.3),
+                     test_t("repeat 1.1234; 1 < 2; (1.1 + 2.2) until (1 < 2)",3.3),
+                     test_t("repeat 1.1234; 1 < 2; 1.1 + 2.2; until (1 < 2)",3.3),
+                     test_t("repeat 1.1234; 1 < 2; (1.1 + 2.2); until (1 < 2)",3.3)
                   };
 
 static const std::size_t test_list_size = sizeof(test_list) / sizeof(test_t);
@@ -3737,6 +3745,27 @@ inline bool run_test19()
               "fibonacci_impl3(x,0,1,0)",
               "x");
 
+      compositor
+         .add("fibonacci_impl4",
+              "switch                     "
+              "{                          "
+              "  case x == 0 : 0;         "
+              "  case x == 1 : 1;         "
+              "  default : repeat         "
+              "              w := z;      "
+              "              z := z + y;  "
+              "              y := w;      "
+              "              x := x - 1;  "
+              "              z            "
+              "            until (x <= 1);"
+              "}                          ",
+              "x","y","z","w");
+
+      compositor
+         .add("fibonacci4",
+              "fibonacci_impl4(x,0,1,0)",
+              "x");
+
 
       exprtk::symbol_table<T>& symbol_table = compositor.symbol_table();
       symbol_table.add_constants();
@@ -3745,13 +3774,16 @@ inline bool run_test19()
       std::string expression_str1 = "fibonacci1(x)";
       std::string expression_str2 = "fibonacci2(x)";
       std::string expression_str3 = "fibonacci3(x)";
+      std::string expression_str4 = "fibonacci4(x)";
 
       expression_t expression1;
       expression_t expression2;
       expression_t expression3;
+      expression_t expression4;
       expression1.register_symbol_table(symbol_table);
       expression2.register_symbol_table(symbol_table);
       expression3.register_symbol_table(symbol_table);
+      expression4.register_symbol_table(symbol_table);
 
       exprtk::parser<T> parser;
 
@@ -3779,18 +3811,26 @@ inline bool run_test19()
          return false;
       }
 
+      if (!parser.compile(expression_str4,expression4))
+      {
+         printf("run_test19() - Error: %s   Expression4: %s\n",
+                parser.error().c_str(),
+                expression_str4.c_str());
+         return false;
+      }
+
       bool failure = false;
 
       const std::size_t fibonacci_list[] =
                            {
-                                    0,       1,      1,       2,
-                                    3,       5,      8,      13,
-                                   21,      34,     55,      89,
-                                  144,     233,    377,     610,
-                                  987,    1597,   2584,    4181,
-                                 6765,   10946,  17711,   28657,
-                                46368,   75025, 121393,  196418,
-                               317811,  514229, 832040, 1346269
+                                  0,       1,      1,       2,
+                                  3,       5,      8,      13,
+                                 21,      34,     55,      89,
+                                144,     233,    377,     610,
+                                987,    1597,   2584,    4181,
+                               6765,   10946,  17711,   28657,
+                              46368,   75025, 121393,  196418,
+                             317811,  514229, 832040, 1346269
                            };
       const std::size_t fibonacci_list_size = sizeof(fibonacci_list) / sizeof(std::size_t);
 
@@ -3800,28 +3840,43 @@ inline bool run_test19()
          T result1 = expression1.value();
          T result2 = expression2.value();
          T result3 = expression3.value();
+         T result4 = expression4.value();
 
-         if ((result1 != result2) || (result1 != result3))
+         if (
+              (result1 != result2) ||
+              (result1 != result3) ||
+              (result1 != result4)
+            )
          {
             printf("run_test19() - Error in evaluation! (3)  Results don't match!  fibonacci(%d) = %d "
-                   "Expression1: %s  Expression2: %s  Expression3: %s\n",
+                   "Expression1: %s = %d  Expression2: %s = %d  Expression3: %s = %d  Expression4: %s = %d\n",
                    static_cast<unsigned int>(i),
                    static_cast<unsigned int>(fibonacci_list[i]),
                    expression_str1.c_str(),
+                   static_cast<unsigned int>(result1),
                    expression_str2.c_str(),
-                   expression_str3.c_str());
+                   static_cast<unsigned int>(result2),
+                   expression_str3.c_str(),
+                   static_cast<unsigned int>(result3),
+                   expression_str4.c_str(),
+                   static_cast<unsigned int>(result4));
             failure = true;
          }
 
          if (fibonacci_list[i] != expression1.value())
          {
             printf("run_test19() - Error in evaluation! (4)  fibonacci(%d) = %d "
-                   "Expression1: %s  Expression2: %s  Expression3: %s\n",
+                   "Expression1: %s = %d  Expression2: %s = %d  Expression3: %s = %d  Expression4: %s = %d\n",
                    static_cast<unsigned int>(i),
                    static_cast<unsigned int>(fibonacci_list[i]),
                    expression_str1.c_str(),
+                   static_cast<unsigned int>(result1),
                    expression_str2.c_str(),
-                   expression_str3.c_str());
+                   static_cast<unsigned int>(result2),
+                   expression_str3.c_str(),
+                   static_cast<unsigned int>(result3),
+                   expression_str4.c_str(),
+                   static_cast<unsigned int>(result4));
             failure = true;
          }
       }
@@ -3923,7 +3978,7 @@ struct my_usr : public exprtk::parser<T>::unknown_symbol_resolver
          error_message = "";
          return true;
       }
-      else if (unknown_symbol[0] == 'w')
+      else if (unknown_symbol[0] == 'c')
       {
          st = usr_t::e_constant_type;
          default_value = next_value();
@@ -3966,13 +4021,13 @@ inline bool run_test20()
       musr.next_value(true);
       parser.enable_unknown_symbol_resolver(&musr);
 
-      std::string expr_str = "v01+w02+v03+w04+v05+w06+v07+w08+v09+w10+"
-                             "v11+w12+v13+w14+v15+w16+v17+w18+v19+w20+"
-                             "v21+w22+v23+w24+v25+w26+v27+w28+v29+w30";
+      std::string expr_str = "v01+c02+v03+c04+v05+c06+v07+c08+v09+c10+"
+                             "v11+c12+v13+c14+v15+c16+v17+c18+v19+c20+"
+                             "v21+c22+v23+c24+v25+c26+v27+c28+v29+c30 ";
 
       if (!parser.compile(expr_str,expression))
       {
-         printf("run_test18() - Error: %s   Expression: %s\n",
+         printf("run_test20() - Error: %s   Expression: %s\n",
                 parser.error().c_str(),
                 expr_str.c_str());
          return false;

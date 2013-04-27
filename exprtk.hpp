@@ -228,8 +228,8 @@ namespace exprtk
       static const std::string reserved_words[] =
                                   {
                                      "and", "default", "case", "false", "for", "if", "ilike", "in", "like",
-                                     "nand", "nor", "not", "null", "or", "shl", "shr", "switch", "true",
-                                     "while", "xnor", "xor", "&", "|"
+                                     "nand", "nor", "not", "null", "or", "repeat", "shl", "shr", "switch",
+                                     "true", "until", "while", "xnor", "xor", "&", "|"
                                   };
 
       static const std::size_t reserved_words_size = sizeof(reserved_words) / sizeof(std::string);
@@ -241,9 +241,9 @@ namespace exprtk
                                      "equal", "erf", "erfc", "exp", "false", "floor", "for", "frac", "grad2deg",
                                      "hypot", "if", "ilike", "in", "inrange", "like", "log", "log10", "log2",
                                      "logn", "log1p", "mand", "max", "min", "mod", "mor", "mul", "nand", "nor",
-                                     "not", "not_equal", "null", "or", "pow", "rad2deg", "root", "round", "roundn",
-                                     "sec", "sgn", "shl", "shr", "sin", "sinh", "sqrt", "sum", "switch", "tan",
-                                     "tanh", "true", "trunc", "while", "xnor", "xor", "&", "|"
+                                     "not", "not_equal", "null", "or", "pow", "rad2deg", "repeat", "root", "round",
+                                     "roundn", "sec", "sgn", "shl", "shr", "sin", "sinh", "sqrt", "sum", "switch",
+                                     "tan", "tanh", "true", "trunc", "until", "while", "xnor", "xor", "&", "|"
                                   };
 
       static const std::size_t reserved_symbols_size = sizeof(reserved_symbols) / sizeof(std::string);
@@ -1296,8 +1296,8 @@ namespace exprtk
                   based on the compiler and target architecture. The benchmark
                   should provide enough information to make the right choice.
          */
-         //typedef T Type
-         //typedef const T Type
+         //typedef T Type;
+         //typedef const T Type;
          typedef const T& Type;
          typedef T (*qfunc_t)(Type t0, Type t1, Type t2, Type t3);
          typedef T (*tfunc_t)(Type t0, Type t1, Type t2);
@@ -1314,39 +1314,17 @@ namespace exprtk
 
          enum token_type
          {
-            e_none        =   0,
-            e_error       =   1,
-            e_err_symbol  =   2,
-            e_err_number  =   3,
-            e_err_string  =   4,
-            e_err_sfunc   =   5,
-            e_eof         =   6,
-            e_number      =   7,
-            e_symbol      =   8,
-            e_string      =   9,
-            e_assign      =  10,
-            e_shr         =  11,
-            e_shl         =  12,
-            e_lte         =  13,
-            e_ne          =  14,
-            e_gte         =  15,
-            e_lt          = '<',
-            e_gt          = '>',
-            e_eq          = '=',
-            e_rbracket    = ')',
-            e_lbracket    = '(',
-            e_rsqrbracket = ']',
-            e_lsqrbracket = '[',
-            e_rcrlbracket = '}',
-            e_lcrlbracket = '{',
-            e_comma       = ',',
-            e_add         = '+',
-            e_sub         = '-',
-            e_div         = '/',
-            e_mul         = '*',
-            e_mod         = '%',
-            e_pow         = '^',
-            e_colon       = ':'
+            e_none        =   0, e_error       =   1, e_err_symbol  =   2,
+            e_err_number  =   3, e_err_string  =   4, e_err_sfunc   =   5,
+            e_eof         =   6, e_number      =   7, e_symbol      =   8,
+            e_string      =   9, e_assign      =  10, e_shr         =  11,
+            e_shl         =  12, e_lte         =  13, e_ne          =  14,
+            e_gte         =  15, e_lt          = '<', e_gt          = '>',
+            e_eq          = '=', e_rbracket    = ')', e_lbracket    = '(',
+            e_rsqrbracket = ']', e_lsqrbracket = '[', e_rcrlbracket = '}',
+            e_lcrlbracket = '{', e_comma       = ',', e_add         = '+',
+            e_sub         = '-', e_div         = '/', e_mul         = '*',
+            e_mod         = '%', e_pow         = '^', e_colon       = ':'
          };
 
          token()
@@ -1423,7 +1401,7 @@ namespace exprtk
             return *this;
          }
 
-         inline std::string to_str(token_type t) const
+         static inline std::string to_str(token_type t)
          {
             switch (t)
             {
@@ -1556,6 +1534,16 @@ namespace exprtk
             if (token_list_.end() != token_itr_)
             {
                return *token_itr_++;
+            }
+            else
+               return eof_token_;
+         }
+
+         inline token_t& peek_next_token()
+         {
+            if (token_list_.end() != token_itr_)
+            {
+               return *token_itr_;
             }
             else
                return eof_token_;
@@ -3002,29 +2990,29 @@ namespace exprtk
             e_none        , e_null        , e_constant    , e_unary       ,
             e_binary      , e_binary_ext  , e_trinary     , e_quaternary  ,
             e_quinary     , e_senary      , e_vararg      , e_conditional ,
-            e_while       , e_switch      , e_variable    , e_stringvar   ,
-            e_stringconst , e_function    , e_vafunction  , e_add         ,
-            e_sub         , e_mul         , e_div         , e_mod         ,
-            e_pow         , e_lt          , e_lte         , e_gt          ,
-            e_gte         , e_eq          , e_ne          , e_and         ,
-            e_nand        , e_or          , e_nor         , e_xor         ,
-            e_xnor        , e_in          , e_like        , e_ilike       ,
-            e_inranges    , e_ipow        , e_ipowinv     , e_abs         ,
-            e_acos        , e_asin        , e_atan        , e_ceil        ,
-            e_cos         , e_cosh        , e_exp         , e_floor       ,
-            e_log         , e_log10       , e_log2        , e_log1p       ,
-            e_neg         , e_pos         , e_round       , e_sin         ,
-            e_sinh        , e_sqrt        , e_tan         , e_tanh        ,
-            e_cot         , e_sec         , e_csc         , e_r2d         ,
-            e_d2r         , e_d2g         , e_g2d         , e_notl        ,
-            e_sgn         , e_erf         , e_erfc        , e_frac        ,
-            e_trunc       , e_uvouv       , e_vov         , e_cov         ,
-            e_voc         , e_vob         , e_bov         , e_cob         ,
-            e_boc         , e_vovov       , e_vovoc       , e_vocov       ,
-            e_covov       , e_covoc       , e_vovovov     , e_vovovoc     ,
-            e_vovocov     , e_vocovov     , e_covovov     , e_covocov     ,
-            e_vocovoc     , e_covovoc     , e_vococov     , e_sf3ext      ,
-            e_sf4ext
+            e_while       , e_repeat      , e_switch      , e_variable    ,
+            e_stringvar   , e_stringconst , e_function    , e_vafunction  ,
+            e_add         , e_sub         , e_mul         , e_div         ,
+            e_mod         , e_pow         , e_lt          , e_lte         ,
+            e_gt          , e_gte         , e_eq          , e_ne          ,
+            e_and         , e_nand        , e_or          , e_nor         ,
+            e_xor         , e_xnor        , e_in          , e_like        ,
+            e_ilike       , e_inranges    , e_ipow        , e_ipowinv     ,
+            e_abs         , e_acos        , e_asin        , e_atan        ,
+            e_ceil        , e_cos         , e_cosh        , e_exp         ,
+            e_floor       , e_log         , e_log10       , e_log2        ,
+            e_log1p       , e_neg         , e_pos         , e_round       ,
+            e_sin         , e_sinh        , e_sqrt        , e_tan         ,
+            e_tanh        , e_cot         , e_sec         , e_csc         ,
+            e_r2d         , e_d2r         , e_d2g         , e_g2d         ,
+            e_notl        , e_sgn         , e_erf         , e_erfc        ,
+            e_frac        , e_trunc       , e_uvouv       , e_vov         ,
+            e_cov         , e_voc         , e_vob         , e_bov         ,
+            e_cob         , e_boc         , e_vovov       , e_vovoc       ,
+            e_vocov       , e_covov       , e_covoc       , e_vovovov     ,
+            e_vovovoc     , e_vovocov     , e_vocovov     , e_covovov     ,
+            e_covocov     , e_vocovoc     , e_covovoc     , e_vococov     ,
+            e_sf3ext      , e_sf4ext
          };
 
          typedef T value_type;
@@ -3586,9 +3574,9 @@ namespace exprtk
             const T arg3 = branch_[3].first->value();
             switch (operation_)
             {
-               case e_min  : return std::min<T>(std::min<T>(arg0,arg1),std::min<T>(arg2,arg3));
-               case e_max  : return std::max<T>(std::max<T>(arg0,arg1),std::max<T>(arg2,arg3));
-               default     : return std::numeric_limits<T>::quiet_NaN();
+               case e_min : return std::min<T>(std::min<T>(arg0,arg1),std::min<T>(arg2,arg3));
+               case e_max : return std::max<T>(std::max<T>(arg0,arg1),std::max<T>(arg2,arg3));
+               default    : return std::numeric_limits<T>::quiet_NaN();
             }
          }
 
@@ -3762,8 +3750,7 @@ namespace exprtk
 
          typedef expression_node<T>* expression_ptr;
 
-         while_loop_node(expression_ptr test,
-                         expression_ptr branch)
+         while_loop_node(expression_ptr test, expression_ptr branch)
          : test_(test),
            branch_(branch),
            test_deletable_(!is_variable_node(test_)),
@@ -3789,6 +3776,50 @@ namespace exprtk
          inline typename expression_node<T>::node_type type() const
          {
             return expression_node<T>::e_while;
+         }
+
+      private:
+
+         expression_ptr test_;
+         expression_ptr branch_;
+         bool test_deletable_;
+         bool branch_deletable_;
+      };
+
+      template <typename T>
+      class repeat_until_loop_node : public expression_node<T>
+      {
+      public:
+
+         typedef expression_node<T>* expression_ptr;
+
+         repeat_until_loop_node(expression_ptr test, expression_ptr branch)
+         : test_(test),
+           branch_(branch),
+           test_deletable_(!is_variable_node(test_)),
+           branch_deletable_(!is_variable_node(branch_))
+         {}
+
+        ~repeat_until_loop_node()
+         {
+            if (test_   &&   test_deletable_) delete test_;
+            if (branch_ && branch_deletable_) delete branch_;
+         }
+
+         inline T value() const
+         {
+            T result = T(0);
+            do
+            {
+               result = branch_->value();
+            }
+            while (is_false(test_));
+            return result;
+         }
+
+         inline typename expression_node<T>::node_type type() const
+         {
+            return expression_node<T>::e_repeat;
          }
 
       private:
@@ -4369,12 +4400,13 @@ namespace exprtk
          assignment_node(const operator_type& operation,
                          expression_ptr branch0,
                          expression_ptr branch1)
-         : binary_node<T>(operation,branch0,branch1)
+         : binary_node<T>(operation,branch0,branch1),
+           is_lefthand_variable_(is_variable_node(binary_node<T>::branch_[0].first))
          {}
 
          inline T value() const
          {
-            if (is_variable_node(binary_node<T>::branch_[0].first))
+            if (is_lefthand_variable_)
             {
                variable_node<T>* var_node_ptr = dynamic_cast<variable_node<T>*>(binary_node<T>::branch_[0].first);
                if (var_node_ptr)
@@ -4386,6 +4418,10 @@ namespace exprtk
             }
             return std::numeric_limits<T>::quiet_NaN();
          }
+
+      private:
+
+         bool is_lefthand_variable_;
       };
 
       template <typename T>
@@ -9324,32 +9360,34 @@ namespace exprtk
 
       struct state_t;
 
-      typedef const T&                                       cref_t;
-      typedef const T                                       const_t;
-      typedef ifunction                <T>                        F;
-      typedef ivararg_function         <T>                      VAF;
-      typedef ifunction                <T>              ifunction_t;
-      typedef ivararg_function         <T>       ivararg_function_t;
-      typedef details::expression_node <T>        expression_node_t;
-      typedef details::literal_node    <T>           literal_node_t;
-      typedef details::string_literal_node<T> string_literal_node_t;
-      typedef details::unary_node      <T>             unary_node_t;
-      typedef details::binary_node     <T>            binary_node_t;
-      typedef details::trinary_node    <T>           trinary_node_t;
-      typedef details::quaternary_node <T>        quaternary_node_t;
-      typedef details::quinary_node    <T>           quinary_node_t;
-      typedef details::senary_node     <T>            senary_node_t;
-      typedef details::conditional_node<T>       conditional_node_t;
-      typedef details::while_loop_node <T>        while_loop_node_t;
-      typedef details::variable_node   <T>          variable_node_t;
+      typedef const T&                                              cref_t;
+      typedef const T                                              const_t;
+      typedef ifunction                <T>                               F;
+      typedef ivararg_function         <T>                             VAF;
+      typedef ifunction                <T>                     ifunction_t;
+      typedef ivararg_function         <T>              ivararg_function_t;
+      typedef details::expression_node <T>               expression_node_t;
+      typedef details::literal_node    <T>                  literal_node_t;
+      typedef details::string_literal_node<T>        string_literal_node_t;
+      typedef details::unary_node      <T>                    unary_node_t;
+      typedef details::binary_node     <T>                   binary_node_t;
+      typedef details::trinary_node    <T>                  trinary_node_t;
+      typedef details::quaternary_node <T>               quaternary_node_t;
+      typedef details::quinary_node    <T>                  quinary_node_t;
+      typedef details::senary_node     <T>                   senary_node_t;
+      typedef details::conditional_node<T>              conditional_node_t;
+      typedef details::while_loop_node <T>               while_loop_node_t;
+      typedef details::repeat_until_loop_node<T>  repeat_until_loop_node_t;
+      typedef details::switch_node<T>                        switch_node_t;
+      typedef details::variable_node   <T>                 variable_node_t;
       #ifndef exprtk_disable_string_capabilities
-      typedef details::stringvar_node  <T>         stringvar_node_t;
+      typedef details::stringvar_node  <T>                stringvar_node_t;
       #endif
-      typedef details::assignment_node <T>        assignment_node_t;
-      typedef details::scand_node <T>                  scand_node_t;
-      typedef details::scor_node <T>                    scor_node_t;
-      typedef lexer::token                                  token_t;
-      typedef expression_node_t*                expression_node_ptr;
+      typedef details::assignment_node <T>               assignment_node_t;
+      typedef details::scand_node <T>                         scand_node_t;
+      typedef details::scor_node <T>                           scor_node_t;
+      typedef lexer::token                                         token_t;
+      typedef expression_node_t*                       expression_node_ptr;
 
       typedef typename details::functor_t<T> functor_t;
       typedef typename functor_t::qfunc_t quaternary_functor_t;
@@ -9386,6 +9424,8 @@ namespace exprtk
       typedef details::T0oT1oT2oT3_define<T, cref_t,const_t, cref_t,const_t> vocovoc_t;
       typedef details::T0oT1oT2oT3_define<T,const_t, cref_t, cref_t,const_t> covovoc_t;
       typedef details::T0oT1oT2oT3_define<T, cref_t,const_t,const_t, cref_t> vococov_t;
+
+      struct range_pack;
 
    public:
 
@@ -9847,12 +9887,7 @@ namespace exprtk
          }
          while (!lexer_.finished());
 
-         if (arg_list.empty())
-            return error_node();
-         else if (arg_list.size() == 1)
-            result = arg_list[0];
-         else
-            result = expression_generator_.vararg_function(details::e_multi,arg_list);
+         result = simplify(arg_list);
 
          sdd.delete_ptr = (0 == result);
          return result;
@@ -10382,6 +10417,88 @@ namespace exprtk
             return result;
       }
 
+      inline expression_node_ptr parse_repeat_until_loop()
+      {
+         // Parse: [repeat][{][expression][}][until][(][test expr][)]
+         expression_node_ptr condition = error_node();
+         expression_node_ptr branch    = error_node();
+         next_token();
+
+         std::deque<expression_node_ptr> arg_list;
+         scoped_deq_delete<expression_node_t> sdd(*this,arg_list);
+
+         {
+            token_t::token_type seperator = token_t::e_eof;
+
+            for (;;)
+            {
+               expression_node_ptr arg = parse_expression();
+               if (0 == arg)
+                  return error_node();
+               else
+                  arg_list.push_back(arg);
+
+               if (details::imatch(current_token_.value,"until"))
+               {
+                  next_token();
+                  break;
+               }
+               else if (!token_is(seperator))
+               {
+                  set_error(
+                     make_error(parser_error::e_syntax,
+                                current_token_,
+                                "ERR22 - Expected '" + token_t::to_str(seperator) +"' for body of repeat until loop"));
+                  return error_node();
+               }
+
+               if (details::imatch(current_token_.value,"until"))
+               {
+                  next_token();
+                  break;
+               }
+            }
+
+            branch = simplify(arg_list);
+
+            sdd.delete_ptr = (0 == branch);
+
+            if (0 == branch)
+            {
+               set_error(
+                  make_error(parser_error::e_syntax,
+                             current_token_,
+                             "ERR23 - Failed to parse body of repeat until loop."));
+               return error_node();
+            }
+         }
+
+         if (!token_is(token_t::e_lbracket))
+            return error_node();
+         else if (0 == (condition = parse_expression()))
+         {
+            set_error(
+               make_error(parser_error::e_syntax,
+                          current_token_,
+                          "ERR24 - Failed to parse condition for repeat until loop."));
+            return error_node();
+         }
+         else if (!token_is(token_t::e_rbracket))
+            return error_node();
+
+         expression_node_ptr result;
+         if (0 == (result = expression_generator_.repeat_until_loop(condition,branch)))
+         {
+            set_error(
+               make_error(parser_error::e_syntax,
+                          current_token_,
+                          "ERR25 - Failed to synthesize repeat until loop."));
+            return error_node();
+         }
+         else
+            return result;
+      }
+
       inline expression_node_ptr parse_switch_statement()
       {
          std::vector<expression_node_ptr> arg_list;
@@ -10397,11 +10514,11 @@ namespace exprtk
             set_error(
                make_error(parser_error::e_syntax,
                           current_token_,
-                          "ERR22 - Expected '{' for call to switch statement."));
+                          "ERR26 - Expected '{' for call to switch statement."));
             return error_node();
          }
 
-         for (;;)
+         for ( ; ; )
          {
             if (!details::imatch("case",current_token_.value))
                return error_node();
@@ -10417,7 +10534,7 @@ namespace exprtk
                set_error(
                   make_error(parser_error::e_syntax,
                              current_token_,
-                             "ERR23 - Expected ':' for case of switch statement."));
+                             "ERR27 - Expected ':' for case of switch statement."));
                return error_node();
             }
 
@@ -10430,7 +10547,7 @@ namespace exprtk
                set_error(
                   make_error(parser_error::e_syntax,
                              current_token_,
-                             "ERR24 - Expected ';' at end of case for switch statement."));
+                             "ERR28 - Expected ';' at end of case for switch statement."));
                return error_node();
             }
 
@@ -10445,7 +10562,7 @@ namespace exprtk
                   set_error(
                      make_error(parser_error::e_syntax,
                                 current_token_,
-                                "ERR25 - Expected ':' for default of switch statement."));
+                                "ERR29 - Expected ':' for default of switch statement."));
                   return error_node();
                }
 
@@ -10456,7 +10573,7 @@ namespace exprtk
                {
                   set_error(make_error(parser_error::e_syntax,
                             current_token_,
-                            "ERR26 - Expected ';' at end of default for switch statement."));
+                            "ERR30 - Expected ';' at end of default for switch statement."));
                   return error_node();
                }
 
@@ -10470,7 +10587,7 @@ namespace exprtk
             set_error(
                make_error(parser_error::e_syntax,
                           current_token_,
-                          "ERR27 - Expected '}' at end of switch statement."));
+                          "ERR31 - Expected '}' at end of switch statement."));
             return error_node();
          }
 
@@ -10505,7 +10622,7 @@ namespace exprtk
             set_error(
                make_error(parser_error::e_syntax,
                           current_token_,
-                          "ERR28 - Unsupported vararg function: " + symbol));
+                          "ERR32 - Unsupported vararg function: " + symbol));
             return error_node();
          }
 
@@ -10517,7 +10634,7 @@ namespace exprtk
             set_error(
                make_error(parser_error::e_syntax,
                           current_token_,
-                          "ERR29 - Expected '(' for call to vararg function: " + symbol));
+                          "ERR33 - Expected '(' for call to vararg function: " + symbol));
             return error_node();
          }
 
@@ -10535,7 +10652,7 @@ namespace exprtk
                set_error(
                   make_error(parser_error::e_syntax,
                              current_token_,
-                             "ERR30 - Expected ',' for call to vararg function: " + symbol));
+                             "ERR34 - Expected ',' for call to vararg function: " + symbol));
                return error_node();
             }
          }
@@ -10544,6 +10661,35 @@ namespace exprtk
 
          sdd.delete_ptr = (0 == result);
          return result;
+      }
+
+      template <typename Allocator,
+                template <typename,typename> class Sequence>
+      inline expression_node_ptr simplify(Sequence<expression_node_ptr,Allocator>& expression_list)
+      {
+         if (expression_list.empty())
+            return error_node();
+         if (expression_list.size() == 1)
+            return expression_list[0];
+
+         Sequence<expression_node_ptr,Allocator> tmp_expression_list;
+
+         for (std::size_t i = 0; i < (expression_list.size() - 1); ++i)
+         {
+            if (is_variable_node(expression_list[i]))
+               continue;
+            else if (is_constant_node(expression_list[i]))
+            {
+               free_node(node_allocator_,expression_list[i]);
+               continue;
+            }
+            else
+               tmp_expression_list.push_back(expression_list[i]);
+         }
+
+         tmp_expression_list.push_back(expression_list.back());
+         expression_list.swap(tmp_expression_list);
+         return expression_generator_.vararg_function(details::e_multi,expression_list);
       }
 
       inline expression_node_ptr parse_multi_sequence(const std::string& source = "")
@@ -10563,7 +10709,7 @@ namespace exprtk
                set_error(
                   make_error(parser_error::e_syntax,
                              current_token_,
-                             "ERR31 - Expected '"+ details::to_str(close_bracket) + "' for call to multi-sequence" +
+                             "ERR35 - Expected '"+ details::to_str(close_bracket) + "' for call to multi-sequence" +
                              ((!source.empty()) ? std::string(" section of " + source): "")));
                return error_node();
             }
@@ -10583,24 +10729,199 @@ namespace exprtk
                arg_list.push_back(arg);
             if (token_is(close_bracket))
                break;
-            else if (!token_is(seperator))
+
+            bool is_next_close = peek_token_is(close_bracket);
+
+            if (!token_is(seperator) && is_next_close)
             {
                set_error(
                   make_error(parser_error::e_syntax,
                              current_token_,
-                             "ERR32 - Expected '"+ details::to_str(seperator) +"' for call to multi-sequence section of " + source));
+                             "ERR36 - Expected '"+ details::to_str(seperator) +"' for call to multi-sequence section of " + source));
                return error_node();
+            }
+
+            if (token_is(close_bracket))
+               break;
+         }
+
+         result = simplify(arg_list);
+
+         sdd.delete_ptr = (0 == result);
+         return result;
+      }
+
+      struct range_pack
+      {
+         range_pack()
+         : n0_e(std::make_pair(false,expression_node_ptr(0))),
+           n1_e(std::make_pair(false,expression_node_ptr(0))),
+           n0_c(std::make_pair(false,0)),
+           n1_c(std::make_pair(false,0))
+         {}
+
+         void clear()
+         {
+            n0_e = std::make_pair(false,expression_node_ptr(0));
+            n1_e = std::make_pair(false,expression_node_ptr(0));
+            n0_c = std::make_pair(false,0);
+            n1_c = std::make_pair(false,0);
+         }
+
+         void free()
+         {
+            if (n0_e.first && n0_e.second)
+            {
+               n0_e.first = false;
+               delete n0_e.second;
+            }
+            if (n1_e.first && n1_e.second)
+            {
+               n1_e.first = false;
+               delete n1_e.second;
             }
          }
 
-         if (arg_list.empty())
-            return error_node();
-         else if (arg_list.size() == 1)
-            result = arg_list[0];
-         else
-            result = expression_generator_.vararg_function(details::e_multi,arg_list);
+         std::pair<bool,expression_node_ptr> n0_e;
+         std::pair<bool,expression_node_ptr> n1_e;
+         std::pair<bool,std::size_t        > n0_c;
+         std::pair<bool,std::size_t        > n1_c;
+      };
 
-         sdd.delete_ptr = (0 == result);
+      inline bool parse_range(range_pack& rp)
+      {
+         //Examples of valid ranges:
+         // 1. [1:5]     -> 1..5
+         // 2. [ :5]     -> 0..5
+         // 3. [1: ]     -> 1..end
+         // 4. [x:y]     -> x..y where x <= y
+         // 5. [x+1:y/2] -> x+1..y/2 where x+1 <= y/2
+         // 6. [ :y]     -> 0..y where 0 <= y
+         // 7. [x: ]     -> x..end where x <= end
+
+         rp.clear();
+
+         if (!token_is(token_t::e_lsqrbracket))
+         {
+            set_error(
+               make_error(parser_error::e_syntax,
+                          current_token_,
+                          "ERR37 - Expected '[' for start of range."));
+            return false;
+         }
+
+         if (token_is(token_t::e_colon))
+         {
+            rp.n0_c.first  = true;
+            rp.n0_c.second = 0;
+         }
+         else
+         {
+            expression_node_ptr r0 = parse_expression();
+
+            if (0 == r0)
+            {
+               set_error(
+                  make_error(parser_error::e_syntax,
+                             current_token_,
+                             "ERR38 - Failed parse begin section of range."));
+               return false;
+
+            }
+            else if (is_constant_node(r0))
+            {
+               rp.n0_c.first  = true;
+               rp.n0_c.second = static_cast<std::size_t>(r0->value());
+               free_node(node_allocator_,r0);
+            }
+            else
+            {
+               rp.n0_e.first  = true;
+               rp.n0_e.second = r0;
+            }
+
+            if (!token_is(token_t::e_colon))
+            {
+               set_error(
+                  make_error(parser_error::e_syntax,
+                             current_token_,
+                             "ERR39 - Expected ':' for break  in range."));
+               rp.free();
+               return false;
+            }
+         }
+
+         if (token_is(token_t::e_rsqrbracket))
+         {
+            rp.n1_c.first  = true;
+            rp.n1_c.second = std::numeric_limits<std::size_t>::max();
+         }
+         else
+         {
+            expression_node_ptr r1 = parse_expression();
+
+            if (0 == r1)
+            {
+               set_error(
+                  make_error(parser_error::e_syntax,
+                             current_token_,
+                             "ERR40 - Failed parse end section of range."));
+               rp.free();
+               return false;
+
+            }
+            else if (is_constant_node(r1))
+            {
+               rp.n1_c.first  = true;
+               rp.n1_c.second = static_cast<std::size_t>(r1->value());
+               free_node(node_allocator_,r1);
+            }
+            else
+            {
+               rp.n1_e.first  = true;
+               rp.n1_e.second = r1;
+            }
+
+            if (!token_is(token_t::e_rsqrbracket))
+            {
+               set_error(
+                  make_error(parser_error::e_syntax,
+                             current_token_,
+                             "ERR41 - Expected ']' for start of range."));
+               rp.free();
+               return false;
+            }
+         }
+
+         return true;
+      }
+
+      inline expression_node_ptr parse_string()
+      {
+         const std::string symbol = current_token_.value;
+         expression_node_ptr result = symbol_table_.get_stringvar(symbol);
+
+         if (symbol_name_caching_)
+         {
+            symbol_name_cache_.push_back(symbol);
+         }
+         if (symbol_table_.is_constant_node(symbol))
+         {
+            result = expression_generator_(dynamic_cast<details::string_literal_node<T>*>(result)->str());
+         }
+
+         if (peek_token_is(token_t::e_lsqrbracket))
+         {
+            next_token();
+            range_pack rp;
+            if (!parse_range(rp))
+            {
+               free_node(node_allocator_,result);
+               return error_node();
+            }
+         }
+         else
+            next_token();
          return result;
       }
 
@@ -10619,7 +10940,7 @@ namespace exprtk
             set_error(
                make_error(parser_error::e_syntax,
                           current_token_,
-                          "ERR33 - Expected '(' for call to vararg function: " + vararg_function_name));
+                          "ERR42 - Expected '(' for call to vararg function: " + vararg_function_name));
             return error_node();
          }
 
@@ -10637,7 +10958,7 @@ namespace exprtk
                set_error(
                   make_error(parser_error::e_syntax,
                              current_token_,
-                             "ERR34 - Expected ',' for call to vararg function: " + vararg_function_name));
+                             "ERR43 - Expected ',' for call to vararg function: " + vararg_function_name));
                return error_node();
             }
          }
@@ -10698,7 +11019,7 @@ namespace exprtk
             set_error(
                make_error(parser_error::e_token,
                           current_token_,
-                          "ERR35 - Invalid special function[1]: " + current_token_.value));
+                          "ERR44 - Invalid special function[1]: " + current_token_.value));
             return error_node();
          }
 
@@ -10709,7 +11030,7 @@ namespace exprtk
             set_error(
                make_error(parser_error::e_token,
                           current_token_,
-                          "ERR36 - Invalid special function[2]: " + current_token_.value));
+                          "ERR45 - Invalid special function[2]: " + current_token_.value));
             return error_node();
          }
 
@@ -10752,19 +11073,9 @@ namespace exprtk
 
          #ifndef exprtk_disable_string_capabilities
          // Are we dealing with a string variable?
-         variable = symbol_table_.get_stringvar(symbol);
-         if (variable)
+         if (symbol_table_.is_stringvar(symbol))
          {
-            if (symbol_name_caching_)
-            {
-               symbol_name_cache_.push_back(symbol);
-            }
-            if (symbol_table_.is_constant_node(symbol))
-            {
-               variable = expression_generator_(dynamic_cast<details::string_literal_node<T>*>(variable)->str());
-            }
-            next_token();
-            return variable;
+            return parse_string();
          }
          #endif
 
@@ -10801,7 +11112,7 @@ namespace exprtk
                            set_error(
                               make_error(parser_error::e_syntax,
                                          current_token_,
-                                         "ERR37 - Invalid number of parameters for function: " + symbol));
+                                         "ERR46 - Invalid number of parameters for function: " + symbol));
                            return error_node();
                          }
             }
@@ -10813,7 +11124,7 @@ namespace exprtk
                set_error(
                   make_error(parser_error::e_syntax,
                              current_token_,
-                             "ERR38 - Failed to generate node for function: '" + symbol + "'"));
+                             "ERR47 - Failed to generate node for function: '" + symbol + "'"));
                return error_node();
             }
          }
@@ -10833,7 +11144,7 @@ namespace exprtk
                set_error(
                   make_error(parser_error::e_syntax,
                              current_token_,
-                             "ERR39 - Failed to generate node for vararg function: '" + symbol + "'"));
+                             "ERR48 - Failed to generate node for vararg function: '" + symbol + "'"));
                return error_node();
             }
          }
@@ -10880,7 +11191,7 @@ namespace exprtk
                set_error(
                   make_error(parser_error::e_symtab,
                              current_token_,
-                             "ERR40 - Failed to create variable: '" + symbol + "'"));
+                             "ERR49 - Failed to create variable: '" + symbol + "'"));
 
                return error_node();
             }
@@ -10889,7 +11200,7 @@ namespace exprtk
          set_error(
             make_error(parser_error::e_syntax,
                        current_token_,
-                       "ERR41 - Undefined variable or function: '" + symbol + "'"));
+                       "ERR50 - Undefined variable or function: '" + symbol + "'"));
          return error_node();
       }
 
@@ -10897,6 +11208,7 @@ namespace exprtk
       {
          static const std::string symbol_if     = "if";
          static const std::string symbol_while  = "while";
+         static const std::string symbol_repeat = "repeat";
          static const std::string symbol_switch = "switch";
          static const std::string symbol_null   = "null";
 
@@ -10915,6 +11227,10 @@ namespace exprtk
          else if (details::imatch(current_token_.value,symbol_while))
          {
             return parse_while_loop();
+         }
+         else if (details::imatch(current_token_.value,symbol_repeat))
+         {
+            return parse_repeat_until_loop();
          }
          else if (details::imatch(current_token_.value,symbol_switch))
          {
@@ -10937,7 +11253,7 @@ namespace exprtk
             set_error(
                make_error(parser_error::e_symtab,
                           current_token_,
-                          "ERR41 - Variable or function detected, yet symbol-table is invalid, Symbol: " + current_token_.value));
+                          "ERR51 - Variable or function detected, yet symbol-table is invalid, Symbol: " + current_token_.value));
             return error_node();
          }
       }
@@ -11012,7 +11328,7 @@ namespace exprtk
             set_error(
                make_error(parser_error::e_syntax,
                           current_token_,
-                          "ERR42 - Premature end of expression.[1]"));
+                          "ERR52 - Premature end of expression.[1]"));
             return error_node();
          }
          else
@@ -11020,7 +11336,7 @@ namespace exprtk
             set_error(
                make_error(parser_error::e_syntax,
                           current_token_,
-                          "ERR43 - Premature end of expression.[2]"));
+                          "ERR53 - Premature end of expression.[2]"));
             return error_node();
          }
       }
@@ -11033,6 +11349,11 @@ namespace exprtk
          }
          next_token();
          return true;
+      }
+
+      inline bool peek_token_is(const typename token_t::token_type& ttype)
+      {
+         return (lexer_.peek_next_token().type == ttype);
       }
 
       template <typename Type>
@@ -11639,6 +11960,30 @@ namespace exprtk
             }
             else
                return node_allocator_->allocate<while_loop_node_t>(condition,branch);
+         }
+
+         inline expression_node_ptr repeat_until_loop(expression_node_ptr condition,
+                                                      expression_node_ptr branch) const
+         {
+            if (details::is_constant_node(condition))
+            {
+               if (details::is_true(condition) && details::is_constant_node(branch))
+               {
+                  free_node(*node_allocator_,condition);
+                  return branch;
+               }
+               expression_node_ptr result = error_node();
+               free_node(*node_allocator_,condition);
+               free_node(*node_allocator_,branch);
+               return result;
+            }
+            else if (details::is_null_node(condition))
+            {
+               free_node(*node_allocator_,condition);
+               return branch;
+            }
+            else
+               return node_allocator_->allocate<repeat_until_loop_node_t>(condition,branch);
          }
 
          template <typename Allocator,

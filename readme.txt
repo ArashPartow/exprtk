@@ -10,7 +10,7 @@ very easily extendible.
 
 
 [01 - CAPABILITIES]
-The ExprTk evaluator  supports the following  fundamental mathematical
+The ExprTk  evaluator  supports the following  fundamental  arithmetic
 operations, functions and processes:
 
 (0) Basic operators: +, -, *, /, %, ^
@@ -114,7 +114,7 @@ include path (e.g: /usr/include/).
 
 [08 - BUILT-IN OPERATIONS & FUNCTIONS]
 
-(0) Basic Operators
+(0) Arithmetic Operators
 +-----------+--------------------------------------------------------+
 | OPERATOR  | DEFINITION                                             |
 +-----------+--------------------------------------------------------+
@@ -158,14 +158,14 @@ include path (e.g: /usr/include/).
 | true      | True state or any value other than zero (typically 1). |
 +-----------+--------------------------------------------------------+
 | false     | False state, value of zero.                            |
-+-----------|--------------------------------------------------------+
++-----------+--------------------------------------------------------+
 | and       | Logical AND, True only if x and y are both true.       |
 |           | (eg: x and y)                                          |
 +-----------+--------------------------------------------------------+
 | mand      | Multi-input logical AND, True only if all inputs are   |
 |           | true. Left to right short-circuiting of expressions.   |
 |           | (eg: mand(x > y,z < w,u or v,w and x))                 |
-+-----------|--------------------------------------------------------+
++-----------+--------------------------------------------------------+
 | mor       | Multi-input logical OR, True if at least one of the    |
 |           | inputs are true. Left to right short-circuiting of     |
 |           | expressions. (eg: mand(x > y,z < w,u or v,w and x))    |
@@ -187,25 +187,9 @@ include path (e.g: /usr/include/).
 | xnor      | Logical XNOR, True iff the biconditional of x and y is |
 |           | satisfied. (eg: x xnor y)                              |
 +-----------+--------------------------------------------------------+
-| if        | If x is true then return y else return z.              |
-|           | (eg: if(x, y, z) or if((x + 1) > 2y, z + 1, w / v))    |
-+-----------+--------------------------------------------------------+
-| switch    | The first true case condition that is encountered will |
-|           | determine the result of the switch. If none of the case|
-|           | conditions hold true, the default action is assumed as |
-|           | the final return value. This is sometimes also known as|
-|           | a multi-way branch mechanism.                          |
-|           | eg:                                                    |
-|           | switch                                                 |
-|           | {                                                      |
-|           |   case x > (y+z) : 2*x/abs(y-z);                       |
-|           |   case x < 3     : sin(x + y)                          |
-|           |   default        : 1 + x;                              |
-|           | }                                                      |
-+-----------|--------------------------------------------------------+
 | &         | Similar to AND but with left to right expression short |
 |           | circuiting optimisation. (eg: (x & y) == (y and x))    |
-+-----------|--------------------------------------------------------+
++-----------+--------------------------------------------------------+
 | |         | Similar to OR but with left to right expression short  |
 |           | circuiting optimisation. (eg: (x | y) == (y or x))     |
 +-----------+--------------------------------------------------------+
@@ -217,7 +201,7 @@ include path (e.g: /usr/include/).
 | abs       | Absolute value of x.                                   |
 +-----------+--------------------------------------------------------+
 | avg       | Average of all the inputs.                             |
-|           | (eg: avg(x,y,z,w,u,v) == (x+y+z+w+u+v)/6)              |
+|           | (eg: avg(x,y,z,w,u,v) == (x + y + z + w + u + v) / 6)  |
 +-----------+--------------------------------------------------------+
 | ceil      | Smallest integer that is greater than or equal to x.   |
 +-----------+--------------------------------------------------------+
@@ -255,7 +239,7 @@ include path (e.g: /usr/include/).
 | min       | Smallest value of all the inputs. (eg: min(x,y,z,w,u)) |
 +-----------+--------------------------------------------------------+
 | mul       | Product of all the inputs.                             |
-|           | (eg: mul(x,y,z,w,u,v,t) == (x*y*z*w*u*v*t))            |
+|           | (eg: mul(x,y,z,w,u,v,t) == (x * y * z * w * u * v * t))|
 +-----------+--------------------------------------------------------+
 | nequal    | Not-equal test between x and y using normalized epsilon|
 +-----------+--------------------------------------------------------+
@@ -272,16 +256,9 @@ include path (e.g: /usr/include/).
 | sqrt      | Square root of x, where x > 0                          |
 +-----------+--------------------------------------------------------+
 | sum       | Sum of all the inputs.                                 |
-|           | (eg: sum(x,y,z,w,u,v,t) == (x+y+z+w+u+v+t))            |
+|           | (eg: sum(x,y,z,w,u,v,t) == (x + y + z + w + u + v + t))|
 +-----------+--------------------------------------------------------+
 | trunc     | Integer portion of x                                   |
-+-----------+--------------------------------------------------------+
-| ~         | Evaluate each sub-expression, then return as the result|
-|           | the value of the last sub-expression. This is sometimes|
-|           | known as multiple sequence point evaluation.           |
-|           | eg:                                                    |
-|           | ~(i:=x+1, j:=y/z, k:=sin(w/u)) == (sin(w/u)))          |
-|           | ~{i:=x+1; j:=y/z; k:=sin(w/u)} == (sin(w/u)))          |
 +-----------+--------------------------------------------------------+
 
 (4) Trigonometry Functions
@@ -340,6 +317,55 @@ include path (e.g: /usr/include/).
 |           | are '*' and '?' denoting zero or more and zero or one  |
 |           | matches respectively.                                  |
 |           | (eg: x ilike y or 'a1B2c3D4e5F6g7H' like 'a?d*h')      |
++-----------+--------------------------------------------------------+
+
+(6) Control Structures
++-----------+--------------------------------------------------------+
+| STRUCTURE | DEFINITION                                             |
++-----------+--------------------------------------------------------+
+| if        | If x is true then return y else return z.              |
+|           | (eg: if(x, y, z) or if((x + 1) > 2y, z + 1, w / v))    |
++-----------+--------------------------------------------------------+
+| switch    | The first true case condition that is encountered will |
+|           | determine the result of the switch. If none of the case|
+|           | conditions hold true, the default action is assumed as |
+|           | the final return value. This is sometimes also known as|
+|           | a multi-way branch mechanism.                          |
+|           | eg:                                                    |
+|           | switch                                                 |
+|           | {                                                      |
+|           |   case x > (y + z) : 2 * x / abs(y - z);               |
+|           |   case x < 3       : sin(x + y)                        |
+|           |   default          : 1 + x;                            |
+|           | }                                                      |
++-----------+--------------------------------------------------------+
+| while     | The structure will repeatedly evaluate the internal    |
+|           | statement(s) 'while' the condition is true. The final  |
+|           | statement in the final iteration will be used as the   |
+|           | return value of the loop.                              |
+|           | eg:                                                    |
+|           | while ((x := (x - 1)) > 0)                             |
+|           | {                                                      |
+|           |   y := x + z;                                          |
+|           |   w := z + y;                                          |
+|           | }                                                      |
++-----------+--------------------------------------------------------+
+| repeat/   | The structure will repeatedly evaluate the internal    |
+| until     | statement(s) 'until' the condition is true. The final  |
+|           | statement in the final iteration will be used as the   |
+|           | return value of the loop.                              |
+|           | eg:                                                    |
+|           | repeat                                                 |
+|           |   y := x + z;                                          |
+|           |   w := z + y;                                          |
+|           | until ((x := (x - 1)) <= 0)                            |
++-----------+--------------------------------------------------------+
+| ~         | Evaluate each sub-expression, then return as the result|
+|           | the value of the last sub-expression. This is sometimes|
+|           | known as multiple sequence point evaluation.           |
+|           | eg:                                                    |
+|           | ~(i := x + 1, j := y / z, k := sin(w/u)) == (sin(w/u)))|
+|           | ~{i := x + 1; j := y / z; k := sin(w/u)} == (sin(w/u)))|
 +-----------+--------------------------------------------------------+
 
 
