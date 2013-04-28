@@ -318,6 +318,14 @@ include path (e.g: /usr/include/).
 |           | matches respectively.                                  |
 |           | (eg: x ilike y or 'a1B2c3D4e5F6g7H' like 'a?d*h')      |
 +-----------+--------------------------------------------------------+
+| [r0:r1]   | The closed interval [r0,r1] of the specified string.   |
+|           | eg: Given a string x with a value of 'abcdefgh' then:  |
+|           | 0. x[1:4] == 'bcde'                                    |
+|           | 1. x[ :5] == 'abcdef'                                  |
+|           | 2. x[3: ] == 'cdefgh'                                  |
+|           | 3. x[ : ] == 'abcdefgh'                                |
+|           | 4. x[4/2:3+2] == x[2:5] == 'cdef'                      |
++-----------+--------------------------------------------------------+
 
 (6) Control Structures
 +-----------+--------------------------------------------------------+

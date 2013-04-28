@@ -1409,6 +1409,27 @@ inline bool run_test02()
                               test_ab<T>("inrange(a,b,'ccc')"          ,"aaa","bbb",T(1.0)),
                               test_ab<T>("inrange('aaa',b,c)"          ,"aaa","bbb",T(1.0)),
                               test_ab<T>("inrange('aaa',b,c)"          ,"aaa","bbb",T(1.0)),
+                              test_ab<T>("a[2:6] == b"                 ,"0123456789","23456"  ,T(1.0)),
+                              test_ab<T>("a == b[2:6]"                 ,"23456","0123456789"  ,T(1.0)),
+                              test_ab<T>("a[1+1:2*3] == b"             ,"0123456789","23456"  ,T(1.0)),
+                              test_ab<T>("a == b[4/2:sqrt(36)]"        ,"23456","0123456789"  ,T(1.0)),
+                              test_ab<T>("a[0:6] == b"                 ,"0123456789","0123456",T(1.0)),
+                              test_ab<T>("a[:6] == b"                  ,"0123456789","0123456",T(1.0)),
+                              test_ab<T>("a[4/2-2:2+4] == b"           ,"0123456789","0123456",T(1.0)),
+                              test_ab<T>("a[:12/2] == b"               ,"0123456789","0123456",T(1.0)),
+                              test_ab<T>("a[0:] == b"                  ,"0123456","0123456"   ,T(1.0)),
+                              test_ab<T>("a[:] == b"                   ,"0123456","0123456"   ,T(1.0)),
+                              test_ab<T>("a == b[0:6]"                 ,"0123456","0123456789",T(1.0)),
+                              test_ab<T>("a == b[:6]"                  ,"0123456","0123456789",T(1.0)),
+                              test_ab<T>("a == b[4/2-2:2+4]"           ,"0123456","0123456789",T(1.0)),
+                              test_ab<T>("a == b[:12/2]"               ,"0123456","0123456789",T(1.0)),
+                              test_ab<T>("a == b[0:]"                  ,"0123456","0123456"   ,T(1.0)),
+                              test_ab<T>("a == b[:]"                   ,"0123456","0123456"   ,T(1.0)),
+                              test_ab<T>("a[:9] == b[0:9]"             ,"0123456789","01234567890123456789",T(1.0)),
+                              test_ab<T>("a[0:9] == b[0:9]"            ,"0123456789","01234567890123456789",T(1.0)),
+                              test_ab<T>("a[0:] == b[0:9]"             ,"0123456789","01234567890123456789",T(1.0)),
+                              test_ab<T>("a[:] == b[0:9]"              ,"0123456789","01234567890123456789",T(1.0)),
+                              test_ab<T>("a[:] == b[10:]"              ,"0123456789","01234567890123456789",T(1.0)),
                               test_ab<T>("'!@#$%^&*([{}])-=' != ')]}{[(*&^%$#@!'","","",T(1.0)),
                               test_ab<T>("('!@#$%^&*([{}])-=') != (')]}{[(*&^%$#@!')","","",T(1.0)),
                               test_ab<T>("{[('a')]} == [{('a')}]","","",T(1.0)),
@@ -1427,10 +1448,14 @@ inline bool run_test02()
       {
          test_ab<T>& test = const_cast<test_ab<T>&>(test_list[i]);
 
+         std::string str_a;
+         std::string str_b;
+         std::string str_c;
+
          exprtk::symbol_table<T> symbol_table;
-         symbol_table.add_stringvar("a",test.a);
-         symbol_table.add_stringvar("b",test.b);
-         symbol_table.add_stringvar("c",test.c);
+         symbol_table.add_stringvar("a",str_a);
+         symbol_table.add_stringvar("b",str_b);
+         symbol_table.add_stringvar("c",str_c);
 
          exprtk::expression<T> expression;
          expression.register_symbol_table(symbol_table);
@@ -1446,6 +1471,10 @@ inline bool run_test02()
                return false;
             }
          }
+
+         str_a = test.a;
+         str_b = test.b;
+         str_c = test.c;
 
          T result = expression.value();
 
