@@ -31,7 +31,7 @@ operations, functions and processes:
 
 (5) Conditional,
     Switch &
-    Loop statements: if-then-else, switch-case, while
+    Loop statements: if-then-else, switch-case, while, repeat-until
 
 (6) Assignment:      :=
 
@@ -43,7 +43,7 @@ operations, functions and processes:
 
 
 [02 - EXAMPLE EXPRESSIONS]
-The  following  is  a  short  sample  of  the  types  of  mathematical
+The  following  is  a  short listing  of  the types  of  mathematical
 expressions that can be parsed and evaluated using the ExprTk library.
 
 (01) sqrt(1 - (x^2))
@@ -102,7 +102,7 @@ include path (e.g: /usr/include/).
 
 
 [07 - COMPILER COMPATIBILITY]
-(*) GNU Compiler Collection (4.3+)
+(*) GNU Compiler Collection (4.1+)
 (*) Intel® C++ Compiler (9.x+)
 (*) Clang/LLVM (1.1+)
 (*) PGI C++ (10.x+)
@@ -115,266 +115,276 @@ include path (e.g: /usr/include/).
 [08 - BUILT-IN OPERATIONS & FUNCTIONS]
 
 (0) Arithmetic Operators
-+-----------+--------------------------------------------------------+
-| OPERATOR  | DEFINITION                                             |
-+-----------+--------------------------------------------------------+
-|  +        | Addition between x and y. (eg: x + y)                  |
-+-----------+--------------------------------------------------------+
-|  -        | Subtraction between x and y. (eg: x - y)               |
-+-----------+--------------------------------------------------------+
-|  *        | Multiplication between x and y. (eg: x * y)            |
-+-----------+--------------------------------------------------------+
-|  /        | Division between x and y (eg: x / y)                   |
-+-----------+--------------------------------------------------------+
-|  %        | Modulus of x with respect to y. (eg: x % y)            |
-+-----------+--------------------------------------------------------+
-|  ^        | x to the power of y. (eg: x ^ y)                       |
-+-----------+--------------------------------------------------------+
-|  :=       | Assign the value of x to y. (eg: y := x)               |
-|           | where y is a variable type.                            |
-+-----------+--------------------------------------------------------+
++----------+---------------------------------------------------------+
+| OPERATOR | DEFINITION                                              |
++----------+---------------------------------------------------------+
+|  +       | Addition between x and y. (eg: x + y)                   |
++----------+---------------------------------------------------------+
+|  -       | Subtraction between x and y. (eg: x - y)                |
++----------+---------------------------------------------------------+
+|  *       | Multiplication between x and y. (eg: x * y)             |
++----------+---------------------------------------------------------+
+|  /       | Division between x and y (eg: x / y)                    |
++----------+---------------------------------------------------------+
+|  %       | Modulus of x with respect to y. (eg: x % y)             |
++----------+---------------------------------------------------------+
+|  ^       | x to the power of y. (eg: x ^ y)                        |
++----------+---------------------------------------------------------+
+|  :=      | Assign the value of x to y. (eg: y := x)                |
+|          | Where y is a variable type.                             |
++----------+---------------------------------------------------------+
+|  <=>     | Swap the values of x and y. (eg: x <=> y)               |
+|          | Where both x and y are variables.                       |
++----------+---------------------------------------------------------+
 
 (1) Equalities & Inequalities
-+-----------+--------------------------------------------------------+
-| OPERATOR  | DEFINITION                                             |
-+-----------+--------------------------------------------------------+
-| == or =   | True only if x is strictly equal to y. (eg: x == y)    |
-+-----------+--------------------------------------------------------+
-| <> or !=  | True only if x does not equal y (eg: x <> y or x != y) |
-+-----------+--------------------------------------------------------+
-|  <        | True only if x is less than y. (eg: x < y)             |
-+-----------+--------------------------------------------------------+
-|  <=       | True only if x is less than or equal to y. (eg: x <= y)|
-+-----------+--------------------------------------------------------+
-|  >        | True only if x is greater than y. (eg: x > y)          |
-+-----------+--------------------------------------------------------+
-|  >=       | True only if x greater than or equal to y (eg: x >= y) |
-+-----------+--------------------------------------------------------+
++----------+---------------------------------------------------------+
+| OPERATOR | DEFINITION                                              |
++----------+---------------------------------------------------------+
+| == or =  | True only if x is strictly equal to y. (eg: x == y)     |
++----------+---------------------------------------------------------+
+| <> or != | True only if x does not equal y (eg: x <> y or x != y)  |
++----------+---------------------------------------------------------+
+|  <       | True only if x is less than y. (eg: x < y)              |
++----------+---------------------------------------------------------+
+|  <=      | True only if x is less than or equal to y. (eg: x <= y) |
++----------+---------------------------------------------------------+
+|  >       | True only if x is greater than y. (eg: x > y)           |
++----------+---------------------------------------------------------+
+|  >=      | True only if x greater than or equal to y (eg: x >= y)  |
++----------+---------------------------------------------------------+
 
 (2) Boolean Operations
-+-----------+--------------------------------------------------------+
-| OPERATOR  | DEFINITION                                             |
-+-----------+--------------------------------------------------------+
-| true      | True state or any value other than zero (typically 1). |
-+-----------+--------------------------------------------------------+
-| false     | False state, value of zero.                            |
-+-----------+--------------------------------------------------------+
-| and       | Logical AND, True only if x and y are both true.       |
-|           | (eg: x and y)                                          |
-+-----------+--------------------------------------------------------+
-| mand      | Multi-input logical AND, True only if all inputs are   |
-|           | true. Left to right short-circuiting of expressions.   |
-|           | (eg: mand(x > y,z < w,u or v,w and x))                 |
-+-----------+--------------------------------------------------------+
-| mor       | Multi-input logical OR, True if at least one of the    |
-|           | inputs are true. Left to right short-circuiting of     |
-|           | expressions. (eg: mand(x > y,z < w,u or v,w and x))    |
-+-----------+--------------------------------------------------------+
-| nand      | Logical NAND, True only if either x or y is false.     |
-|           | (eg: x nand y)                                         |
-+-----------+--------------------------------------------------------+
-| nor       | Logical NOR, True only if the result of x or y is false|
-|           | (eg: x nor y)                                          |
-+-----------+--------------------------------------------------------+
-| not       | Logical NOT, Negate the logical sense of the input.    |
-|           | (eg: not(x and y) == x nand y)                         |
-+-----------+--------------------------------------------------------+
-| or        | Logical OR, True if either x or y is true. (eg: x or y)|
-+-----------+--------------------------------------------------------+
-| xor       | Logical XOR, True only if the logical states of x and y|
-|           | differ. (eg: x xor y)                                  |
-+-----------+--------------------------------------------------------+
-| xnor      | Logical XNOR, True iff the biconditional of x and y is |
-|           | satisfied. (eg: x xnor y)                              |
-+-----------+--------------------------------------------------------+
-| &         | Similar to AND but with left to right expression short |
-|           | circuiting optimisation. (eg: (x & y) == (y and x))    |
-+-----------+--------------------------------------------------------+
-| |         | Similar to OR but with left to right expression short  |
-|           | circuiting optimisation. (eg: (x | y) == (y or x))     |
-+-----------+--------------------------------------------------------+
++----------+---------------------------------------------------------+
+| OPERATOR | DEFINITION                                              |
++----------+---------------------------------------------------------+
+| true     | True state or any value other than zero (typically 1).  |
++----------+---------------------------------------------------------+
+| false    | False state, value of zero.                             |
++----------+---------------------------------------------------------+
+| and      | Logical AND, True only if x and y are both true.        |
+|          | (eg: x and y)                                           |
++----------+---------------------------------------------------------+
+| mand     | Multi-input logical AND, True only if all inputs are    |
+|          | true. Left to right short-circuiting of expressions.    |
+|          | (eg: mand(x > y,z < w,u or v,w and x))                  |
++----------+---------------------------------------------------------+
+| mor      | Multi-input logical OR, True if at least one of the     |
+|          | inputs are true. Left to right short-circuiting of      |
+|          | expressions. (eg: mand(x > y,z < w,u or v,w and x))     |
++----------+---------------------------------------------------------+
+| nand     | Logical NAND, True only if either x or y is false.      |
+|          | (eg: x nand y)                                          |
++----------+---------------------------------------------------------+
+| nor      | Logical NOR, True only if the result of x or y is false |
+|          | (eg: x nor y)                                           |
++----------+---------------------------------------------------------+
+| not      | Logical NOT, Negate the logical sense of the input.     |
+|          | (eg: not(x and y) == x nand y)                          |
++----------+---------------------------------------------------------+
+| or       | Logical OR, True if either x or y is true. (eg: x or y) |
++----------+---------------------------------------------------------+
+| xor      | Logical XOR, True only if the logical states of x and y |
+|          | differ. (eg: x xor y)                                   |
++----------+---------------------------------------------------------+
+| xnor     | Logical XNOR, True iff the biconditional of x and y is  |
+|          | satisfied. (eg: x xnor y)                               |
++----------+---------------------------------------------------------+
+| &        | Similar to AND but with left to right expression short  |
+|          | circuiting optimisation. (eg: (x & y) == (y and x))     |
++----------+---------------------------------------------------------+
+| |        | Similar to OR but with left to right expression short   |
+|          | circuiting optimisation. (eg: (x | y) == (y or x))      |
++----------+---------------------------------------------------------+
 
 (3) General Purpose Functions
-+-----------+--------------------------------------------------------+
-| FUNCTION  | DEFINITION                                             |
-+-----------+--------------------------------------------------------+
-| abs       | Absolute value of x.                                   |
-+-----------+--------------------------------------------------------+
-| avg       | Average of all the inputs.                             |
-|           | (eg: avg(x,y,z,w,u,v) == (x + y + z + w + u + v) / 6)  |
-+-----------+--------------------------------------------------------+
-| ceil      | Smallest integer that is greater than or equal to x.   |
-+-----------+--------------------------------------------------------+
-| clamp     | Clamp x in range between r0 and r1, where r0 < r1.     |
-|           | (eg: clamp(r0,x,r1)                                    |
-+-----------+--------------------------------------------------------+
-| equal     | Equality test between x and y using normalized epsilon |
-+-----------+--------------------------------------------------------+
-| erf       | Error function of x                                    |
-+-----------+--------------------------------------------------------+
-| erfc      | Complimentary error function of x                      |
-+-----------+--------------------------------------------------------+
-| exp       | e to the power of x                                    |
-+-----------+--------------------------------------------------------+
-| floor     | Largest integer that is less than or equal to x.       |
-+-----------+--------------------------------------------------------+
-| frac      | Fractional portion of x                                |
-+-----------+--------------------------------------------------------+
-| hypot     | Hypotenuse of x and y (eg: hypot(x,y) = sqrt(x*x +y*y))|
-+-----------+--------------------------------------------------------+
-| log       | Natural logarithm of x                                 |
-+-----------+--------------------------------------------------------+
-| log10     | Base 10 logarithm of x                                 |
-+-----------+--------------------------------------------------------+
-| log1p     | Natural logarithm of 1 + x, where x is very small.     |
-|           | (eg: log1p(x))                                         |
-+-----------+--------------------------------------------------------+
-| log2      | Base 2 logarithm of x                                  |
-+-----------+--------------------------------------------------------+
-| logn      | Base N logarithm of x (eg: logn(1235,8))               |
-|           | where n > 0 and is an integer.                         |
-+-----------+--------------------------------------------------------+
-| max       | Largest value of all the inputs. (eg: max(x,y,z,w,u,v))|
-+-----------+--------------------------------------------------------+
-| min       | Smallest value of all the inputs. (eg: min(x,y,z,w,u)) |
-+-----------+--------------------------------------------------------+
-| mul       | Product of all the inputs.                             |
-|           | (eg: mul(x,y,z,w,u,v,t) == (x * y * z * w * u * v * t))|
-+-----------+--------------------------------------------------------+
-| nequal    | Not-equal test between x and y using normalized epsilon|
-+-----------+--------------------------------------------------------+
-| root      | Nth-Root of x (eg: root(x,3))                          |
-|           | where n > 0 and is an integer.                         |
-+-----------+--------------------------------------------------------+
-| round     | Round x to the nearest integer.                        |
-+-----------+--------------------------------------------------------+
-| roundn    | Round x to the n decimal places (eg: roundn(x,4))      |
-|           | where n > 0 and is an integer.                         |
-+-----------+--------------------------------------------------------+
-| sgn       | Sign of x, -1 where x < 0, +1 where x > 0, else zero.  |
-+-----------+--------------------------------------------------------+
-| sqrt      | Square root of x, where x > 0                          |
-+-----------+--------------------------------------------------------+
-| sum       | Sum of all the inputs.                                 |
-|           | (eg: sum(x,y,z,w,u,v,t) == (x + y + z + w + u + v + t))|
-+-----------+--------------------------------------------------------+
-| trunc     | Integer portion of x                                   |
-+-----------+--------------------------------------------------------+
++----------+---------------------------------------------------------+
+| FUNCTION | DEFINITION                                              |
++----------+---------------------------------------------------------+
+| abs      | Absolute value of x.                                    |
++----------+---------------------------------------------------------+
+| avg      | Average of all the inputs.                              |
+|          | (eg: avg(x,y,z,w,u,v) == (x + y + z + w + u + v) / 6)   |
++----------+---------------------------------------------------------+
+| ceil     | Smallest integer that is greater than or equal to x.    |
++----------+---------------------------------------------------------+
+| clamp    | Clamp x in range between r0 and r1, where r0 < r1.      |
+|          | (eg: clamp(r0,x,r1)                                     |
++----------+---------------------------------------------------------+
+| equal    | Equality test between x and y using normalized epsilon  |
++----------+---------------------------------------------------------+
+| erf      | Error function of x                                     |
++----------+---------------------------------------------------------+
+| erfc     | Complimentary error function of x                       |
++----------+---------------------------------------------------------+
+| exp      | e to the power of x                                     |
++----------+---------------------------------------------------------+
+| floor    | Largest integer that is less than or equal to x.        |
++----------+---------------------------------------------------------+
+| frac     | Fractional portion of x                                 |
++----------+---------------------------------------------------------+
+| hypot    | Hypotenuse of x and y (eg: hypot(x,y) = sqrt(x*x + y*y))|
++----------+---------------------------------------------------------+
+| log      | Natural logarithm of x                                  |
++----------+---------------------------------------------------------+
+| log10    | Base 10 logarithm of x                                  |
++----------+---------------------------------------------------------+
+| log1p    | Natural logarithm of 1 + x, where x is very small.      |
+|          | (eg: log1p(x))                                          |
++----------+---------------------------------------------------------+
+| log2     | Base 2 logarithm of x                                   |
++----------+---------------------------------------------------------+
+| logn     | Base N logarithm of x (eg: logn(1235,8))                |
+|          | where n > 0 and is an integer.                          |
++----------+---------------------------------------------------------+
+| max      | Largest value of all the inputs. (eg: max(x,y,z,w,u,v)) |
++----------+---------------------------------------------------------+
+| min      | Smallest value of all the inputs. (eg: min(x,y,z,w,u))  |
++----------+---------------------------------------------------------+
+| mul      | Product of all the inputs.                              |
+|          | (eg: mul(x,y,z,w,u,v,t) == (x * y * z * w * u * v * t)) |
++----------+---------------------------------------------------------+
+| nequal   | Not-equal test between x and y using normalized epsilon |
++----------+---------------------------------------------------------+
+| root     | Nth-Root of x (eg: root(x,3))                           |
+|          | where n > 0 and is an integer.                          |
++----------+---------------------------------------------------------+
+| round    | Round x to the nearest integer.                         |
++----------+---------------------------------------------------------+
+| roundn   | Round x to n decimal places (eg: roundn(x,3))           |
+|          | where n > 0 and is an integer.                          |
+|          | (eg: roundn(1.2345678,4) == 1.2346)                     |
++----------+---------------------------------------------------------+
+| sgn      | Sign of x, -1 where x < 0, +1 where x > 0, else zero.   |
++----------+---------------------------------------------------------+
+| sqrt     | Square root of x, where x > 0                           |
++----------+---------------------------------------------------------+
+| sum      | Sum of all the inputs.                                  |
+|          | (eg: sum(x,y,z,w,u,v,t) == (x + y + z + w + u + v + t)) |
++----------+---------------------------------------------------------+
+| trunc    | Integer portion of x                                    |
++----------+---------------------------------------------------------+
 
 (4) Trigonometry Functions
-+-----------+--------------------------------------------------------+
-| FUNCTION  | DEFINITION                                             |
-+-----------+--------------------------------------------------------+
-| acos      | Arc cosine of x expressed in radians. Interval [-1,+1] |
-+-----------+--------------------------------------------------------+
-| asin      | Arc sine of x expressed in radians. Interval [-1,+1]   |
-+-----------+--------------------------------------------------------+
-| atan      | Arc tangent of x expressed in radians. Interval [-1,+1]|
-+-----------+--------------------------------------------------------+
-| atan2     | Arc tangent of x expressed in radians. Interval [-1,+1]|
-+-----------+--------------------------------------------------------+
-| cos       | Cosine of x                                            |
-+-----------+--------------------------------------------------------+
-| cosh      | Hyperbolic cosine of x                                 |
-+-----------+--------------------------------------------------------+
-| cot       | Cotangent of x                                         |
-+-----------+--------------------------------------------------------+
-| csc       | Cosecant of x                                          |
-+-----------+--------------------------------------------------------+
-| sec       | Secant of x                                            |
-+-----------+--------------------------------------------------------+
-| sin       | Sine of x                                              |
-+-----------+--------------------------------------------------------+
-| sinh      | Hyperbolic sine of x                                   |
-+-----------+--------------------------------------------------------+
-| tan       | Tangent of x                                           |
-+-----------+--------------------------------------------------------+
-| tanh      | Hyperbolic tangent of x                                |
-+-----------+--------------------------------------------------------+
-| deg2rad   | Convert x from degrees to radians                      |
-+-----------+--------------------------------------------------------+
-| deg2grad  | Convert x from degrees to gradians                     |
-+-----------+--------------------------------------------------------+
-| rad2deg   | Convert x from radians to degrees                      |
-+-----------+--------------------------------------------------------+
-| grad2deg  | Convert x from gradians to degrees                     |
-+-----------+--------------------------------------------------------+
++----------+---------------------------------------------------------+
+| FUNCTION | DEFINITION                                              |
++----------+---------------------------------------------------------+
+| acos     | Arc cosine of x expressed in radians. Interval [-1,+1]  |
++----------+---------------------------------------------------------+
+| asin     | Arc sine of x expressed in radians. Interval [-1,+1]    |
++----------+---------------------------------------------------------+
+| atan     | Arc tangent of x expressed in radians. Interval [-1,+1] |
++----------+---------------------------------------------------------+
+| atan2    | Arc tangent of (x/y) expressed in radians. [-pi,+pi]    |
+|          | eg: atan2(x,y)                                          |
++----------+---------------------------------------------------------+
+| cos      | Cosine of x                                             |
++----------+---------------------------------------------------------+
+| cosh     | Hyperbolic cosine of x                                  |
++----------+---------------------------------------------------------+
+| cot      | Cotangent of x                                          |
++----------+---------------------------------------------------------+
+| csc      | Cosecant of x                                           |
++----------+---------------------------------------------------------+
+| sec      | Secant of x                                             |
++----------+---------------------------------------------------------+
+| sin      | Sine of x                                               |
++----------+---------------------------------------------------------+
+| sinh     | Hyperbolic sine of x                                    |
++----------+---------------------------------------------------------+
+| tan      | Tangent of x                                            |
++----------+---------------------------------------------------------+
+| tanh     | Hyperbolic tangent of x                                 |
++----------+---------------------------------------------------------+
+| deg2rad  | Convert x from degrees to radians                       |
++----------+---------------------------------------------------------+
+| deg2grad | Convert x from degrees to gradians                      |
++----------+---------------------------------------------------------+
+| rad2deg  | Convert x from radians to degrees                       |
++----------+---------------------------------------------------------+
+| grad2deg | Convert x from gradians to degrees                      |
++----------+---------------------------------------------------------+
 
 (5) String Processing
-+-----------+--------------------------------------------------------+
-| FUNCTION  | DEFINITION                                             |
-+-----------+--------------------------------------------------------+
-| in        | True only if x is a substring of y                     |
-|           | (eg: x in y or 'abc' in 'abcdefgh')                    |
-+-----------+--------------------------------------------------------+
-| like      | True only if the string x matches the pattern y.       |
-|           | Available wildcard characters are '*' and '?' denoting |
-|           | zero or more and zero or one matches respectively.     |
-|           | (eg: x like y or 'abcdefgh' like 'a?d*h')              |
-+-----------+--------------------------------------------------------+
-| like      | True only if the string x matches the pattern y in a   |
-|           | case insensitive manner. Available wildcard characters |
-|           | are '*' and '?' denoting zero or more and zero or one  |
-|           | matches respectively.                                  |
-|           | (eg: x ilike y or 'a1B2c3D4e5F6g7H' like 'a?d*h')      |
-+-----------+--------------------------------------------------------+
-| [r0:r1]   | The closed interval [r0,r1] of the specified string.   |
-|           | eg: Given a string x with a value of 'abcdefgh' then:  |
-|           | 0. x[1:4] == 'bcde'                                    |
-|           | 1. x[ :5] == 'abcdef'                                  |
-|           | 2. x[3: ] == 'cdefgh'                                  |
-|           | 3. x[ : ] == 'abcdefgh'                                |
-|           | 4. x[4/2:3+2] == x[2:5] == 'cdef'                      |
-+-----------+--------------------------------------------------------+
++----------+---------------------------------------------------------+
+| FUNCTION | DEFINITION                                              |
++----------+---------------------------------------------------------+
+| in       | True only if x is a substring of y                      |
+|          | (eg: x in y or 'abc' in 'abcdefgh')                     |
++----------+---------------------------------------------------------+
+| like     | True only if the string x matches the pattern y.        |
+|          | Available wildcard characters are '*' and '?' denoting  |
+|          | zero or more and zero or one matches respectively.      |
+|          | (eg: x like y or 'abcdefgh' like 'a?d*h')               |
++----------+---------------------------------------------------------+
+| ilike    | True only if the string x matches the pattern y in a    |
+|          | case insensitive manner. Available wildcard characters  |
+|          | are '*' and '?' denoting zero or more and zero or one   |
+|          | matches respectively.                                   |
+|          | (eg: x ilike y or 'a1B2c3D4e5F6g7H' ilike 'a?d*h')      |
++----------+---------------------------------------------------------+
+| [r0:r1]  | The closed interval [r0,r1] of the specified string.    |
+|          | eg: Given a string x with a value of 'abcdefgh' then:   |
+|          | 0. x[1:4] == 'bcde'                                     |
+|          | 1. x[ :5] == 'abcdef'                                   |
+|          | 2. x[3: ] == 'cdefgh'                                   |
+|          | 3. x[ : ] == 'abcdefgh'                                 |
+|          | 4. x[4/2:3+2] == x[2:5] == 'cdef'                       |
+|          |                                                         |
+|          | Note: Both r0 and r1 are assumed to be integers. They   |
+|          | may also be the result of an expression, in the event   |
+|          | they have fractional components truncation will be      |
+|          | performed. (eg: 1.67 -> 1)                              |
++----------+---------------------------------------------------------+
 
 (6) Control Structures
-+-----------+--------------------------------------------------------+
-| STRUCTURE | DEFINITION                                             |
-+-----------+--------------------------------------------------------+
-| if        | If x is true then return y else return z.              |
-|           | (eg: if(x, y, z) or if((x + 1) > 2y, z + 1, w / v))    |
-+-----------+--------------------------------------------------------+
-| switch    | The first true case condition that is encountered will |
-|           | determine the result of the switch. If none of the case|
-|           | conditions hold true, the default action is assumed as |
-|           | the final return value. This is sometimes also known as|
-|           | a multi-way branch mechanism.                          |
-|           | eg:                                                    |
-|           | switch                                                 |
-|           | {                                                      |
-|           |   case x > (y + z) : 2 * x / abs(y - z);               |
-|           |   case x < 3       : sin(x + y)                        |
-|           |   default          : 1 + x;                            |
-|           | }                                                      |
-+-----------+--------------------------------------------------------+
-| while     | The structure will repeatedly evaluate the internal    |
-|           | statement(s) 'while' the condition is true. The final  |
-|           | statement in the final iteration will be used as the   |
-|           | return value of the loop.                              |
-|           | eg:                                                    |
-|           | while ((x := (x - 1)) > 0)                             |
-|           | {                                                      |
-|           |   y := x + z;                                          |
-|           |   w := z + y;                                          |
-|           | }                                                      |
-+-----------+--------------------------------------------------------+
-| repeat/   | The structure will repeatedly evaluate the internal    |
-| until     | statement(s) 'until' the condition is true. The final  |
-|           | statement in the final iteration will be used as the   |
-|           | return value of the loop.                              |
-|           | eg:                                                    |
-|           | repeat                                                 |
-|           |   y := x + z;                                          |
-|           |   w := z + y;                                          |
-|           | until ((x := (x - 1)) <= 0)                            |
-+-----------+--------------------------------------------------------+
-| ~         | Evaluate each sub-expression, then return as the result|
-|           | the value of the last sub-expression. This is sometimes|
-|           | known as multiple sequence point evaluation.           |
-|           | eg:                                                    |
-|           | ~(i := x + 1, j := y / z, k := sin(w/u)) == (sin(w/u)))|
-|           | ~{i := x + 1; j := y / z; k := sin(w/u)} == (sin(w/u)))|
-+-----------+--------------------------------------------------------+
++----------+---------------------------------------------------------+
+|STRUCTURE | DEFINITION                                              |
++----------+---------------------------------------------------------+
+| if       | If x is true then return y else return z.               |
+|          | (eg: if(x, y, z) or if((x + 1) > 2y, z + 1, w / v))     |
++----------+---------------------------------------------------------+
+| switch   | The first true case condition that is encountered will  |
+|          | determine the result of the switch. If none of the case |
+|          | conditions hold true, the default action is assumed as  |
+|          | the final return value. This is sometimes also known as |
+|          | a multi-way branch mechanism.                           |
+|          | eg:                                                     |
+|          | switch                                                  |
+|          | {                                                       |
+|          |   case x > (y + z) : 2 * x / abs(y - z);                |
+|          |   case x < 3       : sin(x + y)                         |
+|          |   default          : 1 + x;                             |
+|          | }                                                       |
++----------+---------------------------------------------------------+
+| while    | The structure will repeatedly evaluate the internal     |
+|          | statement(s) 'while' the condition is true. The final   |
+|          | statement in the final iteration will be used as the    |
+|          | return value of the loop.                               |
+|          | eg:                                                     |
+|          | while ((x := (x - 1)) > 0)                              |
+|          | {                                                       |
+|          |   y := x + z;                                           |
+|          |   w := z + y;                                           |
+|          | }                                                       |
++----------+---------------------------------------------------------+
+| repeat/  | The structure will repeatedly evaluate the internal     |
+| until    | statement(s) 'until' the condition is true. The final   |
+|          | statement in the final iteration will be used as the    |
+|          | return value of the loop.                               |
+|          | eg:                                                     |
+|          | repeat                                                  |
+|          |   y := x + z;                                           |
+|          |   w := z + y;                                           |
+|          | until ((x := (x - 1)) <= 0)                             |
++----------+---------------------------------------------------------+
+| ~        | Evaluate each sub-expression, then return as the result |
+|          | the value of the last sub-expression. This is sometimes |
+|          | known as multiple sequence point evaluation.            |
+|          | eg:                                                     |
+|          | ~(i := x + 1, j := y / z, k := sin(w/u)) == (sin(w/u))) |
+|          | ~{i := x + 1; j := y / z; k := sin(w/u)} == (sin(w/u))) |
++----------+---------------------------------------------------------+
 
 
 
@@ -382,7 +392,7 @@ include path (e.g: /usr/include/).
 The purpose  of special  functions in  ExprTk is  to provide  compiler
 generated equivalents of common mathematical expressions which can  be
 invoked by  using the  'special function'  syntax (eg:  $f12(x,y,z) or
-$f24(x,y,z,w)).
+$f82(x,y,z,w)).
 
 Special functions dramatically decrease  the total evaluation time  of
 expressions which would otherwise  have been written using  the common
@@ -466,7 +476,8 @@ correctly optimize such expressions for a given architecture.
       (A-Z or a-z), then can be comprised of any combination of
       letters, digits and underscores. (eg: x, var1 or power_func99)
 
- (06) Expression lengths are limited only by storage capacity.
+ (06) Expression lengths and sub-expression lists are limited only by
+      storage capacity.
 
  (07) The life-time of objects registered with or created from a
       specific symbol-table must span at least the life-time of
@@ -487,7 +498,7 @@ correctly optimize such expressions for a given architecture.
  (11) Strings may be constructed from any letters, digits or special
       characters such as (~!@#$%^&*()[]|=+ ,./?<>;:"`~_), and must
       be enclosed with single-quotes.
-      eg: 'Frankly, my dear, I don't give a damn!'
+      eg: 'Frankly, my dear, I do not give a damn!'
 
  (12) User defined normal functions can have up to 20 parameters,
       where as user defined vararg-functions can have an unlimited
@@ -505,7 +516,10 @@ correctly optimize such expressions for a given architecture.
  (16) Composited functions can call themselves or any other functions
       that have been defined prior to their own definition.
 
- (17) Expressions may contain any of the following comment styles:
+ (17) Recursive calls made from within composited functions will have
+      a stack size bound by the stack of executing architecture.
+
+ (18) Expressions may contain any of the following comment styles:
       1. // .... \n
       2. #  .... \n
       3. /* .... */

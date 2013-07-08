@@ -12,19 +12,19 @@
  * http://www.opensource.org/licenses/cpl1.0.php                  *
  *                                                                *
  * Example expressions:                                           *
- * (00) (y+x/y)*(x-y/x)                                           *
- * (01) (x^2/sin(2*pi/y))-x/2                                     *
- * (02) sqrt(1-(x^2))                                             *
- * (03) 1-sin(2*x)+cos(pi/y)                                      *
- * (04) a*exp(2*t)+c                                              *
- * (05) if(((x+2)==3)and((y+5)<=9),1+w,2/z)                       *
- * (06) if(avg(x,y)<=x+y,x-y,x*y)+2*pi/x                          *
- * (07) z:=x+sin(2*pi/y)                                          *
- * (08) u:=2*(pi*z)/(w:=x+cos(y/pi))                              *
- * (09) clamp(-1,sin(2*pi*x)+cos(y/2*pi),+1)                      *
- * (10) inrange(-2,m,+2)==if(({-2<=m} and [m<=+2]),1,0)           *
- * (11) (12.34sin(x)cos(2y)7+1)==(12.34*sin(x)*cos(2*y)*7+1)      *
- * (12) (x ilike 's*ri?g') and [y<(3z^7+w)]                       *
+ * (00) (y + x / y) * (x - y / x)                                 *
+ * (01) (x^2 / sin(2 * pi / y)) - x / 2                           *
+ * (02) sqrt(1 - (x^2))                                           *
+ * (03) 1 - sin(2 * x) + cos(pi / y)                              *
+ * (04) a * exp(2 * t) + c                                        *
+ * (05) if(((x + 2) == 3) and ((y + 5) <= 9),1 + w, 2 / z)        *
+ * (06) if(avg(x,y) <= x + y,x - y,x * y) + 2 * pi / x            *
+ * (07) z := x + sin(2 * pi / y)                                  *
+ * (08) u := 2 * (pi * z) / (w := x + cos(y / pi))                *
+ * (09) clamp(-1,sin(2 * pi * x) + cos(y / 2 * pi),+1)            *
+ * (10) inrange(-2,m,+2) == if(({-2 <= m} and [m <= +2]),1,0)     *
+ * (11) (1.2sin(x)cos(2y)7 + 1) == (1.2 * sin(x) * cos(2*y) * 7+1)*
+ * (12) (x ilike 's*ri?g') and [y < (3 z^7 + w)]                  *
  *                                                                *
  ******************************************************************
 */
@@ -604,9 +604,9 @@ namespace exprtk
             template <typename T>
             inline T sgn_impl(const T v, real_type_tag)
             {
-                    if (v > T(0.0)) return T(+1.0);
-               else if (v < T(0.0)) return T(-1.0);
-               else                 return T( 0.0);
+                    if (v > T(0)) return T(+1);
+               else if (v < T(0)) return T(-1);
+               else               return T( 0);
             }
 
             template <typename T>
@@ -618,9 +618,57 @@ namespace exprtk
             }
 
             template <typename T>
+            inline T and_impl(const T v0, const T& v1, real_type_tag)
+            {
+               return (is_true_impl(v0) && is_true_impl(v1)) ? T(1) : T(0);
+            }
+
+            template <typename T>
+            inline T and_impl(const T v0, const T& v1, int_type_tag)
+            {
+               return v0 && v1;
+            }
+
+            template <typename T>
+            inline T nand_impl(const T v0, const T& v1, real_type_tag)
+            {
+               return (is_false_impl(v0) || is_false_impl(v1)) ? T(1) : T(0);
+            }
+
+            template <typename T>
+            inline T nand_impl(const T v0, const T& v1, int_type_tag)
+            {
+               return !(v0 && v1);
+            }
+
+            template <typename T>
+            inline T or_impl(const T v0, const T& v1, real_type_tag)
+            {
+               return (is_true_impl(v0) || is_true_impl(v1)) ? T(1) : T(0);
+            }
+
+            template <typename T>
+            inline T or_impl(const T v0, const T& v1, int_type_tag)
+            {
+               return (v0 || v1);
+            }
+
+            template <typename T>
+            inline T nor_impl(const T v0, const T& v1, real_type_tag)
+            {
+               return (is_false_impl(v0) && is_false_impl(v1)) ? T(1) : T(0);
+            }
+
+            template <typename T>
+            inline T nor_impl(const T v0, const T& v1, int_type_tag)
+            {
+               return !(v0 || v1);
+            }
+
+            template <typename T>
             inline T xor_impl(const T v0, const T& v1, real_type_tag)
             {
-               return v0 != v1;
+               return (is_false_impl(v0) != is_false_impl(v1)) ? T(1) : T(0);
             }
 
             template <typename T>
@@ -655,25 +703,22 @@ namespace exprtk
             inline T erf_impl(T v, real_type_tag)
             {
                #if defined(_WIN32) || defined(__WIN32__) || defined(WIN32)
-               //Note: This should not be required for mscv 11.+
-               T a1 = T(+0.254829592);
-               T a2 = T(-0.284496736);
-               T a3 = T(+1.421413741);
-               T a4 = T(-1.453152027);
-               T a5 = T(+1.061405429);
-               T p  = T( 0.327591100);
-               T sign = T(1.0);
-
-               if (v < 0)
-               {
-                  sign = -1;
-                  v = abs(v);
-               }
-
-               T t = T(1.0) / (T(1.0) + p * v);
-               T y = T(1.0) - (((((a5 * t + a4) * t) + a3) * t + a2) * t + a1) * t * std::exp(-v * v);
-
-               return sign * y;
+               //Credits: Abramowitz & Stegun Equations 7.1.25–28
+               const T t = T(1) / (T(1) + T(0.5) * std::abs(v));
+               static const T c[] = {
+                                      T( 1.26551223), T(1.00002368),
+                                      T( 0.37409196), T(0.09678418),
+                                      T(-0.18628806), T(0.27886807),
+                                      T(-1.13520398), T(1.48851587),
+                                      T(-0.82215223), T(0.17087277)
+                                    };
+               T result = T(1) - t * std::exp((-v * v) -
+                                      c[0] + t * (c[1] + t *
+                                     (c[2] + t * (c[3] + t *
+                                     (c[4] + t * (c[5] + t *
+                                     (c[6] + t * (c[7] + t *
+                                     (c[8] + t * (c[9]))))))))));
+               return (v >= T(0)) ? result : -result;
                #else
                return ::erf(v);
                #endif
@@ -689,7 +734,7 @@ namespace exprtk
             inline T erfc_impl(T v, real_type_tag)
             {
                #if defined(_WIN32) || defined(__WIN32__) || defined(WIN32)
-               return T(1.0) - erf_impl(v,real_type_tag());
+               return T(1) - erf_impl(v,real_type_tag());
                #else
                return ::erfc(v);
                #endif
@@ -761,7 +806,7 @@ namespace exprtk
             template <typename T>
             inline bool is_integer_impl(const T& v, real_type_tag)
             {
-               return (T(0.0) == std::fmod(v,T(1.0)));
+               return (T(0) == std::fmod(v,T(1)));
             }
 
             template <typename T>
@@ -855,6 +900,34 @@ namespace exprtk
          {
             typename details::number_type<T>::type num_type;
             return details::shl_impl(v0,v1,num_type);
+         }
+
+         template <typename T>
+         inline T and_opr(const T v0, const T v1)
+         {
+            typename details::number_type<T>::type num_type;
+            return details::and_impl(v0,v1,num_type);
+         }
+
+         template <typename T>
+         inline T nand_opr(const T v0, const T v1)
+         {
+            typename details::number_type<T>::type num_type;
+            return details::nand_impl(v0,v1,num_type);
+         }
+
+         template <typename T>
+         inline T or_opr(const T v0, const T v1)
+         {
+            typename details::number_type<T>::type num_type;
+            return details::or_impl(v0,v1,num_type);
+         }
+
+         template <typename T>
+         inline T nor_opr(const T v0, const T v1)
+         {
+            typename details::number_type<T>::type num_type;
+            return details::nor_impl(v0,v1,num_type);
          }
 
          template <typename T>
@@ -1924,15 +1997,19 @@ namespace exprtk
       {
       public:
 
-         virtual void init()                     {               }
-         virtual void reset()                    {               }
-         virtual bool result()                   { return true;  }
-         virtual std::size_t process(generator&) { return 0;     }
+         virtual void init()                     {              }
+         virtual void reset()                    {              }
+         virtual bool result()                   { return true; }
+         virtual std::size_t process(generator&) { return 0;    }
+         virtual ~helper_interface()             {              }
       };
 
       class token_scanner : public helper_interface
       {
       public:
+
+         virtual ~token_scanner()
+         {}
 
          explicit token_scanner(const std::size_t& stride)
          : stride_(stride)
@@ -2598,7 +2675,6 @@ namespace exprtk
                {
                   switch (base)
                   {
-                     case lexer::token::e_string      : return true;
                      case lexer::token::e_rbracket    : return true;
                      case lexer::token::e_rsqrbracket : return true;
                      case lexer::token::e_rcrlbracket : return true;
@@ -2913,19 +2989,19 @@ namespace exprtk
                   case e_ne     : return (arg0 != arg1) ? T(1) : T(0);
                   case e_gte    : return (arg0 >= arg1) ? T(1) : T(0);
                   case e_gt     : return (arg0 >  arg1) ? T(1) : T(0);
-                  case e_and    : return ((arg0 != T(0)) && (arg1 != T(0))) ? T(1) : T(0);
-                  case e_nand   : return ((arg0 != T(0)) && (arg1 != T(0))) ? T(0) : T(1);
-                  case e_or     : return ((arg0 != T(0)) || (arg1 != T(0))) ? T(1) : T(0);
-                  case e_nor    : return ((arg0 != T(0)) || (arg1 != T(0))) ? T(0) : T(1);
-                  case e_xor    : return (arg0 != arg1) ? T(1) : T(0);
-                  case e_xnor   : return (arg0 != arg1) ? T(0) : T(1);
-                  case e_root   : return root<T>(arg0,arg1);
-                  case e_roundn : return roundn<T>(arg0,arg1);
-                  case e_equal  : return equal<T>(arg0,arg1);
-                  case e_nequal : return nequal<T>(arg0,arg1);
-                  case e_hypot  : return hypot<T>(arg0,arg1);
-                  case e_shr    : return shr<T>(arg0,arg1);
-                  case e_shl    : return shl<T>(arg0,arg1);
+                  case e_and    : return and_opr<T> (arg0,arg1);
+                  case e_nand   : return nand_opr<T>(arg0,arg1);
+                  case e_or     : return or_opr<T>  (arg0,arg1);
+                  case e_nor    : return nor_opr<T> (arg0,arg1);
+                  case e_xor    : return xor_opr<T> (arg0,arg1);
+                  case e_xnor   : return xnor_opr<T>(arg0,arg1);
+                  case e_root   : return root<T>    (arg0,arg1);
+                  case e_roundn : return roundn<T>  (arg0,arg1);
+                  case e_equal  : return equal<T>   (arg0,arg1);
+                  case e_nequal : return nequal<T>  (arg0,arg1);
+                  case e_hypot  : return hypot<T>   (arg0,arg1);
+                  case e_shr    : return shr<T>     (arg0,arg1);
+                  case e_shl    : return shl<T>     (arg0,arg1);
                   default       : return std::numeric_limits<T>::quiet_NaN();
                }
             }
@@ -2993,28 +3069,28 @@ namespace exprtk
             e_binary       , e_binary_ext   , e_trinary      , e_quaternary   ,
             e_quinary      , e_senary       , e_vararg       , e_conditional  ,
             e_while        , e_repeat       , e_switch       , e_variable     ,
-            e_stringvar    , e_stringconst  , e_stringvarrng , e_function     ,
-            e_vafunction   , e_add          , e_sub          , e_mul          ,
-            e_div          , e_mod          , e_pow          , e_lt           ,
-            e_lte          , e_gt           , e_gte          , e_eq           ,
-            e_ne           , e_and          , e_nand         , e_or           ,
-            e_nor          , e_xor          , e_xnor         , e_in           ,
-            e_like         , e_ilike        , e_inranges     , e_ipow         ,
-            e_ipowinv      , e_abs          , e_acos         , e_asin         ,
-            e_atan         , e_ceil         , e_cos          , e_cosh         ,
-            e_exp          , e_floor        , e_log          , e_log10        ,
-            e_log2         , e_log1p        , e_neg          , e_pos          ,
-            e_round        , e_sin          , e_sinh         , e_sqrt         ,
-            e_tan          , e_tanh         , e_cot          , e_sec          ,
-            e_csc          , e_r2d          , e_d2r          , e_d2g          ,
-            e_g2d          , e_notl         , e_sgn          , e_erf          ,
-            e_erfc         , e_frac         , e_trunc        , e_uvouv        ,
-            e_vov          , e_cov          , e_voc          , e_vob          ,
-            e_bov          , e_cob          , e_boc          , e_vovov        ,
-            e_vovoc        , e_vocov        , e_covov        , e_covoc        ,
-            e_vovovov      , e_vovovoc      , e_vovocov      , e_vocovov      ,
-            e_covovov      , e_covocov      , e_vocovoc      , e_covovoc      ,
-            e_vococov      , e_sf3ext       , e_sf4ext
+            e_stringvar    , e_stringconst  , e_stringvarrng , e_cstringvarrng,
+            e_function     , e_vafunction   , e_add          , e_sub          ,
+            e_mul          , e_div          , e_mod          , e_pow          ,
+            e_lt           , e_lte          , e_gt           , e_gte          ,
+            e_eq           , e_ne           , e_and          , e_nand         ,
+            e_or           , e_nor          , e_xor          , e_xnor         ,
+            e_in           , e_like         , e_ilike        , e_inranges     ,
+            e_ipow         , e_ipowinv      , e_abs          , e_acos         ,
+            e_asin         , e_atan         , e_ceil         , e_cos          ,
+            e_cosh         , e_exp          , e_floor        , e_log          ,
+            e_log10        , e_log2         , e_log1p        , e_neg          ,
+            e_pos          , e_round        , e_sin          , e_sinh         ,
+            e_sqrt         , e_tan          , e_tanh         , e_cot          ,
+            e_sec          , e_csc          , e_r2d          , e_d2r          ,
+            e_d2g          , e_g2d          , e_notl         , e_sgn          ,
+            e_erf          , e_erfc         , e_frac         , e_trunc        ,
+            e_uvouv        , e_vov          , e_cov          , e_voc          ,
+            e_vob          , e_bov          , e_cob          , e_boc          ,
+            e_vovov        , e_vovoc        , e_vocov        , e_covov        ,
+            e_covoc        , e_vovovov      , e_vovovoc      , e_vovocov      ,
+            e_vocovov      , e_covovov      , e_covocov      , e_vocovoc      ,
+            e_covovoc      , e_vococov      , e_sf3ext       , e_sf4ext
          };
 
          typedef T value_type;
@@ -3030,7 +3106,7 @@ namespace exprtk
 
          virtual inline bool result() const
          {
-            return (T(1.0) == value());
+            return (T(0) != value());
          }
 
          virtual inline expression_node<T>* branch(const std::size_t& index = 0) const
@@ -4087,6 +4163,59 @@ namespace exprtk
 
       template <typename T, typename RangePack>
       std::string string_range_node<T,RangePack>::null_value = std::string("");
+
+      template <typename T, typename RangePack>
+      class const_string_range_node : public string_base_node<T>
+      {
+      public:
+
+         explicit const_string_range_node(const std::string& value, RangePack rp)
+         : value_(value),
+           rp_(rp)
+         {}
+
+        ~const_string_range_node()
+         {
+            rp_.free();
+         }
+
+         inline T value() const
+         {
+            return std::numeric_limits<T>::quiet_NaN();
+         }
+
+         inline std::string str() const
+         {
+            return value_;
+         }
+
+         inline RangePack range() const
+         {
+            return rp_;
+         }
+
+         inline virtual RangePack& range_ref()
+         {
+            return rp_;
+         }
+
+         inline virtual const RangePack& range_ref() const
+         {
+            return rp_;
+         }
+
+         inline typename expression_node<T>::node_type type() const
+         {
+            return expression_node<T>::e_cstringvarrng;
+         }
+
+      private:
+
+         const_string_range_node<T,RangePack>& operator=(const const_string_range_node<T,RangePack>&);
+
+         const std::string value_;
+         RangePack    rp_;
+      };
       #endif
 
       template <typename T, std::size_t N> inline T axn(T a, T x)       { return a * exprtk::details::numeric::fast_exp<T,N>::result(x); } // a*x^n
@@ -7441,7 +7570,7 @@ namespace exprtk
       };
 
       template <typename T, typename SType0, typename SType1, typename RangePack, typename Operation>
-      class sros_node : public sos_base_node<T>
+      class str_xrox_node : public sos_base_node<T>
       {
       public:
 
@@ -7449,13 +7578,13 @@ namespace exprtk
          typedef Operation operation_t;
 
          // string-range op string node
-         explicit sros_node(SType0 s0, SType1 s1, RangePack rp0)
+         explicit str_xrox_node(SType0 s0, SType1 s1, RangePack rp0)
          : s0_(s0),
            s1_(s1),
            rp0_(rp0)
          {}
 
-        ~sros_node()
+        ~str_xrox_node()
          {
             rp0_.free();
          }
@@ -7498,12 +7627,12 @@ namespace exprtk
 
       private:
 
-         sros_node(sros_node<T,SType0,SType1,RangePack,Operation>&);
-         sros_node<T,SType0,SType1,RangePack,Operation>& operator=(sros_node<T,SType0,SType1,RangePack,Operation>&);
+         str_xrox_node(str_xrox_node<T,SType0,SType1,RangePack,Operation>&);
+         str_xrox_node<T,SType0,SType1,RangePack,Operation>& operator=(str_xrox_node<T,SType0,SType1,RangePack,Operation>&);
       };
 
       template <typename T, typename SType0, typename SType1, typename RangePack, typename Operation>
-      class sosr_node : public sos_base_node<T>
+      class str_xoxr_node : public sos_base_node<T>
       {
       public:
 
@@ -7511,13 +7640,13 @@ namespace exprtk
          typedef Operation operation_t;
 
          // string op string range node
-         explicit sosr_node(SType0 s0, SType1 s1, RangePack rp1)
+         explicit str_xoxr_node(SType0 s0, SType1 s1, RangePack rp1)
          : s0_(s0),
            s1_(s1),
            rp1_(rp1)
          {}
 
-        ~sosr_node()
+        ~str_xoxr_node()
          {
             rp1_.free();
          }
@@ -7560,12 +7689,12 @@ namespace exprtk
 
       private:
 
-         sosr_node(sosr_node<T,SType0,SType1,RangePack,Operation>&);
-         sosr_node<T,SType0,SType1,RangePack,Operation>& operator=(sosr_node<T,SType0,SType1,RangePack,Operation>&);
+         str_xoxr_node(str_xoxr_node<T,SType0,SType1,RangePack,Operation>&);
+         str_xoxr_node<T,SType0,SType1,RangePack,Operation>& operator=(str_xoxr_node<T,SType0,SType1,RangePack,Operation>&);
       };
 
       template <typename T, typename SType0, typename SType1, typename RangePack, typename Operation>
-      class srosr_node : public sos_base_node<T>
+      class str_xroxr_node : public sos_base_node<T>
       {
       public:
 
@@ -7573,14 +7702,14 @@ namespace exprtk
          typedef Operation operation_t;
 
          // string-range op string-range node
-         explicit srosr_node(SType0 s0, SType1 s1, RangePack rp0, RangePack rp1)
+         explicit str_xroxr_node(SType0 s0, SType1 s1, RangePack rp0, RangePack rp1)
          : s0_(s0),
            s1_(s1),
            rp0_(rp0),
            rp1_(rp1)
          {}
 
-        ~srosr_node()
+        ~str_xroxr_node()
          {
             rp0_.free();
             rp1_.free();
@@ -7589,8 +7718,8 @@ namespace exprtk
          inline T value() const
          {
             std::size_t r0_0 = 0;
-            std::size_t r1_0 = 0;
             std::size_t r0_1 = 0;
+            std::size_t r1_0 = 0;
             std::size_t r1_1 = 0;
             if (rp0_(r0_0,r1_0,s0_.size()) && rp1_(r0_1,r1_1,s1_.size()))
                return Operation::process(s0_.substr(r0_0,(r1_0 - r0_0) + 1),
@@ -7628,8 +7757,8 @@ namespace exprtk
 
       private:
 
-         srosr_node(srosr_node<T,SType0,SType1,RangePack,Operation>&);
-         srosr_node<T,SType0,SType1,RangePack,Operation>& operator=(srosr_node<T,SType0,SType1,RangePack,Operation>&);
+         str_xroxr_node(str_xroxr_node<T,SType0,SType1,RangePack,Operation>&);
+         str_xroxr_node<T,SType0,SType1,RangePack,Operation>& operator=(str_xroxr_node<T,SType0,SType1,RangePack,Operation>&);
       };
 
       template <typename T, typename SType0, typename SType1, typename SType2, typename Operation>
@@ -7734,7 +7863,7 @@ namespace exprtk
 
          inline T value() const
          {
-            return (T(1.0) / PowOp::result(v_));
+            return (T(1) / PowOp::result(v_));
          }
 
          inline typename expression_node<T>::node_type type() const
@@ -7817,11 +7946,18 @@ namespace exprtk
       }
 
       template <typename T>
+      inline bool is_const_string_range_node(const expression_node<T>* node)
+      {
+         return (expression_node<T>::e_cstringvarrng == node->type());
+      }
+
+      template <typename T>
       inline bool is_generally_string_node(const expression_node<T>* node)
       {
-         return is_string_node(node)       ||
-                is_const_string_node(node) ||
-                is_string_range_node(node);
+         return is_string_node            (node) ||
+                is_const_string_node      (node) ||
+                is_string_range_node      (node) ||
+                is_const_string_range_node(node);
       }
 
       class node_allocator
@@ -9316,6 +9452,21 @@ namespace exprtk
          else
             return local_data().stringvar_store.symbol_exists(stringvar_name);
       }
+
+      inline bool is_conststr_stringvar(const std::string& symbol_name) const
+      {
+         if (!valid())
+            return false;
+         else if (!valid_symbol(symbol_name))
+            return false;
+         else if (!local_data().stringvar_store.symbol_exists(symbol_name))
+            return false;
+         return (
+                  local_data().stringvar_store.symbol_exists(symbol_name)
+                  ||
+                  local_data().stringvar_store.is_constant(symbol_name)
+                );
+      }
       #endif
 
       inline bool is_function(const std::string& function_name) const
@@ -9683,6 +9834,7 @@ namespace exprtk
       typedef details::stringvar_node  <T>                 stringvar_node_t;
       typedef details::string_literal_node<T>         string_literal_node_t;
       typedef details::string_range_node<T,range_pack>  string_range_node_t;
+      typedef details::const_string_range_node<T,range_pack>  const_string_range_node_t;
       #endif
       typedef details::assignment_node <T>                assignment_node_t;
       typedef details::scand_node <T>                          scand_node_t;
@@ -10807,6 +10959,15 @@ namespace exprtk
 
          const std::string symbol = current_token_.value;
 
+         if (!details::imatch(current_token_.value,"switch"))
+         {
+            set_error(
+               make_error(parser_error::e_syntax,
+                          current_token_,
+                          "ERR26 - Expected keyword 'switch'"));
+            return error_node();
+         }
+
          scoped_vec_delete<expression_node_t> sdd(*this,arg_list);
 
          next_token();
@@ -10816,7 +10977,7 @@ namespace exprtk
             set_error(
                make_error(parser_error::e_syntax,
                           current_token_,
-                          "ERR26 - Expected '{' for call to switch statement."));
+                          "ERR27 - Expected '{' for call to switch statement."));
             return error_node();
          }
 
@@ -10836,7 +10997,7 @@ namespace exprtk
                set_error(
                   make_error(parser_error::e_syntax,
                              current_token_,
-                             "ERR27 - Expected ':' for case of switch statement."));
+                             "ERR28 - Expected ':' for case of switch statement."));
                return error_node();
             }
 
@@ -10849,7 +11010,7 @@ namespace exprtk
                set_error(
                   make_error(parser_error::e_syntax,
                              current_token_,
-                             "ERR28 - Expected ';' at end of case for switch statement."));
+                             "ERR29 - Expected ';' at end of case for switch statement."));
                return error_node();
             }
 
@@ -10864,7 +11025,7 @@ namespace exprtk
                   set_error(
                      make_error(parser_error::e_syntax,
                                 current_token_,
-                                "ERR29 - Expected ':' for default of switch statement."));
+                                "ERR30 - Expected ':' for default of switch statement."));
                   return error_node();
                }
 
@@ -10875,7 +11036,7 @@ namespace exprtk
                {
                   set_error(make_error(parser_error::e_syntax,
                             current_token_,
-                            "ERR30 - Expected ';' at end of default for switch statement."));
+                            "ERR31 - Expected ';' at end of default for switch statement."));
                   return error_node();
                }
 
@@ -10889,7 +11050,7 @@ namespace exprtk
             set_error(
                make_error(parser_error::e_syntax,
                           current_token_,
-                          "ERR31 - Expected '}' at end of switch statement."));
+                          "ERR32 - Expected '}' at end of switch statement."));
             return error_node();
          }
 
@@ -10924,7 +11085,7 @@ namespace exprtk
             set_error(
                make_error(parser_error::e_syntax,
                           current_token_,
-                          "ERR32 - Unsupported vararg function: " + symbol));
+                          "ERR33 - Unsupported vararg function: " + symbol));
             return error_node();
          }
 
@@ -10936,7 +11097,7 @@ namespace exprtk
             set_error(
                make_error(parser_error::e_syntax,
                           current_token_,
-                          "ERR33 - Expected '(' for call to vararg function: " + symbol));
+                          "ERR34 - Expected '(' for call to vararg function: " + symbol));
             return error_node();
          }
 
@@ -10955,7 +11116,7 @@ namespace exprtk
                set_error(
                   make_error(parser_error::e_syntax,
                              current_token_,
-                             "ERR34 - Expected ',' for call to vararg function: " + symbol));
+                             "ERR35 - Expected ',' for call to vararg function: " + symbol));
                return error_node();
             }
          }
@@ -11012,7 +11173,7 @@ namespace exprtk
                set_error(
                   make_error(parser_error::e_syntax,
                              current_token_,
-                             "ERR35 - Expected '"+ details::to_str(close_bracket) + "' for call to multi-sequence" +
+                             "ERR36 - Expected '"+ details::to_str(close_bracket) + "' for call to multi-sequence" +
                              ((!source.empty()) ? std::string(" section of " + source): "")));
                return error_node();
             }
@@ -11040,7 +11201,7 @@ namespace exprtk
                set_error(
                   make_error(parser_error::e_syntax,
                              current_token_,
-                             "ERR36 - Expected '"+ details::to_str(seperator) +"' for call to multi-sequence section of " + source));
+                             "ERR37 - Expected '"+ details::to_str(seperator) +"' for call to multi-sequence section of " + source));
                return error_node();
             }
 
@@ -11076,12 +11237,18 @@ namespace exprtk
             if (n0_e.first && n0_e.second)
             {
                n0_e.first = false;
-               delete n0_e.second;
+               if (!details::is_variable_node(n0_e.second))
+               {
+                  delete n0_e.second;
+               }
             }
             if (n1_e.first && n1_e.second)
             {
                n1_e.first = false;
-               delete n1_e.second;
+               if (!details::is_variable_node(n1_e.second))
+               {
+                  delete n1_e.second;
+               }
             }
          }
 
@@ -11102,20 +11269,32 @@ namespace exprtk
             if (n0_c.first)
                r0 = n0_c.second;
             else if (n0_e.first)
-               r0 = static_cast<std::size_t>(n0_e.second->value());
+            {
+               T r0_value = n0_e.second->value();
+               if (r0_value < 0)
+                  return false;
+               else
+                  r0 = static_cast<std::size_t>(r0_value);
+            }
             else
                return false;
 
             if (n1_c.first)
                r1 = n1_c.second;
             else if (n1_e.first)
-               r1 = static_cast<std::size_t>(n1_e.second->value());
+            {
+               T r1_value = n1_e.second->value();
+               if (r1_value < 0)
+                  return false;
+               else
+                  r1 = static_cast<std::size_t>(r1_value);
+            }
             else
                return false;
 
             if (
-                (std::numeric_limits<std::size_t>::max()!= size) &&
-                (std::numeric_limits<std::size_t>::max() == r1)
+                (std::numeric_limits<std::size_t>::max() != size) &&
+                (std::numeric_limits<std::size_t>::max() == r1  )
                )
                r1 = size;
 
@@ -11146,7 +11325,7 @@ namespace exprtk
             set_error(
                make_error(parser_error::e_syntax,
                           current_token_,
-                          "ERR37 - Expected '[' for start of range."));
+                          "ERR38 - Expected '[' for start of range."));
             return false;
          }
 
@@ -11164,15 +11343,27 @@ namespace exprtk
                set_error(
                   make_error(parser_error::e_syntax,
                              current_token_,
-                             "ERR38 - Failed parse begin section of range."));
+                             "ERR39 - Failed parse begin section of range."));
                return false;
 
             }
             else if (is_constant_node(r0))
             {
-               rp.n0_c.first  = true;
-               rp.n0_c.second = static_cast<std::size_t>(std::max(T(0),r0->value()));
+               T r0_value = r0->value();
+               if (r0_value >= T(0))
+               {
+                  rp.n0_c.first  = true;
+                  rp.n0_c.second = static_cast<std::size_t>(r0_value);
+               }
                free_node(node_allocator_,r0);
+               if (r0_value < T(0))
+               {
+                  set_error(
+                     make_error(parser_error::e_syntax,
+                                current_token_,
+                                "ERR40 - Range lower bound less than zero! Constraint: r0 >= 0"));
+                  return false;
+               }
             }
             else
             {
@@ -11185,7 +11376,7 @@ namespace exprtk
                set_error(
                   make_error(parser_error::e_syntax,
                              current_token_,
-                             "ERR39 - Expected ':' for break  in range."));
+                             "ERR41 - Expected ':' for break  in range."));
                rp.free();
                return false;
             }
@@ -11205,16 +11396,28 @@ namespace exprtk
                set_error(
                   make_error(parser_error::e_syntax,
                              current_token_,
-                             "ERR40 - Failed parse end section of range."));
+                             "ERR42 - Failed parse end section of range."));
                rp.free();
                return false;
 
             }
             else if (is_constant_node(r1))
             {
-               rp.n1_c.first  = true;
-               rp.n1_c.second = static_cast<std::size_t>(std::max(T(0),r1->value()));
+               T r1_value = r1->value();
+               if (r1_value >= T(0))
+               {
+                  rp.n1_c.first  = true;
+                  rp.n1_c.second = static_cast<std::size_t>(r1_value);
+               }
                free_node(node_allocator_,r1);
+               if (r1_value < T(0))
+               {
+                  set_error(
+                     make_error(parser_error::e_syntax,
+                                current_token_,
+                                "ERR43 - Range upper bound less than zero! Constraint: r1 >= 0"));
+                  return false;
+               }
             }
             else
             {
@@ -11227,7 +11430,7 @@ namespace exprtk
                set_error(
                   make_error(parser_error::e_syntax,
                              current_token_,
-                             "ERR41 - Expected ']' for start of range."));
+                             "ERR44 - Expected ']' for start of range."));
                rp.free();
                return false;
             }
@@ -11243,7 +11446,7 @@ namespace exprtk
                set_error(
                   make_error(parser_error::e_syntax,
                              current_token_,
-                             "ERR42 - Invalid range, Constraint: r0 <= r1"));
+                             "ERR45 - Invalid range, Constraint: r0 <= r1"));
                return false;
             }
          }
@@ -11254,17 +11457,26 @@ namespace exprtk
       inline expression_node_ptr parse_string()
       {
          const std::string symbol = current_token_.value;
+
+         if (!symbol_table_.is_conststr_stringvar(symbol))
+         {
+            set_error(
+               make_error(parser_error::e_syntax,
+                          current_token_,
+                          "ERR46 - Unknown string symbol"));
+            return error_node();
+         }
+
          expression_node_ptr result = symbol_table_.get_stringvar(symbol);
-         bool string_literal = false;
+
+         if (symbol_table_.is_constant_node(symbol))
+         {
+            result = expression_generator_(dynamic_cast<details::string_literal_node<T>*>(result)->str());
+         }
 
          if (symbol_name_caching_)
          {
             symbol_name_cache_.push_back(symbol);
-         }
-         if (symbol_table_.is_constant_node(symbol))
-         {
-            result = expression_generator_(dynamic_cast<details::string_literal_node<T>*>(result)->str());
-            string_literal = true;
          }
 
          if (peek_token_is(token_t::e_lsqrbracket))
@@ -11277,6 +11489,51 @@ namespace exprtk
                return error_node();
             }
             result = expression_generator_(dynamic_cast<details::stringvar_node<T>*>(result)->ref(),rp);
+            if (result)
+               rp.clear();
+         }
+         else
+            next_token();
+         return result;
+      }
+
+      inline expression_node_ptr parse_const_string()
+      {
+         const std::string const_str = current_token_.value;
+         expression_node_ptr result = expression_generator_(const_str);
+         if (peek_token_is(token_t::e_lsqrbracket))
+         {
+            next_token();
+            range_pack rp;
+            if (!parse_range(rp))
+            {
+               free_node(node_allocator_,result);
+               return error_node();
+            }
+
+            free_node(node_allocator_,result);
+
+            if (rp.n1_c.first && (rp.n1_c.second == std::numeric_limits<std::size_t>::max()))
+            {
+               rp.n1_c.second = const_str.size() - 1;
+            }
+
+            if (
+                (rp.n0_c.first && rp.n0_c.second >= const_str.size()) ||
+                (rp.n1_c.first && rp.n1_c.second >= const_str.size())
+               )
+            {
+               set_error(
+                  make_error(parser_error::e_syntax,
+                             current_token_,
+                             "ERR47 - Overflow in range for string: '" + const_str + "'[" +
+                             (rp.n0_c.first ? details::to_str(rp.n0_c.second) : "?") + ":" +
+                             (rp.n1_c.first ? details::to_str(rp.n1_c.second) : "?") + "]"));
+               return error_node();
+            }
+            result = expression_generator_(const_str,rp);
+            if (result)
+               rp.clear();
          }
          else
             next_token();
@@ -11298,7 +11555,7 @@ namespace exprtk
             set_error(
                make_error(parser_error::e_syntax,
                           current_token_,
-                          "ERR43 - Expected '(' for call to vararg function: " + vararg_function_name));
+                          "ERR48 - Expected '(' for call to vararg function: " + vararg_function_name));
             return error_node();
          }
 
@@ -11317,7 +11574,7 @@ namespace exprtk
                set_error(
                   make_error(parser_error::e_syntax,
                              current_token_,
-                             "ERR44 - Expected ',' for call to vararg function: " + vararg_function_name));
+                             "ERR49 - Expected ',' for call to vararg function: " + vararg_function_name));
                return error_node();
             }
          }
@@ -11380,7 +11637,7 @@ namespace exprtk
             set_error(
                make_error(parser_error::e_token,
                           current_token_,
-                          "ERR45 - Invalid special function[1]: " + current_token_.value));
+                          "ERR50 - Invalid special function[1]: " + current_token_.value));
             return error_node();
          }
 
@@ -11391,7 +11648,7 @@ namespace exprtk
             set_error(
                make_error(parser_error::e_token,
                           current_token_,
-                          "ERR46 - Invalid special function[2]: " + current_token_.value));
+                          "ERR51 - Invalid special function[2]: " + current_token_.value));
             return error_node();
          }
 
@@ -11473,7 +11730,7 @@ namespace exprtk
                            set_error(
                               make_error(parser_error::e_syntax,
                                          current_token_,
-                                         "ERR47 - Invalid number of parameters for function: " + symbol));
+                                         "ERR52 - Invalid number of parameters for function: " + symbol));
                            return error_node();
                          }
             }
@@ -11485,7 +11742,7 @@ namespace exprtk
                set_error(
                   make_error(parser_error::e_syntax,
                              current_token_,
-                             "ERR48 - Failed to generate node for function: '" + symbol + "'"));
+                             "ERR53 - Failed to generate node for function: '" + symbol + "'"));
                return error_node();
             }
          }
@@ -11505,7 +11762,7 @@ namespace exprtk
                set_error(
                   make_error(parser_error::e_syntax,
                              current_token_,
-                             "ERR49 - Failed to generate node for vararg function: '" + symbol + "'"));
+                             "ERR54 - Failed to generate node for vararg function: '" + symbol + "'"));
                return error_node();
             }
          }
@@ -11552,7 +11809,7 @@ namespace exprtk
                set_error(
                   make_error(parser_error::e_symtab,
                              current_token_,
-                             "ERR50 - Failed to create variable: '" + symbol + "'"));
+                             "ERR55 - Failed to create variable: '" + symbol + "'"));
 
                return error_node();
             }
@@ -11561,7 +11818,7 @@ namespace exprtk
          set_error(
             make_error(parser_error::e_syntax,
                        current_token_,
-                       "ERR51 - Undefined variable or function: '" + symbol + "'"));
+                       "ERR56 - Undefined variable or function: '" + symbol + "'"));
          return error_node();
       }
 
@@ -11614,7 +11871,7 @@ namespace exprtk
             set_error(
                make_error(parser_error::e_symtab,
                           current_token_,
-                          "ERR52 - Variable or function detected, yet symbol-table is invalid, Symbol: " + current_token_.value));
+                          "ERR57 - Variable or function detected, yet symbol-table is invalid, Symbol: " + current_token_.value));
             return error_node();
          }
       }
@@ -11641,9 +11898,7 @@ namespace exprtk
          #ifndef exprtk_disable_string_capabilities
          else if (token_t::e_string == current_token_.type)
          {
-            expression_node_ptr literal_exp = expression_generator_(current_token_.value);
-            next_token();
-            return literal_exp;
+            return parse_const_string();
          }
          #endif
          else if (token_t::e_lbracket == current_token_.type)
@@ -11689,7 +11944,7 @@ namespace exprtk
             set_error(
                make_error(parser_error::e_syntax,
                           current_token_,
-                          "ERR53 - Premature end of expression.[1]"));
+                          "ERR58 - Premature end of expression.[1]"));
             return error_node();
          }
          else
@@ -11697,7 +11952,7 @@ namespace exprtk
             set_error(
                make_error(parser_error::e_syntax,
                           current_token_,
-                          "ERR54 - Premature end of expression.[2]"));
+                          "ERR59 - Premature end of expression.[2]"));
             return error_node();
          }
       }
@@ -11867,6 +12122,11 @@ namespace exprtk
             return node_allocator_->allocate_rr<string_range_node_t>(s,rp);
          }
 
+         inline expression_node_ptr operator()(const std::string& s, range_pack& rp) const
+         {
+            return node_allocator_->allocate_tt<const_string_range_node_t>(s,rp);
+         }
+
          inline bool unary_optimizable(const details::operator_type& operation) const
          {
             return (details::e_abs   == operation) || (details::e_acos  == operation) ||
@@ -12014,15 +12274,16 @@ namespace exprtk
 
          inline std::string branch_to_id(expression_node_ptr branch)
          {
-            static const std::string null_str  ("(null)");
-            static const std::string const_str ("(c)"   );
-            static const std::string var_str   ("(v)"   );
-            static const std::string vov_str   ("(vov)" );
-            static const std::string cov_str   ("(cov)" );
-            static const std::string voc_str   ("(voc)" );
-            static const std::string str_str   ("(s)"   );
-            static const std::string strrng_str("(rngs)");
-            static const std::string cs_str    ("(cs)"  );
+            static const std::string null_str   ("(null)" );
+            static const std::string const_str  ("(c)"    );
+            static const std::string var_str    ("(v)"    );
+            static const std::string vov_str    ("(vov)"  );
+            static const std::string cov_str    ("(cov)"  );
+            static const std::string voc_str    ("(voc)"  );
+            static const std::string str_str    ("(s)"    );
+            static const std::string strrng_str ("(rngs)" );
+            static const std::string cs_str     ("(cs)"   );
+            static const std::string cstrrng_str("(crngs)");
 
             if (details::is_null_node(branch))
                return null_str;
@@ -12042,6 +12303,8 @@ namespace exprtk
                return cs_str;
             else if (details::is_string_range_node(branch))
                return strrng_str;
+            else if (details::is_const_string_range_node(branch))
+               return cstrrng_str;
             else if (details::is_t0ot1ot2_node(branch))
                return "(" + dynamic_cast<details::T0oT1oT2_base_node<T>*>(branch)->type_id() + ")";
             else if (details::is_t0ot1ot2ot3_node(branch))
@@ -12967,10 +13230,10 @@ namespace exprtk
 
          inline expression_node_ptr cardinal_pow_optimization(const T& v, const T& c)
          {
-            const bool not_recipricol = (c >= T(0.0));
+            const bool not_recipricol = (c >= T(0));
             const unsigned int p = static_cast<unsigned int>(std::abs(c));
             if (0 == p)
-               return node_allocator_->allocate_c<literal_node_t>(T(1.0));
+               return node_allocator_->allocate_c<literal_node_t>(T(1));
             else
             {
                if (not_recipricol)
@@ -12982,7 +13245,7 @@ namespace exprtk
 
          inline bool cardinal_pow_optimizable(const details::operator_type& operation, const T& c)
          {
-            return (details::e_pow == operation) && (std::abs(c) <= T(60.0)) && details::numeric::is_integer(c);
+            return (details::e_pow == operation) && (std::abs(c) <= T(60)) && details::numeric::is_integer(c);
          }
          #else
          inline expression_node_ptr cardinal_pow_optimization(T&, const T&)
@@ -15853,21 +16116,61 @@ namespace exprtk
          #undef unary_opr_switch_statements
 
          #ifndef exprtk_disable_string_capabilities
+
+         #define string_opr_switch_statements \
+         case_stmt(details::  e_lt ,details::   lt_op) \
+         case_stmt(details:: e_lte ,details::  lte_op) \
+         case_stmt(details::  e_gt ,details::   gt_op) \
+         case_stmt(details:: e_gte ,details::  gte_op) \
+         case_stmt(details::  e_eq ,details::   eq_op) \
+         case_stmt(details::  e_ne ,details::   ne_op) \
+         case_stmt(details::e_in   ,details::   in_op) \
+         case_stmt(details::e_like ,details:: like_op) \
+         case_stmt(details::e_ilike,details::ilike_op) \
+
+         template <typename T0, typename T1>
+         inline expression_node_ptr synthesize_str_xrox_expression_impl(const details::operator_type& opr, T0 s0, T1 s1, range_pack rp0)
+         {
+            switch (opr)
+            {
+               #define case_stmt(op0,op1) case op0 : return node_allocator_->allocate_ttt<typename details::str_xrox_node<Type,T0,T1,range_pack,op1<Type> >,T0,T1>(s0,s1,rp0);
+               string_opr_switch_statements
+               #undef case_stmt
+               default : return error_node();
+            }
+         }
+
+         template <typename T0, typename T1>
+         inline expression_node_ptr synthesize_str_xoxr_expression_impl(const details::operator_type& opr, T0 s0, T1 s1, range_pack rp1)
+         {
+            switch (opr)
+            {
+               #define case_stmt(op0,op1) case op0 : return node_allocator_->allocate_ttt<typename details::str_xoxr_node<Type,T0,T1,range_pack,op1<Type> >,T0,T1>(s0,s1,rp1);
+               string_opr_switch_statements
+               #undef case_stmt
+               default : return error_node();
+            }
+         }
+
+         template <typename T0, typename T1>
+         inline expression_node_ptr synthesize_str_xroxr_expression_impl(const details::operator_type& opr, T0 s0, T1 s1, range_pack rp0, range_pack rp1)
+         {
+            switch (opr)
+            {
+               #define case_stmt(op0,op1) case op0 : return node_allocator_->allocate_tttt<typename details::str_xroxr_node<Type,T0,T1,range_pack,op1<Type> >,T0,T1>(s0,s1,rp0,rp1);
+               string_opr_switch_statements
+               #undef case_stmt
+               default : return error_node();
+            }
+         }
+
          template <typename T0, typename T1>
          inline expression_node_ptr synthesize_sos_expression_impl(const details::operator_type& opr, T0 s0, T1 s1)
          {
             switch (opr)
             {
                #define case_stmt(op0,op1) case op0 : return node_allocator_->allocate_tt<typename details::sos_node<Type,T0,T1,op1<Type> >,T0,T1>(s0,s1);
-               case_stmt(details::e_lt   ,details::   lt_op)
-               case_stmt(details::e_lte  ,details::  lte_op)
-               case_stmt(details::e_gt   ,details::   gt_op)
-               case_stmt(details::e_gte  ,details::  gte_op)
-               case_stmt(details::e_eq   ,details::   eq_op)
-               case_stmt(details::e_ne   ,details::   ne_op)
-               case_stmt(details::e_in   ,details::   in_op)
-               case_stmt(details::e_like ,details:: like_op)
-               case_stmt(details::e_ilike,details::ilike_op)
+               string_opr_switch_statements
                #undef case_stmt
                default : return error_node();
             }
@@ -15880,26 +16183,6 @@ namespace exprtk
             return synthesize_sos_expression_impl<std::string&,std::string&>(opr,s0,s1);
          }
 
-         template <typename T0, typename T1>
-         inline expression_node_ptr synthesize_sros_expression_impl(const details::operator_type& opr, T0 s0, T1 s1, range_pack rp0)
-         {
-            switch (opr)
-            {
-               #define case_stmt(op0,op1) case op0 : return node_allocator_->allocate_ttt<typename details::sros_node<Type,T0,T1,range_pack,op1<Type> >,T0,T1>(s0,s1,rp0);
-               case_stmt(details::e_lt   ,details::   lt_op)
-               case_stmt(details::e_lte  ,details::  lte_op)
-               case_stmt(details::e_gt   ,details::   gt_op)
-               case_stmt(details::e_gte  ,details::  gte_op)
-               case_stmt(details::e_eq   ,details::   eq_op)
-               case_stmt(details::e_ne   ,details::   ne_op)
-               case_stmt(details::e_in   ,details::   in_op)
-               case_stmt(details::e_like ,details:: like_op)
-               case_stmt(details::e_ilike,details::ilike_op)
-               #undef case_stmt
-               default : return error_node();
-            }
-         }
-
          inline expression_node_ptr synthesize_sros_expression(const details::operator_type& opr, expression_node_ptr (&branch)[2])
          {
             std::string& s0 = dynamic_cast<details::string_range_node<Type,range_pack>*>(branch[0])->ref();
@@ -15907,27 +16190,7 @@ namespace exprtk
             range_pack rp0  = dynamic_cast<details::string_range_node<Type,range_pack>*>(branch[0])->range();
             dynamic_cast<details::string_range_node<Type,range_pack>*>(branch[0])->range_ref().clear();
             free_node(*node_allocator_,branch[0]);
-            return synthesize_sros_expression_impl<std::string&,std::string&>(opr,s0,s1,rp0);
-         }
-
-         template <typename T0, typename T1>
-         inline expression_node_ptr synthesize_sosr_expression_impl(const details::operator_type& opr, T0 s0, T1 s1, range_pack rp1)
-         {
-            switch (opr)
-            {
-               #define case_stmt(op0,op1) case op0 : return node_allocator_->allocate_ttt<typename details::sosr_node<Type,T0,T1,range_pack,op1<Type> >,T0,T1>(s0,s1,rp1);
-               case_stmt(details::e_lt   ,details::   lt_op)
-               case_stmt(details::e_lte  ,details::  lte_op)
-               case_stmt(details::e_gt   ,details::   gt_op)
-               case_stmt(details::e_gte  ,details::  gte_op)
-               case_stmt(details::e_eq   ,details::   eq_op)
-               case_stmt(details::e_ne   ,details::   ne_op)
-               case_stmt(details::e_in   ,details::   in_op)
-               case_stmt(details::e_like ,details:: like_op)
-               case_stmt(details::e_ilike,details::ilike_op)
-               #undef case_stmt
-               default : return error_node();
-            }
+            return synthesize_str_xrox_expression_impl<std::string&,std::string&>(opr,s0,s1,rp0);
          }
 
          inline expression_node_ptr synthesize_sosr_expression(const details::operator_type& opr, expression_node_ptr (&branch)[2])
@@ -15937,27 +16200,18 @@ namespace exprtk
             range_pack rp1  = dynamic_cast<details::string_range_node<Type,range_pack>*>(branch[1])->range();
             dynamic_cast<details::string_range_node<Type,range_pack>*>(branch[1])->range_ref().clear();
             free_node(*node_allocator_,branch[1]);
-            return synthesize_sosr_expression_impl<std::string&,std::string&>(opr,s0,s1,rp1);
+            return synthesize_str_xoxr_expression_impl<std::string&,std::string&>(opr,s0,s1,rp1);
          }
 
-         template <typename T0, typename T1>
-         inline expression_node_ptr synthesize_srosr_expression_impl(const details::operator_type& opr, T0 s0, T1 s1, range_pack rp0, range_pack rp1)
+
+         inline expression_node_ptr synthesize_socsr_expression(const details::operator_type& opr, expression_node_ptr (&branch)[2])
          {
-            switch (opr)
-            {
-               #define case_stmt(op0,op1) case op0 : return node_allocator_->allocate_tttt<typename details::srosr_node<Type,T0,T1,range_pack,op1<Type> >,T0,T1>(s0,s1,rp0,rp1);
-               case_stmt(details::e_lt   ,details::   lt_op)
-               case_stmt(details::e_lte  ,details::  lte_op)
-               case_stmt(details::e_gt   ,details::   gt_op)
-               case_stmt(details::e_gte  ,details::  gte_op)
-               case_stmt(details::e_eq   ,details::   eq_op)
-               case_stmt(details::e_ne   ,details::   ne_op)
-               case_stmt(details::e_in   ,details::   in_op)
-               case_stmt(details::e_like ,details:: like_op)
-               case_stmt(details::e_ilike,details::ilike_op)
-               #undef case_stmt
-               default : return error_node();
-            }
+            std::string& s0 = dynamic_cast<details::stringvar_node<Type>*>(branch[0])->ref();
+            std::string  s1 = dynamic_cast<details::const_string_range_node<Type,range_pack>*>(branch[1])->str();
+            range_pack rp1  = dynamic_cast<details::const_string_range_node<Type,range_pack>*>(branch[1])->range();
+            dynamic_cast<details::const_string_range_node<Type,range_pack>*>(branch[1])->range_ref().clear();
+            free_node(*node_allocator_,branch[1]);
+            return synthesize_str_xoxr_expression_impl<std::string&,const std::string>(opr,s0,s1,rp1);
          }
 
          inline expression_node_ptr synthesize_srosr_expression(const details::operator_type& opr, expression_node_ptr (&branch)[2])
@@ -15968,9 +16222,9 @@ namespace exprtk
             range_pack rp1  = dynamic_cast<details::string_range_node<Type,range_pack>*>(branch[1])->range();
             dynamic_cast<details::string_range_node<Type,range_pack>*>(branch[0])->range_ref().clear();
             dynamic_cast<details::string_range_node<Type,range_pack>*>(branch[1])->range_ref().clear();
-            free_node(*node_allocator_,branch[0]);
-            free_node(*node_allocator_,branch[1]);
-            return synthesize_srosr_expression_impl<std::string&,std::string&>(opr,s0,s1,rp0,rp1);
+            details::free_node(*node_allocator_,branch[0]);
+            details::free_node(*node_allocator_,branch[1]);
+            return synthesize_str_xroxr_expression_impl<std::string&,std::string&>(opr,s0,s1,rp0,rp1);
          }
 
          inline expression_node_ptr synthesize_socs_expression(const details::operator_type& opr, expression_node_ptr (&branch)[2])
@@ -15987,6 +16241,41 @@ namespace exprtk
             std::string& s1 = dynamic_cast<     details::stringvar_node<Type>*>(branch[1])->ref();
             details::free_node(*node_allocator_,branch[0]);
             return synthesize_sos_expression_impl<const std::string,std::string&>(opr,s0,s1);
+         }
+
+         inline expression_node_ptr synthesize_csosr_expression(const details::operator_type& opr, expression_node_ptr (&branch)[2])
+         {
+            std::string  s0 = dynamic_cast<details::string_literal_node<Type>*>         (branch[0])->str();
+            std::string& s1 = dynamic_cast<details::string_range_node<Type,range_pack>*>(branch[1])->ref();
+            range_pack rp1  = dynamic_cast<details::string_range_node<Type,range_pack>*>(branch[1])->range();
+            dynamic_cast<details::string_range_node<Type,range_pack>*>(branch[1])->range_ref().clear();
+            details::free_node(*node_allocator_,branch[0]);
+            details::free_node(*node_allocator_,branch[1]);
+            return synthesize_str_xoxr_expression_impl<const std::string,std::string&>(opr,s0,s1,rp1);
+         }
+
+         inline expression_node_ptr synthesize_srocs_expression(const details::operator_type& opr, expression_node_ptr (&branch)[2])
+         {
+            std::string& s0 = dynamic_cast<details::string_range_node<Type,range_pack>*>(branch[0])->ref();
+            std::string  s1 = dynamic_cast<details::string_literal_node<Type>*>         (branch[1])->str();
+            range_pack rp0  = dynamic_cast<details::string_range_node<Type,range_pack>*>(branch[0])->range();
+            dynamic_cast<details::string_range_node<Type,range_pack>*>(branch[0])->range_ref().clear();
+            details::free_node(*node_allocator_,branch[0]);
+            details::free_node(*node_allocator_,branch[1]);
+            return synthesize_str_xrox_expression_impl<std::string&,const std::string>(opr,s0,s1,rp0);
+         }
+
+         inline expression_node_ptr synthesize_srocsr_expression(const details::operator_type& opr, expression_node_ptr (&branch)[2])
+         {
+            std::string& s0 = dynamic_cast<details::string_range_node<Type,range_pack>*>      (branch[0])->ref();
+            std::string  s1 = dynamic_cast<details::const_string_range_node<Type,range_pack>*>(branch[1])->str();
+            range_pack rp0  = dynamic_cast<details::string_range_node<Type,range_pack>*>      (branch[0])->range();
+            range_pack rp1  = dynamic_cast<details::const_string_range_node<Type,range_pack>*>(branch[1])->range();
+            dynamic_cast<details::string_range_node<Type,range_pack>*>      (branch[0])->range_ref().clear();
+            dynamic_cast<details::const_string_range_node<Type,range_pack>*>(branch[1])->range_ref().clear();
+            details::free_node(*node_allocator_,branch[0]);
+            details::free_node(*node_allocator_,branch[1]);
+            return synthesize_str_xroxr_expression_impl<std::string&,const std::string>(opr,s0,s1,rp0,rp1);
          }
 
          inline expression_node_ptr synthesize_csocs_expression(const details::operator_type& opr, expression_node_ptr (&branch)[2])
@@ -16013,6 +16302,62 @@ namespace exprtk
             details::free_all_nodes(*node_allocator_,branch);
             return result;
          }
+
+         inline expression_node_ptr synthesize_csocsr_expression(const details::operator_type& opr, expression_node_ptr (&branch)[2])
+         {
+            const std::string s0 = dynamic_cast<details::string_literal_node<Type>*>               (branch[0])->str();
+                  std::string s1 = dynamic_cast<details::const_string_range_node<Type,range_pack>*>(branch[1])->str();
+            range_pack rp1       = dynamic_cast<details::const_string_range_node<Type,range_pack>*>(branch[1])->range();
+            dynamic_cast<details::const_string_range_node<Type,range_pack>*>(branch[1])->range_ref().clear();
+            free_node(*node_allocator_,branch[0]);
+            free_node(*node_allocator_,branch[1]);
+            return synthesize_str_xoxr_expression_impl<const std::string,const std::string>(opr,s0,s1,rp1);
+         }
+
+         inline expression_node_ptr synthesize_csros_expression(const details::operator_type& opr, expression_node_ptr (&branch)[2])
+         {
+            std::string  s0 = dynamic_cast<details::const_string_range_node<Type,range_pack>*>(branch[0])->str();
+            std::string& s1 = dynamic_cast<details::stringvar_node<Type>*>                    (branch[1])->ref();
+            range_pack rp0  = dynamic_cast<details::const_string_range_node<Type,range_pack>*>(branch[0])->range();
+            dynamic_cast<details::const_string_range_node<Type,range_pack>*>(branch[0])->range_ref().clear();
+            free_node(*node_allocator_,branch[0]);
+            return synthesize_str_xrox_expression_impl<const std::string,std::string&>(opr,s0,s1,rp0);
+         }
+
+         inline expression_node_ptr synthesize_csrosr_expression(const details::operator_type& opr, expression_node_ptr (&branch)[2])
+         {
+            const std::string  s0 = dynamic_cast<details::const_string_range_node<Type,range_pack>*>(branch[0])->str();
+                  std::string& s1 = dynamic_cast<details::string_range_node<Type,range_pack>*>      (branch[1])->ref();
+            range_pack rp0        = dynamic_cast<details::const_string_range_node<Type,range_pack>*>(branch[0])->range();
+            range_pack rp1        = dynamic_cast<details::string_range_node<Type,range_pack>*>      (branch[1])->range();
+            dynamic_cast<details::const_string_range_node<Type,range_pack>*>(branch[0])->range_ref().clear();
+            dynamic_cast<details::string_range_node<Type,range_pack>*>      (branch[1])->range_ref().clear();
+            free_node(*node_allocator_,branch[0]);
+            free_node(*node_allocator_,branch[1]);
+            return synthesize_str_xroxr_expression_impl<const std::string,std::string&>(opr,s0,s1,rp0,rp1);
+         }
+
+         inline expression_node_ptr synthesize_csrocs_expression(const details::operator_type& opr, expression_node_ptr (&branch)[2])
+         {
+            std::string       s0 = dynamic_cast<details::const_string_range_node<Type,range_pack>*>(branch[0])->str();
+            const std::string s1 = dynamic_cast<details::string_literal_node<Type>*>               (branch[1])->str();
+            range_pack rp0  = dynamic_cast<details::const_string_range_node<Type,range_pack>*>(branch[0])->range();
+            dynamic_cast<details::const_string_range_node<Type,range_pack>*>(branch[0])->range_ref().clear();
+            details::free_all_nodes(*node_allocator_,branch);
+            return synthesize_str_xrox_expression_impl<const std::string,std::string>(opr,s0,s1,rp0);
+         }
+
+         inline expression_node_ptr synthesize_csrocsr_expression(const details::operator_type& opr, expression_node_ptr (&branch)[2])
+         {
+            std::string s0 = dynamic_cast<details::const_string_range_node<Type,range_pack>*>(branch[0])->str();
+            std::string s1 = dynamic_cast<details::const_string_range_node<Type,range_pack>*>(branch[1])->str();
+            range_pack rp0 = dynamic_cast<details::const_string_range_node<Type,range_pack>*>(branch[0])->range();
+            range_pack rp1 = dynamic_cast<details::const_string_range_node<Type,range_pack>*>(branch[1])->range();
+            dynamic_cast<details::const_string_range_node<Type,range_pack>*>(branch[0])->range_ref().clear();
+            dynamic_cast<details::const_string_range_node<Type,range_pack>*>(branch[1])->range_ref().clear();
+            details::free_all_nodes(*node_allocator_,branch);
+            return synthesize_str_xroxr_expression_impl<const std::string,const std::string>(opr,s0,s1,rp0,rp1);
+         }
          #endif
 
          #ifndef exprtk_disable_string_capabilities
@@ -16023,21 +16368,43 @@ namespace exprtk
                details::free_all_nodes(*node_allocator_,branch);
                return error_node();
             }
-            else if (details::is_string_node(branch[0]))
+
+            const bool b0_is_s   = details::is_string_node            (branch[0]);
+            const bool b0_is_cs  = details::is_const_string_node      (branch[0]);
+            const bool b0_is_sr  = details::is_string_range_node      (branch[0]);
+            const bool b0_is_csr = details::is_const_string_range_node(branch[0]);
+            const bool b1_is_s   = details::is_string_node            (branch[1]);
+            const bool b1_is_cs  = details::is_const_string_node      (branch[1]);
+            const bool b1_is_sr  = details::is_string_range_node      (branch[1]);
+            const bool b1_is_csr = details::is_const_string_range_node(branch[1]);
+
+            if (b0_is_s)
             {
-                    if (details::is_string_node(branch[1]))       return synthesize_sos_expression(opr,branch);
-               else if (details::is_const_string_node(branch[1])) return synthesize_socs_expression(opr,branch);
-               else if (details::is_string_range_node(branch[1])) return synthesize_sosr_expression(opr,branch);
+                    if (b1_is_s  ) return synthesize_sos_expression  (opr,branch);
+               else if (b1_is_cs ) return synthesize_socs_expression (opr,branch);
+               else if (b1_is_sr ) return synthesize_sosr_expression (opr,branch);
+               else if (b1_is_csr) return synthesize_socsr_expression(opr,branch);
             }
-            else if (details::is_const_string_node(branch[0]))
+            else if (b0_is_cs)
             {
-                    if (details::is_string_node(branch[1]))       return synthesize_csos_expression(opr,branch);
-               else if (details::is_const_string_node(branch[1])) return synthesize_csocs_expression(opr,branch);
+                    if (b1_is_s  ) return synthesize_csos_expression  (opr,branch);
+               else if (b1_is_cs ) return synthesize_csocs_expression (opr,branch);
+               else if (b1_is_sr ) return synthesize_csosr_expression (opr,branch);
+               else if (b1_is_csr) return synthesize_csocsr_expression(opr,branch);
             }
-            else if (details::is_string_range_node(branch[0]))
+            else if (b0_is_sr)
             {
-                    if (details::is_string_node(branch[1]))       return synthesize_sros_expression(opr,branch);
-                    if (details::is_string_range_node(branch[1])) return synthesize_srosr_expression(opr,branch);
+                    if (b1_is_s  ) return synthesize_sros_expression  (opr,branch);
+               else if (b1_is_sr ) return synthesize_srosr_expression (opr,branch);
+               else if (b1_is_cs ) return synthesize_srocs_expression (opr,branch);
+               else if (b1_is_csr) return synthesize_srocsr_expression(opr,branch);
+            }
+            else if (b0_is_csr)
+            {
+                    if (b1_is_s  ) return synthesize_csros_expression  (opr,branch);
+               else if (b1_is_sr ) return synthesize_csrosr_expression (opr,branch);
+               else if (b1_is_cs ) return synthesize_csrocs_expression (opr,branch);
+               else if (b1_is_csr) return synthesize_csrocsr_expression(opr,branch);
             }
             return error_node();
          }
@@ -16450,15 +16817,15 @@ namespace exprtk
                       const std::size_t number_of_intervals = 1000000)
    {
       if (r0 > r1) return T(0);
-      T h = (r1 - r0) / (T(2.0) * number_of_intervals);
+      T h = (r1 - r0) / (T(2) * number_of_intervals);
       T total_area = T(0);
       for (std::size_t i = 0; i < number_of_intervals; ++i)
       {
-         x = r0 + T(2.0) * i * h;
+         x = r0 + T(2) * i * h;
          T y0 = e.value(); x += h;
          T y1 = e.value(); x += h;
          T y2 = e.value(); x += h;
-         total_area += h * (y0 + T(4.0) * y1 + y2) / T(3.0);
+         total_area += h * (y0 + T(4) * y1 + y2) / T(3);
       }
       return total_area;
    }
@@ -16491,16 +16858,16 @@ namespace exprtk
                        const T& h = T(0.00000001))
    {
       T x_init = x;
-      x = x_init + T(2.0) * h;
+      x = x_init + T(2) * h;
       T y0 = e.value();
       x = x_init + h;
       T y1 = e.value();
       x = x_init - h;
       T y2 = e.value();
-      x = x_init - T(2.0) * h;
+      x = x_init - T(2) * h;
       T y3 = e.value();
       x = x_init;
-      return (-y0 + T(8.0) * (y1 - y2) + y3) / (T(12.0) * h);
+      return (-y0 + T(8) * (y1 - y2) + y3) / (T(12) * h);
    }
 
    template <typename T>
@@ -16510,16 +16877,16 @@ namespace exprtk
    {
       T y = e.value();
       T x_init = x;
-      x = x_init + T(2.0) * h;
+      x = x_init + T(2) * h;
       T y0 = e.value();
       x = x_init + h;
       T y1 = e.value();
       x = x_init - h;
       T y2 = e.value();
-      x = x_init - T(2.0) * h;
+      x = x_init - T(2) * h;
       T y3 = e.value();
       x = x_init;
-      return (-y0 + T(16.0) * (y1 + y2) - T(30.0) * y - y3) / (T(12.0) * h * h);
+      return (-y0 + T(16) * (y1 + y2) - T(30) * y - y3) / (T(12) * h * h);
    }
 
    template <typename T>
@@ -16528,16 +16895,16 @@ namespace exprtk
                              const T& h = T(0.0001))
    {
       T x_init = x;
-      x = x_init + T(2.0) * h;
+      x = x_init + T(2) * h;
       T y0 = e.value();
       x = x_init + h;
       T y1 = e.value();
       x = x_init - h;
       T y2 = e.value();
-      x = x_init - T(2.0) * h;
+      x = x_init - T(2) * h;
       T y3 = e.value();
       x = x_init;
-      return (y0 + T(2.0) * (y2 - y1) - y3) / (T(2.0) * h * h * h);
+      return (y0 + T(2) * (y2 - y1) - y3) / (T(2) * h * h * h);
    }
 
    template <typename T>
@@ -17776,10 +18143,10 @@ namespace exprtk
       {
          static inline T process(T& x, T& y, expression<T>& expression)
          {
-            static const T lower_bound = T(-20.0);
-            static const T upper_bound = T(+20.0);
+            static const T lower_bound = T(-20);
+            static const T upper_bound = T(+20);
             T delta = T(0.1);
-            T total = T(0.0);
+            T total = T(0);
             for (x = lower_bound; x <= upper_bound; x += delta)
             {
                for (y = lower_bound; y <= upper_bound; y += delta)
@@ -17801,66 +18168,66 @@ namespace exprtk
          for (std::size_t i = 0; i < 10000; ++i)
          {
             T v = T(123.456 + i);
-                 if (details::numeric::nequal(details::numeric::fast_exp<T, 1>::result(v),std::pow(v,T( 1.0)))) return false;
-            else if (details::numeric::nequal(details::numeric::fast_exp<T, 2>::result(v),std::pow(v,T( 2.0)))) return false;
-            else if (details::numeric::nequal(details::numeric::fast_exp<T, 3>::result(v),std::pow(v,T( 3.0)))) return false;
-            else if (details::numeric::nequal(details::numeric::fast_exp<T, 4>::result(v),std::pow(v,T( 4.0)))) return false;
-            else if (details::numeric::nequal(details::numeric::fast_exp<T, 5>::result(v),std::pow(v,T( 5.0)))) return false;
-            else if (details::numeric::nequal(details::numeric::fast_exp<T, 6>::result(v),std::pow(v,T( 6.0)))) return false;
-            else if (details::numeric::nequal(details::numeric::fast_exp<T, 7>::result(v),std::pow(v,T( 7.0)))) return false;
-            else if (details::numeric::nequal(details::numeric::fast_exp<T, 8>::result(v),std::pow(v,T( 8.0)))) return false;
-            else if (details::numeric::nequal(details::numeric::fast_exp<T, 9>::result(v),std::pow(v,T( 9.0)))) return false;
-            else if (details::numeric::nequal(details::numeric::fast_exp<T,10>::result(v),std::pow(v,T(10.0)))) return false;
-            else if (details::numeric::nequal(details::numeric::fast_exp<T,11>::result(v),std::pow(v,T(11.0)))) return false;
-            else if (details::numeric::nequal(details::numeric::fast_exp<T,12>::result(v),std::pow(v,T(12.0)))) return false;
-            else if (details::numeric::nequal(details::numeric::fast_exp<T,13>::result(v),std::pow(v,T(13.0)))) return false;
-            else if (details::numeric::nequal(details::numeric::fast_exp<T,14>::result(v),std::pow(v,T(14.0)))) return false;
-            else if (details::numeric::nequal(details::numeric::fast_exp<T,15>::result(v),std::pow(v,T(15.0)))) return false;
-            else if (details::numeric::nequal(details::numeric::fast_exp<T,16>::result(v),std::pow(v,T(16.0)))) return false;
-            else if (details::numeric::nequal(details::numeric::fast_exp<T,17>::result(v),std::pow(v,T(17.0)))) return false;
-            else if (details::numeric::nequal(details::numeric::fast_exp<T,18>::result(v),std::pow(v,T(18.0)))) return false;
-            else if (details::numeric::nequal(details::numeric::fast_exp<T,19>::result(v),std::pow(v,T(19.0)))) return false;
-            else if (details::numeric::nequal(details::numeric::fast_exp<T,20>::result(v),std::pow(v,T(20.0)))) return false;
-            else if (details::numeric::nequal(details::numeric::fast_exp<T,21>::result(v),std::pow(v,T(21.0)))) return false;
-            else if (details::numeric::nequal(details::numeric::fast_exp<T,22>::result(v),std::pow(v,T(22.0)))) return false;
-            else if (details::numeric::nequal(details::numeric::fast_exp<T,23>::result(v),std::pow(v,T(23.0)))) return false;
-            else if (details::numeric::nequal(details::numeric::fast_exp<T,24>::result(v),std::pow(v,T(24.0)))) return false;
-            else if (details::numeric::nequal(details::numeric::fast_exp<T,25>::result(v),std::pow(v,T(25.0)))) return false;
-            else if (details::numeric::nequal(details::numeric::fast_exp<T,26>::result(v),std::pow(v,T(26.0)))) return false;
-            else if (details::numeric::nequal(details::numeric::fast_exp<T,27>::result(v),std::pow(v,T(27.0)))) return false;
-            else if (details::numeric::nequal(details::numeric::fast_exp<T,28>::result(v),std::pow(v,T(28.0)))) return false;
-            else if (details::numeric::nequal(details::numeric::fast_exp<T,29>::result(v),std::pow(v,T(29.0)))) return false;
-            else if (details::numeric::nequal(details::numeric::fast_exp<T,30>::result(v),std::pow(v,T(30.0)))) return false;
-            else if (details::numeric::nequal(details::numeric::fast_exp<T,31>::result(v),std::pow(v,T(31.0)))) return false;
-            else if (details::numeric::nequal(details::numeric::fast_exp<T,32>::result(v),std::pow(v,T(32.0)))) return false;
-            else if (details::numeric::nequal(details::numeric::fast_exp<T,33>::result(v),std::pow(v,T(33.0)))) return false;
-            else if (details::numeric::nequal(details::numeric::fast_exp<T,34>::result(v),std::pow(v,T(34.0)))) return false;
-            else if (details::numeric::nequal(details::numeric::fast_exp<T,35>::result(v),std::pow(v,T(35.0)))) return false;
-            else if (details::numeric::nequal(details::numeric::fast_exp<T,36>::result(v),std::pow(v,T(36.0)))) return false;
-            else if (details::numeric::nequal(details::numeric::fast_exp<T,37>::result(v),std::pow(v,T(37.0)))) return false;
-            else if (details::numeric::nequal(details::numeric::fast_exp<T,38>::result(v),std::pow(v,T(38.0)))) return false;
-            else if (details::numeric::nequal(details::numeric::fast_exp<T,39>::result(v),std::pow(v,T(39.0)))) return false;
-            else if (details::numeric::nequal(details::numeric::fast_exp<T,40>::result(v),std::pow(v,T(40.0)))) return false;
-            else if (details::numeric::nequal(details::numeric::fast_exp<T,41>::result(v),std::pow(v,T(41.0)))) return false;
-            else if (details::numeric::nequal(details::numeric::fast_exp<T,42>::result(v),std::pow(v,T(42.0)))) return false;
-            else if (details::numeric::nequal(details::numeric::fast_exp<T,43>::result(v),std::pow(v,T(43.0)))) return false;
-            else if (details::numeric::nequal(details::numeric::fast_exp<T,44>::result(v),std::pow(v,T(44.0)))) return false;
-            else if (details::numeric::nequal(details::numeric::fast_exp<T,45>::result(v),std::pow(v,T(45.0)))) return false;
-            else if (details::numeric::nequal(details::numeric::fast_exp<T,46>::result(v),std::pow(v,T(46.0)))) return false;
-            else if (details::numeric::nequal(details::numeric::fast_exp<T,47>::result(v),std::pow(v,T(47.0)))) return false;
-            else if (details::numeric::nequal(details::numeric::fast_exp<T,48>::result(v),std::pow(v,T(48.0)))) return false;
-            else if (details::numeric::nequal(details::numeric::fast_exp<T,49>::result(v),std::pow(v,T(49.0)))) return false;
-            else if (details::numeric::nequal(details::numeric::fast_exp<T,50>::result(v),std::pow(v,T(50.0)))) return false;
-            else if (details::numeric::nequal(details::numeric::fast_exp<T,51>::result(v),std::pow(v,T(51.0)))) return false;
-            else if (details::numeric::nequal(details::numeric::fast_exp<T,52>::result(v),std::pow(v,T(52.0)))) return false;
-            else if (details::numeric::nequal(details::numeric::fast_exp<T,53>::result(v),std::pow(v,T(53.0)))) return false;
-            else if (details::numeric::nequal(details::numeric::fast_exp<T,54>::result(v),std::pow(v,T(54.0)))) return false;
-            else if (details::numeric::nequal(details::numeric::fast_exp<T,55>::result(v),std::pow(v,T(55.0)))) return false;
-            else if (details::numeric::nequal(details::numeric::fast_exp<T,56>::result(v),std::pow(v,T(56.0)))) return false;
-            else if (details::numeric::nequal(details::numeric::fast_exp<T,57>::result(v),std::pow(v,T(57.0)))) return false;
-            else if (details::numeric::nequal(details::numeric::fast_exp<T,58>::result(v),std::pow(v,T(58.0)))) return false;
-            else if (details::numeric::nequal(details::numeric::fast_exp<T,59>::result(v),std::pow(v,T(59.0)))) return false;
-            else if (details::numeric::nequal(details::numeric::fast_exp<T,60>::result(v),std::pow(v,T(60.0)))) return false;
+                 if (details::numeric::nequal(details::numeric::fast_exp<T, 1>::result(v),std::pow(v,T( 1)))) return false;
+            else if (details::numeric::nequal(details::numeric::fast_exp<T, 2>::result(v),std::pow(v,T( 2)))) return false;
+            else if (details::numeric::nequal(details::numeric::fast_exp<T, 3>::result(v),std::pow(v,T( 3)))) return false;
+            else if (details::numeric::nequal(details::numeric::fast_exp<T, 4>::result(v),std::pow(v,T( 4)))) return false;
+            else if (details::numeric::nequal(details::numeric::fast_exp<T, 5>::result(v),std::pow(v,T( 5)))) return false;
+            else if (details::numeric::nequal(details::numeric::fast_exp<T, 6>::result(v),std::pow(v,T( 6)))) return false;
+            else if (details::numeric::nequal(details::numeric::fast_exp<T, 7>::result(v),std::pow(v,T( 7)))) return false;
+            else if (details::numeric::nequal(details::numeric::fast_exp<T, 8>::result(v),std::pow(v,T( 8)))) return false;
+            else if (details::numeric::nequal(details::numeric::fast_exp<T, 9>::result(v),std::pow(v,T( 9)))) return false;
+            else if (details::numeric::nequal(details::numeric::fast_exp<T,10>::result(v),std::pow(v,T(10)))) return false;
+            else if (details::numeric::nequal(details::numeric::fast_exp<T,11>::result(v),std::pow(v,T(11)))) return false;
+            else if (details::numeric::nequal(details::numeric::fast_exp<T,12>::result(v),std::pow(v,T(12)))) return false;
+            else if (details::numeric::nequal(details::numeric::fast_exp<T,13>::result(v),std::pow(v,T(13)))) return false;
+            else if (details::numeric::nequal(details::numeric::fast_exp<T,14>::result(v),std::pow(v,T(14)))) return false;
+            else if (details::numeric::nequal(details::numeric::fast_exp<T,15>::result(v),std::pow(v,T(15)))) return false;
+            else if (details::numeric::nequal(details::numeric::fast_exp<T,16>::result(v),std::pow(v,T(16)))) return false;
+            else if (details::numeric::nequal(details::numeric::fast_exp<T,17>::result(v),std::pow(v,T(17)))) return false;
+            else if (details::numeric::nequal(details::numeric::fast_exp<T,18>::result(v),std::pow(v,T(18)))) return false;
+            else if (details::numeric::nequal(details::numeric::fast_exp<T,19>::result(v),std::pow(v,T(19)))) return false;
+            else if (details::numeric::nequal(details::numeric::fast_exp<T,20>::result(v),std::pow(v,T(20)))) return false;
+            else if (details::numeric::nequal(details::numeric::fast_exp<T,21>::result(v),std::pow(v,T(21)))) return false;
+            else if (details::numeric::nequal(details::numeric::fast_exp<T,22>::result(v),std::pow(v,T(22)))) return false;
+            else if (details::numeric::nequal(details::numeric::fast_exp<T,23>::result(v),std::pow(v,T(23)))) return false;
+            else if (details::numeric::nequal(details::numeric::fast_exp<T,24>::result(v),std::pow(v,T(24)))) return false;
+            else if (details::numeric::nequal(details::numeric::fast_exp<T,25>::result(v),std::pow(v,T(25)))) return false;
+            else if (details::numeric::nequal(details::numeric::fast_exp<T,26>::result(v),std::pow(v,T(26)))) return false;
+            else if (details::numeric::nequal(details::numeric::fast_exp<T,27>::result(v),std::pow(v,T(27)))) return false;
+            else if (details::numeric::nequal(details::numeric::fast_exp<T,28>::result(v),std::pow(v,T(28)))) return false;
+            else if (details::numeric::nequal(details::numeric::fast_exp<T,29>::result(v),std::pow(v,T(29)))) return false;
+            else if (details::numeric::nequal(details::numeric::fast_exp<T,30>::result(v),std::pow(v,T(30)))) return false;
+            else if (details::numeric::nequal(details::numeric::fast_exp<T,31>::result(v),std::pow(v,T(31)))) return false;
+            else if (details::numeric::nequal(details::numeric::fast_exp<T,32>::result(v),std::pow(v,T(32)))) return false;
+            else if (details::numeric::nequal(details::numeric::fast_exp<T,33>::result(v),std::pow(v,T(33)))) return false;
+            else if (details::numeric::nequal(details::numeric::fast_exp<T,34>::result(v),std::pow(v,T(34)))) return false;
+            else if (details::numeric::nequal(details::numeric::fast_exp<T,35>::result(v),std::pow(v,T(35)))) return false;
+            else if (details::numeric::nequal(details::numeric::fast_exp<T,36>::result(v),std::pow(v,T(36)))) return false;
+            else if (details::numeric::nequal(details::numeric::fast_exp<T,37>::result(v),std::pow(v,T(37)))) return false;
+            else if (details::numeric::nequal(details::numeric::fast_exp<T,38>::result(v),std::pow(v,T(38)))) return false;
+            else if (details::numeric::nequal(details::numeric::fast_exp<T,39>::result(v),std::pow(v,T(39)))) return false;
+            else if (details::numeric::nequal(details::numeric::fast_exp<T,40>::result(v),std::pow(v,T(40)))) return false;
+            else if (details::numeric::nequal(details::numeric::fast_exp<T,41>::result(v),std::pow(v,T(41)))) return false;
+            else if (details::numeric::nequal(details::numeric::fast_exp<T,42>::result(v),std::pow(v,T(42)))) return false;
+            else if (details::numeric::nequal(details::numeric::fast_exp<T,43>::result(v),std::pow(v,T(43)))) return false;
+            else if (details::numeric::nequal(details::numeric::fast_exp<T,44>::result(v),std::pow(v,T(44)))) return false;
+            else if (details::numeric::nequal(details::numeric::fast_exp<T,45>::result(v),std::pow(v,T(45)))) return false;
+            else if (details::numeric::nequal(details::numeric::fast_exp<T,46>::result(v),std::pow(v,T(46)))) return false;
+            else if (details::numeric::nequal(details::numeric::fast_exp<T,47>::result(v),std::pow(v,T(47)))) return false;
+            else if (details::numeric::nequal(details::numeric::fast_exp<T,48>::result(v),std::pow(v,T(48)))) return false;
+            else if (details::numeric::nequal(details::numeric::fast_exp<T,49>::result(v),std::pow(v,T(49)))) return false;
+            else if (details::numeric::nequal(details::numeric::fast_exp<T,50>::result(v),std::pow(v,T(50)))) return false;
+            else if (details::numeric::nequal(details::numeric::fast_exp<T,51>::result(v),std::pow(v,T(51)))) return false;
+            else if (details::numeric::nequal(details::numeric::fast_exp<T,52>::result(v),std::pow(v,T(52)))) return false;
+            else if (details::numeric::nequal(details::numeric::fast_exp<T,53>::result(v),std::pow(v,T(53)))) return false;
+            else if (details::numeric::nequal(details::numeric::fast_exp<T,54>::result(v),std::pow(v,T(54)))) return false;
+            else if (details::numeric::nequal(details::numeric::fast_exp<T,55>::result(v),std::pow(v,T(55)))) return false;
+            else if (details::numeric::nequal(details::numeric::fast_exp<T,56>::result(v),std::pow(v,T(56)))) return false;
+            else if (details::numeric::nequal(details::numeric::fast_exp<T,57>::result(v),std::pow(v,T(57)))) return false;
+            else if (details::numeric::nequal(details::numeric::fast_exp<T,58>::result(v),std::pow(v,T(58)))) return false;
+            else if (details::numeric::nequal(details::numeric::fast_exp<T,59>::result(v),std::pow(v,T(59)))) return false;
+            else if (details::numeric::nequal(details::numeric::fast_exp<T,60>::result(v),std::pow(v,T(60)))) return false;
             else
                return true;
          }
@@ -17982,8 +18349,8 @@ namespace exprtk
    namespace information
    {
       static const char* library = "Mathematical Expression Toolkit";
-      static const char* version = "2.718281828459045235360287471352";
-      static const char* date    = "20130330";
+      static const char* version = "2.718281828459045235360287471352662";
+      static const char* date    = "20130707";
 
       static inline std::string data()
       {
