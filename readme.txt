@@ -15,10 +15,10 @@ operations, functions and processes:
 
 (0) Basic operators: +, -, *, /, %, ^
 
-(1) Functions:       abs, avg, ceil, clamp, erf, erfc, exp, floor,
-                     frac, inrange, log, log10, log1p, log2, logn,
-                     max, min, root, round, roundn, sgn, sqrt, sum,
-                     trunc
+(1) Functions:       abs, avg, ceil, clamp, erf, erfc, exp, expm1,
+                     floor, frac, inrange, log, log10, log1p, log2,
+                     logn, max, min, root, round, roundn, sgn, sqrt,
+                     sum, trunc
 
 (2) Trigonometry:    acos, asin, atan, atan2, cos, cosh, cot, csc,
                      deg2grad, deg2rad, grad2deg, hypot, rad2deg,
@@ -219,6 +219,9 @@ include path (e.g: /usr/include/).
 +----------+---------------------------------------------------------+
 | exp      | e to the power of x                                     |
 +----------+---------------------------------------------------------+
+| expm1    | e to the power of x minus 1, where x is very small.     |
+|          | (eg: expm1(x))                                          |
++----------+---------------------------------------------------------+
 | floor    | Largest integer that is less than or equal to x.        |
 +----------+---------------------------------------------------------+
 | frac     | Fractional portion of x                                 |
@@ -331,10 +334,10 @@ include path (e.g: /usr/include/).
 |          | 3. x[ : ] == 'abcdefgh'                                 |
 |          | 4. x[4/2:3+2] == x[2:5] == 'cdef'                       |
 |          |                                                         |
-|          | Note: Both r0 and r1 are assumed to be integers. They   |
-|          | may also be the result of an expression, in the event   |
-|          | they have fractional components truncation will be      |
-|          | performed. (eg: 1.67 -> 1)                              |
+|          | Note: Both r0 and r1 are assumed to be integers, where  |
+|          | r0 <= r1. They may also be the result of an expression, |
+|          | in the event they have fractional components truncation |
+|          | will be performed. (eg: 1.67 -> 1)                      |
 +----------+---------------------------------------------------------+
 
 (6) Control Structures
@@ -517,7 +520,7 @@ correctly optimize such expressions for a given architecture.
       that have been defined prior to their own definition.
 
  (17) Recursive calls made from within composited functions will have
-      a stack size bound by the stack of executing architecture.
+      a stack size bound by the stack of the executing architecture.
 
  (18) Expressions may contain any of the following comment styles:
       1. // .... \n

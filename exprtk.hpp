@@ -18,7 +18,7 @@
  * (03) 1 - sin(2 * x) + cos(pi / y)                              *
  * (04) a * exp(2 * t) + c                                        *
  * (05) if(((x + 2) == 3) and ((y + 5) <= 9),1 + w, 2 / z)        *
- * (06) if(avg(x,y) <= x + y,x - y,x * y) + 2 * pi / x            *
+ * (06) if(avg(x,y) <= x + y, x - y, x * y) + 2 * pi / x          *
  * (07) z := x + sin(2 * pi / y)                                  *
  * (08) u := 2 * (pi * z) / (w := x + cos(y / pi))                *
  * (09) clamp(-1,sin(2 * pi * x) + cos(y / 2 * pi),+1)            *
@@ -39,6 +39,7 @@
 #include <cmath>
 #include <cstdio>
 #include <deque>
+#include <iterator>
 #include <limits>
 #include <list>
 #include <map>
@@ -174,6 +175,48 @@ namespace exprtk
          return result;
       }
 
+      inline void cleanup_espaces(std::string& s)
+      {
+         std::string::iterator itr1 = s.begin();
+         std::string::iterator itr2 = s.begin();
+         std::string::iterator end =    s.end();
+         std::size_t removal_count = 0;
+         while (end != itr1)
+         {
+            bool bypass = false;
+            if ('\\' == (*itr1))
+            {
+               bypass = true;
+               ++removal_count;
+               if (end == ++itr1)
+                  break;
+               else if ('\\' != (*itr1))
+               {
+                  switch (*itr1)
+                  {
+                     case 'n' : (*itr1) = '\n'; break;
+                     case 'r' : (*itr1) = '\r'; break;
+                     case 't' : (*itr1) = '\t'; break;
+                  }
+                  continue;
+               }
+               else
+                  bypass = false;
+            }
+
+            if (!bypass)
+            {
+               if (itr1 != itr2)
+               {
+                  (*itr2) = (*itr1);
+               }
+               ++itr1;
+               ++itr2;
+            }
+         }
+         s.resize(s.size() - removal_count);
+      }
+
       class build_string
       {
       public:
@@ -238,12 +281,13 @@ namespace exprtk
                                   {
                                      "abs", "acos", "and", "asin", "atan", "atan2", "avg", "case", "ceil",
                                      "clamp", "cos", "cosh", "cot", "csc", "default", "deg2grad", "deg2rad",
-                                     "equal", "erf", "erfc", "exp", "false", "floor", "for", "frac", "grad2deg",
-                                     "hypot", "if", "ilike", "in", "inrange", "like", "log", "log10", "log2",
-                                     "logn", "log1p", "mand", "max", "min", "mod", "mor", "mul", "nand", "nor",
-                                     "not", "not_equal", "null", "or", "pow", "rad2deg", "repeat", "root", "round",
-                                     "roundn", "sec", "sgn", "shl", "shr", "sin", "sinh", "sqrt", "sum", "switch",
-                                     "tan", "tanh", "true", "trunc", "until", "while", "xnor", "xor", "&", "|"
+                                     "equal", "erf", "erfc", "exp", "expm1", "false", "floor", "for", "frac",
+                                     "grad2deg", "hypot", "if", "ilike", "in", "inrange", "like", "log", "log10",
+                                     "log2", "logn", "log1p", "mand", "max", "min", "mod", "mor", "mul", "nand",
+                                     "nor", "not", "not_equal", "null", "or", "pow", "rad2deg", "repeat", "root",
+                                     "round", "roundn", "sec", "sgn", "shl", "shr", "sin", "sinh", "sqrt", "sum",
+                                     "switch", "tan", "tanh", "true", "trunc", "until", "while", "xnor", "xor",
+                                     "&", "|"
                                   };
 
       static const std::size_t reserved_symbols_size = sizeof(reserved_symbols) / sizeof(std::string);
@@ -439,6 +483,22 @@ namespace exprtk
             inline T equal_impl(const T v0, const T v1, int_type_tag)
             {
                return (v0 == v1) ? 1 : 0;
+            }
+
+            template <typename T>
+            inline T expm1_impl(const T v, real_type_tag)
+            {
+               //return std::expm1<T>(v);
+               if (std::abs(v) < T(0.00001))
+                  return v + (T(0.5) * v * v);
+               else
+                  return std::exp(v) - T(1);
+            }
+
+            template <typename T>
+            inline T expm1_impl(const T v, int_type_tag)
+            {
+               return T(std::exp<double>(v)) - T(1);
             }
 
             template <typename T>
@@ -1000,6 +1060,7 @@ namespace exprtk
          exprtk_define_unary_function(cos  )
          exprtk_define_unary_function(cosh )
          exprtk_define_unary_function(exp  )
+         exprtk_define_unary_function(expm1)
          exprtk_define_unary_function(floor)
          exprtk_define_unary_function(log  )
          exprtk_define_unary_function(log10)
@@ -1450,6 +1511,14 @@ namespace exprtk
             value.assign(begin,end);
             if (base_begin)
                position = std::distance(base_begin,begin);
+            return *this;
+         }
+
+         inline token& set_string(const std::string& s, const std::size_t p)
+         {
+            type     = e_string;
+            value    = s;
+            position = p;
             return *this;
          }
 
@@ -1943,12 +2012,14 @@ namespace exprtk
             }
             ++s_itr_;
 
+            bool escaped_found = false;
             bool escaped = false;
 
             while (!is_end(s_itr_))
             {
                if ('\\' == *s_itr_)
                {
+                  escaped_found = true;
                   escaped = true;
                   ++s_itr_;
                   continue;
@@ -1970,7 +2041,15 @@ namespace exprtk
                return;
             }
 
-            t.set_string(begin,s_itr_,base_itr_);
+            if (!escaped_found)
+               t.set_string(begin,s_itr_,base_itr_);
+            else
+            {
+               std::string parsed_string(begin,s_itr_);
+               details::cleanup_espaces(parsed_string);
+               t.set_string(parsed_string, std::distance(base_itr_,begin));
+            }
+
             token_list_.push_back(t);
             ++s_itr_;
             return;
@@ -2839,16 +2918,16 @@ namespace exprtk
          e_mand    , e_mor     , e_scand   , e_scor    ,
          e_shr     , e_shl     , e_abs     , e_acos    ,
          e_asin    , e_atan    , e_ceil    , e_cos     ,
-         e_cosh    , e_exp     , e_floor   , e_log     ,
-         e_log10   , e_log2    , e_log1p   , e_logn    ,
-         e_neg     , e_pos     , e_round   , e_roundn  ,
-         e_root    , e_sqrt    , e_sin     , e_sinh    ,
-         e_sec     , e_csc     , e_tan     , e_tanh    ,
-         e_cot     , e_clamp   , e_inrange , e_sgn     ,
-         e_r2d     , e_d2r     , e_d2g     , e_g2d     ,
-         e_hypot   , e_notl    , e_erf     , e_erfc    ,
-         e_frac    , e_trunc   , e_assign  , e_in      ,
-         e_like    , e_ilike   , e_multi   ,
+         e_cosh    , e_exp     , e_expm1   , e_floor   ,
+         e_log     , e_log10   , e_log2    , e_log1p   ,
+         e_logn    , e_neg     , e_pos     , e_round   ,
+         e_roundn  , e_root    , e_sqrt    , e_sin     ,
+         e_sinh    , e_sec     , e_csc     , e_tan     ,
+         e_tanh    , e_cot     , e_clamp   , e_inrange ,
+         e_sgn     , e_r2d     , e_d2r     , e_d2g     ,
+         e_g2d     , e_hypot   , e_notl    , e_erf     ,
+         e_erfc    , e_frac    , e_trunc   , e_assign  ,
+         e_in      , e_like    , e_ilike   , e_multi   ,
 
          // Do not add new functions/operators after this point.
          e_sf00 = 1000, e_sf01 = 1001, e_sf02 = 1002, e_sf03 = 1003,
@@ -2918,6 +2997,7 @@ namespace exprtk
                   case e_cos   : return numeric::cos  (arg);
                   case e_cosh  : return numeric::cosh (arg);
                   case e_exp   : return numeric::exp  (arg);
+                  case e_expm1 : return numeric::expm1(arg);
                   case e_floor : return numeric::floor(arg);
                   case e_log   : return numeric::log  (arg);
                   case e_log10 : return numeric::log10(arg);
@@ -2955,6 +3035,7 @@ namespace exprtk
                {
                   case e_abs   : return numeric::abs  (arg);
                   case e_exp   : return numeric::exp  (arg);
+                  case e_expm1 : return numeric::expm1(arg);
                   case e_log   : return numeric::log  (arg);
                   case e_log10 : return numeric::log10(arg);
                   case e_log2  : return numeric::log2 (arg);
@@ -3078,19 +3159,20 @@ namespace exprtk
             e_in           , e_like         , e_ilike        , e_inranges     ,
             e_ipow         , e_ipowinv      , e_abs          , e_acos         ,
             e_asin         , e_atan         , e_ceil         , e_cos          ,
-            e_cosh         , e_exp          , e_floor        , e_log          ,
-            e_log10        , e_log2         , e_log1p        , e_neg          ,
-            e_pos          , e_round        , e_sin          , e_sinh         ,
-            e_sqrt         , e_tan          , e_tanh         , e_cot          ,
-            e_sec          , e_csc          , e_r2d          , e_d2r          ,
-            e_d2g          , e_g2d          , e_notl         , e_sgn          ,
-            e_erf          , e_erfc         , e_frac         , e_trunc        ,
-            e_uvouv        , e_vov          , e_cov          , e_voc          ,
-            e_vob          , e_bov          , e_cob          , e_boc          ,
-            e_vovov        , e_vovoc        , e_vocov        , e_covov        ,
-            e_covoc        , e_vovovov      , e_vovovoc      , e_vovocov      ,
-            e_vocovov      , e_covovov      , e_covocov      , e_vocovoc      ,
-            e_covovoc      , e_vococov      , e_sf3ext       , e_sf4ext
+            e_cosh         , e_exp          , e_expm1        , e_floor        ,
+            e_log          , e_log10        , e_log2         , e_log1p        ,
+            e_neg          , e_pos          , e_round        , e_sin          ,
+            e_sinh         , e_sqrt         , e_tan          , e_tanh         ,
+            e_cot          , e_sec          , e_csc          , e_r2d          ,
+            e_d2r          , e_d2g          , e_g2d          , e_notl         ,
+            e_sgn          , e_erf          , e_erfc         , e_frac         ,
+            e_trunc        , e_uvouv        , e_vov          , e_cov          ,
+            e_voc          , e_vob          , e_bov          , e_cob          ,
+            e_boc          , e_vovov        , e_vovoc        , e_vocov        ,
+            e_covov        , e_covoc        , e_vovovov      , e_vovovoc      ,
+            e_vovocov      , e_vocovov      , e_covovov      , e_covocov      ,
+            e_vocovoc      , e_covovoc      , e_vococov      , e_sf3ext       ,
+            e_sf4ext
          };
 
          typedef T value_type;
@@ -4609,27 +4691,28 @@ namespace exprtk
                          expression_ptr branch0,
                          expression_ptr branch1)
          : binary_node<T>(operation,branch0,branch1),
-           is_lefthand_variable_(is_variable_node(binary_node<T>::branch_[0].first))
-         {}
+           var_node_ptr_(0)
+         {
+            if (is_variable_node(binary_node<T>::branch_[0].first))
+            {
+               var_node_ptr_ = dynamic_cast<variable_node<T>*>(binary_node<T>::branch_[0].first);
+            }
+         }
 
          inline T value() const
          {
-            if (is_lefthand_variable_)
+            if (var_node_ptr_)
             {
-               variable_node<T>* var_node_ptr = dynamic_cast<variable_node<T>*>(binary_node<T>::branch_[0].first);
-               if (var_node_ptr)
-               {
-                  T& result = var_node_ptr->ref();
-                  result = binary_node<T>::branch_[1].first->value();
-                  return result;
-               }
+               T& result = var_node_ptr_->ref();
+               result = binary_node<T>::branch_[1].first->value();
+               return result;
             }
             return std::numeric_limits<T>::quiet_NaN();
          }
 
       private:
 
-         bool is_lefthand_variable_;
+         variable_node<T>* var_node_ptr_;
       };
 
       template <typename T>
@@ -5092,6 +5175,7 @@ namespace exprtk
       exprtk_def_unary_op(erf  )
       exprtk_def_unary_op(erfc )
       exprtk_def_unary_op(exp  )
+      exprtk_def_unary_op(expm1)
       exprtk_def_unary_op(floor)
       exprtk_def_unary_op(frac )
       exprtk_def_unary_op(g2d  )
@@ -8246,6 +8330,7 @@ namespace exprtk
          register_op(      "cos",e_cos     , 1)
          register_op(     "cosh",e_cosh    , 1)
          register_op(      "exp",e_exp     , 1)
+         register_op(    "expm1",e_expm1   , 1)
          register_op(    "floor",e_floor   , 1)
          register_op(      "log",e_log     , 1)
          register_op(    "log10",e_log10   , 1)
@@ -10219,9 +10304,10 @@ namespace exprtk
             return 0;
          if (symbol_name_cache_.empty())
             return 0;
-         std::copy(symbol_name_cache_.begin(),
-                   symbol_name_cache_.end(),
-                   std::back_inserter(symbols_list));
+         std::sort(symbol_name_cache_.begin(),symbol_name_cache_.end());
+         std::unique_copy(symbol_name_cache_.begin(),
+                          symbol_name_cache_.end(),
+                          std::back_inserter(symbols_list));
          return symbol_name_cache_.size();
       }
 
@@ -11454,6 +11540,14 @@ namespace exprtk
          return true;
       }
 
+      inline void cache_symbol(const std::string& symbol)
+      {
+         if (symbol_name_caching_)
+         {
+            symbol_name_cache_.push_back(symbol);
+         }
+      }
+
       inline expression_node_ptr parse_string()
       {
          const std::string symbol = current_token_.value;
@@ -11474,10 +11568,7 @@ namespace exprtk
             result = expression_generator_(dynamic_cast<details::string_literal_node<T>*>(result)->str());
          }
 
-         if (symbol_name_caching_)
-         {
-            symbol_name_cache_.push_back(symbol);
-         }
+         cache_symbol(symbol);
 
          if (peek_token_is(token_t::e_lsqrbracket))
          {
@@ -11677,10 +11768,7 @@ namespace exprtk
          expression_node_ptr variable = symbol_table_.get_variable(symbol);
          if (variable)
          {
-            if (symbol_name_caching_)
-            {
-               symbol_name_cache_.push_back(symbol);
-            }
+            cache_symbol(symbol);
             if (symbol_table_.is_constant_node(symbol))
             {
                variable = expression_generator_(variable->value());
@@ -11793,10 +11881,7 @@ namespace exprtk
                   expression_node_ptr variable = symbol_table_.get_variable(symbol);
                   if (variable)
                   {
-                     if (symbol_name_caching_)
-                     {
-                        symbol_name_cache_.push_back(symbol);
-                     }
+                     cache_symbol(symbol);
                      if (symbol_table_.is_constant_node(symbol))
                      {
                         variable = expression_generator_(variable->value());
@@ -12133,19 +12218,20 @@ namespace exprtk
                    (details::e_asin  == operation) || (details::e_atan  == operation) ||
                    (details::e_ceil  == operation) || (details::e_cos   == operation) ||
                    (details::e_cosh  == operation) || (details::e_exp   == operation) ||
-                   (details::e_floor == operation) || (details::e_log   == operation) ||
-                   (details::e_log10 == operation) || (details::e_log2  == operation) ||
-                   (details::e_log1p == operation) || (details::e_neg   == operation) ||
-                   (details::e_pos   == operation) || (details::e_round == operation) ||
-                   (details::e_sin   == operation) || (details::e_sinh  == operation) ||
-                   (details::e_sqrt  == operation) || (details::e_tan   == operation) ||
-                   (details::e_tanh  == operation) || (details::e_cot   == operation) ||
-                   (details::e_sec   == operation) || (details::e_csc   == operation) ||
-                   (details::e_r2d   == operation) || (details::e_d2r   == operation) ||
-                   (details::e_d2g   == operation) || (details::e_g2d   == operation) ||
-                   (details::e_notl  == operation) || (details::e_sgn   == operation) ||
-                   (details::e_erf   == operation) || (details::e_erfc  == operation) ||
-                   (details::e_frac  == operation) || (details::e_trunc == operation);
+                   (details::e_expm1 == operation) || (details::e_floor == operation) ||
+                   (details::e_log   == operation) || (details::e_log10 == operation) ||
+                   (details::e_log2  == operation) || (details::e_log1p == operation) ||
+                   (details::e_neg   == operation) || (details::e_pos   == operation) ||
+                   (details::e_round == operation) || (details::e_sin   == operation) ||
+                   (details::e_sinh  == operation) || (details::e_sqrt  == operation) ||
+                   (details::e_tan   == operation) || (details::e_tanh  == operation) ||
+                   (details::e_cot   == operation) || (details::e_sec   == operation) ||
+                   (details::e_csc   == operation) || (details::e_r2d   == operation) ||
+                   (details::e_d2r   == operation) || (details::e_d2g   == operation) ||
+                   (details::e_g2d   == operation) || (details::e_notl  == operation) ||
+                   (details::e_sgn   == operation) || (details::e_erf   == operation) ||
+                   (details::e_erfc  == operation) || (details::e_frac  == operation) ||
+                   (details::e_trunc == operation);
          }
 
          inline bool sf3_optimizable(const std::string sf3id, trinary_functor_t& tfunc)
@@ -12673,6 +12759,7 @@ namespace exprtk
          case_stmt(details::  e_cos,details::  cos_op) \
          case_stmt(details:: e_cosh,details:: cosh_op) \
          case_stmt(details::  e_exp,details::  exp_op) \
+         case_stmt(details::e_expm1,details::expm1_op) \
          case_stmt(details::e_floor,details::floor_op) \
          case_stmt(details::  e_log,details::  log_op) \
          case_stmt(details::e_log10,details::log10_op) \
@@ -16652,6 +16739,7 @@ namespace exprtk
          register_unary_op(details::  e_cos,details::  cos_op)
          register_unary_op(details:: e_cosh,details:: cosh_op)
          register_unary_op(details::  e_exp,details::  exp_op)
+         register_unary_op(details::e_expm1,details::expm1_op)
          register_unary_op(details::e_floor,details::floor_op)
          register_unary_op(details::  e_log,details::  log_op)
          register_unary_op(details::e_log10,details::log10_op)

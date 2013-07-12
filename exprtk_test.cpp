@@ -1270,6 +1270,7 @@ inline bool run_test01()
                               test_xy<T>("0 * (sin  (x) + sinh (y) + sqrt (x) + tan  (y))",T(1.0),T(1.0),T(0.0)),
                               test_xy<T>("0 * (sec  (x) + csc  (y) + tanh (x) + cot  (y))",T(1.0),T(1.0),T(0.0)),
                               test_xy<T>("0 * (erf  (x) + erfc (y) + sgn  (y) + frac (y))",T(1.0),T(1.0),T(0.0)),
+                              test_xy<T>("0 * (log1p(x) + expm1(y)                      )",T(1.0),T(1.0),T(0.0)),
                               test_xy<T>("0 * (deg2grad(x) + grad2deg(y) + rad2deg(x) + deg2rad(y))",T(1.0),T(1.0),T(0.0)),
                               test_xy<T>("switch { case (x <= y) : (y - x); default: 1.12345; }",T(1.0),T(2.0),T(1.0)),
                               test_xy<T>("switch { case (x >  y) : 0; case (x <= y) : (y - x); default: 1.12345; }",T(1.0),T(2.0),T(1.0)),
@@ -1582,7 +1583,9 @@ inline bool run_test02()
                               test_ab<T>("{[('!@#$%^&*([{}])-=')]} != [{(')]}{[(*&^%$#@!')}]","","",T(1.0)),
                               test_ab<T>("'!@#$%^&*([{}])-=' == '!@#$%^&*([{}])-='","","",T(1.0)),
                               test_ab<T>("('!@#$%^&*([{}])-=') == ('!@#$%^&*([{}])-=')","","",T(1.0)),
-                              test_ab<T>("{[('!@#$%^&*([{}])-=')]} == [{('!@#$%^&*([{}])-=')}]","","",T(1.0))
+                              test_ab<T>("{[('!@#$%^&*([{}])-=')]} == [{('!@#$%^&*([{}])-=')}]","","",T(1.0)),
+                              test_ab<T>("'1234\\\\abc\nxyz\r890\tqaz\\'567' == a","1234\\abc\nxyz\r890\tqaz'567","",T(1.0)),
+                              test_ab<T>("a == '1234\\\\abc\nxyz\r890\tqaz\\'567'","1234\\abc\nxyz\r890\tqaz'567","",T(1.0))
                            };
 
    static const std::size_t test_list_size = sizeof(test_list) / sizeof(test_ab<T>);
@@ -2710,6 +2713,60 @@ inline bool run_test10()
             st1.remove_variable("y0");
             st1.remove_variable("z0");
          }
+      }
+   }
+
+
+   {
+      T a = T(1);
+      T b = T(2);
+      T c = T(3);
+      T d = T(4);
+
+      std::string e = "string";
+
+      exprtk::symbol_table<T> symbol_table;
+
+      symbol_table.add_variable ("a",a);
+      symbol_table.add_variable ("b",b);
+      symbol_table.add_variable ("c",c);
+      symbol_table.add_variable ("d",d);
+      symbol_table.add_stringvar("e",e);
+
+      expression_t expression;
+      expression.register_symbol_table(symbol_table);
+
+      std::string expression_string = "(e == '1234') and (sin(a) + c) / b";
+
+      std::deque<std::string> variable_list;
+
+      {
+         exprtk::parser<T> parser;
+         parser.cache_symbols() = true;
+         if (!parser.compile(expression_string,expression))
+         {
+            printf("run_test10() - Error: %s   Expression: %s\n",
+                   parser.error().c_str(),
+                   expression_string.c_str());
+            return false;
+         }
+         parser.expression_symbols(variable_list);
+      }
+
+      std::deque<std::string> expected_variable_list;
+      expected_variable_list.push_back("a");
+      expected_variable_list.push_back("b");
+      expected_variable_list.push_back("c");
+      expected_variable_list.push_back("e");
+
+      bool result = (variable_list.size() == expected_variable_list.size()) &&
+                     std::equal(variable_list.begin(),
+                                variable_list.end(),
+                                expected_variable_list.begin());
+      if (!result)
+      {
+         printf("run_test10() - Failed variable list comparison.(5)\n");
+         return false;
       }
    }
 
@@ -4187,7 +4244,7 @@ inline bool run_test20()
 {
    typedef exprtk::expression<T> expression_t;
 
-   for (std::size_t i = 0; i < 400; ++i)
+   for (std::size_t i = 0; i < 100; ++i)
    {
       exprtk::symbol_table<T> symbol_table;
       symbol_table.add_constants();
