@@ -23,6 +23,7 @@ operations, functions and processes:
 (2) Trigonometry:    acos, asin, atan, atan2, cos, cosh, cot, csc,
                      deg2grad, deg2rad, grad2deg, hypot, rad2deg,
                      sec, sin, sinh, tan, tanh
+
 (3) Equalities &
     Inequalities:    =, ==, <>, !=, <, <=, >, >=
 
@@ -47,21 +48,21 @@ The  following  is  a  short listing  of  the types  of  mathematical
 expressions that can be parsed and evaluated using the ExprTk library.
 
 (01) sqrt(1 - (x^2))
-(02) clamp(-1,sin(2 * pi * x) + cos(y / 2 * pi),+1)
-(03) sin(2 * x)
+(02) clamp(-1, sin(2 * pi * x) + cos(y / 2 * pi), +1)
+(03) sin(2.34e-3 * x)
 (04) if(((x + 2) == 3) and ((y + 5) <= 9),1 + w, 2 / z)
 (05) inrange(-2,m,+2) == if(({-2 <= m} and [m <= +2]),1,0)
 (06) ({1/1}*[1/2]+(1/3))-{1/4}^[1/5]+(1/6)-({1/7}+[1/8]*(1/9))
-(07) a * exp(2 * t) + c
-(08) z := x + sin(2 * pi / y)
-(09) u := 2 * (pi * z) / (w := x + cos(y / pi))
+(07) a * exp(2.2 / 3.3 * t) + c
+(08) z := x + sin(2.567 * pi / y)
+(09) u := 2.123 * (pi * z) / (w := x + cos(y / pi))
 (10) 2x + 3y + 4z + 5w == 2 * x + 3 * y + 4 * z + 5 * w
-(11) 3(x + y) / 2 + 1 == 3 * (x + y) / 2 + 1
-(12) (x + y)3 + 1 / 4 == (x + y) * 3 + 1 / 4
-(13) (x + y)z + 1 / 2 == (x + y) * z + 1 / 2
-(14) (sin(x/pi)cos(2y) + 1)==(sin(x / pi) * cos(2 * y) + 1)
+(11) 3(x + y) / 2.9 + 1.234e+12 == 3 * (x + y) / 2.9 + 1.234e+12
+(12) (x + y)3.3 + 1 / 4.5 == (x + y) * 3.3 + 1 / 4.5
+(13) (x + y)z + 1.1 / 2.7 == (x + y) * z + 1.1 / 2.7
+(14) (sin(x / pi) cos(2y) + 1) == (sin(x / pi) * cos(2 * y) + 1)
 (15) 25x^5 - 35x^4 - 15x^3 + 40x^2 - 15x + 1
-(16) if (avg(x,y) <= x + y, x - y, x * y) + 2 * pi / x
+(16) if (avg(x,y) <= x + y, x - y, x * y) + 2.345 * pi / x
 (17) fib_i := fib_i + (x := y + 0 * (fib_i := x + (y := fib_i)))
 (18) while (x <= 100) { x := x + 1 }
 (19) x <= 'abc123' and (y in 'AString') or ('1x2y3z' != z)
@@ -103,7 +104,7 @@ include path (e.g: /usr/include/).
 
 [07 - COMPILER COMPATIBILITY]
 (*) GNU Compiler Collection (4.1+)
-(*) Intel® C++ Compiler (9.x+)
+(*) Intel C++ Compiler (9.x+)
 (*) Clang/LLVM (1.1+)
 (*) PGI C++ (10.x+)
 (*) Microsoft Visual Studio C++ Compiler (8.1+)
@@ -171,7 +172,7 @@ include path (e.g: /usr/include/).
 +----------+---------------------------------------------------------+
 | mor      | Multi-input logical OR, True if at least one of the     |
 |          | inputs are true. Left to right short-circuiting of      |
-|          | expressions. (eg: mand(x > y,z < w,u or v,w and x))     |
+|          | expressions. (eg: mor(x > y,z < w,u or v,w and x))      |
 +----------+---------------------------------------------------------+
 | nand     | Logical NAND, True only if either x or y is false.      |
 |          | (eg: x nand y)                                          |

@@ -763,7 +763,7 @@ namespace exprtk
             inline T erf_impl(T v, real_type_tag)
             {
                #if defined(_WIN32) || defined(__WIN32__) || defined(WIN32)
-               //Credits: Abramowitz & Stegun Equations 7.1.25–28
+               //Credits: Abramowitz & Stegun Equations 7.1.25-28
                const T t = T(1) / (T(1) + T(0.5) * std::abs(v));
                static const T c[] = {
                                       T( 1.26551223), T(1.00002368),
@@ -10458,7 +10458,7 @@ namespace exprtk
 
       inline expression_node_ptr parse_expression(precedence_level precedence = e_level00)
       {
-         expression_node_ptr expr = parse_branch();
+         expression_node_ptr expr = parse_branch(precedence);
 
          if (0 == expr)
          {
@@ -11961,7 +11961,7 @@ namespace exprtk
          }
       }
 
-      inline expression_node_ptr parse_branch()
+      inline expression_node_ptr parse_branch(precedence_level precedence = e_level00)
       {
          if (token_t::e_number == current_token_.type)
          {
@@ -12017,7 +12017,11 @@ namespace exprtk
          else if (token_t::e_sub == current_token_.type)
          {
             next_token();
-            return expression_generator_(details::e_neg,parse_expression(e_level09));
+            return expression_generator_(details::e_neg,
+                                         // Was the previous operation exponentiation?
+                                         (e_level12 == precedence) ?
+                                         parse_branch    (e_level09) :
+                                         parse_expression(e_level09));
          }
          else if (token_t::e_add == current_token_.type)
          {
