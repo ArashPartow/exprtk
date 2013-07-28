@@ -134,9 +134,6 @@ include path (e.g: /usr/include/).
 |  :=      | Assign the value of x to y. (eg: y := x)                |
 |          | Where y is a variable type.                             |
 +----------+---------------------------------------------------------+
-|  <=>     | Swap the values of x and y. (eg: x <=> y)               |
-|          | Where both x and y are variables.                       |
-+----------+---------------------------------------------------------+
 
 (1) Equalities & Inequalities
 +----------+---------------------------------------------------------+
@@ -144,7 +141,7 @@ include path (e.g: /usr/include/).
 +----------+---------------------------------------------------------+
 | == or =  | True only if x is strictly equal to y. (eg: x == y)     |
 +----------+---------------------------------------------------------+
-| <> or != | True only if x does not equal y (eg: x <> y or x != y)  |
+| <> or != | True only if x does not equal y. (eg: x <> y or x != y) |
 +----------+---------------------------------------------------------+
 |  <       | True only if x is less than y. (eg: x < y)              |
 +----------+---------------------------------------------------------+
@@ -152,7 +149,7 @@ include path (e.g: /usr/include/).
 +----------+---------------------------------------------------------+
 |  >       | True only if x is greater than y. (eg: x > y)           |
 +----------+---------------------------------------------------------+
-|  >=      | True only if x greater than or equal to y (eg: x >= y)  |
+|  >=      | True only if x greater than or equal to y. (eg: x >= y) |
 +----------+---------------------------------------------------------+
 
 (2) Boolean Operations
@@ -214,29 +211,29 @@ include path (e.g: /usr/include/).
 +----------+---------------------------------------------------------+
 | equal    | Equality test between x and y using normalized epsilon  |
 +----------+---------------------------------------------------------+
-| erf      | Error function of x                                     |
+| erf      | Error function of x.                                    |
 +----------+---------------------------------------------------------+
-| erfc     | Complimentary error function of x                       |
+| erfc     | Complimentary error function of x.                      |
 +----------+---------------------------------------------------------+
-| exp      | e to the power of x                                     |
+| exp      | e to the power of x.                                    |
 +----------+---------------------------------------------------------+
 | expm1    | e to the power of x minus 1, where x is very small.     |
 |          | (eg: expm1(x))                                          |
 +----------+---------------------------------------------------------+
 | floor    | Largest integer that is less than or equal to x.        |
 +----------+---------------------------------------------------------+
-| frac     | Fractional portion of x                                 |
+| frac     | Fractional portion of x.                                |
 +----------+---------------------------------------------------------+
 | hypot    | Hypotenuse of x and y (eg: hypot(x,y) = sqrt(x*x + y*y))|
 +----------+---------------------------------------------------------+
-| log      | Natural logarithm of x                                  |
+| log      | Natural logarithm of x.                                 |
 +----------+---------------------------------------------------------+
-| log10    | Base 10 logarithm of x                                  |
+| log10    | Base 10 logarithm of x.                                 |
 +----------+---------------------------------------------------------+
 | log1p    | Natural logarithm of 1 + x, where x is very small.      |
 |          | (eg: log1p(x))                                          |
 +----------+---------------------------------------------------------+
-| log2     | Base 2 logarithm of x                                   |
+| log2     | Base 2 logarithm of x.                                  |
 +----------+---------------------------------------------------------+
 | logn     | Base N logarithm of x (eg: logn(1235,8))                |
 |          | where n > 0 and is an integer.                          |
@@ -266,7 +263,7 @@ include path (e.g: /usr/include/).
 | sum      | Sum of all the inputs.                                  |
 |          | (eg: sum(x,y,z,w,u,v,t) == (x + y + z + w + u + v + t)) |
 +----------+---------------------------------------------------------+
-| trunc    | Integer portion of x                                    |
+| trunc    | Integer portion of x.                                   |
 +----------+---------------------------------------------------------+
 
 (4) Trigonometry Functions
@@ -282,38 +279,38 @@ include path (e.g: /usr/include/).
 | atan2    | Arc tangent of (x/y) expressed in radians. [-pi,+pi]    |
 |          | eg: atan2(x,y)                                          |
 +----------+---------------------------------------------------------+
-| cos      | Cosine of x                                             |
+| cos      | Cosine of x.                                            |
 +----------+---------------------------------------------------------+
-| cosh     | Hyperbolic cosine of x                                  |
+| cosh     | Hyperbolic cosine of x.                                 |
 +----------+---------------------------------------------------------+
-| cot      | Cotangent of x                                          |
+| cot      | Cotangent of x.                                         |
 +----------+---------------------------------------------------------+
-| csc      | Cosecant of x                                           |
+| csc      | Cosecant of x.                                          |
 +----------+---------------------------------------------------------+
-| sec      | Secant of x                                             |
+| sec      | Secant of x.                                            |
 +----------+---------------------------------------------------------+
-| sin      | Sine of x                                               |
+| sin      | Sine of x.                                              |
 +----------+---------------------------------------------------------+
-| sinh     | Hyperbolic sine of x                                    |
+| sinh     | Hyperbolic sine of x.                                   |
 +----------+---------------------------------------------------------+
-| tan      | Tangent of x                                            |
+| tan      | Tangent of x.                                           |
 +----------+---------------------------------------------------------+
-| tanh     | Hyperbolic tangent of x                                 |
+| tanh     | Hyperbolic tangent of x.                                |
 +----------+---------------------------------------------------------+
-| deg2rad  | Convert x from degrees to radians                       |
+| deg2rad  | Convert x from degrees to radians.                      |
 +----------+---------------------------------------------------------+
-| deg2grad | Convert x from degrees to gradians                      |
+| deg2grad | Convert x from degrees to gradians.                     |
 +----------+---------------------------------------------------------+
-| rad2deg  | Convert x from radians to degrees                       |
+| rad2deg  | Convert x from radians to degrees.                      |
 +----------+---------------------------------------------------------+
-| grad2deg | Convert x from gradians to degrees                      |
+| grad2deg | Convert x from gradians to degrees.                     |
 +----------+---------------------------------------------------------+
 
 (5) String Processing
 +----------+---------------------------------------------------------+
 | FUNCTION | DEFINITION                                              |
 +----------+---------------------------------------------------------+
-| in       | True only if x is a substring of y                      |
+| in       | True only if x is a substring of y.                     |
 |          | (eg: x in y or 'abc' in 'abcdefgh')                     |
 +----------+---------------------------------------------------------+
 | like     | True only if the string x matches the pattern y.        |
@@ -471,59 +468,64 @@ correctly optimize such expressions for a given architecture.
 
  (02) Standard mathematical operator precedence is applied (BEDMAS).
 
- (03) Supported user defined types are numeric and string variables
+ (03) Results of expressions that are deemed as being 'valid' are to
+      exist within the set of Real numbers. All other results will be
+      of the value Not-A-Number (NaN).
+
+ (04) Supported user defined types are numeric and string variables
       and functions.
 
- (04) All variable and function names are case-insensitive
+ (05) All variable and function names are case-insensitive.
 
- (05) Variable and function names must begin with a letter
+ (06) Variable and function names must begin with a letter
       (A-Z or a-z), then can be comprised of any combination of
       letters, digits and underscores. (eg: x, var1 or power_func99)
 
- (06) Expression lengths and sub-expression lists are limited only by
+ (07) Expression lengths and sub-expression lists are limited only by
       storage capacity.
 
- (07) The life-time of objects registered with or created from a
-      specific symbol-table must span at least the life-time of
-      expressions generated using that symbol-table, otherwise
-      the result will be undefined behavior.
+ (08) The life-time of objects registered with or created from a
+      specific symbol-table must span at least the life-time of the
+      compiled expressions which utilize objects, such as variables,
+      of that symbol-table, otherwise the result will be undefined
+      behavior.
 
- (08) Equal/Nequal are normalized equality routines, which use
+ (09) Equal/Nequal are normalized equality routines, which use
       epsilons of 0.0000000001 and 0.000001 for double and float
       types respectively.
 
- (09) All trigonometric functions assume radian input unless
+ (10) All trigonometric functions assume radian input unless
       stated otherwise.
 
- (10) Expressions may contain white-space characters such as
+ (11) Expressions may contain white-space characters such as
       space,  tabs, new-lines, control-feed et al.
       ('\n', '\r', '\t', '\b', '\v', '\f')
 
- (11) Strings may be constructed from any letters, digits or special
+ (12) Strings may be constructed from any letters, digits or special
       characters such as (~!@#$%^&*()[]|=+ ,./?<>;:"`~_), and must
       be enclosed with single-quotes.
       eg: 'Frankly, my dear, I do not give a damn!'
 
- (12) User defined normal functions can have up to 20 parameters,
+ (13) User defined normal functions can have up to 20 parameters,
       where as user defined vararg-functions can have an unlimited
       number of parameters.
 
- (13) The inbuilt polynomial functions can be at most of degree 12.
+ (14) The inbuilt polynomial functions can be at most of degree 12.
 
- (14) Where appropriate constant folding optimisations will be
+ (15) Where appropriate constant folding optimisations will be
       applied. (eg: The expression '2+(3-(x/y))' becomes '5-(x/y)')
 
- (15) String processing capabilities are available by default.
+ (16) String processing capabilities are available by default.
       To turn them off, the following needs to be defined at
       compile time: exprtk_disable_string_capabilities
 
- (16) Composited functions can call themselves or any other functions
+ (17) Composited functions can call themselves or any other functions
       that have been defined prior to their own definition.
 
- (17) Recursive calls made from within composited functions will have
+ (18) Recursive calls made from within composited functions will have
       a stack size bound by the stack of the executing architecture.
 
- (18) Expressions may contain any of the following comment styles:
+ (19) Expressions may contain any of the following comment styles:
       1. // .... \n
       2. #  .... \n
       3. /* .... */

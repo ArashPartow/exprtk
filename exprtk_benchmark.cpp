@@ -37,7 +37,7 @@ const std::string expression_list[] = {
                                          "sin(2 * x) + cos(pi / y)",
                                          "1 - sin(2 * x) + cos(pi / y)",
                                          "sqrt(111.111 - sin(2 * x) + cos(pi / y) / 333.333)",
-                                         "(x^2 / sin(2 * pi / y)) -x / 2",
+                                         "(x^2 / sin(2 * pi / y)) - x / 2",
                                          "x + (cos(y - sin(2 / x * pi)) - sin(x - cos(2 * y / pi))) - y",
                                          "clamp(-1.0, sin(2 * pi * x) + cos(y / 2 * pi), +1.0)",
                                          "max(3.33, min(sqrt(1 - sin(2 * x) + cos(pi / y) / 3), 1.11))",
@@ -82,7 +82,7 @@ void run_exprtk_benchmark(T& x, T& y,
                           exprtk::expression<T>& expression,
                           const std::string& expr_string)
 {
-   T total = 0.0;
+   T total = T(0);
    unsigned int count = 0;
    exprtk::timer timer;
    timer.start();
@@ -95,7 +95,7 @@ void run_exprtk_benchmark(T& x, T& y,
       }
    }
    timer.stop();
-   if (T(0.0) != total)
+   if (T(0) != total)
       printf("[exprtk] Total Time:%12.8f  Rate:%14.3fevals/sec Expression: %s\n",
              timer.time(),
              count / timer.time(),
@@ -109,7 +109,7 @@ template <typename T> struct native;
 template <typename T, typename NativeFunction>
 void run_native_benchmark(T& x, T& y, NativeFunction f, const std::string& expr_string)
 {
-   T total = 0.0;
+   T total = T(0);
    unsigned int count = 0;
    exprtk::timer timer;
    timer.start();
@@ -122,7 +122,7 @@ void run_native_benchmark(T& x, T& y, NativeFunction f, const std::string& expr_
       }
    }
    timer.stop();
-   if (T(0.0) != total)
+   if (T(0) != total)
       printf("[native] Total Time:%12.8f  Rate:%14.3fevals/sec Expression: %s\n",
              timer.time(),
              count / timer.time(),
@@ -173,7 +173,7 @@ struct native
 
    static inline T avg(Type x, Type y)
    {
-      return (x + y) / T(2.0);
+      return (x + y) / T(2);
    }
 
    static inline T clamp(const Type l, const Type v, const Type u)
@@ -188,12 +188,12 @@ struct native
 
    static inline T func01(Type x, Type y)
    {
-      return T(2.0) * (y + x);
+      return T(2) * (y + x);
    }
 
    static inline T func02(Type x, Type y)
    {
-      return (T(2.0) * y + T(2.0) * x);
+      return (T(2) * y + T(2) * x);
    }
 
    static inline T func03(Type x, Type y)
@@ -213,7 +213,7 @@ struct native
 
    static inline T func06(Type x, Type y)
    {
-      return T(1.0) - ((x * y) + (y / x)) - T(3.0);
+      return T(1) - ((x * y) + (y / x)) - T(3);
    }
 
    static inline T func07(Type x, Type y)
@@ -223,27 +223,28 @@ struct native
 
    static inline T func08(Type x, Type y)
    {
-      return (1.1*pow(x,T(1.0))+2.2*pow(y,T(2.0))-3.3*pow(x,T(3.0))+4.4*pow(y,T(15.0))-5.5*pow(x,T(23.0))+6.6*pow(y,T(55.0)));
+      using namespace std;
+      return (T(1.1)*pow(x,T(1))+T(2.2)*pow(y,T(2))-T(3.3)*pow(x,T(3))+T(4.4)*pow(y,T(15))-T(5.5)*pow(x,T(23))+T(6.6)*pow(y,T(55)));
    }
 
    static inline T func09(Type x, Type y)
    {
-      return std::sin(T(2.0) * x) + std::cos(pi / y);
+      return std::sin(T(2) * x) + std::cos(pi / y);
    }
 
    static inline T func10(Type x, Type y)
    {
-      return T(1.0) - std::sin(2.0 * x) + std::cos(pi / y);
+      return T(1) - std::sin(T(2) * x) + std::cos(pi / y);
    }
 
    static inline T func11(Type x, Type y)
    {
-      return std::sqrt(T(111.111) - std::sin(T(2.0) * x) + std::cos(pi / y) / T(333.333));
+      return std::sqrt(T(111.111) - std::sin(T(2) * x) + std::cos(pi / y) / T(333.333));
    }
 
    static inline T func12(Type x, Type y)
    {
-      return ((x * x) / std::sin(T(2.0) * pi / y)) -x / T(2.0);
+      return ((x * x) / std::sin(T(2) * pi / y)) - x / T(2);
    }
 
    static inline T func13(Type x, Type y)
@@ -253,17 +254,17 @@ struct native
 
    static inline T func14(Type x, Type y)
    {
-      return clamp(T(-1.0), std::sin(T(2.0) * pi * x) + std::cos(y / T(2.0) * pi), + T(1.0));
+      return clamp(T(-1), std::sin(T(2) * pi * x) + std::cos(y / T(2) * pi), + T(1));
    }
 
    static inline T func15(Type x, Type y)
    {
-      return std::max(T(3.33), std::min(sqrt(T(1.0) - std::sin(T(2.0) * x) + std::cos(pi / y) / T(3.0)), T(1.11)));
+      return std::max(T(3.33), std::min(sqrt(T(1) - std::sin(T(2) * x) + std::cos(pi / y) / T(3)), T(1.11)));
    }
 
    static inline T func16(Type x, Type y)
    {
-      return (((y + (x * T(2.2))) <= (x + y + T(1.1))) ? x - y : x * y) + T(2.0) * pi / x;
+      return (((y + (x * T(2.2))) <= (x + y + T(1.1))) ? x - y : x * y) + T(2) * pi / x;
    }
 };
 

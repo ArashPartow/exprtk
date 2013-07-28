@@ -33,9 +33,9 @@ void square_wave()
                              " (1/21)*sin(42*pi*f*t)+(1/23)*sin(46*pi*f*t)+"
                              " (1/25)*sin(50*pi*f*t)+(1/27)*sin(54*pi*f*t))";
    static const T pi = T(3.14159265358979323846);
-   T f = pi/10.0;
-   T t = T(0.0);
-   T a = T(10.0);
+   T f = pi / T(10);
+   T t = T(0);
+   T a = T(10);
 
    exprtk::symbol_table<T> symbol_table;
    symbol_table.add_variable("f",f);
@@ -49,8 +49,8 @@ void square_wave()
    exprtk::parser<T> parser;
    parser.compile(expr_string,expression);
 
-   const T delta = (4.0*pi)/1000.0;
-   for (t = -2.0*pi; t <= +2.0*pi; t+=delta)
+   const T delta = (T(4) * pi) / T(1000);
+   for (t = (T(-2) * pi); t <= (T(+2) * pi); t += delta)
    {
       T result = expression.value();
       printf("%19.15f\t%19.15f\n",t,result);

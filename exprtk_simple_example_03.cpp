@@ -25,9 +25,9 @@ template<typename T>
 void polynomial()
 {
    std::string expression_string = "25x^5 - 35x^4 - 15x^3 + 40x^2 - 15x + 1";
-   T r0 = T(0.0);
-   T r1 = T(1.0);
-   T  x = T(0.0);
+   T r0 = T(0);
+   T r1 = T(1);
+   T  x = T(0);
 
    exprtk::symbol_table<T> symbol_table;
    symbol_table.add_variable("x",x);
