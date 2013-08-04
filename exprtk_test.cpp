@@ -1727,6 +1727,14 @@ inline bool run_test03()
          symbol_table.add_variable(variable_list[i],v[i]);
       }
 
+      if (variable_list_size != symbol_table.variable_count())
+      {
+         printf("run_test03() - Error - Invalid number of variables in symbol_table!  Expected: %d  got: %d\n",
+                static_cast<unsigned int>(variable_list_size),
+                static_cast<unsigned int>(symbol_table.variable_count()));
+         return false;
+      }
+
       symbol_table.add_constants();
 
       expression.register_symbol_table(symbol_table);
@@ -1761,8 +1769,8 @@ inline bool run_test04()
    exprtk::symbol_table<T> symbol_table;
    exprtk::expression<T> expression;
 
-   T x = T(-1000.0);
-   T y = T(-1000.0);
+   T x = T(-1000);
+   T y = T(-1000);
 
    symbol_table.add_variable("x",x);
    symbol_table.add_variable("y",y);
@@ -1785,7 +1793,7 @@ inline bool run_test04()
    const T pi = T(3.14159265358979323846);
    const T increment = T(0.0001);
 
-   while ((x <= T(+1000.0)) && (y <= T(+1000.0)))
+   while ((x <= T(+1000)) && (y <= T(+1000)))
    {
       T result1 = expression.value();
       T result2 = clamp<T>(-1.0,std::sin(2 * pi * x) + std::cos(y / 2 * pi),+1.0);
@@ -1817,8 +1825,8 @@ inline bool run_test05()
    exprtk::symbol_table<T> symbol_table;
    std::deque<expression_t> expression_list;
 
-   T x = T(-1000.0);
-   T y = T(-1000.0);
+   T x = T(-1000);
+   T y = T(-1000);
 
    symbol_table.add_variable("x_var123",x);
    symbol_table.add_variable("y_var123",y);
@@ -1845,7 +1853,7 @@ inline bool run_test05()
    const T pi = T(3.14159265358979323846);
    const T increment = T(0.001);
 
-   while ((x <= T(+1000.0)) && (y <= T(+1000.0)))
+   while ((x <= T(+1000)) && (y <= T(+1000)))
    {
       T real_result = clamp<T>(-1.0,std::sin(2 * pi * x) + std::cos(y / 2 * pi),+1.0);
 
@@ -1881,7 +1889,7 @@ inline bool run_test06()
    typedef exprtk::expression<T> expression_t;
    std::string expression_string = "sqrt(1 - (x^2))";
 
-   T x = T(0.0);
+   T x = T(0);
 
    exprtk::symbol_table<T> symbol_table;
    symbol_table.add_variable("x",x);
@@ -1899,8 +1907,8 @@ inline bool run_test06()
       return false;
    }
 
-   T total_area1 = exprtk::integrate(expression,x,T(-1.0),T(1.0));
-   T total_area2 = exprtk::integrate(expression,"x",T(-1.0),T(1.0));
+   T total_area1 = exprtk::integrate(expression,x,T(-1),T(1));
+   T total_area2 = exprtk::integrate(expression,"x",T(-1),T(1));
    const T pi = T(3.14159265358979323846);
 
    if (not_equal(total_area1,total_area2,T(0.000001)))
@@ -1909,10 +1917,10 @@ inline bool run_test06()
       return false;
    }
 
-   if (not_equal(total_area1,T(pi)/T(2.0),T(0.000001)))
+   if (not_equal(total_area1,T(pi) / T(2),T(0.000001)))
    {
       printf("run_test06() - Integration Error:  Expected: %19.15f\tResult: %19.15f\n",
-             pi/T(2.0),
+             pi / T(2),
              total_area1);
       return false;
    }
@@ -1924,9 +1932,9 @@ template <typename T>
 inline bool run_test07()
 {
    typedef exprtk::expression<T> expression_t;
-   std::string expression_string = "sin(2x+1/3)";
+   std::string expression_string = "sin(2x + 1 / 3)";
 
-   T x = T(0.0);
+   T x = T(0);
 
    exprtk::symbol_table<T> symbol_table;
    symbol_table.add_variable("x",x);
@@ -1945,10 +1953,10 @@ inline bool run_test07()
       return false;
    }
 
-   for (x = T(-200.0); x < T(200); x += T(0.0001))
+   for (x = T(-200); x < T(200); x += T(0.0001))
    {
       {
-         T deriv1_real_result = T(2.0) * std::cos(T(2.0) * x + T(1.0/3.0));
+         T deriv1_real_result = T(2) * std::cos(T(2) * x + T(1.0/3.0));
          T deriv1_result1 = exprtk::derivative(expression,x);
          T deriv1_result2 = exprtk::derivative(expression,"x");
 
@@ -1969,7 +1977,7 @@ inline bool run_test07()
       }
 
       {
-         T deriv2_real_result = T(-4.0) * std::sin(T(2.0) * x + T(1.0/3.0));
+         T deriv2_real_result = T(-4) * std::sin(T(2) * x + T(1.0/3.0));
          T deriv2_result1 = exprtk::second_derivative(expression,x);
          T deriv2_result2 = exprtk::second_derivative(expression,"x");
 
@@ -1990,7 +1998,7 @@ inline bool run_test07()
       }
 
       {
-         T deriv3_real_result = T(-8.0) * std::cos(T(2.0) * x + T(1.0/3.0));
+         T deriv3_real_result = T(-8) * std::cos(T(2) * x + T(1.0/3.0));
          T deriv3_result1 = exprtk::third_derivative(expression,x);
          T deriv3_result2 = exprtk::third_derivative(expression,"x");
 
@@ -2230,8 +2238,8 @@ inline bool run_test09()
                                       "myfunc6(sin(x*pi),y/2)+myfunc7(sin(x*pi),y/2)+"
                                       "myfunc8(sin(x*pi),y/2)+myfunc9(sin(x*pi),y/2)";
 
-      T x = T(1.0) + (i/T(10000.0));
-      T y = T(2.0) + (i/T(10000.0));
+      T x = T(1) + (i / T(10000));
+      T y = T(2) + (i / T(10000));
       myfunc<T> mf;
 
       exprtk::symbol_table<T> symbol_table;
@@ -2266,18 +2274,18 @@ inline bool run_test09()
 
       T result = expression.value();
 
-      T expected = T(4.0) *
+      T expected = T(4) *
                    (
-                      mf(sin(x*pi),y/T(2.0)) +
-                      mf(sin(x*pi),y/T(2.0)) +
-                      mf(sin(x*pi),y/T(2.0)) +
-                      mf(sin(x*pi),y/T(2.0)) +
-                      mf(sin(x*pi),y/T(2.0)) +
-                      mf(sin(x*pi),y/T(2.0)) +
-                      mf(sin(x*pi),y/T(2.0)) +
-                      mf(sin(x*pi),y/T(2.0)) +
-                      mf(sin(x*pi),y/T(2.0)) +
-                      mf(sin(x*pi),y/T(2.0))
+                      mf(sin(x*pi),y / T(2)) +
+                      mf(sin(x*pi),y / T(2)) +
+                      mf(sin(x*pi),y / T(2)) +
+                      mf(sin(x*pi),y / T(2)) +
+                      mf(sin(x*pi),y / T(2)) +
+                      mf(sin(x*pi),y / T(2)) +
+                      mf(sin(x*pi),y / T(2)) +
+                      mf(sin(x*pi),y / T(2)) +
+                      mf(sin(x*pi),y / T(2)) +
+                      mf(sin(x*pi),y / T(2))
                    );
 
       if (not_equal(result,expected,T(0.0000001)))
@@ -2639,8 +2647,8 @@ inline bool run_test10()
 
    for (std::size_t r = 0; r < rounds; ++r)
    {
-      symbol_table.add_stringvar("i",  i);
-      symbol_table.add_stringvar("j",  j);
+      symbol_table.add_stringvar( "i", i);
+      symbol_table.add_stringvar( "j", j);
       symbol_table.add_stringvar("ii",ii);
       symbol_table.add_stringvar("jj",jj);
 
@@ -2657,7 +2665,13 @@ inline bool run_test10()
 
       if (stringvar_list.size() != expected_var_list.size())
       {
-         printf("run_test10() - Failed to get stringvar list (3)\n");
+         printf("run_test10() - Failed to get stringvar list (3.0)\n");
+         return false;
+      }
+
+      if (symbol_table.stringvar_count() != expected_var_list.size())
+      {
+         printf("run_test10() - Failed to get stringvar list (3.1)\n");
          return false;
       }
 
@@ -2829,7 +2843,7 @@ inline bool run_test11()
          }
       }
 
-      if (not_equal(expression.value(),(x + y)/T(3.0),T(0.000001)))
+      if (not_equal(expression.value(),(x + y) / T(3),T(0.000001)))
       {
          printf("run_test11() - Error in evaluation!(1)\n");
          return false;
@@ -2857,7 +2871,7 @@ inline bool run_test11()
 
       expression.value();
 
-      if (not_equal(expression.value(),(x + y)/T(3.0),T(0.000001)))
+      if (not_equal(expression.value(),(x + y) / T(3),T(0.000001)))
       {
          printf("run_test11() - Error in evaluation!(3)\n");
          return false;
@@ -2959,7 +2973,7 @@ inline bool run_test12()
             }
          }
 
-         if (T(1.0) != expression.value())
+         if (T(1) != expression.value())
          {
             printf("run_test12() - Error in evaluation! Expression: %s\n",expr_str.c_str());
             return false;
@@ -2977,7 +2991,7 @@ struct sine_deg : public exprtk::ifunction<T>
 
    inline T operator()(const T& v)
    {
-      return std::sin((v * T(exprtk::details::numeric::constant::pi))/T(180.0));
+      return std::sin((v * T(exprtk::details::numeric::constant::pi)) / T(180));
    }
 };
 
@@ -2988,7 +3002,7 @@ struct cosine_deg : public exprtk::ifunction<T>
 
    inline T operator()(const T& v)
    {
-      return std::cos((v * T(exprtk::details::numeric::constant::pi))/T(180.0));
+      return std::cos((v * T(exprtk::details::numeric::constant::pi)) / T(180));
    }
 };
 
@@ -3049,7 +3063,7 @@ inline bool run_test13()
             }
          }
 
-         if (T(1.0) != expression.value())
+         if (T(1) != expression.value())
          {
             printf("run_test13() - Error in evaluation! Expression: %s\n",expr_str.c_str());
             return false;
@@ -3443,8 +3457,8 @@ inline bool run_test17()
    T v = T(6.6);
    T t = T(7.7);
 
-   T one  = T(1.0);
-   T zero = T(0.0);
+   T one  = T(1);
+   T zero = T(0);
 
    exprtk::symbol_table<T> symbol_table;
    symbol_table.add_constants();

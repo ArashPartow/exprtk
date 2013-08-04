@@ -175,7 +175,7 @@ namespace exprtk
          return result;
       }
 
-      inline void cleanup_espaces(std::string& s)
+      inline void cleanup_escapes(std::string& s)
       {
          std::string::iterator itr1 = s.begin();
          std::string::iterator itr2 = s.begin();
@@ -604,7 +604,7 @@ namespace exprtk
             template <typename T>
             inline T round_impl(const T v, real_type_tag)
             {
-               return ((v < T(0)) ? std::ceil(v - T(0.5)) : floor(v + T(0.5)));
+               return ((v < T(0)) ? std::ceil(v - T(0.5)) : std::floor(v + T(0.5)));
             }
 
             template <typename T>
@@ -2052,7 +2052,7 @@ namespace exprtk
             else
             {
                std::string parsed_string(begin,s_itr_);
-               details::cleanup_espaces(parsed_string);
+               details::cleanup_escapes(parsed_string);
                t.set_string(parsed_string, std::distance(base_itr_,begin));
             }
 
@@ -9124,7 +9124,7 @@ namespace exprtk
       inline std::size_t variable_count() const
       {
          if (valid())
-            return local_data().variable_store().size;
+            return local_data().variable_store.size;
          else
             return 0;
       }
@@ -9133,7 +9133,7 @@ namespace exprtk
       inline std::size_t stringvar_count() const
       {
          if (valid())
-            return local_data().stringvar_store().size;
+            return local_data().stringvar_store.size;
          else
             return 0;
       }
@@ -9142,7 +9142,7 @@ namespace exprtk
       inline std::size_t function_count() const
       {
          if (valid())
-            return local_data().function_store().size;
+            return local_data().function_store.size;
          else
             return 0;
       }
@@ -9150,7 +9150,7 @@ namespace exprtk
       inline std::size_t vector_count() const
       {
          if (valid())
-            return local_data().vector_store().size;
+            return local_data().vector_store.size;
          else
             return 0;
       }
@@ -16607,11 +16607,7 @@ namespace exprtk
          #else
          inline expression_node_ptr synthesize_string_expression(const details::operator_type&, expression_node_ptr (&)[3])
          {
-            if ((0 == branch[0]) || (0 == branch[1]) || (0 == branch[2]))
-            {
-               details::free_all_nodes(*node_allocator_,branch);
-               return error_node();
-            }
+            details::free_all_nodes(*node_allocator_,branch);
             return error_node();
          }
          #endif
