@@ -1454,6 +1454,8 @@ inline bool run_test02()
                               test_ab<T>("'0123456789'[:9] == '01234567890123456789'[0:9]","","",T(1.0)),
                               test_ab<T>("'0123456789'[:9] == '01234567890123456789'[:9] ","","",T(1.0)),
                               test_ab<T>("'0123456789'[:]  == '01234567890123456789'[10:]","","",T(1.0)),
+                              test_ab<T>("'0123456789'[3:3] == '3'[:]                    ","","",T(1.0)),
+                              test_ab<T>("'0123456789'[3:3] == '3'[0:0]                  ","","",T(1.0)),
                               test_ab<T>("'123456789'      != '01234567890123456789'[0:9]","","",T(1.0)),
                               test_ab<T>("'123456789'[:]   != '01234567890123456789'[0:9]","","",T(1.0)),
                               test_ab<T>("'123456789'[0:]  != '01234567890123456789'[0:9]","","",T(1.0)),
@@ -1675,38 +1677,35 @@ inline bool run_test02()
 template <typename T>
 inline bool run_test03()
 {
-   std::string expression_string = "a+b+c+d+e+f+g+h+i+j+k+l+m+n+o+p+q+r+s+t+u+v+w+x+y+z+"
-                                   "A+B+C+D+E+F+G+H+I+J+K+L+M+N+O+P+Q+R+S+T+U+V+W+X+Y+Z+"
-                                   "aa+bb+cc+dd+ee+ff+gg+hh+ii+jj+kk+ll+mm+nn+oo+pp+qq+rr+ss+tt+uu+vv+ww+xx+yy+zz+"
-                                   "AA+BB+CC+DD+EE+FF+GG+HH+II+JJ+KK+LL+MM+NN+OO+PP+QQ+RR+SS+TT+UU+VV+WW+XX+YY+ZZ+"
-                                   "Aa+Bb+Cc+Dd+Ee+Ff+Gg+Hh+Ii+Jj+Kk+Ll+Mm+Nn+Oo+Pp+Qq+Rr+Ss+Tt+Uu+Vv+Ww+Xx+Yy+Zz+"
-                                   "a0+b1+c2+d3+e4+f5+g6+h7+i8+j9+k0+l1+m2+n3+o4+p5+q6+r7+s8+t9+u0+v1+w2+x3+y4+z5+"
-                                   "A0+B1+C2+D3+E4+F5+G6+H7+I8+J9+K0+L1+M2+N3+O4+P5+Q6+R7+S8+T9+U0+V1+W2+X3+Y4+Z5+"
-                                   "aa0+bb1+cc2+dd3+ee4+ff5+gg6+hh7+ii8+jj9+kk0+ll1+mm2+nn3+oo4+pp5+qq6+rr7+ss8+tt9+uu0+vv1+ww2+xx3+yy4+zz5+"
-                                   "AA0+BB1+CC2+DD3+EE4+FF5+GG6+HH7+II8+JJ9+KK0+LL1+MM2+NN3+OO4+PP5+QQ6+RR7+SS8+TT9+UU0+VV1+WW2+XX3+YY4+ZZ5+"
-                                   "Aa0+Bb1+Cc2+Dd3+Ee4+Ff5+Gg6+Hh7+Ii8+Jj9+Kk0+Ll1+Mm2+Nn3+Oo4+Pp5+Qq6+Rr7+Ss8+Tt9+Uu0+Vv1+Ww2+Xx3+Yy4+Zz5";
+   std::string expression_string = "A+A0+aA+Aa0+b+B1+Bb+bB1+A+A0+AA+AA0+B+B1+BB+BB1+a+a0+aa+aa0+b+b1+bb+bb1+"
+                                   "c+C2+Cc+Cc2+D+D3+dD+dD3+C+C2+CC+CC2+D+D3+DD+DD3+c+c2+cc+cc2+d+d3+dd+dd3+"
+                                   "E+E4+eE+Ee4+f+F5+Ff+fF5+E+E4+EE+EE4+F+F5+FF+FF5+e+e4+ee+ee4+f+f5+ff+ff5+"
+                                   "g+G6+Gg+Gg6+H+H7+hH+hH7+G+G6+GG+GG6+H+H7+HH+HH7+g+g6+gg+gg6+h+h7+hh+hh7+"
+                                   "I+I8+iI+Ii8+j+J9+Jj+jJ9+I+I8+II+II8+J+J9+JJ+JJ9+i+i8+ii+ii8+j+j9+jj+jj9+"
+                                   "k+K0+Kk+Kk0+L+L1+lL+lL1+K+K0+KK+KK0+L+L1+LL+LL1+k+k0+kk+kk0+l+l1+ll+ll1+"
+                                   "M+M2+mM+Mm2+n+N3+Nn+nN3+M+M2+MM+MM2+N+N3+NN+NN3+m+m2+mm+mm2+n+n3+nn+nn3+"
+                                   "o+O4+Oo+Oo4+P+P5+pP+pP5+O+O4+OO+OO4+P+P5+PP+PP5+o+o4+oo+oo4+p+p5+pp+pp5+"
+                                   "Q+Q6+qQ+Qq6+r+R7+Rr+rR7+Q+Q6+QQ+QQ6+R+R7+RR+RR7+q+q6+qq+qq6+r+r7+rr+rr7+"
+                                   "s+S8+Ss+Ss8+T+T9+tT+tT9+S+S8+SS+SS8+T+T9+TT+TT9+s+s8+ss+ss8+t+t9+tt+tt9+"
+                                   "U+U0+uU+Uu0+v+V1+Vv+vV1+U+U0+UU+UU0+V+V1+VV+VV1+u+u0+uu+uu0+v+v1+vv+vv1+"
+                                   "w+W2+Ww+Ww2+X+X3+xX+xX3+W+W2+WW+WW2+X+X3+XX+XX3+w+w2+ww+ww2+x+x3+xx+xx3+"
+                                   "Y+Y4+yY+Yy4+z+Z5+Zz+zZ5+Y+Y4+YY+YY4+Z+Z5+ZZ+ZZ5+y+y4+yy+yy4+z+z5+zz+zz5 ";
 
    static const std::string variable_list[] =
                                {
-                                  "a", "b", "c", "d", "e", "f", "g", "h", "i", "j", "k", "l", "m", "n", "o", "p", "q",
-                                  "r", "s", "t", "u", "v", "w", "x", "y", "z", "A", "B", "C", "D", "E", "F", "G", "H",
-                                  "I", "J", "K", "L", "M", "N", "O", "P", "Q", "R", "S", "T", "U", "V", "W", "X", "Y",
-                                  "Z", "aa", "bb", "cc", "dd", "ee", "ff", "gg", "hh", "ii", "jj", "kk", "ll", "mm",
-                                  "nn", "oo", "pp", "qq", "rr", "ss", "tt", "uu", "vv", "ww", "xx", "yy", "zz", "AA",
-                                  "BB", "CC", "DD", "EE", "FF", "GG", "HH", "II", "JJ", "KK", "LL", "MM", "NN", "OO",
-                                  "PP", "QQ", "RR", "SS", "TT", "UU", "VV", "WW", "XX", "YY", "ZZ", "Aa", "Bb", "Cc",
-                                  "Dd", "Ee", "Ff", "Gg", "Hh", "Ii", "Jj", "Kk", "Ll", "Mm", "Nn", "Oo", "Pp", "Qq",
-                                  "Rr", "Ss", "Tt", "Uu", "Vv", "Ww", "Xx", "Yy", "Zz", "a0", "b1", "c2", "d3", "e4",
-                                  "f5", "g6", "h7", "i8", "j9", "k0", "l1", "m2", "n3", "o4", "p5", "q6", "r7", "s8",
-                                  "t9", "u0", "v1", "w2", "x3", "y4", "z5", "A0", "B1", "C2", "D3", "E4", "F5", "G6",
-                                  "H7", "I8", "J9", "K0", "L1", "M2", "N3", "O4", "P5", "Q6", "R7", "S8", "T9", "U0",
-                                  "V1", "W2", "X3", "Y4", "Z5", "aa0", "bb1", "cc2", "dd3", "ee4", "ff5", "gg6", "hh7",
-                                  "ii8", "jj9", "kk0", "ll1", "mm2", "nn3", "oo4", "pp5", "qq6", "rr7", "ss8", "tt9",
-                                  "uu0", "vv1", "ww2", "xx3", "yy4", "zz5", "AA0", "BB1", "CC2", "DD3", "EE4", "FF5",
-                                  "GG6", "HH7", "II8", "JJ9", "KK0", "LL1", "MM2", "NN3", "OO4", "PP5", "QQ6", "RR7",
-                                  "SS8", "TT9", "UU0", "VV1", "WW2", "XX3", "YY4", "ZZ5", "Aa0", "Bb1", "Cc2", "Dd3",
-                                  "Ee4", "Ff5", "Gg6", "Hh7", "Ii8", "Jj9", "Kk0", "Ll1", "Mm2", "Nn3", "Oo4", "Pp5",
-                                  "Qq6", "Rr7", "Ss8", "Tt9", "Uu0", "Vv1", "Ww2", "Xx3", "Yy4", "Zz5"
+                                  "A", "A0", "aA", "Aa0", "b", "B1", "Bb", "bB1",
+                                  "c", "C2", "Cc", "Cc2", "D", "D3", "dD", "dD3",
+                                  "E", "E4", "eE", "Ee4", "f", "F5", "Ff", "fF5",
+                                  "g", "G6", "Gg", "Gg6", "H", "H7", "hH", "hH7",
+                                  "I", "I8", "iI", "Ii8", "j", "J9", "Jj", "jJ9",
+                                  "k", "K0", "Kk", "Kk0", "L", "L1", "lL", "lL1",
+                                  "M", "M2", "mM", "Mm2", "n", "N3", "Nn", "nN3",
+                                  "o", "O4", "Oo", "Oo4", "P", "P5", "pP", "pP5",
+                                  "Q", "Q6", "qQ", "Qq6", "r", "R7", "Rr", "rR7",
+                                  "s", "S8", "Ss", "Ss8", "T", "T9", "tT", "tT9",
+                                  "U", "U0", "uU", "Uu0", "v", "V1", "Vv", "vV1",
+                                  "w", "W2", "Ww", "Ww2", "X", "X3", "xX", "xX3",
+                                  "Y", "Y4", "yY", "Yy4", "z", "Z5", "Zz", "zZ5"
                                };
 
    static const std::size_t variable_list_size = sizeof(variable_list) / sizeof(std::string);
@@ -1956,7 +1955,7 @@ inline bool run_test07()
    for (x = T(-200); x < T(200); x += T(0.0001))
    {
       {
-         T deriv1_real_result = T(2) * std::cos(T(2) * x + T(1.0/3.0));
+         T deriv1_real_result = T(2) * std::cos(T(2) * x + T(1.0 / 3.0));
          T deriv1_result1 = exprtk::derivative(expression,x);
          T deriv1_result2 = exprtk::derivative(expression,"x");
 
@@ -1977,7 +1976,7 @@ inline bool run_test07()
       }
 
       {
-         T deriv2_real_result = T(-4) * std::sin(T(2) * x + T(1.0/3.0));
+         T deriv2_real_result = T(-4) * std::sin(T(2) * x + T(1.0 / 3.0));
          T deriv2_result1 = exprtk::second_derivative(expression,x);
          T deriv2_result2 = exprtk::second_derivative(expression,"x");
 
@@ -1998,7 +1997,7 @@ inline bool run_test07()
       }
 
       {
-         T deriv3_real_result = T(-8) * std::cos(T(2) * x + T(1.0/3.0));
+         T deriv3_real_result = T(-8) * std::cos(T(2) * x + T(1.0 / 3.0));
          T deriv3_result1 = exprtk::third_derivative(expression,x);
          T deriv3_result2 = exprtk::third_derivative(expression,"x");
 
@@ -2754,7 +2753,6 @@ inline bool run_test10()
          }
       }
    }
-
 
    {
       T a = T(1);
@@ -4041,7 +4039,6 @@ inline bool run_test19()
          .add("fibonacci4",
               "fibonacci_impl4(x,0,1,0)",
               "x");
-
 
       exprtk::symbol_table<T>& symbol_table = compositor.symbol_table();
       symbol_table.add_constants();

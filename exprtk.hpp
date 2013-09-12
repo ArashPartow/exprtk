@@ -610,7 +610,10 @@ namespace exprtk
             template <typename T>
             inline T roundn_impl(const T v0, const T v1, real_type_tag)
             {
-               return T(std::floor((v0 * pow10[(int)std::floor(v1)]) + T(0.5)) / T(pow10[(int)std::floor(v1)]));
+               // 0 <= index <= sizeof(pow10)
+               const int index = std::max<int>(0,std::min<int>(sizeof(pow10),(int)std::floor(v1)));
+               const T p10 = pow10[index];
+               return T(std::floor((v0 * p10) + T(0.5)) / p10);
             }
 
             template <typename T>
@@ -8933,6 +8936,8 @@ namespace exprtk
                }
                map.clear();
             }
+
+            size = 0;
          }
 
          template <typename Allocator,

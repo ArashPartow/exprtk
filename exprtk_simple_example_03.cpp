@@ -38,7 +38,7 @@ void polynomial()
    exprtk::parser<T> parser;
    parser.compile(expression_string,expression);
 
-   const T delta = T(1/100.0);
+   const T delta = T(1.0 / 100.0);
    for (x = r0; x <= r1; x += delta)
    {
       printf("%19.15f\t%19.15f\n",x,expression.value());
