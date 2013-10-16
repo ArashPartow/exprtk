@@ -5,7 +5,7 @@ The C++ Mathematical Expression  Toolkit Library (ExprTk) is  a simple
 to  use,  easy  to  integrate  and  extremely  efficient  mathematical
 expression parsing and evaluation engine. The parsing engine  supports
 numerous forms  of functional  and logic  processing semantics  and is
-very easily extendible.
+easily extendible.
 
 
 
@@ -61,7 +61,7 @@ expressions that can be parsed and evaluated using the ExprTk library.
 (12) (x + y)3.3 + 1 / 4.5 == (x + y) * 3.3 + 1 / 4.5
 (13) (x + y)z + 1.1 / 2.7 == (x + y) * z + 1.1 / 2.7
 (14) (sin(x / pi) cos(2y) + 1) == (sin(x / pi) * cos(2 * y) + 1)
-(15) 25x^5 - 35x^4 - 15x^3 + 40x^2 - 15x + 1
+(15) 75x^17 + 25.1x^5 - 35x^4 - 15.2x^3 + 40x^2 - 15.3x + 1
 (16) if (avg(x,y) <= x + y, x - y, x * y) + 2.345 * pi / x
 (17) fib_i := fib_i + (x := y + 0 * (fib_i := x + (y := fib_i)))
 (18) while (x <= 100) { x := x + 1 }
@@ -327,9 +327,9 @@ include path (e.g: /usr/include/).
 | [r0:r1]  | The closed interval [r0,r1] of the specified string.    |
 |          | eg: Given a string x with a value of 'abcdefgh' then:   |
 |          | 0. x[1:4] == 'bcde'                                     |
-|          | 1. x[ :5] == 'abcdef'                                   |
-|          | 2. x[3: ] == 'cdefgh'                                   |
-|          | 3. x[ : ] == 'abcdefgh'                                 |
+|          | 1. x[ :5] == x[:5] == 'abcdef'                          |
+|          | 2. x[3: ] == x[3:] =='cdefgh'                           |
+|          | 3. x[ : ] == x[:] == 'abcdefgh'                         |
 |          | 4. x[4/2:3+2] == x[2:5] == 'cdef'                       |
 |          |                                                         |
 |          | Note: Both r0 and r1 are assumed to be integers, where  |
@@ -354,7 +354,7 @@ include path (e.g: /usr/include/).
 |          | switch                                                  |
 |          | {                                                       |
 |          |   case x > (y + z) : 2 * x / abs(y - z);                |
-|          |   case x < 3       : sin(x + y)                         |
+|          |   case x < 3       : sin(x + y);                        |
 |          |   default          : 1 + x;                             |
 |          | }                                                       |
 +----------+---------------------------------------------------------+
@@ -389,7 +389,39 @@ include path (e.g: /usr/include/).
 
 
 
-[09 - SPECIAL FUNCTIONS]
+[09 - COMPONENTS]
+There are three primary components, that are specialized upon a  given
+numeric type, which make up the core of ExprTk. The components are  as
+follows:
+
+  1. Symbol Table  exprtk::symbol_table<T>
+  2. Expression    exprtk::expression<T>
+  3. Parser        exprtk::parser<T>
+
+
+(1) Symbol Table
+A structure that is used  to store references to variables,  constants
+and functions that are to be used within expressions.
+
+(2) Expression
+A structure that holds an AST  for a specified expression and is  used
+to evaluate said expression.  If a compiled Expression  uses variables
+or user defined functions, it will then also have an associated Symbol
+Table, which will contain  references to said variables,  functions et
+al.
+
+(3) Parser
+A  structure  which  takes  as input  a  string  representation  of an
+expression and attempts to compile said input with the result being an
+instance  of  Expression.  If  an  error  is  encountered  during  the
+compilation  process, the  parser will  stop compiling  and return  an
+error status code,  with a more  detailed description of  the error(s)
+and  its  location  within  the  input  provided  by  the  'get_error'
+interface.
+
+
+
+[10 - SPECIAL FUNCTIONS]
 The purpose  of special  functions in  ExprTk is  to provide  compiler
 generated equivalents of common mathematical expressions which can  be
 invoked by  using the  'special function'  syntax (eg:  $f12(x,y,z) or
@@ -460,7 +492,7 @@ correctly optimize such expressions for a given architecture.
 
 
 
-[10 - EXPRTK NOTES]
+[11 - EXPRTK NOTES]
  (00) Precision and performance of expression evaluations are the
       dominant principles of the ExprTk library.
 
@@ -470,7 +502,7 @@ correctly optimize such expressions for a given architecture.
 
  (03) Results of expressions that are deemed as being 'valid' are to
       exist within the set of Real numbers. All other results will be
-      of the value Not-A-Number (NaN).
+      of the value: Not-A-Number (NaN).
 
  (04) Supported user defined types are numeric and string variables
       and functions.
@@ -532,7 +564,7 @@ correctly optimize such expressions for a given architecture.
 
 
 
-[11 - SIMPLE EXPRTK EXAMPLE]
+[12 - SIMPLE EXPRTK EXAMPLE]
 --- snip ---
 #include <cstdio>
 #include <string>
@@ -586,7 +618,10 @@ int main()
       for (std::size_t i = 0; i < parser.error_count(); ++i)
       {
          error_t error = parser.get_error(i);
-         printf("Err: %02d Pos: %02d Type: [%s] Msg: %s Expr: %s\n",
+         printf("Error: %02d Position: %02d "
+                "Type: [%s] "
+                "Message: %s "
+                "Expression: %s\n",
                 static_cast<int>(i),
                 static_cast<int>(error.token.position),
                 exprtk::parser_error::to_str(error.mode).c_str(),
@@ -607,7 +642,7 @@ int main()
 
 
 
-[12 - FILES]
+[13 - FILES]
 (00) Makefile
 (01) readme.txt
 (02) exprtk.hpp
