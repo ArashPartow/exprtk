@@ -249,7 +249,7 @@ struct native
 
    static inline T func13(Type x, Type y)
    {
-      return (x + (std::cos(y - std::sin(2 / x * pi)) - std::sin(x - std::cos(2 * y / pi))) - y);
+      return (x + (std::cos(y - std::sin(T(2) / x * pi)) - std::sin(x - std::cos(T(2) * y / pi))) - y);
    }
 
    static inline T func14(Type x, Type y)

@@ -481,7 +481,7 @@ correctly optimize such expressions for a given architecture.
    $f41(x,y,z) | x * log10(y)-z    $f88(x,y,z,w) | x*y^7 + z*w^7
    $f42(x,y,z) | x * sin(y)+z      $f89(x,y,z,w) | x*y^8 + z*w^8
    $f43(x,y,z) | x * sin(y)-z      $f90(x,y,z,w) | x*y^9 + z*w^9
-   $f44(x,y,z) | x * cos(y)+z      $f91(x,y,z,w) | (x and y) ? z
+   $f44(x,y,z) | x * cos(y)+z      $f91(x,y,z,w) | (x and y) ? z : w
    $f45(x,y,z) | x * cos(y)-z      $f92(x,y,z,w) | (x or  y) ? z : w
    $f46(x,y,z) | x ? y : z         $f93(x,y,z,w) | (x <   y) ? z : w
                                    $f94(x,y,z,w) | (x <=  y) ? z : w
