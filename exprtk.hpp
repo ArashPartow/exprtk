@@ -589,7 +589,7 @@ namespace exprtk
             template <typename T>
             inline T root_impl(const T v0, const T v1, real_type_tag)
             {
-               return std::pow(v0,T(1)/v1);
+               return std::pow(v0,T(1) / v1);
             }
 
             template <typename T>
@@ -604,13 +604,13 @@ namespace exprtk
                return ((v < T(0)) ? std::ceil(v - T(0.5)) : std::floor(v + T(0.5)));
             }
 
-         template <typename T>
-         inline T roundn_impl(const T v0, const T v1, real_type_tag)
-         {
-            const int index = std::max<int>(0, std::min<int>(pow10_size - 1, (int)std::floor(v1)));
-            const T p10 = T(pow10[index]);
-            return T(std::floor((v0 * p10) + T(0.5)) / p10);
-         }
+            template <typename T>
+            inline T roundn_impl(const T v0, const T v1, real_type_tag)
+            {
+               const int index = std::max<int>(0, std::min<int>(pow10_size - 1, (int)std::floor(v1)));
+               const T p10 = T(pow10[index]);
+               return T(std::floor((v0 * p10) + T(0.5)) / p10);
+            }
 
             template <typename T>
             inline T roundn_impl(const T v0, const T, int_type_tag)
