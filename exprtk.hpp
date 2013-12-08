@@ -38,6 +38,7 @@
 #include <cctype>
 #include <cmath>
 #include <cstdio>
+#include <cstdlib>
 #include <deque>
 #include <iterator>
 #include <limits>
@@ -438,11 +439,11 @@ namespace exprtk
             template <typename T>
             struct number_type { typedef unknown_type_tag type; };
 
-            #define exprtk_register_real_type_tag(T)\
-            template<> struct number_type<T> { typedef real_type_tag type; };
+            #define exprtk_register_real_type_tag(T)                          \
+            template<> struct number_type<T> { typedef real_type_tag type; }; \
 
-            #define exprtk_register_int_type_tag(T)\
-            template<> struct number_type<T> { typedef int_type_tag type; };
+            #define exprtk_register_int_type_tag(T)                          \
+            template<> struct number_type<T> { typedef int_type_tag type; }; \
 
             exprtk_register_real_type_tag(double)
             exprtk_register_real_type_tag(long double)
@@ -609,7 +610,10 @@ namespace exprtk
             {
                const int index = std::max<int>(0, std::min<int>(pow10_size - 1, (int)std::floor(v1)));
                const T p10 = T(pow10[index]);
-               return T(std::floor((v0 * p10) + T(0.5)) / p10);
+               if (v0 < T(0))
+                  return T(std::ceil ((v0 * p10) - T(0.5)) / p10);
+               else
+                  return T(std::floor((v0 * p10) + T(0.5)) / p10);
             }
 
             template <typename T>
@@ -1049,13 +1053,13 @@ namespace exprtk
          template <typename T> struct fast_exp<T, 1> { static inline T result(T v) { return v;         } };
          template <typename T> struct fast_exp<T, 0> { static inline T result(T  ) { return T(1);      } };
 
-         #define exprtk_define_unary_function(FunctionName) \
-         template <typename T> \
-         inline T FunctionName (const T v) \
-         { \
-            typename details::number_type<T>::type num_type; \
+         #define exprtk_define_unary_function(FunctionName)   \
+         template <typename T>                                \
+         inline T FunctionName (const T v)                    \
+         {                                                    \
+            typename details::number_type<T>::type num_type;  \
             return details:: FunctionName##_impl(v,num_type); \
-         }
+         }                                                    \
 
          exprtk_define_unary_function(abs  )
          exprtk_define_unary_function(acos )
@@ -5156,52 +5160,52 @@ namespace exprtk
          mutable std::vector<T> value_list_;
       };
 
-      #define exprtk_def_unary_op(OpName) \
-      template <typename T> \
-      struct OpName##_op \
-      { \
-         typedef typename functor_t<T>::Type Type; \
-         static inline T process(Type v) { return numeric:: OpName (v); } \
+      #define exprtk_define_unary_op(OpName)                                                                    \
+      template <typename T>                                                                                     \
+      struct OpName##_op                                                                                        \
+      {                                                                                                         \
+         typedef typename functor_t<T>::Type Type;                                                              \
+         static inline T process(Type v) { return numeric:: OpName (v); }                                       \
          static inline typename expression_node<T>::node_type type() { return expression_node<T>::e_##OpName; } \
-         static inline details::operator_type operation() { return details::e_##OpName; } \
-      };
+         static inline details::operator_type operation() { return details::e_##OpName; }                       \
+      };                                                                                                        \
 
-      exprtk_def_unary_op(abs  )
-      exprtk_def_unary_op(acos )
-      exprtk_def_unary_op(asin )
-      exprtk_def_unary_op(atan )
-      exprtk_def_unary_op(ceil )
-      exprtk_def_unary_op(cos  )
-      exprtk_def_unary_op(cosh )
-      exprtk_def_unary_op(cot  )
-      exprtk_def_unary_op(csc  )
-      exprtk_def_unary_op(d2g  )
-      exprtk_def_unary_op(d2r  )
-      exprtk_def_unary_op(erf  )
-      exprtk_def_unary_op(erfc )
-      exprtk_def_unary_op(exp  )
-      exprtk_def_unary_op(expm1)
-      exprtk_def_unary_op(floor)
-      exprtk_def_unary_op(frac )
-      exprtk_def_unary_op(g2d  )
-      exprtk_def_unary_op(log  )
-      exprtk_def_unary_op(log10)
-      exprtk_def_unary_op(log2 )
-      exprtk_def_unary_op(log1p)
-      exprtk_def_unary_op(neg  )
-      exprtk_def_unary_op(notl )
-      exprtk_def_unary_op(pos  )
-      exprtk_def_unary_op(r2d  )
-      exprtk_def_unary_op(round)
-      exprtk_def_unary_op(sec  )
-      exprtk_def_unary_op(sgn  )
-      exprtk_def_unary_op(sin  )
-      exprtk_def_unary_op(sinh )
-      exprtk_def_unary_op(sqrt )
-      exprtk_def_unary_op(tan  )
-      exprtk_def_unary_op(tanh )
-      exprtk_def_unary_op(trunc)
-      #undef exprtk_def_unary_op
+      exprtk_define_unary_op(abs  )
+      exprtk_define_unary_op(acos )
+      exprtk_define_unary_op(asin )
+      exprtk_define_unary_op(atan )
+      exprtk_define_unary_op(ceil )
+      exprtk_define_unary_op(cos  )
+      exprtk_define_unary_op(cosh )
+      exprtk_define_unary_op(cot  )
+      exprtk_define_unary_op(csc  )
+      exprtk_define_unary_op(d2g  )
+      exprtk_define_unary_op(d2r  )
+      exprtk_define_unary_op(erf  )
+      exprtk_define_unary_op(erfc )
+      exprtk_define_unary_op(exp  )
+      exprtk_define_unary_op(expm1)
+      exprtk_define_unary_op(floor)
+      exprtk_define_unary_op(frac )
+      exprtk_define_unary_op(g2d  )
+      exprtk_define_unary_op(log  )
+      exprtk_define_unary_op(log10)
+      exprtk_define_unary_op(log2 )
+      exprtk_define_unary_op(log1p)
+      exprtk_define_unary_op(neg  )
+      exprtk_define_unary_op(notl )
+      exprtk_define_unary_op(pos  )
+      exprtk_define_unary_op(r2d  )
+      exprtk_define_unary_op(round)
+      exprtk_define_unary_op(sec  )
+      exprtk_define_unary_op(sgn  )
+      exprtk_define_unary_op(sin  )
+      exprtk_define_unary_op(sinh )
+      exprtk_define_unary_op(sqrt )
+      exprtk_define_unary_op(tan  )
+      exprtk_define_unary_op(tanh )
+      exprtk_define_unary_op(trunc)
+      #undef exprtk_define_unary_op
 
       template<typename T>
       struct opr_base
@@ -6520,73 +6524,73 @@ namespace exprtk
       template <typename T, typename T0, typename T1>
       const typename expression_node<T>::node_type nodetype_T0oT1<T,T0,T1>::result = expression_node<T>::e_none;
 
-      #define synthnode_type_def(T0_,T1_,v_) \
-      template <typename T, typename T0, typename T1> \
-      struct nodetype_T0oT1<T,T0_,T1_> { static const typename expression_node<T>::node_type result; }; \
-      template <typename T, typename T0, typename T1> \
+      #define synthnode_type_define(T0_,T1_,v_)                                                                 \
+      template <typename T, typename T0, typename T1>                                                           \
+      struct nodetype_T0oT1<T,T0_,T1_> { static const typename expression_node<T>::node_type result; };         \
+      template <typename T, typename T0, typename T1>                                                           \
       const typename expression_node<T>::node_type nodetype_T0oT1<T,T0_,T1_>::result = expression_node<T>:: v_; \
 
-      synthnode_type_def(const T0&,const T1&, e_vov)
-      synthnode_type_def(const T0&,const T1 , e_voc)
-      synthnode_type_def(const T0 ,const T1&, e_cov)
-      synthnode_type_def(      T0&,      T1&,e_none)
-      synthnode_type_def(const T0 ,const T1 ,e_none)
-      synthnode_type_def(      T0&,const T1 ,e_none)
-      synthnode_type_def(const T0 ,      T1&,e_none)
-      synthnode_type_def(const T0&,      T1&,e_none)
-      synthnode_type_def(      T0&,const T1&,e_none)
-      #undef synthnode_type_def
+      synthnode_type_define(const T0&,const T1&, e_vov)
+      synthnode_type_define(const T0&,const T1 , e_voc)
+      synthnode_type_define(const T0 ,const T1&, e_cov)
+      synthnode_type_define(      T0&,      T1&,e_none)
+      synthnode_type_define(const T0 ,const T1 ,e_none)
+      synthnode_type_define(      T0&,const T1 ,e_none)
+      synthnode_type_define(const T0 ,      T1&,e_none)
+      synthnode_type_define(const T0&,      T1&,e_none)
+      synthnode_type_define(      T0&,const T1&,e_none)
+      #undef synthnode_type_define
 
       template <typename T, typename T0, typename T1, typename T2>
       struct nodetype_T0oT1oT2 { static const typename expression_node<T>::node_type result; };
       template <typename T, typename T0, typename T1, typename T2>
       const typename expression_node<T>::node_type nodetype_T0oT1oT2<T,T0,T1,T2>::result = expression_node<T>::e_none;
 
-      #define synthnode_type_def(T0_,T1_,T2_,v_) \
-      template <typename T, typename T0, typename T1, typename T2> \
-      struct nodetype_T0oT1oT2<T,T0_,T1_,T2_> { static const typename expression_node<T>::node_type result; }; \
-      template <typename T, typename T0, typename T1, typename T2> \
+      #define synthnode_type_define(T0_,T1_,T2_,v_)                                                                    \
+      template <typename T, typename T0, typename T1, typename T2>                                                     \
+      struct nodetype_T0oT1oT2<T,T0_,T1_,T2_> { static const typename expression_node<T>::node_type result; };         \
+      template <typename T, typename T0, typename T1, typename T2>                                                     \
       const typename expression_node<T>::node_type nodetype_T0oT1oT2<T,T0_,T1_,T2_>::result = expression_node<T>:: v_; \
 
-      synthnode_type_def(const T0&,const T1&,const T2&, e_vovov)
-      synthnode_type_def(const T0&,const T1&,const T2 , e_vovoc)
-      synthnode_type_def(const T0&,const T1 ,const T2&, e_vocov)
-      synthnode_type_def(const T0 ,const T1&,const T2&, e_covov)
-      synthnode_type_def(const T0 ,const T1&,const T2 , e_covoc)
-      synthnode_type_def(const T0 ,const T1 ,const T2 , e_none )
-      synthnode_type_def(const T0 ,const T1 ,const T2&, e_none )
-      synthnode_type_def(const T0&,const T1 ,const T2 , e_none )
-      synthnode_type_def(      T0&,      T1&,      T2&, e_none )
-      #undef synthnode_type_def
+      synthnode_type_define(const T0&,const T1&,const T2&, e_vovov)
+      synthnode_type_define(const T0&,const T1&,const T2 , e_vovoc)
+      synthnode_type_define(const T0&,const T1 ,const T2&, e_vocov)
+      synthnode_type_define(const T0 ,const T1&,const T2&, e_covov)
+      synthnode_type_define(const T0 ,const T1&,const T2 , e_covoc)
+      synthnode_type_define(const T0 ,const T1 ,const T2 , e_none )
+      synthnode_type_define(const T0 ,const T1 ,const T2&, e_none )
+      synthnode_type_define(const T0&,const T1 ,const T2 , e_none )
+      synthnode_type_define(      T0&,      T1&,      T2&, e_none )
+      #undef synthnode_type_define
 
       template <typename T, typename T0, typename T1, typename T2, typename T3>
       struct nodetype_T0oT1oT2oT3 { static const typename expression_node<T>::node_type result; };
       template <typename T, typename T0, typename T1, typename T2, typename T3>
       const typename expression_node<T>::node_type nodetype_T0oT1oT2oT3<T,T0,T1,T2,T3>::result = expression_node<T>::e_none;
 
-      #define synthnode_type_def(T0_,T1_,T2_,T3_,v_) \
-      template <typename T, typename T0, typename T1, typename T2, typename T3> \
-      struct nodetype_T0oT1oT2oT3<T,T0_,T1_,T2_,T3_> { static const typename expression_node<T>::node_type result; }; \
-      template <typename T, typename T0, typename T1, typename T2, typename T3> \
+      #define synthnode_type_define(T0_,T1_,T2_,T3_,v_)                                                                       \
+      template <typename T, typename T0, typename T1, typename T2, typename T3>                                               \
+      struct nodetype_T0oT1oT2oT3<T,T0_,T1_,T2_,T3_> { static const typename expression_node<T>::node_type result; };         \
+      template <typename T, typename T0, typename T1, typename T2, typename T3>                                               \
       const typename expression_node<T>::node_type nodetype_T0oT1oT2oT3<T,T0_,T1_,T2_,T3_>::result = expression_node<T>:: v_; \
 
-      synthnode_type_def(const T0&,const T1&,const T2&, const T3&,e_vovovov)
-      synthnode_type_def(const T0&,const T1&,const T2&, const T3 ,e_vovovoc)
-      synthnode_type_def(const T0&,const T1&,const T2 , const T3&,e_vovocov)
-      synthnode_type_def(const T0&,const T1 ,const T2&, const T3&,e_vocovov)
-      synthnode_type_def(const T0 ,const T1&,const T2&, const T3&,e_covovov)
-      synthnode_type_def(const T0 ,const T1&,const T2 , const T3&,e_covocov)
-      synthnode_type_def(const T0&,const T1 ,const T2&, const T3 ,e_vocovoc)
-      synthnode_type_def(const T0 ,const T1&,const T2&, const T3 ,e_covovoc)
-      synthnode_type_def(const T0&,const T1 ,const T2 , const T3&,e_vococov)
-      synthnode_type_def(const T0 ,const T1 ,const T2 , const T3 ,e_none   )
-      synthnode_type_def(const T0 ,const T1 ,const T2 , const T3&,e_none   )
-      synthnode_type_def(const T0 ,const T1 ,const T2&, const T3 ,e_none   )
-      synthnode_type_def(const T0 ,const T1&,const T2 , const T3 ,e_none   )
-      synthnode_type_def(const T0&,const T1 ,const T2 , const T3 ,e_none   )
-      synthnode_type_def(const T0 ,const T1 ,const T2&, const T3&,e_none   )
-      synthnode_type_def(const T0&,const T1&,const T2 , const T3 ,e_none   )
-      #undef synthnode_type_def
+      synthnode_type_define(const T0&,const T1&,const T2&, const T3&,e_vovovov)
+      synthnode_type_define(const T0&,const T1&,const T2&, const T3 ,e_vovovoc)
+      synthnode_type_define(const T0&,const T1&,const T2 , const T3&,e_vovocov)
+      synthnode_type_define(const T0&,const T1 ,const T2&, const T3&,e_vocovov)
+      synthnode_type_define(const T0 ,const T1&,const T2&, const T3&,e_covovov)
+      synthnode_type_define(const T0 ,const T1&,const T2 , const T3&,e_covocov)
+      synthnode_type_define(const T0&,const T1 ,const T2&, const T3 ,e_vocovoc)
+      synthnode_type_define(const T0 ,const T1&,const T2&, const T3 ,e_covovoc)
+      synthnode_type_define(const T0&,const T1 ,const T2 , const T3&,e_vococov)
+      synthnode_type_define(const T0 ,const T1 ,const T2 , const T3 ,e_none   )
+      synthnode_type_define(const T0 ,const T1 ,const T2 , const T3&,e_none   )
+      synthnode_type_define(const T0 ,const T1 ,const T2&, const T3 ,e_none   )
+      synthnode_type_define(const T0 ,const T1&,const T2 , const T3 ,e_none   )
+      synthnode_type_define(const T0&,const T1 ,const T2 , const T3 ,e_none   )
+      synthnode_type_define(const T0 ,const T1 ,const T2&, const T3&,e_none   )
+      synthnode_type_define(const T0&,const T1&,const T2 , const T3 ,e_none   )
+      #undef synthnode_type_define
 
       template <typename T, typename T0, typename T1>
       class T0oT1 : public expression_node<T>
@@ -8326,7 +8330,9 @@ namespace exprtk
 
       inline void load_operations_map(std::multimap<std::string,details::base_operation_t,details::ilesscompare>& m)
       {
-         #define register_op(Symbol,Type,Args) m.insert(std::make_pair(std::string(Symbol),details::base_operation_t(Type,Args)));
+         #define register_op(Symbol,Type,Args)                                               \
+         m.insert(std::make_pair(std::string(Symbol),details::base_operation_t(Type,Args))); \
+
          register_op(      "abs",e_abs     , 1)
          register_op(     "acos",e_acos    , 1)
          register_op(     "asin",e_asin    , 1)
@@ -12085,8 +12091,8 @@ namespace exprtk
             synthesize_map_["(c)o(v)"] = synthesize_cov_expression::process;
             synthesize_map_["(v)o(c)"] = synthesize_voc_expression::process;
 
-            #define register_synthezier(S) \
-            synthesize_map_[S ::node_type::id()] = S ::process;\
+            #define register_synthezier(S)                      \
+            synthesize_map_[S ::node_type::id()] = S ::process; \
 
             register_synthezier(synthesize_vovov_expression0)
             register_synthezier(synthesize_vovov_expression1)
@@ -12727,23 +12733,25 @@ namespace exprtk
                if ((0 == result) && details::is_true(condition))
                {
                   result = consequent;
-                  free_node(*node_allocator_,arglist[2 * i]);
                   break;
-               }
-               else
-               {
-                  free_node(*node_allocator_,arglist[(2 * i)    ]);
-                  free_node(*node_allocator_,arglist[(2 * i) + 1]);
                }
             }
 
-            if (result)
+            if (0 == result)
             {
-               free_node(*node_allocator_,arglist.back());
-               return result;
+               result = arglist.back();
             }
-            else
-               return arglist.back();
+
+            for (std::size_t i = 0; i < arglist.size(); ++i)
+            {
+               expression_node_ptr current_expr = arglist[i];
+               if (current_expr && (current_expr != result))
+               {
+                  free_node(*node_allocator_,current_expr);
+               }
+            }
+
+            return result;
          }
 
          template <typename Allocator,
@@ -12761,7 +12769,7 @@ namespace exprtk
                return node_allocator_->allocate<details::switch_node<Type> >(arglist);
          }
 
-         #define unary_opr_switch_statements \
+         #define unary_opr_switch_statements           \
          case_stmt(details::  e_abs,details::  abs_op) \
          case_stmt(details:: e_acos,details:: acos_op) \
          case_stmt(details:: e_asin,details:: asin_op) \
@@ -12803,7 +12811,10 @@ namespace exprtk
             T& v = dynamic_cast<details::variable_node<T>*>(branch[0])->ref();
             switch (operation)
             {
-               #define case_stmt(op0,op1) case op0 : return node_allocator_->allocate<typename details::unary_variable_node<Type,op1<Type> > >(v);
+               #define case_stmt(op0,op1)                                                          \
+               case op0 : return node_allocator_->                                                 \
+                             allocate<typename details::unary_variable_node<Type,op1<Type> > >(v); \
+
                unary_opr_switch_statements
                #undef case_stmt
                default : return error_node();
@@ -12814,7 +12825,10 @@ namespace exprtk
          {
             switch (operation)
             {
-               #define case_stmt(op0,op1) case op0 : return node_allocator_->allocate<typename details::unary_branch_node<Type,op1<Type> > >(branch[0]);
+               #define case_stmt(op0,op1)                                                                \
+               case op0 : return node_allocator_->                                                       \
+                             allocate<typename details::unary_branch_node<Type,op1<Type> > >(branch[0]); \
+
                unary_opr_switch_statements
                #undef case_stmt
                default : return error_node();
@@ -12826,7 +12840,12 @@ namespace exprtk
             expression_node_ptr temp_node = error_node();
             switch (operation)
             {
-               #define case_stmt(op0,op1) case op0 : temp_node = node_allocator_->allocate<details::sf3_node<Type,op1<Type> > >(operation,branch); break;
+               #define case_stmt(op0,op1)                                              \
+               case op0 : temp_node = node_allocator_->                                \
+                                         allocate<details::sf3_node<Type,op1<Type> > > \
+                                            (operation,branch);                        \
+                          break;                                                       \
+
                case_stmt(details::e_sf00,details::sf00_op) case_stmt(details::e_sf01,details::sf01_op)
                case_stmt(details::e_sf02,details::sf02_op) case_stmt(details::e_sf03,details::sf03_op)
                case_stmt(details::e_sf04,details::sf04_op) case_stmt(details::e_sf05,details::sf05_op)
@@ -12867,7 +12886,11 @@ namespace exprtk
             const Type& v2 = dynamic_cast<details::variable_node<Type>*>(branch[2])->ref();
             switch (operation)
             {
-               #define case_stmt(op0,op1) case op0 : return node_allocator_->allocate_rrr<details::sf3_var_node<Type,op1<Type> > >(v0,v1,v2);
+               #define case_stmt(op0,op1)                                                 \
+               case op0 : return node_allocator_->                                        \
+                                    allocate_rrr<details::sf3_var_node<Type,op1<Type> > > \
+                                       (v0,v1,v2);                                        \
+
                case_stmt(details::e_sf00,details::sf00_op) case_stmt(details::e_sf01,details::sf01_op)
                case_stmt(details::e_sf02,details::sf02_op) case_stmt(details::e_sf03,details::sf03_op)
                case_stmt(details::e_sf04,details::sf04_op) case_stmt(details::e_sf05,details::sf05_op)
@@ -12909,7 +12932,10 @@ namespace exprtk
             {
                switch (operation)
                {
-                  #define case_stmt(op0,op1) case op0 : return node_allocator_->allocate<details::sf3_node<Type,op1<Type> > >(operation,branch);
+                  #define case_stmt(op0,op1)                                                     \
+                  case op0 : return node_allocator_->                                            \
+                                allocate<details::sf3_node<Type,op1<Type> > >(operation,branch); \
+
                   case_stmt(details::e_sf00,details::sf00_op) case_stmt(details::e_sf01,details::sf01_op)
                   case_stmt(details::e_sf02,details::sf02_op) case_stmt(details::e_sf03,details::sf03_op)
                   case_stmt(details::e_sf04,details::sf04_op) case_stmt(details::e_sf05,details::sf05_op)
@@ -12945,7 +12971,11 @@ namespace exprtk
             expression_node_ptr temp_node = error_node();
             switch (operation)
             {
-               #define case_stmt(op0,op1) case op0 : temp_node = node_allocator_->allocate<details::sf4_node<Type,op1<Type> > >(operation,branch); break;
+               #define case_stmt(op0,op1)                                                                 \
+               case op0 : temp_node = node_allocator_->                                                   \
+                                         allocate<details::sf4_node<Type,op1<Type> > >(operation,branch); \
+                          break;                                                                          \
+
                case_stmt(details::e_sf47,details::sf47_op) case_stmt(details::e_sf48,details::sf48_op)
                case_stmt(details::e_sf49,details::sf49_op) case_stmt(details::e_sf50,details::sf50_op)
                case_stmt(details::e_sf51,details::sf51_op) case_stmt(details::e_sf52,details::sf52_op)
@@ -12988,7 +13018,10 @@ namespace exprtk
             const Type& v3 = dynamic_cast<details::variable_node<Type>*>(branch[3])->ref();
             switch (operation)
             {
-               #define case_stmt(op0,op1) case op0 : return node_allocator_->allocate_rrrr<details::sf4_var_node<Type,op1<Type> > >(v0,v1,v2,v3);
+               #define case_stmt(op0,op1)                                                         \
+               case op0 : return node_allocator_->                                                \
+                             allocate_rrrr<details::sf4_var_node<Type,op1<Type> > >(v0,v1,v2,v3); \
+
                case_stmt(details::e_sf47,details::sf47_op) case_stmt(details::e_sf48,details::sf48_op)
                case_stmt(details::e_sf49,details::sf49_op) case_stmt(details::e_sf50,details::sf50_op)
                case_stmt(details::e_sf51,details::sf51_op) case_stmt(details::e_sf52,details::sf52_op)
@@ -13030,7 +13063,10 @@ namespace exprtk
                return varnode_optimize_sf4(operation,branch);
             switch (operation)
             {
-               #define case_stmt(op0,op1) case op0 : return node_allocator_->allocate<details::sf4_node<Type,op1<Type> > >(operation,branch);
+               #define case_stmt(op0,op1)                                                     \
+               case op0 : return node_allocator_->                                            \
+                             allocate<details::sf4_node<Type,op1<Type> > >(operation,branch); \
+
                case_stmt(details::e_sf47,details::sf47_op) case_stmt(details::e_sf48,details::sf48_op)
                case_stmt(details::e_sf49,details::sf49_op) case_stmt(details::e_sf50,details::sf50_op)
                case_stmt(details::e_sf51,details::sf51_op) case_stmt(details::e_sf52,details::sf52_op)
@@ -13069,7 +13105,12 @@ namespace exprtk
             expression_node_ptr temp_node = error_node();
             switch (operation)
             {
-               #define case_stmt(op0,op1) case op0 : temp_node = node_allocator_->allocate<details::vararg_node<Type,op1<Type> > >(arglist); break;
+               #define case_stmt(op0,op1)                                                 \
+               case op0 : temp_node = node_allocator_->                                   \
+                                         allocate<details::vararg_node<Type,op1<Type> > > \
+                                            (arglist);                                    \
+                          break;                                                          \
+
                case_stmt(details::e_sum,  details::vararg_add_op  )
                case_stmt(details::e_prod, details::vararg_mul_op  )
                case_stmt(details::e_avg,  details::vararg_avg_op  )
@@ -13092,7 +13133,10 @@ namespace exprtk
          {
             switch (operation)
             {
-               #define case_stmt(op0,op1) case op0 : return node_allocator_->allocate<details::vararg_varnode<Type,op1<Type> > >(arglist);
+               #define case_stmt(op0,op1)                                                  \
+               case op0 : return node_allocator_->                                         \
+                             allocate<details::vararg_varnode<Type,op1<Type> > >(arglist); \
+
                case_stmt(details::e_sum,  details::vararg_add_op  )
                case_stmt(details::e_prod, details::vararg_mul_op  )
                case_stmt(details::e_avg,  details::vararg_avg_op  )
@@ -13121,7 +13165,10 @@ namespace exprtk
                return varnode_optimize_varargfunc(operation,arglist);
             switch (operation)
             {
-               #define case_stmt(op0,op1) case op0 : return node_allocator_->allocate<details::vararg_node<Type,op1<Type> > >(arglist);
+               #define case_stmt(op0,op1)                                               \
+               case op0 : return node_allocator_->                                      \
+                             allocate<details::vararg_node<Type,op1<Type> > >(arglist); \
+
                case_stmt(details::e_sum,  details::vararg_add_op  )
                case_stmt(details::e_prod, details::vararg_mul_op  )
                case_stmt(details::e_avg,  details::vararg_avg_op  )
@@ -13277,7 +13324,7 @@ namespace exprtk
          }
          #endif
 
-         #define basic_opr_switch_statements \
+         #define basic_opr_switch_statements         \
          case_stmt(details:: e_add,details:: add_op) \
          case_stmt(details:: e_sub,details:: sub_op) \
          case_stmt(details:: e_mul,details:: mul_op) \
@@ -13285,7 +13332,7 @@ namespace exprtk
          case_stmt(details:: e_mod,details:: mod_op) \
          case_stmt(details:: e_pow,details:: pow_op) \
 
-         #define extended_opr_switch_statements \
+         #define extended_opr_switch_statements      \
          case_stmt(details::  e_lt,details::  lt_op) \
          case_stmt(details:: e_lte,details:: lte_op) \
          case_stmt(details::  e_gt,details::  gt_op) \
@@ -13305,7 +13352,10 @@ namespace exprtk
          {
             switch (p)
             {
-               #define case_stmt(cp) case cp : return node_allocator_->allocate<IPowNode<T,details::numeric::fast_exp<T,cp> > >(v);
+               #define case_stmt(cp)                                                     \
+               case cp : return node_allocator_->                                        \
+                            allocate<IPowNode<T,details::numeric::fast_exp<T,cp> > >(v); \
+
                case_stmt( 1) case_stmt( 2) case_stmt( 3) case_stmt( 4)
                case_stmt( 5) case_stmt( 6) case_stmt( 7) case_stmt( 8)
                case_stmt( 9) case_stmt(10) case_stmt(11) case_stmt(12)
@@ -13365,7 +13415,11 @@ namespace exprtk
             {
                switch (operation)
                {
-                  #define case_stmt(op0,op1) case op0 : return expr_gen.node_allocator_->template allocate<typename details::binary_ext_node<Type,op1<Type> > >(branch[0],branch[1]);
+                  #define case_stmt(op0,op1)                                                           \
+                  case op0 : return expr_gen.node_allocator_->                                         \
+                                template allocate<typename details::binary_ext_node<Type,op1<Type> > > \
+                                   (branch[0],branch[1]);                                              \
+
                   basic_opr_switch_statements
                   extended_opr_switch_statements
                   #undef case_stmt
@@ -13392,7 +13446,11 @@ namespace exprtk
                }
                switch (operation)
                {
-                  #define case_stmt(op0,op1) case op0 : return expr_gen.node_allocator_->template allocate_rc<typename details::vob_node<Type,op1<Type> > >(v,branch[1]);
+                  #define case_stmt(op0,op1)                                                       \
+                  case op0 : return expr_gen.node_allocator_->                                     \
+                                template allocate_rc<typename details::vob_node<Type,op1<Type> > > \
+                                   (v,branch[1]);                                                  \
+
                   basic_opr_switch_statements
                   extended_opr_switch_statements
                   #undef case_stmt
@@ -13419,7 +13477,11 @@ namespace exprtk
                }
                switch (operation)
                {
-                  #define case_stmt(op0,op1) case op0 : return expr_gen.node_allocator_->template allocate_cr<typename details::bov_node<Type,op1<Type> > >(branch[0],v);
+                  #define case_stmt(op0,op1)                                                       \
+                  case op0 : return expr_gen.node_allocator_->                                     \
+                                template allocate_cr<typename details::bov_node<Type,op1<Type> > > \
+                                   (branch[0],v);                                                  \
+
                   basic_opr_switch_statements
                   extended_opr_switch_statements
                   #undef case_stmt
@@ -13470,7 +13532,11 @@ namespace exprtk
                }
                switch (operation)
                {
-                  #define case_stmt(op0,op1) case op0 : return expr_gen.node_allocator_->template allocate_rc<typename details::cob_node<Type,op1<Type> > >(c,branch[1]);
+                  #define case_stmt(op0,op1)                                                       \
+                  case op0 : return expr_gen.node_allocator_->                                     \
+                                template allocate_rc<typename details::cob_node<Type,op1<Type> > > \
+                                   (c,branch[1]);                                                  \
+
                   basic_opr_switch_statements
                   extended_opr_switch_statements
                   #undef case_stmt
@@ -13521,7 +13587,11 @@ namespace exprtk
                }
                switch (operation)
                {
-                  #define case_stmt(op0,op1) case op0 : return expr_gen.node_allocator_->template allocate_cr<typename details::boc_node<Type,op1<Type> > >(branch[0],c);
+                  #define case_stmt(op0,op1)                                                    \
+                  case op0 : return expr_gen.node_allocator_->                                  \
+                             template allocate_cr<typename details::boc_node<Type,op1<Type> > > \
+                                (branch[0],c);                                                  \
+
                   basic_opr_switch_statements
                   extended_opr_switch_statements
                   #undef case_stmt
@@ -13556,7 +13626,11 @@ namespace exprtk
                const Type& v2 = dynamic_cast<details::variable_node<Type>*>(branch[1])->ref();
                switch (operation)
                {
-                  #define case_stmt(op0,op1) case op0 : return expr_gen.node_allocator_->template allocate_rr<typename details::vov_node<Type,op1<Type> > >(v1,v2);
+                  #define case_stmt(op0,op1)                                                       \
+                  case op0 : return expr_gen.node_allocator_->                                     \
+                                template allocate_rr<typename details::vov_node<Type,op1<Type> > > \
+                                   (v1,v2);                                                        \
+
                   basic_opr_switch_statements
                   extended_opr_switch_statements
                   #undef case_stmt
@@ -13576,7 +13650,11 @@ namespace exprtk
                details::free_node(*(expr_gen.node_allocator_),branch[0]);
                switch (operation)
                {
-                  #define case_stmt(op0,op1) case op0 : return expr_gen.node_allocator_->template allocate_cr<typename details::cov_node<Type,op1<Type> > >(c,v);
+                  #define case_stmt(op0,op1)                                                       \
+                  case op0 : return expr_gen.node_allocator_->                                     \
+                                template allocate_cr<typename details::cov_node<Type,op1<Type> > > \
+                                   (c,v);                                                          \
+
                   basic_opr_switch_statements
                   extended_opr_switch_statements
                   #undef case_stmt
@@ -13600,7 +13678,11 @@ namespace exprtk
                }
                switch (operation)
                {
-                  #define case_stmt(op0,op1) case op0 : return expr_gen.node_allocator_->template allocate_rc<typename details::voc_node<Type,op1<Type> > >(v,c);
+                  #define case_stmt(op0,op1)                                                       \
+                  case op0 : return expr_gen.node_allocator_->                                     \
+                                template allocate_rc<typename details::voc_node<Type,op1<Type> > > \
+                                   (v,c);                                                          \
+
                   basic_opr_switch_statements
                   extended_opr_switch_statements
                   #undef case_stmt
@@ -13618,7 +13700,10 @@ namespace exprtk
             {
                switch (sf3opr)
                {
-                  #define case_stmt(op0,op1) case op0 : return details::T0oT1oT2_sf3ext<T,T0,T1,T2,op1<Type> >::allocate(*(expr_gen.node_allocator_),t0,t1,t2);
+                  #define case_stmt(op0,op1)                                           \
+                  case op0 : return details::T0oT1oT2_sf3ext<T,T0,T1,T2,op1<Type> >::  \
+                                       allocate(*(expr_gen.node_allocator_),t0,t1,t2); \
+
                   case_stmt(details::e_sf00,details::sf00_op) case_stmt(details::e_sf01,details::sf01_op)
                   case_stmt(details::e_sf02,details::sf02_op) case_stmt(details::e_sf03,details::sf03_op)
                   case_stmt(details::e_sf04,details::sf04_op) case_stmt(details::e_sf05,details::sf05_op)
@@ -13663,7 +13748,10 @@ namespace exprtk
             {
                switch (sf4opr)
                {
-                  #define case_stmt(op0,op1) case op0 : return details::T0oT1oT2oT3_sf4ext<Type,T0,T1,T2,T3,op1<Type> >::allocate(*(expr_gen.node_allocator_),t0,t1,t2,t3);
+                  #define case_stmt(op0,op1)                                                   \
+                  case op0 : return details::T0oT1oT2oT3_sf4ext<Type,T0,T1,T2,T3,op1<Type> >:: \
+                                       allocate(*(expr_gen.node_allocator_),t0,t1,t2,t3);      \
+
                   case_stmt(details::e_sf47,details::sf47_op) case_stmt(details::e_sf48,details::sf48_op)
                   case_stmt(details::e_sf49,details::sf49_op) case_stmt(details::e_sf50,details::sf50_op)
                   case_stmt(details::e_sf51,details::sf51_op) case_stmt(details::e_sf52,details::sf52_op)
@@ -16215,7 +16303,7 @@ namespace exprtk
 
          #ifndef exprtk_disable_string_capabilities
 
-         #define string_opr_switch_statements \
+         #define string_opr_switch_statements          \
          case_stmt(details::  e_lt ,details::   lt_op) \
          case_stmt(details:: e_lte ,details::  lte_op) \
          case_stmt(details::  e_gt ,details::   gt_op) \
@@ -16231,7 +16319,11 @@ namespace exprtk
          {
             switch (opr)
             {
-               #define case_stmt(op0,op1) case op0 : return node_allocator_->allocate_ttt<typename details::str_xrox_node<Type,T0,T1,range_pack,op1<Type> >,T0,T1>(s0,s1,rp0);
+               #define case_stmt(op0,op1)                                                                                 \
+               case op0 : return node_allocator_->                                                                        \
+                                    allocate_ttt<typename details::str_xrox_node<Type,T0,T1,range_pack,op1<Type> >,T0,T1> \
+                                       (s0,s1,rp0);                                                                       \
+
                string_opr_switch_statements
                #undef case_stmt
                default : return error_node();
@@ -16243,7 +16335,11 @@ namespace exprtk
          {
             switch (opr)
             {
-               #define case_stmt(op0,op1) case op0 : return node_allocator_->allocate_ttt<typename details::str_xoxr_node<Type,T0,T1,range_pack,op1<Type> >,T0,T1>(s0,s1,rp1);
+               #define case_stmt(op0,op1)                                                                                 \
+               case op0 : return node_allocator_->                                                                        \
+                                    allocate_ttt<typename details::str_xoxr_node<Type,T0,T1,range_pack,op1<Type> >,T0,T1> \
+                                       (s0,s1,rp1);                                                                       \
+
                string_opr_switch_statements
                #undef case_stmt
                default : return error_node();
@@ -16255,7 +16351,11 @@ namespace exprtk
          {
             switch (opr)
             {
-               #define case_stmt(op0,op1) case op0 : return node_allocator_->allocate_tttt<typename details::str_xroxr_node<Type,T0,T1,range_pack,op1<Type> >,T0,T1>(s0,s1,rp0,rp1);
+               #define case_stmt(op0,op1)                                                                                   \
+               case op0 : return node_allocator_->                                                                          \
+                                    allocate_tttt<typename details::str_xroxr_node<Type,T0,T1,range_pack,op1<Type> >,T0,T1> \
+                                       (s0,s1,rp0,rp1);                                                                     \
+
                string_opr_switch_statements
                #undef case_stmt
                default : return error_node();
@@ -16267,7 +16367,10 @@ namespace exprtk
          {
             switch (opr)
             {
-               #define case_stmt(op0,op1) case op0 : return node_allocator_->allocate_tt<typename details::sos_node<Type,T0,T1,op1<Type> >,T0,T1>(s0,s1);
+               #define case_stmt(op0,op1)                                                                        \
+               case op0 : return node_allocator_->                                                               \
+                                    allocate_tt<typename details::sos_node<Type,T0,T1,op1<Type> >,T0,T1>(s0,s1); \
+
                string_opr_switch_statements
                #undef case_stmt
                default : return error_node();
@@ -16737,7 +16840,9 @@ namespace exprtk
 
       inline void load_unary_operations_map(unary_op_map_t& m)
       {
-         #define register_unary_op(Op,UnaryFunctor) m.insert(std::make_pair(Op,UnaryFunctor<T>::process));
+         #define register_unary_op(Op,UnaryFunctor)             \
+         m.insert(std::make_pair(Op,UnaryFunctor<T>::process)); \
+
          register_unary_op(details::  e_abs,details::  abs_op)
          register_unary_op(details:: e_acos,details:: acos_op)
          register_unary_op(details:: e_asin,details:: asin_op)
@@ -16778,7 +16883,9 @@ namespace exprtk
 
       inline void load_binary_operations_map(binary_op_map_t& m)
       {
-         #define register_binary_op(Op,BinaryFunctor) m.insert(typename binary_op_map_t::value_type(Op,BinaryFunctor<T>::process));
+         #define register_binary_op(Op,BinaryFunctor)                                  \
+         m.insert(typename binary_op_map_t::value_type(Op,BinaryFunctor<T>::process)); \
+
          register_binary_op(details:: e_add,details:: add_op)
          register_binary_op(details:: e_sub,details:: sub_op)
          register_binary_op(details:: e_mul,details:: mul_op)
@@ -16802,7 +16909,9 @@ namespace exprtk
 
       inline void load_inv_binary_operations_map(inv_binary_op_map_t& m)
       {
-         #define register_binary_op(Op,BinaryFunctor) m.insert(typename inv_binary_op_map_t::value_type(BinaryFunctor<T>::process,Op));
+         #define register_binary_op(Op,BinaryFunctor)                                      \
+         m.insert(typename inv_binary_op_map_t::value_type(BinaryFunctor<T>::process,Op)); \
+
          register_binary_op(details:: e_add,details:: add_op)
          register_binary_op(details:: e_sub,details:: sub_op)
          register_binary_op(details:: e_mul,details:: mul_op)
@@ -16827,7 +16936,10 @@ namespace exprtk
       inline void load_sf3_map(sf3_map_t& sf3_map)
       {
          typedef std::pair<trinary_functor_t,details::operator_type> pair_t;
-         #define register_sf3(Op) sf3_map[details::sf##Op##_op<T>::id()] = pair_t(details::sf##Op##_op<T>::process,details::e_sf##Op);
+
+         #define register_sf3(Op)                                                                             \
+         sf3_map[details::sf##Op##_op<T>::id()] = pair_t(details::sf##Op##_op<T>::process,details::e_sf##Op); \
+
          register_sf3(00) register_sf3(01) register_sf3(02) register_sf3(03)
          register_sf3(04) register_sf3(05) register_sf3(06) register_sf3(07)
          register_sf3(08) register_sf3(09) register_sf3(10) register_sf3(11)
@@ -16842,7 +16954,10 @@ namespace exprtk
       inline void load_sf4_map(sf4_map_t& sf4_map)
       {
          typedef std::pair<quaternary_functor_t,details::operator_type> pair_t;
-         #define register_sf4(Op) sf4_map[details::sf##Op##_op<T>::id()] = pair_t(details::sf##Op##_op<T>::process,details::e_sf##Op);
+
+         #define register_sf4(Op)                                                                             \
+         sf4_map[details::sf##Op##_op<T>::id()] = pair_t(details::sf##Op##_op<T>::process,details::e_sf##Op); \
+
          register_sf4(47) register_sf4(48) register_sf4(49) register_sf4(50)
          register_sf4(51) register_sf4(52) register_sf4(53) register_sf4(54)
          register_sf4(55) register_sf4(56) register_sf4(57) register_sf4(58)
@@ -16854,8 +16969,9 @@ namespace exprtk
          register_sf4(79) register_sf4(80) register_sf4(81) register_sf4(82)
          #undef register_sf4
 
-         typedef std::pair<quaternary_functor_t,details::operator_type> pair_t;
-         #define register_sf4ext(Op) sf4_map[details::sfext##Op##_op<T>::id()] = pair_t(details::sfext##Op##_op<T>::process,details::e_sf4ext##Op);
+         #define register_sf4ext(Op)                                                                                    \
+         sf4_map[details::sfext##Op##_op<T>::id()] = pair_t(details::sfext##Op##_op<T>::process,details::e_sf4ext##Op); \
+
          register_sf4ext(00) register_sf4ext(01) register_sf4ext(02) register_sf4ext(03)
          register_sf4ext(04) register_sf4ext(05) register_sf4ext(06) register_sf4ext(07)
          register_sf4ext(08) register_sf4ext(09) register_sf4ext(10) register_sf4ext(11)

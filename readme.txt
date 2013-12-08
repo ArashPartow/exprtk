@@ -15,10 +15,10 @@ operations, functions and processes:
 
 (0) Basic operators: +, -, *, /, %, ^
 
-(1) Functions:       abs, avg, ceil, clamp, erf, erfc, exp, expm1,
-                     floor, frac, inrange, log, log10, log1p, log2,
-                     logn, max, min, root, round, roundn, sgn, sqrt,
-                     sum, trunc
+(1) Functions:       abs, avg, ceil, clamp, equal, erf, erfc, exp,
+                     expm1, floor, frac, log, log10, log1p, log2,
+                     logn, max, min, mul, nequal, root, round,
+                     roundn, sgn, sqrt, sum, trunc
 
 (2) Trigonometry:    acos, asin, atan, atan2, cos, cosh, cot, csc,
                      deg2grad, deg2rad, grad2deg, hypot, rad2deg,
@@ -557,7 +557,14 @@ correctly optimize such expressions for a given architecture.
  (18) Recursive calls made from within composited functions will have
       a stack size bound by the stack of the executing architecture.
 
- (19) Expressions may contain any of the following comment styles:
+ (19) The following are examples of floating point value represenations
+      that are supported:
+      (a) 12345        (b) -123.456
+      (c) +123.456e+12 (d) 123.456E-12
+      (c) +012.045e+07 (e) .1234
+      (f) 123.456f     (f) -321.654E+3L
+
+ (20) Expressions may contain any of the following comment styles:
       1. // .... \n
       2. #  .... \n
       3. /* .... */

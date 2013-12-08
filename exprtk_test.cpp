@@ -4322,20 +4322,20 @@ inline bool run_test20()
 
 int main()
 {
-   #define perform_test(Type,Number) \
-   { \
-      exprtk::timer timer; \
-      timer.start(); \
-      if (!run_test##Number<Type>()) \
-      { \
-         printf("run_test"#Number" ("#Type") *** FAILED! ***\n"); \
-      } \
-      else \
-      { \
-         timer.stop(); \
+   #define perform_test(Type,Number)                                                                \
+   {                                                                                                \
+      exprtk::timer timer;                                                                          \
+      timer.start();                                                                                \
+      if (!run_test##Number<Type>())                                                                \
+      {                                                                                             \
+         printf("run_test"#Number" ("#Type") *** FAILED! ***\n");                                   \
+      }                                                                                             \
+      else                                                                                          \
+      {                                                                                             \
+         timer.stop();                                                                              \
          printf("run_test"#Number" ("#Type") - Result: SUCCESS     Time: %8.4fsec\n",timer.time()); \
-      } \
-   } \
+      }                                                                                             \
+   }                                                                                                \
 
    perform_test(double,00)
    perform_test(double,01)

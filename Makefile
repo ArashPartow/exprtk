@@ -20,7 +20,7 @@ COMPILER         = -c++
 OPTIMIZATION_OPT = -O1
 BASE_OPTIONS     = -ansi -pedantic-errors -Wall -Wextra -Werror -Wno-long-long
 OPTIONS          = $(BASE_OPTIONS) $(OPTIMIZATION_OPT) -o
-LINKER_OPT       = -L/usr/lib -lstdc++
+LINKER_OPT       = -L/usr/lib -lstdc++ -lm
 
 BUILD_LIST+=exprtk_test
 BUILD_LIST+=exprtk_benchmark
