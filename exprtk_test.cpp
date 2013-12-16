@@ -988,6 +988,7 @@ static const test_t test_list[] =
                      test_t("switch { case [(1 <= 2)] : {1}; default: 1.12345; }",1.0),
                      test_t("switch { case ([1 >  2]) : [0]; case ([1 <= 2]) : 1; default: 1.12345; }",1.0),
                      test_t("switch { case {(1 <= 2)} : switch { case ({1 <= 2}) : 1; default: 1.12345; }; default: 1.12345; }",1.0),
+                     test_t("switch { case 1 > 1 : 1; case 2 > 2 : 2; case 3 = 3 : 3; case 4 > 4 : 4; default : 5; }",3.0),
                      test_t("repeat 1.1 + 2.2 until (1 < 2)",3.3),
                      test_t("repeat (1.1 + 2.2) until (1 < 2)",3.3),
                      test_t("repeat 1.1 + 2.2; until (1 < 2)",3.3),

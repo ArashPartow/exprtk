@@ -467,7 +467,7 @@ namespace exprtk
             template <typename T>
             inline bool is_false_impl(const T v)
             {
-               return (v == T(0));
+               return (T(0) == v);
             }
 
             template <typename T>
@@ -1754,7 +1754,7 @@ namespace exprtk
                           if ('/' == c1) { mode = 1; incr = 2; }
                      else if ('*' == c1) { mode = 2; incr = 2; }
                   }
-                  return (mode != 0);
+                  return (0 != mode);
                }
 
                static inline bool comment_end(const char c0, const char c1, const int mode)
@@ -5455,27 +5455,23 @@ namespace exprtk
                    template <typename,typename> class Sequence>
          static inline T process(const Sequence<Type,Allocator>& arglist)
          {
-            if (arglist.size() > 5)
+            switch (arglist.size())
             {
-               T result = T(0);
-               for (std::size_t i = 0; i < arglist.size(); ++i)
-               {
-                  result += value(arglist[i]);
-               }
-               return result;
-            }
-            else
-            {
-               switch (arglist.size())
-               {
-                  case 0  : return T(0);
-                  case 1  : return process_1(arglist);
-                  case 2  : return process_2(arglist);
-                  case 3  : return process_3(arglist);
-                  case 4  : return process_4(arglist);
-                  case 5  : return process_5(arglist);
-                  default : return std::numeric_limits<T>::quiet_NaN();
-               }
+               case 0  : return T(0);
+               case 1  : return process_1(arglist);
+               case 2  : return process_2(arglist);
+               case 3  : return process_3(arglist);
+               case 4  : return process_4(arglist);
+               case 5  : return process_5(arglist);
+               default :
+                         {
+                            T result = T(0);
+                            for (std::size_t i = 0; i < arglist.size(); ++i)
+                            {
+                              result += value(arglist[i]);
+                            }
+                            return result;
+                         }
             }
          }
 
@@ -5524,27 +5520,23 @@ namespace exprtk
                    template <typename,typename> class Sequence>
          static inline T process(const Sequence<Type,Allocator>& arglist)
          {
-            if (arglist.size() > 5)
+            switch (arglist.size())
             {
-               T result = T(value(arglist[0]));
-               for (std::size_t i = 1; i < arglist.size(); ++i)
-               {
-                  result *= value(arglist[i]);
-               }
-               return result;
-            }
-            else
-            {
-               switch (arglist.size())
-               {
-                  case 0  : return T(0);
-                  case 1  : return process_1(arglist);
-                  case 2  : return process_2(arglist);
-                  case 3  : return process_3(arglist);
-                  case 4  : return process_4(arglist);
-                  case 5  : return process_5(arglist);
-                  default : return std::numeric_limits<T>::quiet_NaN();
-               }
+               case 0  : return T(0);
+               case 1  : return process_1(arglist);
+               case 2  : return process_2(arglist);
+               case 3  : return process_3(arglist);
+               case 4  : return process_4(arglist);
+               case 5  : return process_5(arglist);
+               default :
+                         {
+                            T result = T(value(arglist[0]));
+                            for (std::size_t i = 1; i < arglist.size(); ++i)
+                            {
+                               result *= value(arglist[i]);
+                            }
+                            return result;
+                         }
             }
          }
 
@@ -5593,22 +5585,15 @@ namespace exprtk
                    template <typename,typename> class Sequence>
          static inline T process(const Sequence<Type,Allocator>& arglist)
          {
-            if (arglist.size() > 5)
+            switch (arglist.size())
             {
-               return vararg_add_op<T>::process(arglist) / arglist.size();
-            }
-            else
-            {
-               switch (arglist.size())
-               {
-                  case 0  : return T(0);
-                  case 1  : return process_1(arglist);
-                  case 2  : return process_2(arglist);
-                  case 3  : return process_3(arglist);
-                  case 4  : return process_4(arglist);
-                  case 5  : return process_5(arglist);
-                  default : return std::numeric_limits<T>::quiet_NaN();
-               }
+               case 0  : return T(0);
+               case 1  : return process_1(arglist);
+               case 2  : return process_2(arglist);
+               case 3  : return process_3(arglist);
+               case 4  : return process_4(arglist);
+               case 5  : return process_5(arglist);
+               default : return vararg_add_op<T>::process(arglist) / arglist.size();
             }
          }
 
@@ -5656,29 +5641,25 @@ namespace exprtk
                    template <typename,typename> class Sequence>
          static inline T process(const Sequence<Type,Allocator>& arglist)
          {
-            if (arglist.size() > 5)
+            switch (arglist.size())
             {
-               T result = T(value(arglist[0]));
-               for (std::size_t i = 1; i < arglist.size(); ++i)
-               {
-                  const T v = value(arglist[i]);
-                  if (v < result)
-                     result = v;
-               }
-               return result;
-            }
-            else
-            {
-               switch (arglist.size())
-               {
-                  case 0  : return T(0);
-                  case 1  : return process_1(arglist);
-                  case 2  : return process_2(arglist);
-                  case 3  : return process_3(arglist);
-                  case 4  : return process_4(arglist);
-                  case 5  : return process_5(arglist);
-                  default : return std::numeric_limits<T>::quiet_NaN();
-               }
+               case 0  : return T(0);
+               case 1  : return process_1(arglist);
+               case 2  : return process_2(arglist);
+               case 3  : return process_3(arglist);
+               case 4  : return process_4(arglist);
+               case 5  : return process_5(arglist);
+               default :
+                         {
+                            T result = T(value(arglist[0]));
+                            for (std::size_t i = 1; i < arglist.size(); ++i)
+                            {
+                               const T v = value(arglist[i]);
+                               if (v < result)
+                                  result = v;
+                            }
+                            return result;
+                         }
             }
          }
 
@@ -5728,29 +5709,25 @@ namespace exprtk
                    template <typename,typename> class Sequence>
          static inline T process(const Sequence<Type,Allocator>& arglist)
          {
-            if (arglist.size() > 5)
+            switch (arglist.size())
             {
-               T result = T(value(arglist[0]));
-               for (std::size_t i = 1; i < arglist.size(); ++i)
-               {
-                  const T v = value(arglist[i]);
-                  if (v > result)
-                     result = v;
-               }
-               return result;
-            }
-            else
-            {
-               switch (arglist.size())
-               {
-                  case 0  : return T(0);
-                  case 1  : return process_1(arglist);
-                  case 2  : return process_2(arglist);
-                  case 3  : return process_3(arglist);
-                  case 4  : return process_4(arglist);
-                  case 5  : return process_5(arglist);
-                  default : return std::numeric_limits<T>::quiet_NaN();
-               }
+               case 0  : return T(0);
+               case 1  : return process_1(arglist);
+               case 2  : return process_2(arglist);
+               case 3  : return process_3(arglist);
+               case 4  : return process_4(arglist);
+               case 5  : return process_5(arglist);
+               default :
+                         {
+                            T result = T(value(arglist[0]));
+                            for (std::size_t i = 1; i < arglist.size(); ++i)
+                            {
+                               const T v = value(arglist[i]);
+                               if (v > result)
+                                  result = v;
+                            }
+                            return result;
+                         }
             }
          }
 
@@ -5800,26 +5777,22 @@ namespace exprtk
                    template <typename,typename> class Sequence>
          static inline T process(const Sequence<Type,Allocator>& arglist)
          {
-            if (arglist.size() > 5)
+            switch (arglist.size())
             {
-               for (std::size_t i = 0; i < arglist.size(); ++i)
-               {
-                  if (T(0) == value(arglist[i]))
-                     return T(0);
-               }
-               return T(1);
-            }
-            else
-            {
-               switch (arglist.size())
-               {
-                  case 1  : return process_1(arglist);
-                  case 2  : return process_2(arglist);
-                  case 3  : return process_3(arglist);
-                  case 4  : return process_4(arglist);
-                  case 5  : return process_5(arglist);
-                  default : return T(0);
-               }
+               case 1  : return process_1(arglist);
+               case 2  : return process_2(arglist);
+               case 3  : return process_3(arglist);
+               case 4  : return process_4(arglist);
+               case 5  : return process_5(arglist);
+               default :
+                         {
+                            for (std::size_t i = 0; i < arglist.size(); ++i)
+                            {
+                               if (T(0) == value(arglist[i]))
+                                  return T(0);
+                            }
+                            return T(1);
+                         }
             }
          }
 
@@ -5833,7 +5806,8 @@ namespace exprtk
          static inline T process_2(const Sequence& arglist)
          {
             return (
-                    (T(0) != value(arglist[0])) && (T(0) != value(arglist[1]))
+                    (T(0) != value(arglist[0])) &&
+                    (T(0) != value(arglist[1]))
                    ) ? T(1) : T(0);
          }
 
@@ -5841,7 +5815,8 @@ namespace exprtk
          static inline T process_3(const Sequence& arglist)
          {
             return (
-                    (T(0) != value(arglist[0])) && (T(0) != value(arglist[1])) &&
+                    (T(0) != value(arglist[0])) &&
+                    (T(0) != value(arglist[1])) &&
                     (T(0) != value(arglist[2]))
                    ) ? T(1) : T(0);
          }
@@ -5850,8 +5825,10 @@ namespace exprtk
          static inline T process_4(const Sequence& arglist)
          {
             return (
-                    (T(0) != value(arglist[0])) && (T(0) != value(arglist[1])) &&
-                    (T(0) != value(arglist[2])) && (T(0) != value(arglist[3]))
+                    (T(0) != value(arglist[0])) &&
+                    (T(0) != value(arglist[1])) &&
+                    (T(0) != value(arglist[2])) &&
+                    (T(0) != value(arglist[3]))
                    ) ? T(1) : T(0);
          }
 
@@ -5859,8 +5836,10 @@ namespace exprtk
          static inline T process_5(const Sequence& arglist)
          {
             return (
-                    (T(0) != value(arglist[0])) && (T(0) != value(arglist[1])) &&
-                    (T(0) != value(arglist[2])) && (T(0) != value(arglist[3])) &&
+                    (T(0) != value(arglist[0])) &&
+                    (T(0) != value(arglist[1])) &&
+                    (T(0) != value(arglist[2])) &&
+                    (T(0) != value(arglist[3])) &&
                     (T(0) != value(arglist[4]))
                    ) ? T(1) : T(0);
          }
@@ -5876,26 +5855,22 @@ namespace exprtk
                    template <typename,typename> class Sequence>
          static inline T process(const Sequence<Type,Allocator>& arglist)
          {
-            if (arglist.size() > 5)
+            switch (arglist.size())
             {
-               for (std::size_t i = 0; i < arglist.size(); ++i)
-               {
-                  if (T(0) != value(arglist[i]))
-                     return T(1);
-               }
-               return T(0);
-            }
-            else
-            {
-               switch (arglist.size())
-               {
-                  case 1  : return process_1(arglist);
-                  case 2  : return process_2(arglist);
-                  case 3  : return process_3(arglist);
-                  case 4  : return process_4(arglist);
-                  case 5  : return process_5(arglist);
-                  default : return T(0);
-               }
+               case 1  : return process_1(arglist);
+               case 2  : return process_2(arglist);
+               case 3  : return process_3(arglist);
+               case 4  : return process_4(arglist);
+               case 5  : return process_5(arglist);
+               default :
+                         {
+                            for (std::size_t i = 0; i < arglist.size(); ++i)
+                            {
+                               if (T(0) != value(arglist[i]))
+                                  return T(1);
+                            }
+                            return T(0);
+                         }
             }
          }
 
@@ -5909,7 +5884,8 @@ namespace exprtk
          static inline T process_2(const Sequence& arglist)
          {
             return (
-                    (T(0) != value(arglist[0])) || (T(0) != value(arglist[1]))
+                    (T(0) != value(arglist[0])) ||
+                    (T(0) != value(arglist[1]))
                    ) ? T(1) : T(0);
          }
 
@@ -5917,7 +5893,8 @@ namespace exprtk
          static inline T process_3(const Sequence& arglist)
          {
             return (
-                    (T(0) != value(arglist[0])) || (T(0) != value(arglist[1])) ||
+                    (T(0) != value(arglist[0])) ||
+                    (T(0) != value(arglist[1])) ||
                     (T(0) != value(arglist[2]))
                    ) ? T(1) : T(0);
          }
@@ -5926,8 +5903,10 @@ namespace exprtk
          static inline T process_4(const Sequence& arglist)
          {
             return (
-                    (T(0) != value(arglist[0])) || (T(0) != value(arglist[1])) ||
-                    (T(0) != value(arglist[2])) || (T(0) != value(arglist[3]))
+                    (T(0) != value(arglist[0])) ||
+                    (T(0) != value(arglist[1])) ||
+                    (T(0) != value(arglist[2])) ||
+                    (T(0) != value(arglist[3]))
                    ) ? T(1) : T(0);
          }
 
@@ -5935,8 +5914,10 @@ namespace exprtk
          static inline T process_5(const Sequence& arglist)
          {
             return (
-                    (T(0) != value(arglist[0])) || (T(0) != value(arglist[1])) ||
-                    (T(0) != value(arglist[2])) || (T(0) != value(arglist[3])) ||
+                    (T(0) != value(arglist[0])) ||
+                    (T(0) != value(arglist[1])) ||
+                    (T(0) != value(arglist[2])) ||
+                    (T(0) != value(arglist[3])) ||
                     (T(0) != value(arglist[4]))
                    ) ? T(1) : T(0);
          }
@@ -5952,33 +5933,25 @@ namespace exprtk
                    template <typename,typename> class Sequence>
          static inline T process(const Sequence<Type,Allocator>& arglist)
          {
-            if (arglist.size() > 8)
+            switch (arglist.size())
             {
-               if (arglist.empty())
-                  return std::numeric_limits<T>::quiet_NaN();
-               else
-               {
-                  for (std::size_t i = 0; i < (arglist.size() - 1); ++i)
-                  {
-                     value(arglist[i]);
-                  }
-               }
-               return value(arglist.back());
-            }
-            else
-            {
-               switch (arglist.size())
-               {
-                  case 1  : return process_1(arglist);
-                  case 2  : return process_2(arglist);
-                  case 3  : return process_3(arglist);
-                  case 4  : return process_4(arglist);
-                  case 5  : return process_5(arglist);
-                  case 6  : return process_6(arglist);
-                  case 7  : return process_7(arglist);
-                  case 8  : return process_8(arglist);
-                  default : return std::numeric_limits<T>::quiet_NaN();
-               }
+               case 0  : return std::numeric_limits<T>::quiet_NaN();
+               case 1  : return process_1(arglist);
+               case 2  : return process_2(arglist);
+               case 3  : return process_3(arglist);
+               case 4  : return process_4(arglist);
+               case 5  : return process_5(arglist);
+               case 6  : return process_6(arglist);
+               case 7  : return process_7(arglist);
+               case 8  : return process_8(arglist);
+               default :
+                         {
+                            for (std::size_t i = 0; i < (arglist.size() - 1); ++i)
+                            {
+                               value(arglist[i]);
+                            }
+                            return value(arglist.back());
+                         }
             }
          }
 
@@ -11232,7 +11205,7 @@ namespace exprtk
       {
          if (expression_list.empty())
             return error_node();
-         if (expression_list.size() == 1)
+         if (1 == expression_list.size())
             return expression_list[0];
 
          Sequence<expression_node_ptr,Allocator> tmp_expression_list;
