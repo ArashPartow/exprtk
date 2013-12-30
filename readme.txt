@@ -557,12 +557,12 @@ correctly optimize such expressions for a given architecture.
  (18) Recursive calls made from within composited functions will have
       a stack size bound by the stack of the executing architecture.
 
- (19) The following are examples of floating point value represenations
-      that are supported:
+ (19) The following are examples of compliant floating point value
+      representations:
       (a) 12345        (b) -123.456
       (c) +123.456e+12 (d) 123.456E-12
-      (c) +012.045e+07 (e) .1234
-      (f) 123.456f     (f) -321.654E+3L
+      (e) +012.045e+07 (f) .1234
+      (g) 123.456f     (h) -321.654E+3L
 
  (20) Expressions may contain any of the following comment styles:
       1. // .... \n
@@ -583,7 +583,7 @@ struct myfunc : public exprtk::ifunction<T>
 {
    myfunc() : exprtk::ifunction<T>(2) {}
 
-   inline T operator()(const T& v1, const T& v2)
+   T operator()(const T& v1, const T& v2)
    {
       return T(1) + (v1 * v2) / T(3);
    }

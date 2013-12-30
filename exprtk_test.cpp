@@ -3,7 +3,7 @@
  *         C++ Mathematical Expression Toolkit Library        *
  *                                                            *
  * Examples and Unit-Tests                                    *
- * Author: Arash Partow (1999-2013)                           *
+ * Author: Arash Partow (1999-2014)                           *
  * URL: http://www.partow.net/programming/exprtk/index.html   *
  *                                                            *
  * Copyright notice:                                          *
@@ -3658,7 +3658,6 @@ inline bool run_test19()
    typedef exprtk::symbol_table<T>      symbol_table_t;
    typedef exprtk::expression<T>          expression_t;
    typedef exprtk::parser<T>                  parser_t;
-   typedef exprtk::parser_error::type          error_t;
    typedef exprtk::function_compositor<T> compositor_t;
    typedef typename compositor_t::function  function_t;
 
@@ -3685,7 +3684,7 @@ inline bool run_test19()
       // gof(x) = g(f(x))
       compositor.add("gof","g(f(x))","x");
 
-      exprtk::symbol_table<T>& symbol_table = compositor.symbol_table();
+      symbol_table_t& symbol_table = compositor.symbol_table();
       symbol_table.add_constants();
       symbol_table.add_variable("x",x);
 
@@ -3707,7 +3706,7 @@ inline bool run_test19()
          expression_t expression;
          expression.register_symbol_table(symbol_table);
 
-         exprtk::parser<T> parser;
+         parser_t parser;
 
          if (!parser.compile(expr_str_list[i],expression))
          {
@@ -3782,7 +3781,7 @@ inline bool run_test19()
                .var("x").var("y").var("z")
                .var("w").var("u").var("v"));
 
-      exprtk::symbol_table<T>& symbol_table = compositor.symbol_table();
+      symbol_table_t& symbol_table = compositor.symbol_table();
       symbol_table.add_constants();
       symbol_table.add_variable("x",x);
       symbol_table.add_variable("y",y);
@@ -3794,7 +3793,7 @@ inline bool run_test19()
       expression_t expression;
       expression.register_symbol_table(symbol_table);
 
-      exprtk::parser<T> parser;
+      parser_t parser;
 
       std::string expression_str = "f6(x,y,z,w,u,v) + 2";
 
@@ -3878,7 +3877,7 @@ inline bool run_test19()
               "}                                                                     ",
               "x");
 
-      exprtk::symbol_table<T>& symbol_table = compositor.symbol_table();
+      symbol_table_t& symbol_table = compositor.symbol_table();
       symbol_table.add_constants();
       symbol_table.add_variable("x",x);
 
@@ -3893,7 +3892,7 @@ inline bool run_test19()
       expression2.register_symbol_table(symbol_table);
       expression3.register_symbol_table(symbol_table);
 
-      exprtk::parser<T> parser;
+      parser_t parser;
 
       if (!parser.compile(expression_str1,expression1))
       {
@@ -4041,7 +4040,7 @@ inline bool run_test19()
               "fibonacci_impl4(x,0,1,0)",
               "x");
 
-      exprtk::symbol_table<T>& symbol_table = compositor.symbol_table();
+      symbol_table_t& symbol_table = compositor.symbol_table();
       symbol_table.add_constants();
       symbol_table.add_variable("x",x);
 
@@ -4059,7 +4058,7 @@ inline bool run_test19()
       expression3.register_symbol_table(symbol_table);
       expression4.register_symbol_table(symbol_table);
 
-      exprtk::parser<T> parser;
+      parser_t parser;
 
       if (!parser.compile(expression_str1,expression1))
       {
@@ -4162,7 +4161,7 @@ inline bool run_test19()
    {
       T x = T(0);
 
-      exprtk::symbol_table<T> symbol_table;
+      symbol_table_t symbol_table;
 
       symbol_table.add_constants();
       symbol_table.add_variable("x",x);
@@ -4199,7 +4198,7 @@ inline bool run_test19()
 
       expression.register_symbol_table(symbol_table);
 
-      exprtk::parser<T> parser;
+      parser_t parser;
 
       if (!parser.compile(expression_str,expression))
       {
