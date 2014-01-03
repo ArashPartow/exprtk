@@ -281,15 +281,15 @@ namespace exprtk
 
       static const std::string reserved_symbols[] =
                                   {
-                                     "abs", "acos", "and", "asin", "atan", "atan2", "avg", "case", "ceil",
-                                     "clamp", "cos", "cosh", "cot", "csc", "default", "deg2grad", "deg2rad",
-                                     "equal", "erf", "erfc", "exp", "expm1", "false", "floor", "for", "frac",
-                                     "grad2deg", "hypot", "if", "ilike", "in", "inrange", "like", "log", "log10",
-                                     "log2", "logn", "log1p", "mand", "max", "min", "mod", "mor", "mul", "nand",
-                                     "nor", "not", "not_equal", "null", "or", "pow", "rad2deg", "repeat", "root",
-                                     "round", "roundn", "sec", "sgn", "shl", "shr", "sin", "sinh", "sqrt", "sum",
-                                     "switch", "tan", "tanh", "true", "trunc", "until", "while", "xnor", "xor",
-                                     "&", "|"
+                                     "abs", "acos", "acosh", "and", "asin", "asinh", "atan", "atanh", "atan2",
+                                     "avg", "case", "ceil", "clamp", "cos", "cosh", "cot", "csc", "default",
+                                     "deg2grad", "deg2rad", "equal", "erf", "erfc", "exp", "expm1", "false",
+                                     "floor", "for", "frac", "grad2deg", "hypot", "if", "ilike", "in", "inrange",
+                                     "like", "log", "log10", "log2", "logn", "log1p", "mand", "max", "min", "mod",
+                                     "mor", "mul", "nand", "nor", "not", "not_equal", "null", "or", "pow", "rad2deg",
+                                     "repeat", "root", "round", "roundn", "sec", "sgn", "shl", "shr", "sin", "sinh",
+                                     "sqrt", "sum", "switch", "tan", "tanh", "true", "trunc", "until", "while",
+                                     "xnor", "xor", "&", "|"
                                   };
 
       static const std::size_t reserved_symbols_size = sizeof(reserved_symbols) / sizeof(std::string);
@@ -817,8 +817,11 @@ namespace exprtk
 
             template <typename T> inline T   abs_impl(const T v, real_type_tag) { return std::abs  (v); }
             template <typename T> inline T  acos_impl(const T v, real_type_tag) { return std::acos (v); }
+            template <typename T> inline T acosh_impl(const T v, real_type_tag) { return std::log(v + std::sqrt((v * v) - T(1))); }
             template <typename T> inline T  asin_impl(const T v, real_type_tag) { return std::asin (v); }
+            template <typename T> inline T asinh_impl(const T v, real_type_tag) { return std::log(v + std::sqrt((v * v) + T(1))); }
             template <typename T> inline T  atan_impl(const T v, real_type_tag) { return std::atan (v); }
+            template <typename T> inline T atanh_impl(const T v, real_type_tag) { return (std::log(T(1) + v) - log(T(1) - v)) / T(2); }
             template <typename T> inline T  ceil_impl(const T v, real_type_tag) { return std::ceil (v); }
             template <typename T> inline T   cos_impl(const T v, real_type_tag) { return std::cos  (v); }
             template <typename T> inline T  cosh_impl(const T v, real_type_tag) { return std::cosh (v); }
@@ -860,8 +863,11 @@ namespace exprtk
             template <typename T> inline T  frac_impl(const T  , int_type_tag) { return T(0);          }
             template <typename T> inline T trunc_impl(const T v, int_type_tag) { return v;             }
             template <typename T> inline T  acos_impl(const T  , int_type_tag) { return std::numeric_limits<T>::quiet_NaN(); }
+            template <typename T> inline T acosh_impl(const T  , int_type_tag) { return std::numeric_limits<T>::quiet_NaN(); }
             template <typename T> inline T  asin_impl(const T  , int_type_tag) { return std::numeric_limits<T>::quiet_NaN(); }
+            template <typename T> inline T asinh_impl(const T  , int_type_tag) { return std::numeric_limits<T>::quiet_NaN(); }
             template <typename T> inline T  atan_impl(const T  , int_type_tag) { return std::numeric_limits<T>::quiet_NaN(); }
+            template <typename T> inline T atanh_impl(const T  , int_type_tag) { return std::numeric_limits<T>::quiet_NaN(); }
             template <typename T> inline T   cos_impl(const T  , int_type_tag) { return std::numeric_limits<T>::quiet_NaN(); }
             template <typename T> inline T  cosh_impl(const T  , int_type_tag) { return std::numeric_limits<T>::quiet_NaN(); }
             template <typename T> inline T   sin_impl(const T  , int_type_tag) { return std::numeric_limits<T>::quiet_NaN(); }
@@ -1063,8 +1069,11 @@ namespace exprtk
 
          exprtk_define_unary_function(abs  )
          exprtk_define_unary_function(acos )
+         exprtk_define_unary_function(acosh)
          exprtk_define_unary_function(asin )
+         exprtk_define_unary_function(asinh)
          exprtk_define_unary_function(atan )
+         exprtk_define_unary_function(atanh)
          exprtk_define_unary_function(ceil )
          exprtk_define_unary_function(cos  )
          exprtk_define_unary_function(cosh )
@@ -2909,7 +2918,6 @@ namespace exprtk
             lexer::token_joiner*   error_token_joiner;
             lexer::token_inserter* error_token_inserter;
          };
-
       }
    }
 
@@ -2926,17 +2934,18 @@ namespace exprtk
          e_or      , e_nor     , e_xor     , e_xnor    ,
          e_mand    , e_mor     , e_scand   , e_scor    ,
          e_shr     , e_shl     , e_abs     , e_acos    ,
-         e_asin    , e_atan    , e_ceil    , e_cos     ,
-         e_cosh    , e_exp     , e_expm1   , e_floor   ,
-         e_log     , e_log10   , e_log2    , e_log1p   ,
-         e_logn    , e_neg     , e_pos     , e_round   ,
-         e_roundn  , e_root    , e_sqrt    , e_sin     ,
-         e_sinh    , e_sec     , e_csc     , e_tan     ,
-         e_tanh    , e_cot     , e_clamp   , e_inrange ,
-         e_sgn     , e_r2d     , e_d2r     , e_d2g     ,
-         e_g2d     , e_hypot   , e_notl    , e_erf     ,
-         e_erfc    , e_frac    , e_trunc   , e_assign  ,
-         e_in      , e_like    , e_ilike   , e_multi   ,
+         e_acosh   , e_asin    , e_asinh   , e_atan    ,
+         e_atanh   , e_ceil    , e_cos     , e_cosh    ,
+         e_exp     , e_expm1   , e_floor   , e_log     ,
+         e_log10   , e_log2    , e_log1p   , e_logn    ,
+         e_neg     , e_pos     , e_round   , e_roundn  ,
+         e_root    , e_sqrt    , e_sin     , e_sinh    ,
+         e_sec     , e_csc     , e_tan     , e_tanh    ,
+         e_cot     , e_clamp   , e_inrange , e_sgn     ,
+         e_r2d     , e_d2r     , e_d2g     , e_g2d     ,
+         e_hypot   , e_notl    , e_erf     , e_erfc    ,
+         e_frac    , e_trunc   , e_assign  , e_in      ,
+         e_like    , e_ilike   , e_multi   ,
 
          // Do not add new functions/operators after this point.
          e_sf00 = 1000, e_sf01 = 1001, e_sf02 = 1002, e_sf03 = 1003,
@@ -3000,8 +3009,11 @@ namespace exprtk
                {
                   case e_abs   : return numeric::abs  (arg);
                   case e_acos  : return numeric::acos (arg);
+                  case e_acosh : return numeric::acosh(arg);
                   case e_asin  : return numeric::asin (arg);
+                  case e_asinh : return numeric::asinh(arg);
                   case e_atan  : return numeric::atan (arg);
+                  case e_atanh : return numeric::atanh(arg);
                   case e_ceil  : return numeric::ceil (arg);
                   case e_cos   : return numeric::cos  (arg);
                   case e_cosh  : return numeric::cosh (arg);
@@ -3167,21 +3179,21 @@ namespace exprtk
             e_or           , e_nor          , e_xor          , e_xnor         ,
             e_in           , e_like         , e_ilike        , e_inranges     ,
             e_ipow         , e_ipowinv      , e_abs          , e_acos         ,
-            e_asin         , e_atan         , e_ceil         , e_cos          ,
-            e_cosh         , e_exp          , e_expm1        , e_floor        ,
-            e_log          , e_log10        , e_log2         , e_log1p        ,
-            e_neg          , e_pos          , e_round        , e_sin          ,
-            e_sinh         , e_sqrt         , e_tan          , e_tanh         ,
-            e_cot          , e_sec          , e_csc          , e_r2d          ,
-            e_d2r          , e_d2g          , e_g2d          , e_notl         ,
-            e_sgn          , e_erf          , e_erfc         , e_frac         ,
-            e_trunc        , e_uvouv        , e_vov          , e_cov          ,
-            e_voc          , e_vob          , e_bov          , e_cob          ,
-            e_boc          , e_vovov        , e_vovoc        , e_vocov        ,
-            e_covov        , e_covoc        , e_vovovov      , e_vovovoc      ,
-            e_vovocov      , e_vocovov      , e_covovov      , e_covocov      ,
-            e_vocovoc      , e_covovoc      , e_vococov      , e_sf3ext       ,
-            e_sf4ext
+            e_acosh        , e_asin         , e_asinh        , e_atan         ,
+            e_atanh        , e_ceil         , e_cos          , e_cosh         ,
+            e_exp          , e_expm1        , e_floor        , e_log          ,
+            e_log10        , e_log2         , e_log1p        , e_neg          ,
+            e_pos          , e_round        , e_sin          , e_sinh         ,
+            e_sqrt         , e_tan          , e_tanh         , e_cot          ,
+            e_sec          , e_csc          , e_r2d          , e_d2r          ,
+            e_d2g          , e_g2d          , e_notl         , e_sgn          ,
+            e_erf          , e_erfc         , e_frac         , e_trunc        ,
+            e_uvouv        , e_vov          , e_cov          , e_voc          ,
+            e_vob          , e_bov          , e_cob          , e_boc          ,
+            e_vovov        , e_vovoc        , e_vocov        , e_covov        ,
+            e_covoc        , e_vovovov      , e_vovovoc      , e_vovocov      ,
+            e_vocovov      , e_covovov      , e_covocov      , e_vocovoc      ,
+            e_covovoc      , e_vococov      , e_sf3ext       , e_sf4ext
          };
 
          typedef T value_type;
@@ -5172,8 +5184,11 @@ namespace exprtk
 
       exprtk_define_unary_op(abs  )
       exprtk_define_unary_op(acos )
+      exprtk_define_unary_op(acosh)
       exprtk_define_unary_op(asin )
+      exprtk_define_unary_op(asinh)
       exprtk_define_unary_op(atan )
+      exprtk_define_unary_op(atanh)
       exprtk_define_unary_op(ceil )
       exprtk_define_unary_op(cos  )
       exprtk_define_unary_op(cosh )
@@ -8308,8 +8323,11 @@ namespace exprtk
 
          register_op(      "abs",e_abs     , 1)
          register_op(     "acos",e_acos    , 1)
+         register_op(    "acosh",e_acosh   , 1)
          register_op(     "asin",e_asin    , 1)
+         register_op(    "asinh",e_asinh   , 1)
          register_op(     "atan",e_atan    , 1)
+         register_op(    "atanh",e_atanh   , 1)
          register_op(     "ceil",e_ceil    , 1)
          register_op(      "cos",e_cos     , 1)
          register_op(     "cosh",e_cosh    , 1)
@@ -12203,23 +12221,24 @@ namespace exprtk
          inline bool unary_optimizable(const details::operator_type& operation) const
          {
             return (details::e_abs   == operation) || (details::e_acos  == operation) ||
-                   (details::e_asin  == operation) || (details::e_atan  == operation) ||
-                   (details::e_ceil  == operation) || (details::e_cos   == operation) ||
-                   (details::e_cosh  == operation) || (details::e_exp   == operation) ||
-                   (details::e_expm1 == operation) || (details::e_floor == operation) ||
-                   (details::e_log   == operation) || (details::e_log10 == operation) ||
-                   (details::e_log2  == operation) || (details::e_log1p == operation) ||
-                   (details::e_neg   == operation) || (details::e_pos   == operation) ||
-                   (details::e_round == operation) || (details::e_sin   == operation) ||
-                   (details::e_sinh  == operation) || (details::e_sqrt  == operation) ||
-                   (details::e_tan   == operation) || (details::e_tanh  == operation) ||
-                   (details::e_cot   == operation) || (details::e_sec   == operation) ||
-                   (details::e_csc   == operation) || (details::e_r2d   == operation) ||
-                   (details::e_d2r   == operation) || (details::e_d2g   == operation) ||
-                   (details::e_g2d   == operation) || (details::e_notl  == operation) ||
-                   (details::e_sgn   == operation) || (details::e_erf   == operation) ||
-                   (details::e_erfc  == operation) || (details::e_frac  == operation) ||
-                   (details::e_trunc == operation);
+                   (details::e_acosh == operation) || (details::e_asin  == operation) ||
+                   (details::e_asinh == operation) || (details::e_atan  == operation) ||
+                   (details::e_atanh == operation) || (details::e_ceil  == operation) ||
+                   (details::e_cos   == operation) || (details::e_cosh  == operation) ||
+                   (details::e_exp   == operation) || (details::e_expm1 == operation) ||
+                   (details::e_floor == operation) || (details::e_log   == operation) ||
+                   (details::e_log10 == operation) || (details::e_log2  == operation) ||
+                   (details::e_log1p == operation) || (details::e_neg   == operation) ||
+                   (details::e_pos   == operation) || (details::e_round == operation) ||
+                   (details::e_sin   == operation) || (details::e_sinh  == operation) ||
+                   (details::e_sqrt  == operation) || (details::e_tan   == operation) ||
+                   (details::e_tanh  == operation) || (details::e_cot   == operation) ||
+                   (details::e_sec   == operation) || (details::e_csc   == operation) ||
+                   (details::e_r2d   == operation) || (details::e_d2r   == operation) ||
+                   (details::e_d2g   == operation) || (details::e_g2d   == operation) ||
+                   (details::e_notl  == operation) || (details::e_sgn   == operation) ||
+                   (details::e_erf   == operation) || (details::e_erfc  == operation) ||
+                   (details::e_frac  == operation) || (details::e_trunc == operation);
          }
 
          inline bool sf3_optimizable(const std::string sf3id, trinary_functor_t& tfunc)
@@ -12743,8 +12762,11 @@ namespace exprtk
          #define unary_opr_switch_statements           \
          case_stmt(details::  e_abs,details::  abs_op) \
          case_stmt(details:: e_acos,details:: acos_op) \
+         case_stmt(details::e_acosh,details::acosh_op) \
          case_stmt(details:: e_asin,details:: asin_op) \
+         case_stmt(details::e_asinh,details::asinh_op) \
          case_stmt(details:: e_atan,details:: atan_op) \
+         case_stmt(details::e_atanh,details::atanh_op) \
          case_stmt(details:: e_ceil,details:: ceil_op) \
          case_stmt(details::  e_cos,details::  cos_op) \
          case_stmt(details:: e_cosh,details:: cosh_op) \
@@ -16816,8 +16838,10 @@ namespace exprtk
 
          register_unary_op(details::  e_abs,details::  abs_op)
          register_unary_op(details:: e_acos,details:: acos_op)
+         register_unary_op(details::e_acosh,details::acosh_op)
          register_unary_op(details:: e_asin,details:: asin_op)
-         register_unary_op(details:: e_atan,details:: atan_op)
+         register_unary_op(details::e_asinh,details::asinh_op)
+         register_unary_op(details::e_atanh,details::atanh_op)
          register_unary_op(details:: e_ceil,details:: ceil_op)
          register_unary_op(details::  e_cos,details::  cos_op)
          register_unary_op(details:: e_cosh,details:: cosh_op)

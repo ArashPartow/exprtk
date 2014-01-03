@@ -709,6 +709,12 @@ static const test_t test_list[] =
                      test_t("cos(deg2rad(60))",0.5),
                      test_t("sin(deg2rad(30)) + cos(deg2rad(60))",1.0),
                      test_t("equal(sin(deg2rad(30))/cos(deg2rad(30)),tan(deg2rad(30)))",1.0),
+                     test_t("equal(sinh(pi),11.5487393572577483779773343153884) ",1.0),
+                     test_t("equal(asinh(11.5487393572577483779773343153884),pi)",1.0),
+                     test_t("equal(cosh(pi),11.5919532755215206277517520525601) ",1.0),
+                     test_t("equal(acosh(11.5919532755215206277517520525601),pi)",1.0),
+                     test_t("equal(tanh(pi),0.99627207622074994426469058001253) ",1.0),
+                     test_t("equal(atanh(0.99627207622074994426469058001253),pi)",1.0),
                      test_t("exp(1.0)",2.71828182845904523536028747135266249775724),
                      test_t("exp(0.0)",1.0),
                      test_t("log(2.7182818284590451)",1.0),
@@ -1296,7 +1302,7 @@ inline bool run_test01()
                               test_xy<T>("0 * (sin  (x) + sinh (y) + sqrt (x) + tan  (y))",T(1.0),T(1.0),T(0.0)),
                               test_xy<T>("0 * (sec  (x) + csc  (y) + tanh (x) + cot  (y))",T(1.0),T(1.0),T(0.0)),
                               test_xy<T>("0 * (erf  (x) + erfc (y) + sgn  (y) + frac (y))",T(1.0),T(1.0),T(0.0)),
-                              test_xy<T>("0 * (log1p(x) + expm1(y)                      )",T(1.0),T(1.0),T(0.0)),
+                              test_xy<T>("0 * (log1p(x) + expm1(y) + acosh(x) + asinh(y))",T(1.0),T(1.0),T(0.0)),
                               test_xy<T>("0 * (deg2grad(x) + grad2deg(y) + rad2deg(x) + deg2rad(y))",T(1.0),T(1.0),T(0.0)),
                               test_xy<T>("switch { case (x <= y) : (y - x); default: 1.12345; }",T(1.0),T(2.0),T(1.0)),
                               test_xy<T>("switch { case (x >  y) : 0; case (x <= y) : (y - x); default: 1.12345; }",T(1.0),T(2.0),T(1.0)),
@@ -3990,12 +3996,12 @@ inline bool run_test19()
 
       compositor
          .add("fibonacci2",
-              "switch                                                 "
-              "{                                                      "
-              "   case x == 0 : 0;                                    "
-              "   case x == 1 : 1;                                    "
-              "   default     : fibonacci2(x - 1) + fibonacci2(x - 2);"
-              "}                                                      ",
+              "switch                                                "
+              "{                                                     "
+              "  case x == 0 : 0;                                    "
+              "  case x == 1 : 1;                                    "
+              "  default     : fibonacci2(x - 1) + fibonacci2(x - 2);"
+              "}                                                     ",
               "x");
 
       compositor

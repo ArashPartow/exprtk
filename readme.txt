@@ -20,9 +20,9 @@ operations, functions and processes:
                      logn, max, min, mul, nequal, root, round,
                      roundn, sgn, sqrt, sum, trunc
 
-(2) Trigonometry:    acos, asin, atan, atan2, cos, cosh, cot, csc,
-                     deg2grad, deg2rad, grad2deg, hypot, rad2deg,
-                     sec, sin, sinh, tan, tanh
+(2) Trigonometry:    acos, acosh, asin, asinh, atan, atanh, atan2,
+                     cos, cosh, cot, csc, deg2grad, deg2rad, grad2deg,
+                     hypot, rad2deg, sec, sin, sinh, tan, tanh
 
 (3) Equalities &
     Inequalities:    =, ==, <>, !=, <, <=, >, >=
@@ -272,12 +272,18 @@ include path (e.g: /usr/include/).
 +----------+---------------------------------------------------------+
 | acos     | Arc cosine of x expressed in radians. Interval [-1,+1]  |
 +----------+---------------------------------------------------------+
+| acosh    | Inverse hyperbolic cosine of x expressed in radians.    |
++----------+---------------------------------------------------------+
 | asin     | Arc sine of x expressed in radians. Interval [-1,+1]    |
++----------+---------------------------------------------------------+
+| asinh    | Inverse hyperbolic sine of x expressed in radians.      |
 +----------+---------------------------------------------------------+
 | atan     | Arc tangent of x expressed in radians. Interval [-1,+1] |
 +----------+---------------------------------------------------------+
 | atan2    | Arc tangent of (x/y) expressed in radians. [-pi,+pi]    |
 |          | eg: atan2(x,y)                                          |
++----------+---------------------------------------------------------+
+| atanh    | Inverse hyperbolic tangent of x expressed in radians.   |
 +----------+---------------------------------------------------------+
 | cos      | Cosine of x.                                            |
 +----------+---------------------------------------------------------+
@@ -408,7 +414,30 @@ A structure that holds an AST  for a specified expression and is  used
 to evaluate said expression.  If a compiled Expression  uses variables
 or user defined functions, it will then also have an associated Symbol
 Table, which will contain  references to said variables,  functions et
-al.
+al. An example AST structure for the denoted expression is as follows:
+
+Expression:  z := (x + y^-2.345) * sin(pi / min(w - 7.3,v))
+
+                  [Root]
+                    |
+               [Assignment]
+        ________/        \_____
+       /                       \
+ Variable(z)               [Multiply]
+                ____________/      \___________
+               /                               \
+              /                          [Unary-Func(sin)]
+         [Addition]                            |
+      ____/      \____                    [Division]
+     /                \                 ___/      \___
+ Variable(x)       [Power]             /              \
+              ______/   \______  Constant(pi)  [Binary-Func(min)]
+             /                 \                 ___/    \___
+        Variable(y)         [Negate]            /            \
+                               |           [Subtract]    Variable(v)
+                        Constant(2.345) ____/      \___
+                                       /               \
+                                  Variable(w)     Constant(7.3)
 
 (3) Parser
 A  structure  which  takes  as input  a  string  representation  of an
