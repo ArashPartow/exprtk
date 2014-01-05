@@ -392,6 +392,17 @@ include path (e.g: /usr/include/).
 |          | ~(i := x + 1, j := y / z, k := sin(w/u)) == (sin(w/u))) |
 |          | ~{i := x + 1; j := y / z; k := sin(w/u)} == (sin(w/u))) |
 +----------+---------------------------------------------------------+
+| [*]      | Evaluate any consequent for which its case statement is |
+|          | true. The return value will be either zero or the result|
+|          | of the last consequent to have been evaluated.          |
+|          | eg:                                                     |
+|          | [*]                                                     |
+|          | {                                                       |
+|          |   case (x + 1) >  (y - 2)   : x := z / 2 + sin(y / pi); |
+|          |   case (x + 2) <  abs(y + 3): w / 4 + min(5y,9);        |
+|          |   case (x + 3) =  (y * 4)   : y := abs(z / 6) + 7y;     |
+|          | }                                                       |
++----------+---------------------------------------------------------+
 
 
 
@@ -434,10 +445,13 @@ Expression:  z := (x + y^-2.345) * sin(pi / min(w - 7.3,v))
               ______/   \______  Constant(pi)  [Binary-Func(min)]
              /                 \                 ___/    \___
         Variable(y)         [Negate]            /            \
-                               |           [Subtract]    Variable(v)
-                        Constant(2.345) ____/      \___
-                                       /               \
-                                  Variable(w)     Constant(7.3)
+                               |               /         Variable(v)
+                        Constant(2.345)       /
+                                             /
+                                       [Subtract]
+                                    ____/      \___
+                                   /               \
+                              Variable(w)     Constant(7.3)
 
 (3) Parser
 A  structure  which  takes  as input  a  string  representation  of an
@@ -565,7 +579,7 @@ correctly optimize such expressions for a given architecture.
  (12) Strings may be constructed from any letters, digits or special
       characters such as (~!@#$%^&*()[]|=+ ,./?<>;:"`~_), and must
       be enclosed with single-quotes.
-      eg: 'Frankly, my dear, I do not give a damn!'
+      eg: 'Frankly my dear, I do not give a damn!'
 
  (13) User defined normal functions can have up to 20 parameters,
       where as user defined vararg-functions can have an unlimited

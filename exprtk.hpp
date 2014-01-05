@@ -1,32 +1,32 @@
 /*
- ******************************************************************
- *           C++ Mathematical Expression Toolkit Library          *
- *                                                                *
- * Author: Arash Partow (1999-2014)                               *
- * URL: http://www.partow.net/programming/exprtk/index.html       *
- *                                                                *
- * Copyright notice:                                              *
- * Free use of the C++ Mathematical Expression Toolkit Library is *
- * permitted under the guidelines and in accordance with the most *
- * current version of the Common Public License.                  *
- * http://www.opensource.org/licenses/cpl1.0.php                  *
- *                                                                *
- * Example expressions:                                           *
- * (00) (y + x / y) * (x - y / x)                                 *
- * (01) (x^2 / sin(2 * pi / y)) - x / 2                           *
- * (02) sqrt(1 - (x^2))                                           *
- * (03) 1 - sin(2 * x) + cos(pi / y)                              *
- * (04) a * exp(2 * t) + c                                        *
- * (05) if(((x + 2) == 3) and ((y + 5) <= 9),1 + w, 2 / z)        *
- * (06) if(avg(x,y) <= x + y, x - y, x * y) + 2 * pi / x          *
- * (07) z := x + sin(2 * pi / y)                                  *
- * (08) u := 2 * (pi * z) / (w := x + cos(y / pi))                *
- * (09) clamp(-1,sin(2 * pi * x) + cos(y / 2 * pi),+1)            *
- * (10) inrange(-2,m,+2) == if(({-2 <= m} and [m <= +2]),1,0)     *
- * (11) (1.2sin(x)cos(2y)7 + 1) == (1.2 * sin(x) * cos(2*y) * 7+1)*
- * (12) (x ilike 's*ri?g') and [y < (3 z^7 + w)]                  *
- *                                                                *
- ******************************************************************
+ *******************************************************************
+ *           C++ Mathematical Expression Toolkit Library           *
+ *                                                                 *
+ * Author: Arash Partow (1999-2014)                                *
+ * URL: http://www.partow.net/programming/exprtk/index.html        *
+ *                                                                 *
+ * Copyright notice:                                               *
+ * Free use of the C++ Mathematical Expression Toolkit Library is  *
+ * permitted under the guidelines and in accordance with the most  *
+ * current version of the Common Public License.                   *
+ * http://www.opensource.org/licenses/cpl1.0.php                   *
+ *                                                                 *
+ * Example expressions:                                            *
+ * (00) (y + x / y) * (x - y / x)                                  *
+ * (01) (x^2 / sin(2 * pi / y)) - x / 2                            *
+ * (02) sqrt(1 - (x^2))                                            *
+ * (03) 1 - sin(2 * x) + cos(pi / y)                               *
+ * (04) a * exp(2 * t) + c                                         *
+ * (05) if(((x + 2) == 3) and ((y + 5) <= 9),1 + w, 2 / z)         *
+ * (06) if(avg(x,y) <= x + y, x - y, x * y) + 2 * pi / x           *
+ * (07) z := x + sin(2 * pi / y)                                   *
+ * (08) u := 2 * (pi * z) / (w := x + cos(y / pi))                 *
+ * (09) clamp(-1,sin(2 * pi * x) + cos(y / 2 * pi),+1)             *
+ * (10) inrange(-2,m,+2) == if(({-2 <= m} and [m <= +2]),1,0)      *
+ * (11) (1.2sin(x)cos(2y)7 + 1) == (1.2 * sin(x) * cos(2*y) * 7+1) *
+ * (12) (x ilike 's*ri?g') and [y < (3 z^7 + w)]                   *
+ *                                                                 *
+ *******************************************************************
 */
 
 
@@ -2162,6 +2162,7 @@ namespace exprtk
                   }
                }
             }
+
             return (g.token_list_.size() - stride_ + 1);
          }
 
@@ -2201,6 +2202,7 @@ namespace exprtk
             {
                if (modify(g.token_list_[i])) changes++;
             }
+
             return changes;
          }
 
@@ -2291,9 +2293,30 @@ namespace exprtk
       {
       public:
 
+         token_joiner(const std::size_t& stride)
+         : stride_(stride)
+         {}
+
          inline std::size_t process(generator& g)
          {
             if (g.token_list_.empty())
+               return 0;
+            switch (stride_)
+            {
+               case 2  : return process_stride_2(g);
+               case 3  : return process_stride_3(g);
+               default : return 0;
+            }
+         }
+
+         virtual bool join(const token&, const token&, token&) { return false; }
+         virtual bool join(const token&, const token&, const token&, token&) { return false; }
+
+      private:
+
+         inline std::size_t process_stride_2(generator& g)
+         {
+            if (g.token_list_.size() < 2)
                return 0;
             std::size_t changes = 0;
             for (std::size_t i = 0; i < g.token_list_.size() - 1; ++i)
@@ -2306,10 +2329,31 @@ namespace exprtk
                   ++changes;
                }
             }
+
             return changes;
          }
 
-         virtual bool join(const token&, const token&, token&) = 0;
+         inline std::size_t process_stride_3(generator& g)
+         {
+            if (g.token_list_.size() < 3)
+               return 0;
+            std::size_t changes = 0;
+            for (std::size_t i = 0; i < g.token_list_.size() - 2; ++i)
+            {
+               token t;
+               if (join(g.token_list_[i],g.token_list_[i + 1],g.token_list_[i + 2],t))
+               {
+                  g.token_list_[i] = t;
+                  g.token_list_.erase(g.token_list_.begin() + (i + 1),
+                                      g.token_list_.begin() + (i + 3));
+                  ++changes;
+               }
+            }
+
+            return changes;
+         }
+
+         std::size_t stride_;
       };
 
       namespace helper
@@ -2378,6 +2422,7 @@ namespace exprtk
                else if ((t0.type == lexer::token::e_rbracket   ) && (t1.type == lexer::token::e_symbol     )) match = true;
                else if ((t0.type == lexer::token::e_rcrlbracket) && (t1.type == lexer::token::e_symbol     )) match = true;
                else if ((t0.type == lexer::token::e_rsqrbracket) && (t1.type == lexer::token::e_symbol     )) match = true;
+
                return (match) ? 1 : -1;
             }
 
@@ -2389,6 +2434,10 @@ namespace exprtk
          class operator_joiner : public token_joiner
          {
          public:
+
+            operator_joiner(const std::size_t& stride)
+            : token_joiner(stride)
+            {}
 
             inline bool join(const lexer::token& t0, const lexer::token& t1, lexer::token& t)
             {
@@ -2437,6 +2486,23 @@ namespace exprtk
                {
                   t.type = lexer::token::e_ne;
                   t.value = "<>";
+                  t.position = t0.position;
+                  return true;
+               }
+               else
+                  return false;
+            }
+
+            inline bool join(const lexer::token& t0, const lexer::token& t1, const lexer::token& t2, lexer::token& t)
+            {
+               if (
+                    (t0.type == lexer::token::e_lsqrbracket) &&
+                    (t1.type == lexer::token::e_mul        ) &&
+                    (t2.type == lexer::token::e_rsqrbracket)
+                  )
+               {
+                  t.type = lexer::token::e_symbol;
+                  t.value = "[*]";
                   t.position = t0.position;
                   return true;
                }
@@ -2502,6 +2568,7 @@ namespace exprtk
                         stack_.pop();
                   }
                }
+
                return true;
             }
 
@@ -2616,6 +2683,7 @@ namespace exprtk
                      return true;
                   }
                }
+
                return false;
             }
 
@@ -2778,6 +2846,7 @@ namespace exprtk
                      default                          : return false;
                   }
                }
+
                return false;
             }
 
@@ -2796,6 +2865,7 @@ namespace exprtk
                {
                   return false;
                }
+
                token_scanner_list.push_back(scanner);
                return true;
             }
@@ -2808,6 +2878,7 @@ namespace exprtk
                {
                   return false;
                }
+
                token_modifier_list.push_back(modifier);
                return true;
             }
@@ -2840,6 +2911,7 @@ namespace exprtk
             {
                error_token_modifier = reinterpret_cast<lexer::token_modifier*>(0);
                bool result = true;
+
                for (std::size_t i = 0; i < token_modifier_list.size(); ++i)
                {
                   lexer::token_modifier& modifier = (*token_modifier_list[i]);
@@ -2851,6 +2923,7 @@ namespace exprtk
                      return false;
                   }
                }
+
                return result;
             }
 
@@ -2858,6 +2931,7 @@ namespace exprtk
             {
                error_token_joiner = reinterpret_cast<lexer::token_joiner*>(0);
                bool result = true;
+
                for (std::size_t i = 0; i < token_joiner_list.size(); ++i)
                {
                   lexer::token_joiner& joiner = (*token_joiner_list[i]);
@@ -2869,6 +2943,7 @@ namespace exprtk
                      return false;
                   }
                }
+
                return result;
             }
 
@@ -2876,6 +2951,7 @@ namespace exprtk
             {
                error_token_inserter = reinterpret_cast<lexer::token_inserter*>(0);
                bool result = true;
+
                for (std::size_t i = 0; i < token_inserter_list.size(); ++i)
                {
                   lexer::token_inserter& inserter = (*token_inserter_list[i]);
@@ -2887,6 +2963,7 @@ namespace exprtk
                      return false;
                   }
                }
+
                return result;
             }
 
@@ -2894,6 +2971,7 @@ namespace exprtk
             {
                error_token_scanner = reinterpret_cast<lexer::token_scanner*>(0);
                bool result = true;
+
                for (std::size_t i = 0; i < token_scanner_list.size(); ++i)
                {
                   lexer::token_scanner& scanner = (*token_scanner_list[i]);
@@ -2905,6 +2983,7 @@ namespace exprtk
                      return false;
                   }
                }
+
                return result;
             }
 
@@ -3170,30 +3249,31 @@ namespace exprtk
             e_none         , e_null         , e_constant     , e_unary        ,
             e_binary       , e_binary_ext   , e_trinary      , e_quaternary   ,
             e_quinary      , e_senary       , e_vararg       , e_conditional  ,
-            e_while        , e_repeat       , e_switch       , e_variable     ,
-            e_stringvar    , e_stringconst  , e_stringvarrng , e_cstringvarrng,
-            e_function     , e_vafunction   , e_add          , e_sub          ,
-            e_mul          , e_div          , e_mod          , e_pow          ,
-            e_lt           , e_lte          , e_gt           , e_gte          ,
-            e_eq           , e_ne           , e_and          , e_nand         ,
-            e_or           , e_nor          , e_xor          , e_xnor         ,
-            e_in           , e_like         , e_ilike        , e_inranges     ,
-            e_ipow         , e_ipowinv      , e_abs          , e_acos         ,
-            e_acosh        , e_asin         , e_asinh        , e_atan         ,
-            e_atanh        , e_ceil         , e_cos          , e_cosh         ,
-            e_exp          , e_expm1        , e_floor        , e_log          ,
-            e_log10        , e_log2         , e_log1p        , e_neg          ,
-            e_pos          , e_round        , e_sin          , e_sinh         ,
-            e_sqrt         , e_tan          , e_tanh         , e_cot          ,
-            e_sec          , e_csc          , e_r2d          , e_d2r          ,
-            e_d2g          , e_g2d          , e_notl         , e_sgn          ,
-            e_erf          , e_erfc         , e_frac         , e_trunc        ,
-            e_uvouv        , e_vov          , e_cov          , e_voc          ,
-            e_vob          , e_bov          , e_cob          , e_boc          ,
-            e_vovov        , e_vovoc        , e_vocov        , e_covov        ,
-            e_covoc        , e_vovovov      , e_vovovoc      , e_vovocov      ,
-            e_vocovov      , e_covovov      , e_covocov      , e_vocovoc      ,
-            e_covovoc      , e_vococov      , e_sf3ext       , e_sf4ext
+            e_while        , e_repeat       , e_switch       , e_mswitch      ,
+            e_variable     , e_stringvar    , e_stringconst  , e_stringvarrng ,
+            e_cstringvarrng, e_function     , e_vafunction   , e_add          ,
+            e_sub          , e_mul          , e_div          , e_mod          ,
+            e_pow          , e_lt           , e_lte          , e_gt           ,
+            e_gte          , e_eq           , e_ne           , e_and          ,
+            e_nand         , e_or           , e_nor          , e_xor          ,
+            e_xnor         , e_in           , e_like         , e_ilike        ,
+            e_inranges     , e_ipow         , e_ipowinv      , e_abs          ,
+            e_acos         , e_acosh        , e_asin         , e_asinh        ,
+            e_atan         , e_atanh        , e_ceil         , e_cos          ,
+            e_cosh         , e_exp          , e_expm1        , e_floor        ,
+            e_log          , e_log10        , e_log2         , e_log1p        ,
+            e_neg          , e_pos          , e_round        , e_sin          ,
+            e_sinh         , e_sqrt         , e_tan          , e_tanh         ,
+            e_cot          , e_sec          , e_csc          , e_r2d          ,
+            e_d2r          , e_d2g          , e_g2d          , e_notl         ,
+            e_sgn          , e_erf          , e_erfc         , e_frac         ,
+            e_trunc        , e_uvouv        , e_vov          , e_cov          ,
+            e_voc          , e_vob          , e_bov          , e_cob          ,
+            e_boc          , e_vovov        , e_vovoc        , e_vocov        ,
+            e_covov        , e_covoc        , e_vovovov      , e_vovovoc      ,
+            e_vovocov      , e_vocovov      , e_covovov      , e_covocov      ,
+            e_vocovoc      , e_covovoc      , e_vococov      , e_sf3ext       ,
+            e_sf4ext
          };
 
          typedef T value_type;
@@ -4068,6 +4148,7 @@ namespace exprtk
                {
                   return std::numeric_limits<T>::quiet_NaN();
                }
+
                for (std::size_t i = 0; i < arg_list_.size() / 2; ++i)
                {
                   expression_ptr condition  = arg_list_[(2 * i)    ];
@@ -4077,6 +4158,7 @@ namespace exprtk
                      return consequent->value();
                   }
                }
+
                return arg_list_.back()->value();
             }
             else
@@ -4086,6 +4168,85 @@ namespace exprtk
          inline typename expression_node<T>::node_type type() const
          {
             return expression_node<T>::e_switch;
+         }
+
+      private:
+
+         std::vector<expression_ptr> arg_list_;
+         std::vector<unsigned char> delete_branch_;
+      };
+
+      template <typename T>
+      class multi_switch_node : public expression_node<T>
+      {
+      public:
+
+         typedef expression_node<T>* expression_ptr;
+
+         template <typename Allocator,
+                   template <typename,typename> class Sequence>
+         multi_switch_node(const Sequence<expression_ptr,Allocator>& arglist)
+         {
+            if (0 != (arglist.size() & 1))
+               return;
+            arg_list_.resize(arglist.size());
+            delete_branch_.resize(arglist.size());
+            for (std::size_t i = 0; i < arglist.size(); ++i)
+            {
+               if (arglist[i])
+               {
+                       arg_list_[i] = arglist[i];
+                  delete_branch_[i] = static_cast<unsigned char>(branch_deletable(arg_list_[i]) ? 1 : 0);
+               }
+               else
+               {
+                  arg_list_.clear();
+                  delete_branch_.clear();
+                  return;
+               }
+            }
+         }
+
+        ~multi_switch_node()
+         {
+            for (std::size_t i = 0; i < arg_list_.size(); ++i)
+            {
+               if (arg_list_[i] && delete_branch_[i])
+               {
+                  delete arg_list_[i];
+                  arg_list_[i] = 0;
+               }
+            }
+         }
+
+         inline T value() const
+         {
+            T result = T(0);
+            if (!arg_list_.empty())
+            {
+               if (0 != (arg_list_.size() & 1))
+               {
+                  return std::numeric_limits<T>::quiet_NaN();
+               }
+
+               for (std::size_t i = 0; i < arg_list_.size() / 2; ++i)
+               {
+                  expression_ptr condition  = arg_list_[(2 * i)    ];
+                  expression_ptr consequent = arg_list_[(2 * i) + 1];
+
+                  if (is_true(condition))
+                  {
+                     result = consequent->value();
+                  }
+               }
+            }
+
+            return result;
+         }
+
+         inline typename expression_node<T>::node_type type() const
+         {
+            return expression_node<T>::e_mswitch;
          }
 
       private:
@@ -8959,6 +9120,7 @@ namespace exprtk
                   ++count;
                }
             }
+
             return count;
          }
 
@@ -8976,6 +9138,7 @@ namespace exprtk
                   ++count;
                }
             }
+
             if (!map.empty())
             {
                tm_const_itr_t itr = map.begin();
@@ -8987,6 +9150,7 @@ namespace exprtk
                   ++count;
                }
             }
+
             return count;
          }
       };
@@ -10012,7 +10176,9 @@ namespace exprtk
       : symbol_name_caching_(false),
         precompile_options_(precompile_options),
         resolve_unknown_symbol_(false),
-        unknown_symbol_resolver_(reinterpret_cast<unknown_symbol_resolver*>(0))
+        unknown_symbol_resolver_(reinterpret_cast<unknown_symbol_resolver*>(0)),
+        operator_joiner_2_(2),
+        operator_joiner_3_(3)
       {
          init_precompilation();
          load_operations_map(base_ops_map_);
@@ -10046,6 +10212,7 @@ namespace exprtk
             {
                commutative_inserter_.ignore_symbol(details::reserved_words[i]);
             }
+
             helper_assembly_.token_inserter_list.clear();
             helper_assembly_.register_inserter(&commutative_inserter_);
          }
@@ -10053,7 +10220,8 @@ namespace exprtk
          if (joiner_enabled())
          {
             helper_assembly_.token_joiner_list.clear();
-            helper_assembly_.register_joiner(&operator_joiner_);
+            helper_assembly_.register_joiner(&operator_joiner_2_);
+            helper_assembly_.register_joiner(&operator_joiner_3_);
          }
 
          if (
@@ -10162,6 +10330,7 @@ namespace exprtk
                   default                         : diagnostic += "Unknown compiler error";
                                                     break;
                }
+
                set_error(
                   make_error(parser_error::e_lexer,
                              lexer_[i],
@@ -10304,7 +10473,7 @@ namespace exprtk
       {
          if (!symbol_name_caching_)
             return 0;
-         if (symbol_name_cache_.empty())
+         else if (symbol_name_cache_.empty())
             return 0;
          std::sort(symbol_name_cache_.begin(),symbol_name_cache_.end());
          std::unique_copy(symbol_name_cache_.begin(),
@@ -10354,8 +10523,8 @@ namespace exprtk
       {
          const std::size_t length = symbol.size();
          if (
-             (length < 3) || //Shortest base op symbol length
-             (length > 9)    //Longest base op symbol length
+              (length < 3) || //Shortest base op symbol length
+              (length > 9)    //Longest base op symbol length
             )
             return false;
          else
@@ -10364,24 +10533,26 @@ namespace exprtk
 
       inline bool valid_vararg_operation(const std::string& symbol)
       {
-         static const std::string s_sum   = "sum" ;
-         static const std::string s_mul   = "mul" ;
-         static const std::string s_avg   = "avg" ;
-         static const std::string s_min   = "min" ;
-         static const std::string s_max   = "max" ;
-         static const std::string s_mand  = "mand";
-         static const std::string s_mor   = "mor" ;
-         static const std::string s_multi = "~"   ;
+         static const std::string s_sum     = "sum" ;
+         static const std::string s_mul     = "mul" ;
+         static const std::string s_avg     = "avg" ;
+         static const std::string s_min     = "min" ;
+         static const std::string s_max     = "max" ;
+         static const std::string s_mand    = "mand";
+         static const std::string s_mor     = "mor" ;
+         static const std::string s_multi   = "~"   ;
+         static const std::string s_mswitch = "[*]" ;
          return
                (
-                  details::imatch(symbol,s_sum  ) ||
-                  details::imatch(symbol,s_mul  ) ||
-                  details::imatch(symbol,s_avg  ) ||
-                  details::imatch(symbol,s_min  ) ||
-                  details::imatch(symbol,s_max  ) ||
-                  details::imatch(symbol,s_mand ) ||
-                  details::imatch(symbol,s_mor  ) ||
-                  details::imatch(symbol,s_multi)
+                  details::imatch(symbol,s_sum    ) ||
+                  details::imatch(symbol,s_mul    ) ||
+                  details::imatch(symbol,s_avg    ) ||
+                  details::imatch(symbol,s_min    ) ||
+                  details::imatch(symbol,s_max    ) ||
+                  details::imatch(symbol,s_mand   ) ||
+                  details::imatch(symbol,s_mor    ) ||
+                  details::imatch(symbol,s_multi  ) ||
+                  details::imatch(symbol,s_mswitch)
                );
       }
 
@@ -11102,8 +11273,19 @@ namespace exprtk
                return error_node();
             }
 
-            arg_list.push_back(condition);
-            arg_list.push_back(consequent);
+            // Can we optimize away the case statement?
+            if (is_constant_node(condition) && is_false(condition))
+            {
+               free_node(node_allocator_,condition);
+               free_node(node_allocator_,consequent);
+               condition  = 0;
+               consequent = 0;
+            }
+            else
+            {
+               arg_list.push_back(condition);
+               arg_list.push_back(consequent);
+            }
 
             if (details::imatch("default",current_token_.value))
             {
@@ -11148,6 +11330,103 @@ namespace exprtk
          return result;
       }
 
+      inline expression_node_ptr parse_multi_switch_statement()
+      {
+         std::vector<expression_node_ptr> arg_list;
+         expression_node_ptr result = error_node();
+
+         const std::string symbol = current_token_.value;
+
+         if (!details::imatch(current_token_.value,"[*]"))
+         {
+            set_error(
+               make_error(parser_error::e_syntax,
+                          current_token_,
+                          "ERR33 - Expected token '[*]'"));
+            return error_node();
+         }
+
+         scoped_vec_delete<expression_node_t> sdd(*this,arg_list);
+
+         next_token();
+
+         if (!token_is(token_t::e_lcrlbracket))
+         {
+            set_error(
+               make_error(parser_error::e_syntax,
+                          current_token_,
+                          "ERR34 - Expected '{' for call to [*] statement."));
+            return error_node();
+         }
+
+         for ( ; ; )
+         {
+            if (!details::imatch("case",current_token_.value))
+               return error_node();
+
+            next_token();
+
+            expression_node_ptr condition = parse_expression();
+            if (0 == condition)
+               return error_node();
+
+            if (!token_is(token_t::e_colon))
+            {
+               set_error(
+                  make_error(parser_error::e_syntax,
+                             current_token_,
+                             "ERR35 - Expected ':' for case of [*] statement."));
+               return error_node();
+            }
+
+            expression_node_ptr consequent = parse_expression();
+            if (0 == consequent)
+               return error_node();
+
+            if (!token_is(token_t::e_eof))
+            {
+               set_error(
+                  make_error(parser_error::e_syntax,
+                             current_token_,
+                             "ERR36 - Expected ';' at end of case for [*] statement."));
+               return error_node();
+            }
+
+            // Can we optimize away the case statement?
+            if (is_constant_node(condition) && is_false(condition))
+            {
+               free_node(node_allocator_,condition);
+               free_node(node_allocator_,consequent);
+               condition  = 0;
+               consequent = 0;
+            }
+            else
+            {
+               arg_list.push_back(condition);
+               arg_list.push_back(consequent);
+            }
+
+            if (token_is(token_t::e_rcrlbracket,false))
+            {
+               break;
+            }
+         }
+
+         if (!token_is(token_t::e_rcrlbracket))
+         {
+            set_error(
+               make_error(parser_error::e_syntax,
+                          current_token_,
+                          "ERR37 - Expected '}' at end of [*] statement."));
+            return error_node();
+         }
+
+         result = expression_generator_.multi_switch_statement(arg_list);
+
+         sdd.delete_ptr = (0 == result);
+         return result;
+      }
+
       inline expression_node_ptr parse_vararg_function()
       {
          std::deque<expression_node_ptr> arg_list;
@@ -11161,6 +11440,10 @@ namespace exprtk
             next_token();
             return parse_multi_sequence();
          }
+         else if (details::imatch(symbol,"[*]"))
+         {
+            return parse_multi_switch_statement();
+         }
          else if (details::imatch(symbol,"sum" )) opt_type = details::e_sum;
          else if (details::imatch(symbol,"mul" )) opt_type = details::e_prod;
          else if (details::imatch(symbol,"avg" )) opt_type = details::e_avg;
@@ -11173,7 +11456,7 @@ namespace exprtk
             set_error(
                make_error(parser_error::e_syntax,
                           current_token_,
-                          "ERR33 - Unsupported vararg function: " + symbol));
+                          "ERR38 - Unsupported vararg function: " + symbol));
             return error_node();
          }
 
@@ -11185,7 +11468,7 @@ namespace exprtk
             set_error(
                make_error(parser_error::e_syntax,
                           current_token_,
-                          "ERR34 - Expected '(' for call to vararg function: " + symbol));
+                          "ERR39 - Expected '(' for call to vararg function: " + symbol));
             return error_node();
          }
 
@@ -11204,7 +11487,7 @@ namespace exprtk
                set_error(
                   make_error(parser_error::e_syntax,
                              current_token_,
-                             "ERR35 - Expected ',' for call to vararg function: " + symbol));
+                             "ERR40 - Expected ',' for call to vararg function: " + symbol));
                return error_node();
             }
          }
@@ -11261,7 +11544,7 @@ namespace exprtk
                set_error(
                   make_error(parser_error::e_syntax,
                              current_token_,
-                             "ERR36 - Expected '"+ details::to_str(close_bracket) + "' for call to multi-sequence" +
+                             "ERR41 - Expected '"+ details::to_str(close_bracket) + "' for call to multi-sequence" +
                              ((!source.empty()) ? std::string(" section of " + source): "")));
                return error_node();
             }
@@ -11289,7 +11572,7 @@ namespace exprtk
                set_error(
                   make_error(parser_error::e_syntax,
                              current_token_,
-                             "ERR37 - Expected '"+ details::to_str(seperator) +"' for call to multi-sequence section of " + source));
+                             "ERR42 - Expected '"+ details::to_str(seperator) +"' for call to multi-sequence section of " + source));
                return error_node();
             }
 
@@ -11413,7 +11696,7 @@ namespace exprtk
             set_error(
                make_error(parser_error::e_syntax,
                           current_token_,
-                          "ERR38 - Expected '[' for start of range."));
+                          "ERR43 - Expected '[' for start of range."));
             return false;
          }
 
@@ -11431,7 +11714,7 @@ namespace exprtk
                set_error(
                   make_error(parser_error::e_syntax,
                              current_token_,
-                             "ERR39 - Failed parse begin section of range."));
+                             "ERR44 - Failed parse begin section of range."));
                return false;
 
             }
@@ -11449,7 +11732,7 @@ namespace exprtk
                   set_error(
                      make_error(parser_error::e_syntax,
                                 current_token_,
-                                "ERR40 - Range lower bound less than zero! Constraint: r0 >= 0"));
+                                "ERR45 - Range lower bound less than zero! Constraint: r0 >= 0"));
                   return false;
                }
             }
@@ -11464,7 +11747,7 @@ namespace exprtk
                set_error(
                   make_error(parser_error::e_syntax,
                              current_token_,
-                             "ERR41 - Expected ':' for break  in range."));
+                             "ERR46 - Expected ':' for break  in range."));
                rp.free();
                return false;
             }
@@ -11484,7 +11767,7 @@ namespace exprtk
                set_error(
                   make_error(parser_error::e_syntax,
                              current_token_,
-                             "ERR42 - Failed parse end section of range."));
+                             "ERR47 - Failed parse end section of range."));
                rp.free();
                return false;
 
@@ -11503,7 +11786,7 @@ namespace exprtk
                   set_error(
                      make_error(parser_error::e_syntax,
                                 current_token_,
-                                "ERR43 - Range upper bound less than zero! Constraint: r1 >= 0"));
+                                "ERR48 - Range upper bound less than zero! Constraint: r1 >= 0"));
                   return false;
                }
             }
@@ -11518,7 +11801,7 @@ namespace exprtk
                set_error(
                   make_error(parser_error::e_syntax,
                              current_token_,
-                             "ERR44 - Expected ']' for start of range."));
+                             "ERR49 - Expected ']' for start of range."));
                rp.free();
                return false;
             }
@@ -11534,7 +11817,7 @@ namespace exprtk
                set_error(
                   make_error(parser_error::e_syntax,
                              current_token_,
-                             "ERR45 - Invalid range, Constraint: r0 <= r1"));
+                             "ERR50 - Invalid range, Constraint: r0 <= r1"));
                return false;
             }
          }
@@ -11559,7 +11842,7 @@ namespace exprtk
             set_error(
                make_error(parser_error::e_syntax,
                           current_token_,
-                          "ERR46 - Unknown string symbol"));
+                          "ERR51 - Unknown string symbol"));
             return error_node();
          }
 
@@ -11587,6 +11870,7 @@ namespace exprtk
          }
          else
             next_token();
+
          return result;
       }
 
@@ -11619,7 +11903,7 @@ namespace exprtk
                set_error(
                   make_error(parser_error::e_syntax,
                              current_token_,
-                             "ERR47 - Overflow in range for string: '" + const_str + "'[" +
+                             "ERR52 - Overflow in range for string: '" + const_str + "'[" +
                              (rp.n0_c.first ? details::to_str(rp.n0_c.second) : "?") + ":" +
                              (rp.n1_c.first ? details::to_str(rp.n1_c.second) : "?") + "]"));
                return error_node();
@@ -11648,7 +11932,7 @@ namespace exprtk
             set_error(
                make_error(parser_error::e_syntax,
                           current_token_,
-                          "ERR48 - Expected '(' for call to vararg function: " + vararg_function_name));
+                          "ERR53 - Expected '(' for call to vararg function: " + vararg_function_name));
             return error_node();
          }
 
@@ -11667,7 +11951,7 @@ namespace exprtk
                set_error(
                   make_error(parser_error::e_syntax,
                              current_token_,
-                             "ERR49 - Expected ',' for call to vararg function: " + vararg_function_name));
+                             "ERR54 - Expected ',' for call to vararg function: " + vararg_function_name));
                return error_node();
             }
          }
@@ -11675,6 +11959,7 @@ namespace exprtk
          result = expression_generator_.vararg_function_call(vararg_function,arg_list);
 
          sdd.delete_ptr = (0 == result);
+
          return result;
       }
 
@@ -11730,7 +12015,7 @@ namespace exprtk
             set_error(
                make_error(parser_error::e_token,
                           current_token_,
-                          "ERR50 - Invalid special function[1]: " + current_token_.value));
+                          "ERR55 - Invalid special function[1]: " + current_token_.value));
             return error_node();
          }
 
@@ -11741,7 +12026,7 @@ namespace exprtk
             set_error(
                make_error(parser_error::e_token,
                           current_token_,
-                          "ERR51 - Invalid special function[2]: " + current_token_.value));
+                          "ERR56 - Invalid special function[2]: " + current_token_.value));
             return error_node();
          }
 
@@ -11820,7 +12105,7 @@ namespace exprtk
                            set_error(
                               make_error(parser_error::e_syntax,
                                          current_token_,
-                                         "ERR52 - Invalid number of parameters for function: " + symbol));
+                                         "ERR57 - Invalid number of parameters for function: " + symbol));
                            return error_node();
                          }
             }
@@ -11832,7 +12117,7 @@ namespace exprtk
                set_error(
                   make_error(parser_error::e_syntax,
                              current_token_,
-                             "ERR53 - Failed to generate node for function: '" + symbol + "'"));
+                             "ERR58 - Failed to generate node for function: '" + symbol + "'"));
                return error_node();
             }
          }
@@ -11852,7 +12137,7 @@ namespace exprtk
                set_error(
                   make_error(parser_error::e_syntax,
                              current_token_,
-                             "ERR54 - Failed to generate node for vararg function: '" + symbol + "'"));
+                             "ERR59 - Failed to generate node for vararg function: '" + symbol + "'"));
                return error_node();
             }
          }
@@ -11896,7 +12181,7 @@ namespace exprtk
                set_error(
                   make_error(parser_error::e_symtab,
                              current_token_,
-                             "ERR55 - Failed to create variable: '" + symbol + "'"));
+                             "ERR60 - Failed to create variable: '" + symbol + "'"));
 
                return error_node();
             }
@@ -11905,7 +12190,7 @@ namespace exprtk
          set_error(
             make_error(parser_error::e_syntax,
                        current_token_,
-                       "ERR56 - Undefined variable or function: '" + symbol + "'"));
+                       "ERR61 - Undefined variable or function: '" + symbol + "'"));
          return error_node();
       }
 
@@ -11958,7 +12243,7 @@ namespace exprtk
             set_error(
                make_error(parser_error::e_symtab,
                           current_token_,
-                          "ERR57 - Variable or function detected, yet symbol-table is invalid, Symbol: " + current_token_.value));
+                          "ERR62 - Variable or function detected, yet symbol-table is invalid, Symbol: " + current_token_.value));
             return error_node();
          }
       }
@@ -12035,7 +12320,7 @@ namespace exprtk
             set_error(
                make_error(parser_error::e_syntax,
                           current_token_,
-                          "ERR58 - Premature end of expression.[1]"));
+                          "ERR63 - Premature end of expression.[1]"));
             return error_node();
          }
          else
@@ -12043,18 +12328,23 @@ namespace exprtk
             set_error(
                make_error(parser_error::e_syntax,
                           current_token_,
-                          "ERR59 - Premature end of expression.[2]"));
+                          "ERR64 - Premature end of expression.[2]"));
             return error_node();
          }
       }
 
-      inline bool token_is(const typename token_t::token_type& ttype)
+      inline bool token_is(const typename token_t::token_type& ttype, const bool advance_token = true)
       {
          if (current_token_.type != ttype)
          {
             return false;
          }
-         next_token();
+
+         if (advance_token)
+         {
+            next_token();
+         }
+
          return true;
       }
 
@@ -12558,7 +12848,9 @@ namespace exprtk
                return synthesize_string_expression(operation,branch);
             else if (is_null_present(branch))
                return synthesize_null_expression(operation,branch);
+
             expression_node_ptr result = error_node();
+
             if (synthesize_expression(operation,branch,result))
                return result;
             else if (uvouv_optimizable(operation,branch))
@@ -12716,10 +13008,12 @@ namespace exprtk
          inline expression_node_ptr const_optimize_switch(Sequence<expression_node_ptr,Allocator>& arglist)
          {
             expression_node_ptr result = error_node();
+
             for (std::size_t i = 0; i < (arglist.size() / 2); ++i)
             {
-               expression_node_ptr condition  = arglist[(2 * i)   ];
+               expression_node_ptr condition  = arglist[(2 * i)    ];
                expression_node_ptr consequent = arglist[(2 * i) + 1];
+
                if ((0 == result) && details::is_true(condition))
                {
                   result = consequent;
@@ -12735,6 +13029,43 @@ namespace exprtk
             for (std::size_t i = 0; i < arglist.size(); ++i)
             {
                expression_node_ptr current_expr = arglist[i];
+
+               if (current_expr && (current_expr != result))
+               {
+                  free_node(*node_allocator_,current_expr);
+               }
+            }
+
+            return result;
+         }
+
+         template <typename Allocator,
+                   template <typename,typename> class Sequence>
+         inline expression_node_ptr const_optimize_mswitch(Sequence<expression_node_ptr,Allocator>& arglist)
+         {
+            expression_node_ptr result = error_node();
+
+            for (std::size_t i = 0; i < (arglist.size() / 2); ++i)
+            {
+               expression_node_ptr condition  = arglist[(2 * i)    ];
+               expression_node_ptr consequent = arglist[(2 * i) + 1];
+
+               if (details::is_true(condition))
+               {
+                  result = consequent;
+               }
+            }
+
+            if (0 == result)
+            {
+               T zero = T(0);
+               result = node_allocator_->allocate<literal_node_t>(zero);
+            }
+
+            for (std::size_t i = 0; i < arglist.size(); ++i)
+            {
+               expression_node_ptr current_expr = arglist[i];
+
                if (current_expr && (current_expr != result))
                {
                   free_node(*node_allocator_,current_expr);
@@ -12757,6 +13088,21 @@ namespace exprtk
                return const_optimize_switch(arglist);
             else
                return node_allocator_->allocate<details::switch_node<Type> >(arglist);
+         }
+
+         template <typename Allocator,
+                   template <typename,typename> class Sequence>
+         inline expression_node_ptr multi_switch_statement(Sequence<expression_node_ptr,Allocator>& arglist)
+         {
+            if (!all_nodes_valid(arglist))
+            {
+               details::free_all_nodes(*node_allocator_,arglist);
+               return error_node();
+            }
+            else if (is_constant_foldable(arglist))
+               return const_optimize_mswitch(arglist);
+            else
+               return node_allocator_->allocate<details::multi_switch_node<Type> >(arglist);
          }
 
          #define unary_opr_switch_statements           \
@@ -12866,9 +13212,11 @@ namespace exprtk
                #undef case_stmt
                default : return error_node();
             }
+
             T v = temp_node->value();
             node_allocator_->free(temp_node);
             details::free_node(*node_allocator_,temp_node);
+
             return node_allocator_->allocate<literal_node_t>(v);
          }
 
@@ -12877,6 +13225,7 @@ namespace exprtk
             const Type& v0 = dynamic_cast<details::variable_node<Type>*>(branch[0])->ref();
             const Type& v1 = dynamic_cast<details::variable_node<Type>*>(branch[1])->ref();
             const Type& v2 = dynamic_cast<details::variable_node<Type>*>(branch[2])->ref();
+
             switch (operation)
             {
                #define case_stmt(op0,op1)                                                 \
@@ -13009,6 +13358,7 @@ namespace exprtk
             const Type& v1 = dynamic_cast<details::variable_node<Type>*>(branch[1])->ref();
             const Type& v2 = dynamic_cast<details::variable_node<Type>*>(branch[2])->ref();
             const Type& v3 = dynamic_cast<details::variable_node<Type>*>(branch[3])->ref();
+
             switch (operation)
             {
                #define case_stmt(op0,op1)                                                         \
@@ -13156,6 +13506,7 @@ namespace exprtk
                return const_optimize_varargfunc(operation,arglist);
             else if (all_nodes_variables(arglist))
                return varnode_optimize_varargfunc(operation,arglist);
+
             switch (operation)
             {
                #define case_stmt(op0,op1)                                               \
@@ -13194,7 +13545,9 @@ namespace exprtk
                   details::free_all_nodes(*node_allocator_,b);
                   return error_node();
                }
+
                function_N_node_t* func_node_ptr = dynamic_cast<function_N_node_t*>(result);
+
                if (func_node_ptr)
                {
                   if (func_node_ptr->init_branches(b))
@@ -13236,6 +13589,7 @@ namespace exprtk
                details::free_node(*node_allocator_,result);
                result = node_allocator_->allocate<literal_node_t>(v);
             }
+
             return result;
          }
 
@@ -13251,6 +13605,7 @@ namespace exprtk
                else if (!details::is_constant_node(b[i]))
                   return false;
             }
+
             return true;
          }
 
@@ -13266,6 +13621,7 @@ namespace exprtk
                else if (!details::is_constant_node(b[i]))
                   return false;
             }
+
             return true;
          }
 
@@ -13428,6 +13784,7 @@ namespace exprtk
                                                       expression_node_ptr (&branch)[2])
             {
                const Type& v = dynamic_cast<details::variable_node<Type>*>(branch[0])->ref();
+
                if (details::is_sf3ext_node(branch[1]))
                {
                   expression_node_ptr result = error_node();
@@ -13437,6 +13794,7 @@ namespace exprtk
                      return result;
                   }
                }
+
                switch (operation)
                {
                   #define case_stmt(op0,op1)                                                       \
@@ -13459,6 +13817,7 @@ namespace exprtk
                                                       expression_node_ptr (&branch)[2])
             {
                const Type& v = dynamic_cast<details::variable_node<Type>*>(branch[1])->ref();
+
                if (details::is_sf3ext_node(branch[0]))
                {
                   expression_node_ptr result = error_node();
@@ -13468,6 +13827,7 @@ namespace exprtk
                      return result;
                   }
                }
+
                switch (operation)
                {
                   #define case_stmt(op0,op1)                                                       \
@@ -13523,6 +13883,7 @@ namespace exprtk
                      return result;
                   }
                }
+
                switch (operation)
                {
                   #define case_stmt(op0,op1)                                                       \
@@ -13569,6 +13930,7 @@ namespace exprtk
                      }
                   }
                }
+
                if (details::is_sf3ext_node(branch[0]))
                {
                   expression_node_ptr result = error_node();
@@ -13578,6 +13940,7 @@ namespace exprtk
                      return result;
                   }
                }
+
                switch (operation)
                {
                   #define case_stmt(op0,op1)                                                    \
@@ -13665,10 +14028,12 @@ namespace exprtk
                const Type& v = dynamic_cast<details::variable_node<Type>*>(branch[0])->ref();
                const Type  c = dynamic_cast<details::literal_node<Type>*> (branch[1])->value();
                details::free_node(*(expr_gen.node_allocator_),branch[1]);
+
                if (expr_gen.cardinal_pow_optimizable(operation,c))
                {
                   return expr_gen.cardinal_pow_optimization(v,c);
                }
+
                switch (operation)
                {
                   #define case_stmt(op0,op1)                                                       \
@@ -13817,6 +14182,7 @@ namespace exprtk
                typedef details::T0oT1oT2_base_node<Type>* sf3ext_base_ptr;
                sf3ext_base_ptr n = dynamic_cast<sf3ext_base_ptr>(sf3node);
                std::string id = "t" + expr_gen.to_str(operation) + "(" + n->type_id() + ")";
+
                switch (n->type())
                {
                   case details::expression_node<Type>::e_covoc : return compile_right_impl
@@ -16634,9 +17000,9 @@ namespace exprtk
                return node_allocator_->allocate_c<details::literal_node<Type> >(v);
             }
             else if (
-                     details::is_string_node(branch[0]) &&
-                     details::is_string_node(branch[1]) &&
-                     details::is_string_node(branch[2])
+                      details::is_string_node(branch[0]) &&
+                      details::is_string_node(branch[1]) &&
+                      details::is_string_node(branch[2])
                     )
             {
                std::string& s0 = dynamic_cast<details::stringvar_node<Type>*>(branch[0])->ref();
@@ -16646,9 +17012,9 @@ namespace exprtk
                return node_allocator_->allocate_type<inrange_t,std::string&,std::string&,std::string&>(s0,s1,s2);
             }
             else if (
-                     details::is_const_string_node(branch[0]) &&
-                           details::is_string_node(branch[1]) &&
-                     details::is_const_string_node(branch[2])
+                      details::is_const_string_node(branch[0]) &&
+                            details::is_string_node(branch[1]) &&
+                      details::is_const_string_node(branch[2])
                     )
             {
                std::string  s0 = dynamic_cast<details::string_literal_node<Type>*>(branch[0])->str();
@@ -16660,9 +17026,9 @@ namespace exprtk
                return node_allocator_->allocate_type<inrange_t,std::string,std::string&,std::string>(s0,s1,s2);
             }
             else if (
-                           details::is_string_node(branch[0]) &&
-                     details::is_const_string_node(branch[1]) &&
-                           details::is_string_node(branch[2])
+                            details::is_string_node(branch[0]) &&
+                      details::is_const_string_node(branch[1]) &&
+                            details::is_string_node(branch[2])
                     )
             {
                std::string&  s0 = dynamic_cast<     details::stringvar_node<Type>*>(branch[0])->ref();
@@ -16673,9 +17039,9 @@ namespace exprtk
                return node_allocator_->allocate_type<inrange_t,std::string&,std::string,std::string&>(s0,s1,s2);
             }
             else if (
-                     details::is_string_node(branch[0]) &&
-                     details::is_string_node(branch[1]) &&
-                     details::is_const_string_node(branch[2])
+                      details::is_string_node(branch[0]) &&
+                      details::is_string_node(branch[1]) &&
+                      details::is_const_string_node(branch[2])
                     )
             {
                std::string& s0 = dynamic_cast<     details::stringvar_node<Type>*>(branch[0])->ref();
@@ -16686,9 +17052,9 @@ namespace exprtk
                return node_allocator_->allocate_type<inrange_t,std::string&,std::string&,std::string>(s0,s1,s2);
             }
             else if (
-                     details::is_const_string_node(branch[0]) &&
-                     details::      is_string_node(branch[1]) &&
-                     details::      is_string_node(branch[2])
+                      details::is_const_string_node(branch[0]) &&
+                      details::      is_string_node(branch[1]) &&
+                      details::      is_string_node(branch[2])
                     )
             {
                std::string  s0 = dynamic_cast<details::string_literal_node<Type>*>(branch[0])->str();
@@ -16732,22 +17098,22 @@ namespace exprtk
             }
 
             if (
-                (details::e_add  == operation) || (details::e_sub  == operation) ||
-                (details::e_mul  == operation) || (details::e_div  == operation) ||
-                (details::e_mod  == operation) || (details::e_pow  == operation)
+                 (details::e_add  == operation) || (details::e_sub  == operation) ||
+                 (details::e_mul  == operation) || (details::e_div  == operation) ||
+                 (details::e_mod  == operation) || (details::e_pow  == operation)
                )
             {
                return branch[0];
             }
             else if (
-                     (details::e_lt    == operation) || (details::e_lte  == operation) ||
-                     (details::e_gt    == operation) || (details::e_gte  == operation) ||
-                     (details::e_eq    == operation) || (details::e_ne   == operation) ||
-                     (details::e_and   == operation) || (details::e_nand == operation) ||
-                     (details::e_or    == operation) || (details::e_nor  == operation) ||
-                     (details::e_xor   == operation) || (details::e_xnor == operation) ||
-                     (details::e_in    == operation) || (details::e_like == operation) ||
-                     (details::e_ilike == operation)
+                      (details::e_lt    == operation) || (details::e_lte  == operation) ||
+                      (details::e_gt    == operation) || (details::e_gte  == operation) ||
+                      (details::e_eq    == operation) || (details::e_ne   == operation) ||
+                      (details::e_and   == operation) || (details::e_nand == operation) ||
+                      (details::e_or    == operation) || (details::e_nor  == operation) ||
+                      (details::e_xor   == operation) || (details::e_xnor == operation) ||
+                      (details::e_in    == operation) || (details::e_like == operation) ||
+                      (details::e_ilike == operation)
                     )
             {
                return node_allocator_->allocate_c<literal_node_t>(T(0));
@@ -16760,9 +17126,9 @@ namespace exprtk
          inline expression_node_ptr synthesize_expression(const details::operator_type& operation, expression_node_ptr (&branch)[N])
          {
             if (
-                (details::e_in    == operation) ||
-                (details::e_like  == operation) ||
-                (details::e_ilike == operation)
+                 (details::e_in    == operation) ||
+                 (details::e_like  == operation) ||
+                 (details::e_ilike == operation)
                )
                return error_node();
             else if (!details::all_nodes_valid<N>(branch))
@@ -17009,7 +17375,8 @@ namespace exprtk
       lexer::helper::helper_assembly helper_assembly_;
 
       lexer::helper::commutative_inserter commutative_inserter_;
-      lexer::helper::operator_joiner      operator_joiner_;
+      lexer::helper::operator_joiner      operator_joiner_2_;
+      lexer::helper::operator_joiner      operator_joiner_3_;
       lexer::helper::symbol_replacer      symbol_replacer_;
       lexer::helper::bracket_checker      bracket_checker_;
       lexer::helper::numeric_checker      numeric_checker_;

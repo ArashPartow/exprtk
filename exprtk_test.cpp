@@ -1002,7 +1002,8 @@ static const test_t test_list[] =
                      test_t("repeat 1.1234; 1 < 2; 1.1 + 2.2 until (1 < 2)",3.3),
                      test_t("repeat 1.1234; 1 < 2; (1.1 + 2.2) until (1 < 2)",3.3),
                      test_t("repeat 1.1234; 1 < 2; 1.1 + 2.2; until (1 < 2)",3.3),
-                     test_t("repeat 1.1234; 1 < 2; (1.1 + 2.2); until (1 < 2)",3.3)
+                     test_t("repeat 1.1234; 1 < 2; (1.1 + 2.2); until (1 < 2)",3.3),
+                     test_t("[*] { case 1 < 2 : 1 / 2; case (1 < 3) : 2 / 2; case 1 < 4 : 3 / 2; case (1 < 5) : 4 / 2; }",2.0)
                   };
 
 static const std::size_t test_list_size = sizeof(test_list) / sizeof(test_t);
@@ -1113,6 +1114,7 @@ inline bool run_test00()
          }
       }
    }
+
    return true;
 }
 
@@ -1315,7 +1317,10 @@ inline bool run_test01()
                               test_xy<T>("switch { case {x <= y} : switch { case {x <= y} : x; default: 1.12345; }; default: 1.12345; }",T(1.0),T(2.0),T(1.0)),
                               test_xy<T>("switch { case [(x <= y)] : {y - x}; default: 1.12345; }",T(1.0),T(2.0),T(1.0)),
                               test_xy<T>("switch { case ([x >  y]) : [0]; case ([x <= y]) : [y - x]; default: 1.12345; }",T(1.0),T(2.0),T(1.0)),
-                              test_xy<T>("switch { case {(x <= y)} : switch { case ({x <= y}) : x; default: 1.12345; }; default: 1.12345; }",T(1.0),T(2.0),T(1.0))
+                              test_xy<T>("switch { case {(x <= y)} : switch { case ({x <= y}) : x; default: 1.12345; }; default: 1.12345; }",T(1.0),T(2.0),T(1.0)),
+                              test_xy<T>("[*]{ case x < y : x + y; case y < x : y - x; }",T(2.0),T(3.0),T(5.0)),
+                              test_xy<T>("[*]{ case x > y : x + y; case y > x : y - x; }",T(2.0),T(3.0),T(1.0)),
+                              test_xy<T>("[*]{ case x > y : x - y; case y < x : y + x; }",T(2.0),T(3.0),T(0.0))
                            };
 
    static const std::size_t test_list_size = sizeof(test_list) / sizeof(test_xy<T>);
@@ -3098,6 +3103,7 @@ inline std::size_t load_expressions(const std::string& file_name,
       ++line_count;
       sequence.push_back(buffer);
    }
+
    return line_count;
 }
 
