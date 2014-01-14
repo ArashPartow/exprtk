@@ -226,6 +226,10 @@ include path (e.g: /usr/include/).
 +----------+---------------------------------------------------------+
 | hypot    | Hypotenuse of x and y (eg: hypot(x,y) = sqrt(x*x + y*y))|
 +----------+---------------------------------------------------------+
+| iclamp   | Inverse-clamp x outside of the range r0 and r1. Where   |
+|          | r0 < r1. If x is within the range it will snap to the   |
+|          | closest bound. (eg: iclamp(r0,x,r1)                     |
++----------+---------------------------------------------------------+
 | log      | Natural logarithm of x.                                 |
 +----------+---------------------------------------------------------+
 | log10    | Base 10 logarithm of x.                                 |
@@ -398,9 +402,9 @@ include path (e.g: /usr/include/).
 |          | eg:                                                     |
 |          | [*]                                                     |
 |          | {                                                       |
-|          |   case (x + 1) >  (y - 2)   : x := z / 2 + sin(y / pi); |
-|          |   case (x + 2) <  abs(y + 3): w / 4 + min(5y,9);        |
-|          |   case (x + 3) =  (y * 4)   : y := abs(z / 6) + 7y;     |
+|          |   case (x + 1) > (y - 2)   : x := z / 2 + sin(y / pi);  |
+|          |   case (x + 2) < abs(y + 3): w / 4 + min(5y,9);         |
+|          |   case (x + 3) = (y * 4)   : y := abs(z / 6) + 7y;      |
 |          | }                                                       |
 +----------+---------------------------------------------------------+
 

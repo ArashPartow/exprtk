@@ -284,12 +284,12 @@ namespace exprtk
                                      "abs", "acos", "acosh", "and", "asin", "asinh", "atan", "atanh", "atan2",
                                      "avg", "case", "ceil", "clamp", "cos", "cosh", "cot", "csc", "default",
                                      "deg2grad", "deg2rad", "equal", "erf", "erfc", "exp", "expm1", "false",
-                                     "floor", "for", "frac", "grad2deg", "hypot", "if", "ilike", "in", "inrange",
-                                     "like", "log", "log10", "log2", "logn", "log1p", "mand", "max", "min", "mod",
-                                     "mor", "mul", "nand", "nor", "not", "not_equal", "null", "or", "pow", "rad2deg",
-                                     "repeat", "root", "round", "roundn", "sec", "sgn", "shl", "shr", "sin", "sinh",
-                                     "sqrt", "sum", "switch", "tan", "tanh", "true", "trunc", "until", "while",
-                                     "xnor", "xor", "&", "|"
+                                     "floor", "for", "frac", "grad2deg", "hypot", "iclamp", "if", "ilike", "in",
+                                     "inrange", "like", "log", "log10", "log2", "logn", "log1p", "mand", "max",
+                                     "min", "mod", "mor", "mul", "nand", "nor", "not", "not_equal", "null", "or",
+                                     "pow", "rad2deg", "repeat", "root", "round", "roundn", "sec", "sgn", "shl",
+                                     "shr", "sin", "sinh", "sqrt", "sum", "switch", "tan", "tanh", "true", "trunc",
+                                     "until", "while", "xnor", "xor", "&", "|"
                                   };
 
       static const std::size_t reserved_symbols_size = sizeof(reserved_symbols) / sizeof(std::string);
@@ -3020,11 +3020,11 @@ namespace exprtk
          e_neg     , e_pos     , e_round   , e_roundn  ,
          e_root    , e_sqrt    , e_sin     , e_sinh    ,
          e_sec     , e_csc     , e_tan     , e_tanh    ,
-         e_cot     , e_clamp   , e_inrange , e_sgn     ,
-         e_r2d     , e_d2r     , e_d2g     , e_g2d     ,
-         e_hypot   , e_notl    , e_erf     , e_erfc    ,
-         e_frac    , e_trunc   , e_assign  , e_in      ,
-         e_like    , e_ilike   , e_multi   ,
+         e_cot     , e_clamp   , e_iclamp  , e_inrange ,
+         e_sgn     , e_r2d     , e_d2r     , e_d2g     ,
+         e_g2d     , e_hypot   , e_notl    , e_erf     ,
+         e_erfc    , e_frac    , e_trunc   , e_assign  ,
+         e_in      , e_like    , e_ilike   , e_multi   ,
 
          // Do not add new functions/operators after this point.
          e_sf00 = 1000, e_sf01 = 1001, e_sf02 = 1002, e_sf03 = 1003,
@@ -3791,10 +3791,14 @@ namespace exprtk
             const T arg2 = branch_[2].first->value();
             switch (operation_)
             {
-               case e_clamp   : return (arg1 < arg0) ? arg0 : (arg1 > arg2 ? arg2 : arg1);
                case e_inrange : return (arg1 < arg0) ? T(0) : ((arg1 > arg2) ? T(0) : T(1));
                case e_min     : return std::min<T>(std::min<T>(arg0,arg1),arg2);
                case e_max     : return std::max<T>(std::max<T>(arg0,arg1),arg2);
+               case e_clamp   : return (arg1 < arg0) ? arg0 : (arg1 > arg2 ? arg2 : arg1);
+               case e_iclamp  : if ((arg1 <= arg0) || (arg1 >= arg2))
+                                   return arg1;
+                                else
+                                   return ((T(2.0) * arg1  <= (arg2 + arg0)) ? arg0 : arg2);
                default        : return std::numeric_limits<T>::quiet_NaN();
             }
          }
@@ -8530,6 +8534,7 @@ namespace exprtk
          register_op(      "shr",e_shr     , 2)
          register_op(      "shl",e_shl     , 2)
          register_op(    "clamp",e_clamp   , 3)
+         register_op(   "iclamp",e_iclamp  , 3)
          register_op(  "inrange",e_inrange , 3)
          #undef register_op
       }
@@ -15195,7 +15200,32 @@ namespace exprtk
                details::free_node(*(expr_gen.node_allocator_),branch[0]);
                details::free_node(*(expr_gen.node_allocator_),branch[1]);
                expression_node_ptr result = error_node();
-               if (synthesize_sf4ext_expression::template compile<T0,T1,T2,T3>(expr_gen,id(expr_gen,o0,o1,o2),c0,v0,c1,v1,result))
+
+               // (c0 + v0) + (c1 + v1) --> (covov) (c0 + c1) + v0 + v1
+               if ((details::e_add == o0) && (details::e_add == o1) && (details::e_add == o2))
+               {
+                  const bool synthesis_result =
+                     synthesize_sf3ext_expression::
+                        template compile<ctype,vtype,vtype>(expr_gen,"(t+t)+t",(c0 + c1),v0,v1,result);
+                  return (synthesis_result) ? result : error_node();
+               }
+               // (c0 + v0) - (c1 + v1) --> (covov) (c0 - c1) + v0 - v1
+               if ((details::e_add == o0) && (details::e_sub == o1) && (details::e_add == o2))
+               {
+                  const bool synthesis_result =
+                     synthesize_sf3ext_expression::
+                        template compile<ctype,vtype,vtype>(expr_gen,"(t+t)-t",(c0 - c1),v0,v1,result);
+                  return (synthesis_result) ? result : error_node();
+               }
+               // (c0 * v0) * (c1 * v1) --> (covov) (c0 * c1) * v0 * v1
+               else if ((details::e_mul == o0) && (details::e_mul == o1) && (details::e_mul == o2))
+               {
+                  const bool synthesis_result =
+                     synthesize_sf3ext_expression::
+                        template compile<ctype,vtype,vtype>(expr_gen,"(t*t)*t",(c0 * c1),v0,v1,result);
+                  return (synthesis_result) ? result : error_node();
+               }
+               else if (synthesize_sf4ext_expression::template compile<T0,T1,T2,T3>(expr_gen,id(expr_gen,o0,o1,o2),c0,v0,c1,v1,result))
                   return result;
                else if (!expr_gen.valid_operator(o0,f0))
                   return error_node();
@@ -15242,7 +15272,32 @@ namespace exprtk
                details::free_node(*(expr_gen.node_allocator_),branch[0]);
                details::free_node(*(expr_gen.node_allocator_),branch[1]);
                expression_node_ptr result = error_node();
-               if (synthesize_sf4ext_expression::template compile<T0,T1,T2,T3>(expr_gen,id(expr_gen,o0,o1,o2),v0,c0,v1,c1,result))
+
+               // (v0 + c0) + (v1 + c1) --> (covov) (c0 + c1) + v0 + v1
+               if ((details::e_add == o0) && (details::e_add == o1) && (details::e_add == o2))
+               {
+                  const bool synthesis_result =
+                     synthesize_sf3ext_expression::
+                        template compile<ctype,vtype,vtype>(expr_gen,"(t+t)+t",(c0 + c1),v0,v1,result);
+                  return (synthesis_result) ? result : error_node();
+               }
+               // (v0 + c0) - (v1 + c1) --> (covov) (c0 - c1) + v0 - v1
+               if ((details::e_add == o0) && (details::e_sub == o1) && (details::e_add == o2))
+               {
+                  const bool synthesis_result =
+                     synthesize_sf3ext_expression::
+                        template compile<ctype,vtype,vtype>(expr_gen,"(t+t)-t",(c0 - c1),v0,v1,result);
+                  return (synthesis_result) ? result : error_node();
+               }
+               // (c0 * v0) * (c1 * v1) --> (covov) (c0 * c1) * v0 * v1
+               else if ((details::e_mul == o0) && (details::e_mul == o1) && (details::e_mul == o2))
+               {
+                  const bool synthesis_result =
+                     synthesize_sf3ext_expression::
+                        template compile<ctype,vtype,vtype>(expr_gen,"(t*t)*t",(c0 * c1),v0,v1,result);
+                  return (synthesis_result) ? result : error_node();
+               }
+               else if (synthesize_sf4ext_expression::template compile<T0,T1,T2,T3>(expr_gen,id(expr_gen,o0,o1,o2),v0,c0,v1,c1,result))
                   return result;
                else if (!expr_gen.valid_operator(o0,f0))
                   return error_node();
@@ -18795,6 +18850,7 @@ namespace exprtk
                                              "(x^2 / sin(2 * pi / y)) -x / 2",
                                              "x + (cos(y - sin(2 / x * pi)) - sin(x - cos(2 * y / pi))) - y",
                                              "clamp(-1.0, sin(2 * pi * x) + cos(y / 2 * pi), +1.0)",
+                                             "iclamp(-1.0, sin(2 * pi * x) + cos(y / 2 * pi), +1.0)",
                                              "max(3.33, min(sqrt(1 - sin(2 * x) + cos(pi / y) / 3), 1.11))",
                                              "if(avg(x,y) <= x + y, x - y, x * y) + 2 * pi / x",
                                              "1.1x^1 + 2.2y^2 - 3.3x^3 + 4.4y^4 - 5.5x^5 + 6.6y^6 - 7.7x^27 + 8.8y^55",
