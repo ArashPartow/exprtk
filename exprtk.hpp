@@ -3051,8 +3051,8 @@ namespace exprtk
          e_sf84 = 1084, e_sf85 = 1085, e_sf86 = 1086, e_sf87 = 1087,
          e_sf88 = 1088, e_sf89 = 1089, e_sf90 = 1090, e_sf91 = 1091,
          e_sf92 = 1092, e_sf93 = 1093, e_sf94 = 1094, e_sf95 = 1095,
-         e_sf96 = 1096, e_sf97 = 1097, e_sf98 = 1098,
-         e_sffinal = 1099,
+         e_sf96 = 1096, e_sf97 = 1097, e_sf98 = 1098, e_sf99 = 1099,
+         e_sffinal = 1100,
          e_sf4ext00 = 2000, e_sf4ext01 = 2001, e_sf4ext02 = 2002, e_sf4ext03 = 2003,
          e_sf4ext04 = 2004, e_sf4ext05 = 2005, e_sf4ext06 = 2006, e_sf4ext07 = 2007,
          e_sf4ext08 = 2008, e_sf4ext09 = 2009, e_sf4ext10 = 2010, e_sf4ext11 = 2011,
@@ -4504,101 +4504,102 @@ namespace exprtk
       template <typename T> struct sf01_op : public sf_base<T> { typedef typename sf_base<T>::Type Type; static inline T process(Type x, Type y, Type z) { return (x + y) * z; } static inline std::string id() { return "(t+t)*t";} };
       template <typename T> struct sf02_op : public sf_base<T> { typedef typename sf_base<T>::Type Type; static inline T process(Type x, Type y, Type z) { return (x + y) - z; } static inline std::string id() { return "(t+t)-t";} };
       template <typename T> struct sf03_op : public sf_base<T> { typedef typename sf_base<T>::Type Type; static inline T process(Type x, Type y, Type z) { return (x + y) + z; } static inline std::string id() { return "(t+t)+t";} };
-      template <typename T> struct sf04_op : public sf_base<T> { typedef typename sf_base<T>::Type Type; static inline T process(Type x, Type y, Type z) { return (x - y) / z; } static inline std::string id() { return "(t-t)/t";} };
-      template <typename T> struct sf05_op : public sf_base<T> { typedef typename sf_base<T>::Type Type; static inline T process(Type x, Type y, Type z) { return (x - y) * z; } static inline std::string id() { return "(t-t)*t";} };
-      template <typename T> struct sf06_op : public sf_base<T> { typedef typename sf_base<T>::Type Type; static inline T process(Type x, Type y, Type z) { return (x * y) + z; } static inline std::string id() { return "(t*t)+t";} };
-      template <typename T> struct sf07_op : public sf_base<T> { typedef typename sf_base<T>::Type Type; static inline T process(Type x, Type y, Type z) { return (x * y) - z; } static inline std::string id() { return "(t*t)-t";} };
-      template <typename T> struct sf08_op : public sf_base<T> { typedef typename sf_base<T>::Type Type; static inline T process(Type x, Type y, Type z) { return (x * y) / z; } static inline std::string id() { return "(t*t)/t";} };
-      template <typename T> struct sf09_op : public sf_base<T> { typedef typename sf_base<T>::Type Type; static inline T process(Type x, Type y, Type z) { return (x * y) * z; } static inline std::string id() { return "(t*t)*t";} };
-      template <typename T> struct sf10_op : public sf_base<T> { typedef typename sf_base<T>::Type Type; static inline T process(Type x, Type y, Type z) { return (x / y) + z; } static inline std::string id() { return "(t/t)+t";} };
-      template <typename T> struct sf11_op : public sf_base<T> { typedef typename sf_base<T>::Type Type; static inline T process(Type x, Type y, Type z) { return (x / y) - z; } static inline std::string id() { return "(t/t)-t";} };
-      template <typename T> struct sf12_op : public sf_base<T> { typedef typename sf_base<T>::Type Type; static inline T process(Type x, Type y, Type z) { return (x / y) / z; } static inline std::string id() { return "(t/t)/t";} };
-      template <typename T> struct sf13_op : public sf_base<T> { typedef typename sf_base<T>::Type Type; static inline T process(Type x, Type y, Type z) { return (x / y) * z; } static inline std::string id() { return "(t/t)*t";} };
-      template <typename T> struct sf14_op : public sf_base<T> { typedef typename sf_base<T>::Type Type; static inline T process(Type x, Type y, Type z) { return x / (y + z); } static inline std::string id() { return "t/(t+t)";} };
-      template <typename T> struct sf15_op : public sf_base<T> { typedef typename sf_base<T>::Type Type; static inline T process(Type x, Type y, Type z) { return x / (y - z); } static inline std::string id() { return "t/(t-t)";} };
-      template <typename T> struct sf16_op : public sf_base<T> { typedef typename sf_base<T>::Type Type; static inline T process(Type x, Type y, Type z) { return x / (y * z); } static inline std::string id() { return "t/(t*t)";} };
-      template <typename T> struct sf17_op : public sf_base<T> { typedef typename sf_base<T>::Type Type; static inline T process(Type x, Type y, Type z) { return x / (y / z); } static inline std::string id() { return "t/(t/t)";} };
-      template <typename T> struct sf18_op : public sf_base<T> { typedef typename sf_base<T>::Type Type; static inline T process(Type x, Type y, Type z) { return x * (y + z); } static inline std::string id() { return "t*(t+t)";} };
-      template <typename T> struct sf19_op : public sf_base<T> { typedef typename sf_base<T>::Type Type; static inline T process(Type x, Type y, Type z) { return x * (y - z); } static inline std::string id() { return "t*(t-t)";} };
-      template <typename T> struct sf20_op : public sf_base<T> { typedef typename sf_base<T>::Type Type; static inline T process(Type x, Type y, Type z) { return x * (y * z); } static inline std::string id() { return "t*(t*t)";} };
-      template <typename T> struct sf21_op : public sf_base<T> { typedef typename sf_base<T>::Type Type; static inline T process(Type x, Type y, Type z) { return x * (y / z); } static inline std::string id() { return "t*(t/t)";} };
-      template <typename T> struct sf22_op : public sf_base<T> { typedef typename sf_base<T>::Type Type; static inline T process(Type x, Type y, Type z) { return x - (y + z); } static inline std::string id() { return "t-(t+t)";} };
-      template <typename T> struct sf23_op : public sf_base<T> { typedef typename sf_base<T>::Type Type; static inline T process(Type x, Type y, Type z) { return x - (y - z); } static inline std::string id() { return "t-(t-t)";} };
-      template <typename T> struct sf24_op : public sf_base<T> { typedef typename sf_base<T>::Type Type; static inline T process(Type x, Type y, Type z) { return x - (y / z); } static inline std::string id() { return "t-(t/t)";} };
-      template <typename T> struct sf25_op : public sf_base<T> { typedef typename sf_base<T>::Type Type; static inline T process(Type x, Type y, Type z) { return x - (y * z); } static inline std::string id() { return "t-(t*t)";} };
-      template <typename T> struct sf26_op : public sf_base<T> { typedef typename sf_base<T>::Type Type; static inline T process(Type x, Type y, Type z) { return x + (y * z); } static inline std::string id() { return "t+(t*t)";} };
-      template <typename T> struct sf27_op : public sf_base<T> { typedef typename sf_base<T>::Type Type; static inline T process(Type x, Type y, Type z) { return x + (y / z); } static inline std::string id() { return "t+(t/t)";} };
-      template <typename T> struct sf28_op : public sf_base<T> { typedef typename sf_base<T>::Type Type; static inline T process(Type x, Type y, Type z) { return x + (y + z); } static inline std::string id() { return "t+(t+t)";} };
-      template <typename T> struct sf29_op : public sf_base<T> { typedef typename sf_base<T>::Type Type; static inline T process(Type x, Type y, Type z) { return x + (y - z); } static inline std::string id() { return "t+(t-t)";} };
-      template <typename T> struct sf30_op : public sf_base<T> { typedef typename sf_base<T>::Type Type; static inline T process(Type x, Type y, Type z) { return axnb<T,2>(x,y,z); } }; //x * y^2 + z
-      template <typename T> struct sf31_op : public sf_base<T> { typedef typename sf_base<T>::Type Type; static inline T process(Type x, Type y, Type z) { return axnb<T,3>(x,y,z); } }; //x * y^3 + z
-      template <typename T> struct sf32_op : public sf_base<T> { typedef typename sf_base<T>::Type Type; static inline T process(Type x, Type y, Type z) { return axnb<T,4>(x,y,z); } }; //x * y^4 + z
-      template <typename T> struct sf33_op : public sf_base<T> { typedef typename sf_base<T>::Type Type; static inline T process(Type x, Type y, Type z) { return axnb<T,5>(x,y,z); } }; //x * y^5 + z
-      template <typename T> struct sf34_op : public sf_base<T> { typedef typename sf_base<T>::Type Type; static inline T process(Type x, Type y, Type z) { return axnb<T,6>(x,y,z); } }; //x * y^6 + z
-      template <typename T> struct sf35_op : public sf_base<T> { typedef typename sf_base<T>::Type Type; static inline T process(Type x, Type y, Type z) { return axnb<T,7>(x,y,z); } }; //x * y^7 + z
-      template <typename T> struct sf36_op : public sf_base<T> { typedef typename sf_base<T>::Type Type; static inline T process(Type x, Type y, Type z) { return axnb<T,8>(x,y,z); } }; //x * y^8 + z
-      template <typename T> struct sf37_op : public sf_base<T> { typedef typename sf_base<T>::Type Type; static inline T process(Type x, Type y, Type z) { return axnb<T,9>(x,y,z); } }; //x * y^9 + z
-      template <typename T> struct sf38_op : public sf_base<T> { typedef typename sf_base<T>::Type Type; static inline T process(Type x, Type y, Type z) { return x * numeric::log(y)   + z; } };
-      template <typename T> struct sf39_op : public sf_base<T> { typedef typename sf_base<T>::Type Type; static inline T process(Type x, Type y, Type z) { return x * numeric::log(y)   - z; } };
-      template <typename T> struct sf40_op : public sf_base<T> { typedef typename sf_base<T>::Type Type; static inline T process(Type x, Type y, Type z) { return x * numeric::log10(y) + z; } };
-      template <typename T> struct sf41_op : public sf_base<T> { typedef typename sf_base<T>::Type Type; static inline T process(Type x, Type y, Type z) { return x * numeric::log10(y) - z; } };
-      template <typename T> struct sf42_op : public sf_base<T> { typedef typename sf_base<T>::Type Type; static inline T process(Type x, Type y, Type z) { return x * numeric::sin(y) + z; } };
-      template <typename T> struct sf43_op : public sf_base<T> { typedef typename sf_base<T>::Type Type; static inline T process(Type x, Type y, Type z) { return x * numeric::sin(y) - z; } };
-      template <typename T> struct sf44_op : public sf_base<T> { typedef typename sf_base<T>::Type Type; static inline T process(Type x, Type y, Type z) { return x * numeric::cos(y) + z; } };
-      template <typename T> struct sf45_op : public sf_base<T> { typedef typename sf_base<T>::Type Type; static inline T process(Type x, Type y, Type z) { return x * numeric::cos(y) - z; } };
-      template <typename T> struct sf46_op : public sf_base<T> { typedef typename sf_base<T>::Type Type; static inline T process(Type x, Type y, Type z) { return is_true(x) ? y : z;      } };
-      template <typename T> struct sf47_op : public sf_base<T> { typedef typename sf_base<T>::Type Type; static inline T process(Type x, Type y, Type z, Type w) { return x + ((y + z) / w); } static inline std::string id() { return "t+((t+t)/t)";} };
-      template <typename T> struct sf48_op : public sf_base<T> { typedef typename sf_base<T>::Type Type; static inline T process(Type x, Type y, Type z, Type w) { return x + ((y + z) * w); } static inline std::string id() { return "t+((t+t)*t)";} };
-      template <typename T> struct sf49_op : public sf_base<T> { typedef typename sf_base<T>::Type Type; static inline T process(Type x, Type y, Type z, Type w) { return x + ((y - z) / w); } static inline std::string id() { return "t+((t-t)/t)";} };
-      template <typename T> struct sf50_op : public sf_base<T> { typedef typename sf_base<T>::Type Type; static inline T process(Type x, Type y, Type z, Type w) { return x + ((y - z) * w); } static inline std::string id() { return "t+((t-t)*t)";} };
-      template <typename T> struct sf51_op : public sf_base<T> { typedef typename sf_base<T>::Type Type; static inline T process(Type x, Type y, Type z, Type w) { return x + ((y * z) / w); } static inline std::string id() { return "t+((t*t)/t)";} };
-      template <typename T> struct sf52_op : public sf_base<T> { typedef typename sf_base<T>::Type Type; static inline T process(Type x, Type y, Type z, Type w) { return x + ((y * z) * w); } static inline std::string id() { return "t+((t*t)*t)";} };
-      template <typename T> struct sf53_op : public sf_base<T> { typedef typename sf_base<T>::Type Type; static inline T process(Type x, Type y, Type z, Type w) { return x + ((y / z) + w); } static inline std::string id() { return "t+((t/t)+t)";} };
-      template <typename T> struct sf54_op : public sf_base<T> { typedef typename sf_base<T>::Type Type; static inline T process(Type x, Type y, Type z, Type w) { return x + ((y / z) / w); } static inline std::string id() { return "t+((t/t)/t)";} };
-      template <typename T> struct sf55_op : public sf_base<T> { typedef typename sf_base<T>::Type Type; static inline T process(Type x, Type y, Type z, Type w) { return x + ((y / z) * w); } static inline std::string id() { return "t+((t/t)*t)";} };
-      template <typename T> struct sf56_op : public sf_base<T> { typedef typename sf_base<T>::Type Type; static inline T process(Type x, Type y, Type z, Type w) { return x - ((y + z) / w); } static inline std::string id() { return "t-((t+t)/t)";} };
-      template <typename T> struct sf57_op : public sf_base<T> { typedef typename sf_base<T>::Type Type; static inline T process(Type x, Type y, Type z, Type w) { return x - ((y + z) * w); } static inline std::string id() { return "t-((t+t)*t)";} };
-      template <typename T> struct sf58_op : public sf_base<T> { typedef typename sf_base<T>::Type Type; static inline T process(Type x, Type y, Type z, Type w) { return x - ((y - z) / w); } static inline std::string id() { return "t-((t-t)/t)";} };
-      template <typename T> struct sf59_op : public sf_base<T> { typedef typename sf_base<T>::Type Type; static inline T process(Type x, Type y, Type z, Type w) { return x - ((y - z) * w); } static inline std::string id() { return "t-((t-t)*t)";} };
-      template <typename T> struct sf60_op : public sf_base<T> { typedef typename sf_base<T>::Type Type; static inline T process(Type x, Type y, Type z, Type w) { return x - ((y * z) / w); } static inline std::string id() { return "t-((t*t)/t)";} };
-      template <typename T> struct sf61_op : public sf_base<T> { typedef typename sf_base<T>::Type Type; static inline T process(Type x, Type y, Type z, Type w) { return x - ((y * z) * w); } static inline std::string id() { return "t-((t*t)*t)";} };
-      template <typename T> struct sf62_op : public sf_base<T> { typedef typename sf_base<T>::Type Type; static inline T process(Type x, Type y, Type z, Type w) { return x - ((y / z) / w); } static inline std::string id() { return "t-((t/t)/t)";} };
-      template <typename T> struct sf63_op : public sf_base<T> { typedef typename sf_base<T>::Type Type; static inline T process(Type x, Type y, Type z, Type w) { return x - ((y / z) * w); } static inline std::string id() { return "t-((t/t)*t)";} };
-      template <typename T> struct sf64_op : public sf_base<T> { typedef typename sf_base<T>::Type Type; static inline T process(Type x, Type y, Type z, Type w) { return ((x + y) * z) - w; } static inline std::string id() { return "((t+t)*t)-t";} };
-      template <typename T> struct sf65_op : public sf_base<T> { typedef typename sf_base<T>::Type Type; static inline T process(Type x, Type y, Type z, Type w) { return ((x - y) * z) - w; } static inline std::string id() { return "((t-t)*t)-t";} };
-      template <typename T> struct sf66_op : public sf_base<T> { typedef typename sf_base<T>::Type Type; static inline T process(Type x, Type y, Type z, Type w) { return ((x * y) * z) - w; } static inline std::string id() { return "((t*t)*t)-t";} };
-      template <typename T> struct sf67_op : public sf_base<T> { typedef typename sf_base<T>::Type Type; static inline T process(Type x, Type y, Type z, Type w) { return ((x / y) * z) - w; } static inline std::string id() { return "((t/t)*t)-t";} };
-      template <typename T> struct sf68_op : public sf_base<T> { typedef typename sf_base<T>::Type Type; static inline T process(Type x, Type y, Type z, Type w) { return ((x + y) / z) - w; } static inline std::string id() { return "((t+t)/t)-t";} };
-      template <typename T> struct sf69_op : public sf_base<T> { typedef typename sf_base<T>::Type Type; static inline T process(Type x, Type y, Type z, Type w) { return ((x - y) / z) - w; } static inline std::string id() { return "((t-t)/t)-t";} };
-      template <typename T> struct sf70_op : public sf_base<T> { typedef typename sf_base<T>::Type Type; static inline T process(Type x, Type y, Type z, Type w) { return ((x * y) / z) - w; } static inline std::string id() { return "((t*t)/t)-t";} };
-      template <typename T> struct sf71_op : public sf_base<T> { typedef typename sf_base<T>::Type Type; static inline T process(Type x, Type y, Type z, Type w) { return ((x / y) / z) - w; } static inline std::string id() { return "((t/t)/t)-t";} };
-      template <typename T> struct sf72_op : public sf_base<T> { typedef typename sf_base<T>::Type Type; static inline T process(Type x, Type y, Type z, Type w) { return (x * y) + (z * w); } static inline std::string id() { return "(t*t)+(t*t)";} };
-      template <typename T> struct sf73_op : public sf_base<T> { typedef typename sf_base<T>::Type Type; static inline T process(Type x, Type y, Type z, Type w) { return (x * y) - (z * w); } static inline std::string id() { return "(t*t)-(t*t)";} };
-      template <typename T> struct sf74_op : public sf_base<T> { typedef typename sf_base<T>::Type Type; static inline T process(Type x, Type y, Type z, Type w) { return (x * y) + (z / w); } static inline std::string id() { return "(t*t)+(t/t)";} };
-      template <typename T> struct sf75_op : public sf_base<T> { typedef typename sf_base<T>::Type Type; static inline T process(Type x, Type y, Type z, Type w) { return (x * y) - (z / w); } static inline std::string id() { return "(t*t)-(t/t)";} };
-      template <typename T> struct sf76_op : public sf_base<T> { typedef typename sf_base<T>::Type Type; static inline T process(Type x, Type y, Type z, Type w) { return (x / y) + (z / w); } static inline std::string id() { return "(t/t)+(t/t)";} };
-      template <typename T> struct sf77_op : public sf_base<T> { typedef typename sf_base<T>::Type Type; static inline T process(Type x, Type y, Type z, Type w) { return (x / y) - (z / w); } static inline std::string id() { return "(t/t)-(t/t)";} };
-      template <typename T> struct sf78_op : public sf_base<T> { typedef typename sf_base<T>::Type Type; static inline T process(Type x, Type y, Type z, Type w) { return (x / y) - (z * w); } static inline std::string id() { return "(t/t)-(t*t)";} };
-      template <typename T> struct sf79_op : public sf_base<T> { typedef typename sf_base<T>::Type Type; static inline T process(Type x, Type y, Type z, Type w) { return x / (y + (z * w)); } static inline std::string id() { return "t/(t+(t*t))";} };
-      template <typename T> struct sf80_op : public sf_base<T> { typedef typename sf_base<T>::Type Type; static inline T process(Type x, Type y, Type z, Type w) { return x / (y - (z * w)); } static inline std::string id() { return "t/(t-(t*t))";} };
-      template <typename T> struct sf81_op : public sf_base<T> { typedef typename sf_base<T>::Type Type; static inline T process(Type x, Type y, Type z, Type w) { return x * (y + (z * w)); } static inline std::string id() { return "t*(t+(t*t))";} };
-      template <typename T> struct sf82_op : public sf_base<T> { typedef typename sf_base<T>::Type Type; static inline T process(Type x, Type y, Type z, Type w) { return x * (y - (z * w)); } static inline std::string id() { return "t*(t-(t*t))";} };
-      template <typename T> struct sf83_op : public sf_base<T> { typedef typename sf_base<T>::Type Type; static inline T process(Type x, Type y, Type z, Type w) { return axn<T,2>(x,y) + axn<T,2>(z,w); } }; //x*y^2+z*w^2
-      template <typename T> struct sf84_op : public sf_base<T> { typedef typename sf_base<T>::Type Type; static inline T process(Type x, Type y, Type z, Type w) { return axn<T,3>(x,y) + axn<T,3>(z,w); } }; //x*y^3+z*w^3
-      template <typename T> struct sf85_op : public sf_base<T> { typedef typename sf_base<T>::Type Type; static inline T process(Type x, Type y, Type z, Type w) { return axn<T,4>(x,y) + axn<T,4>(z,w); } }; //x*y^4+z*w^4
-      template <typename T> struct sf86_op : public sf_base<T> { typedef typename sf_base<T>::Type Type; static inline T process(Type x, Type y, Type z, Type w) { return axn<T,5>(x,y) + axn<T,5>(z,w); } }; //x*y^5+z*w^5
-      template <typename T> struct sf87_op : public sf_base<T> { typedef typename sf_base<T>::Type Type; static inline T process(Type x, Type y, Type z, Type w) { return axn<T,6>(x,y) + axn<T,6>(z,w); } }; //x*y^6+z*w^6
-      template <typename T> struct sf88_op : public sf_base<T> { typedef typename sf_base<T>::Type Type; static inline T process(Type x, Type y, Type z, Type w) { return axn<T,7>(x,y) + axn<T,7>(z,w); } }; //x*y^7+z*w^7
-      template <typename T> struct sf89_op : public sf_base<T> { typedef typename sf_base<T>::Type Type; static inline T process(Type x, Type y, Type z, Type w) { return axn<T,8>(x,y) + axn<T,8>(z,w); } }; //x*y^8+z*w^8
-      template <typename T> struct sf90_op : public sf_base<T> { typedef typename sf_base<T>::Type Type; static inline T process(Type x, Type y, Type z, Type w) { return axn<T,9>(x,y) + axn<T,9>(z,w); } }; //x*y^9+z*w^9
-      template <typename T> struct sf91_op : public sf_base<T> { typedef typename sf_base<T>::Type Type; static inline T process(Type x, Type y, Type z, Type w) { return (is_true(x) && is_true(y)) ? z : w; } };
-      template <typename T> struct sf92_op : public sf_base<T> { typedef typename sf_base<T>::Type Type; static inline T process(Type x, Type y, Type z, Type w) { return (is_true(x) || is_true(y)) ? z : w; } };
-      template <typename T> struct sf93_op : public sf_base<T> { typedef typename sf_base<T>::Type Type; static inline T process(Type x, Type y, Type z, Type w) { return (x <  y) ? z : w; } };
-      template <typename T> struct sf94_op : public sf_base<T> { typedef typename sf_base<T>::Type Type; static inline T process(Type x, Type y, Type z, Type w) { return (x <= y) ? z : w; } };
-      template <typename T> struct sf95_op : public sf_base<T> { typedef typename sf_base<T>::Type Type; static inline T process(Type x, Type y, Type z, Type w) { return (x >  y) ? z : w; } };
-      template <typename T> struct sf96_op : public sf_base<T> { typedef typename sf_base<T>::Type Type; static inline T process(Type x, Type y, Type z, Type w) { return (x >= y) ? z : w; } };
-      template <typename T> struct sf97_op : public sf_base<T> { typedef typename sf_base<T>::Type Type; static inline T process(Type x, Type y, Type z, Type w) { return numeric::equal(x,y) ? z : w; } };
-      template <typename T> struct sf98_op : public sf_base<T> { typedef typename sf_base<T>::Type Type; static inline T process(Type x, Type y, Type z, Type w) { return x * numeric::sin(y) + z * numeric::cos(w); } };
+      template <typename T> struct sf04_op : public sf_base<T> { typedef typename sf_base<T>::Type Type; static inline T process(Type x, Type y, Type z) { return (x - y) + z; } static inline std::string id() { return "(t-t)+t";} };
+      template <typename T> struct sf05_op : public sf_base<T> { typedef typename sf_base<T>::Type Type; static inline T process(Type x, Type y, Type z) { return (x - y) / z; } static inline std::string id() { return "(t-t)/t";} };
+      template <typename T> struct sf06_op : public sf_base<T> { typedef typename sf_base<T>::Type Type; static inline T process(Type x, Type y, Type z) { return (x - y) * z; } static inline std::string id() { return "(t-t)*t";} };
+      template <typename T> struct sf07_op : public sf_base<T> { typedef typename sf_base<T>::Type Type; static inline T process(Type x, Type y, Type z) { return (x * y) + z; } static inline std::string id() { return "(t*t)+t";} };
+      template <typename T> struct sf08_op : public sf_base<T> { typedef typename sf_base<T>::Type Type; static inline T process(Type x, Type y, Type z) { return (x * y) - z; } static inline std::string id() { return "(t*t)-t";} };
+      template <typename T> struct sf09_op : public sf_base<T> { typedef typename sf_base<T>::Type Type; static inline T process(Type x, Type y, Type z) { return (x * y) / z; } static inline std::string id() { return "(t*t)/t";} };
+      template <typename T> struct sf10_op : public sf_base<T> { typedef typename sf_base<T>::Type Type; static inline T process(Type x, Type y, Type z) { return (x * y) * z; } static inline std::string id() { return "(t*t)*t";} };
+      template <typename T> struct sf11_op : public sf_base<T> { typedef typename sf_base<T>::Type Type; static inline T process(Type x, Type y, Type z) { return (x / y) + z; } static inline std::string id() { return "(t/t)+t";} };
+      template <typename T> struct sf12_op : public sf_base<T> { typedef typename sf_base<T>::Type Type; static inline T process(Type x, Type y, Type z) { return (x / y) - z; } static inline std::string id() { return "(t/t)-t";} };
+      template <typename T> struct sf13_op : public sf_base<T> { typedef typename sf_base<T>::Type Type; static inline T process(Type x, Type y, Type z) { return (x / y) / z; } static inline std::string id() { return "(t/t)/t";} };
+      template <typename T> struct sf14_op : public sf_base<T> { typedef typename sf_base<T>::Type Type; static inline T process(Type x, Type y, Type z) { return (x / y) * z; } static inline std::string id() { return "(t/t)*t";} };
+      template <typename T> struct sf15_op : public sf_base<T> { typedef typename sf_base<T>::Type Type; static inline T process(Type x, Type y, Type z) { return x / (y + z); } static inline std::string id() { return "t/(t+t)";} };
+      template <typename T> struct sf16_op : public sf_base<T> { typedef typename sf_base<T>::Type Type; static inline T process(Type x, Type y, Type z) { return x / (y - z); } static inline std::string id() { return "t/(t-t)";} };
+      template <typename T> struct sf17_op : public sf_base<T> { typedef typename sf_base<T>::Type Type; static inline T process(Type x, Type y, Type z) { return x / (y * z); } static inline std::string id() { return "t/(t*t)";} };
+      template <typename T> struct sf18_op : public sf_base<T> { typedef typename sf_base<T>::Type Type; static inline T process(Type x, Type y, Type z) { return x / (y / z); } static inline std::string id() { return "t/(t/t)";} };
+      template <typename T> struct sf19_op : public sf_base<T> { typedef typename sf_base<T>::Type Type; static inline T process(Type x, Type y, Type z) { return x * (y + z); } static inline std::string id() { return "t*(t+t)";} };
+      template <typename T> struct sf20_op : public sf_base<T> { typedef typename sf_base<T>::Type Type; static inline T process(Type x, Type y, Type z) { return x * (y - z); } static inline std::string id() { return "t*(t-t)";} };
+      template <typename T> struct sf21_op : public sf_base<T> { typedef typename sf_base<T>::Type Type; static inline T process(Type x, Type y, Type z) { return x * (y * z); } static inline std::string id() { return "t*(t*t)";} };
+      template <typename T> struct sf22_op : public sf_base<T> { typedef typename sf_base<T>::Type Type; static inline T process(Type x, Type y, Type z) { return x * (y / z); } static inline std::string id() { return "t*(t/t)";} };
+      template <typename T> struct sf23_op : public sf_base<T> { typedef typename sf_base<T>::Type Type; static inline T process(Type x, Type y, Type z) { return x - (y + z); } static inline std::string id() { return "t-(t+t)";} };
+      template <typename T> struct sf24_op : public sf_base<T> { typedef typename sf_base<T>::Type Type; static inline T process(Type x, Type y, Type z) { return x - (y - z); } static inline std::string id() { return "t-(t-t)";} };
+      template <typename T> struct sf25_op : public sf_base<T> { typedef typename sf_base<T>::Type Type; static inline T process(Type x, Type y, Type z) { return x - (y / z); } static inline std::string id() { return "t-(t/t)";} };
+      template <typename T> struct sf26_op : public sf_base<T> { typedef typename sf_base<T>::Type Type; static inline T process(Type x, Type y, Type z) { return x - (y * z); } static inline std::string id() { return "t-(t*t)";} };
+      template <typename T> struct sf27_op : public sf_base<T> { typedef typename sf_base<T>::Type Type; static inline T process(Type x, Type y, Type z) { return x + (y * z); } static inline std::string id() { return "t+(t*t)";} };
+      template <typename T> struct sf28_op : public sf_base<T> { typedef typename sf_base<T>::Type Type; static inline T process(Type x, Type y, Type z) { return x + (y / z); } static inline std::string id() { return "t+(t/t)";} };
+      template <typename T> struct sf29_op : public sf_base<T> { typedef typename sf_base<T>::Type Type; static inline T process(Type x, Type y, Type z) { return x + (y + z); } static inline std::string id() { return "t+(t+t)";} };
+      template <typename T> struct sf30_op : public sf_base<T> { typedef typename sf_base<T>::Type Type; static inline T process(Type x, Type y, Type z) { return x + (y - z); } static inline std::string id() { return "t+(t-t)";} };
+      template <typename T> struct sf31_op : public sf_base<T> { typedef typename sf_base<T>::Type Type; static inline T process(Type x, Type y, Type z) { return axnb<T,2>(x,y,z); } }; //x * y^2 + z
+      template <typename T> struct sf32_op : public sf_base<T> { typedef typename sf_base<T>::Type Type; static inline T process(Type x, Type y, Type z) { return axnb<T,3>(x,y,z); } }; //x * y^3 + z
+      template <typename T> struct sf33_op : public sf_base<T> { typedef typename sf_base<T>::Type Type; static inline T process(Type x, Type y, Type z) { return axnb<T,4>(x,y,z); } }; //x * y^4 + z
+      template <typename T> struct sf34_op : public sf_base<T> { typedef typename sf_base<T>::Type Type; static inline T process(Type x, Type y, Type z) { return axnb<T,5>(x,y,z); } }; //x * y^5 + z
+      template <typename T> struct sf35_op : public sf_base<T> { typedef typename sf_base<T>::Type Type; static inline T process(Type x, Type y, Type z) { return axnb<T,6>(x,y,z); } }; //x * y^6 + z
+      template <typename T> struct sf36_op : public sf_base<T> { typedef typename sf_base<T>::Type Type; static inline T process(Type x, Type y, Type z) { return axnb<T,7>(x,y,z); } }; //x * y^7 + z
+      template <typename T> struct sf37_op : public sf_base<T> { typedef typename sf_base<T>::Type Type; static inline T process(Type x, Type y, Type z) { return axnb<T,8>(x,y,z); } }; //x * y^8 + z
+      template <typename T> struct sf38_op : public sf_base<T> { typedef typename sf_base<T>::Type Type; static inline T process(Type x, Type y, Type z) { return axnb<T,9>(x,y,z); } }; //x * y^9 + z
+      template <typename T> struct sf39_op : public sf_base<T> { typedef typename sf_base<T>::Type Type; static inline T process(Type x, Type y, Type z) { return x * numeric::log(y)   + z; } };
+      template <typename T> struct sf40_op : public sf_base<T> { typedef typename sf_base<T>::Type Type; static inline T process(Type x, Type y, Type z) { return x * numeric::log(y)   - z; } };
+      template <typename T> struct sf41_op : public sf_base<T> { typedef typename sf_base<T>::Type Type; static inline T process(Type x, Type y, Type z) { return x * numeric::log10(y) + z; } };
+      template <typename T> struct sf42_op : public sf_base<T> { typedef typename sf_base<T>::Type Type; static inline T process(Type x, Type y, Type z) { return x * numeric::log10(y) - z; } };
+      template <typename T> struct sf43_op : public sf_base<T> { typedef typename sf_base<T>::Type Type; static inline T process(Type x, Type y, Type z) { return x * numeric::sin(y) + z; } };
+      template <typename T> struct sf44_op : public sf_base<T> { typedef typename sf_base<T>::Type Type; static inline T process(Type x, Type y, Type z) { return x * numeric::sin(y) - z; } };
+      template <typename T> struct sf45_op : public sf_base<T> { typedef typename sf_base<T>::Type Type; static inline T process(Type x, Type y, Type z) { return x * numeric::cos(y) + z; } };
+      template <typename T> struct sf46_op : public sf_base<T> { typedef typename sf_base<T>::Type Type; static inline T process(Type x, Type y, Type z) { return x * numeric::cos(y) - z; } };
+      template <typename T> struct sf47_op : public sf_base<T> { typedef typename sf_base<T>::Type Type; static inline T process(Type x, Type y, Type z) { return is_true(x) ? y : z;      } };
+      template <typename T> struct sf48_op : public sf_base<T> { typedef typename sf_base<T>::Type Type; static inline T process(Type x, Type y, Type z, Type w) { return x + ((y + z) / w); } static inline std::string id() { return "t+((t+t)/t)";} };
+      template <typename T> struct sf49_op : public sf_base<T> { typedef typename sf_base<T>::Type Type; static inline T process(Type x, Type y, Type z, Type w) { return x + ((y + z) * w); } static inline std::string id() { return "t+((t+t)*t)";} };
+      template <typename T> struct sf50_op : public sf_base<T> { typedef typename sf_base<T>::Type Type; static inline T process(Type x, Type y, Type z, Type w) { return x + ((y - z) / w); } static inline std::string id() { return "t+((t-t)/t)";} };
+      template <typename T> struct sf51_op : public sf_base<T> { typedef typename sf_base<T>::Type Type; static inline T process(Type x, Type y, Type z, Type w) { return x + ((y - z) * w); } static inline std::string id() { return "t+((t-t)*t)";} };
+      template <typename T> struct sf52_op : public sf_base<T> { typedef typename sf_base<T>::Type Type; static inline T process(Type x, Type y, Type z, Type w) { return x + ((y * z) / w); } static inline std::string id() { return "t+((t*t)/t)";} };
+      template <typename T> struct sf53_op : public sf_base<T> { typedef typename sf_base<T>::Type Type; static inline T process(Type x, Type y, Type z, Type w) { return x + ((y * z) * w); } static inline std::string id() { return "t+((t*t)*t)";} };
+      template <typename T> struct sf54_op : public sf_base<T> { typedef typename sf_base<T>::Type Type; static inline T process(Type x, Type y, Type z, Type w) { return x + ((y / z) + w); } static inline std::string id() { return "t+((t/t)+t)";} };
+      template <typename T> struct sf55_op : public sf_base<T> { typedef typename sf_base<T>::Type Type; static inline T process(Type x, Type y, Type z, Type w) { return x + ((y / z) / w); } static inline std::string id() { return "t+((t/t)/t)";} };
+      template <typename T> struct sf56_op : public sf_base<T> { typedef typename sf_base<T>::Type Type; static inline T process(Type x, Type y, Type z, Type w) { return x + ((y / z) * w); } static inline std::string id() { return "t+((t/t)*t)";} };
+      template <typename T> struct sf57_op : public sf_base<T> { typedef typename sf_base<T>::Type Type; static inline T process(Type x, Type y, Type z, Type w) { return x - ((y + z) / w); } static inline std::string id() { return "t-((t+t)/t)";} };
+      template <typename T> struct sf58_op : public sf_base<T> { typedef typename sf_base<T>::Type Type; static inline T process(Type x, Type y, Type z, Type w) { return x - ((y + z) * w); } static inline std::string id() { return "t-((t+t)*t)";} };
+      template <typename T> struct sf59_op : public sf_base<T> { typedef typename sf_base<T>::Type Type; static inline T process(Type x, Type y, Type z, Type w) { return x - ((y - z) / w); } static inline std::string id() { return "t-((t-t)/t)";} };
+      template <typename T> struct sf60_op : public sf_base<T> { typedef typename sf_base<T>::Type Type; static inline T process(Type x, Type y, Type z, Type w) { return x - ((y - z) * w); } static inline std::string id() { return "t-((t-t)*t)";} };
+      template <typename T> struct sf61_op : public sf_base<T> { typedef typename sf_base<T>::Type Type; static inline T process(Type x, Type y, Type z, Type w) { return x - ((y * z) / w); } static inline std::string id() { return "t-((t*t)/t)";} };
+      template <typename T> struct sf62_op : public sf_base<T> { typedef typename sf_base<T>::Type Type; static inline T process(Type x, Type y, Type z, Type w) { return x - ((y * z) * w); } static inline std::string id() { return "t-((t*t)*t)";} };
+      template <typename T> struct sf63_op : public sf_base<T> { typedef typename sf_base<T>::Type Type; static inline T process(Type x, Type y, Type z, Type w) { return x - ((y / z) / w); } static inline std::string id() { return "t-((t/t)/t)";} };
+      template <typename T> struct sf64_op : public sf_base<T> { typedef typename sf_base<T>::Type Type; static inline T process(Type x, Type y, Type z, Type w) { return x - ((y / z) * w); } static inline std::string id() { return "t-((t/t)*t)";} };
+      template <typename T> struct sf65_op : public sf_base<T> { typedef typename sf_base<T>::Type Type; static inline T process(Type x, Type y, Type z, Type w) { return ((x + y) * z) - w; } static inline std::string id() { return "((t+t)*t)-t";} };
+      template <typename T> struct sf66_op : public sf_base<T> { typedef typename sf_base<T>::Type Type; static inline T process(Type x, Type y, Type z, Type w) { return ((x - y) * z) - w; } static inline std::string id() { return "((t-t)*t)-t";} };
+      template <typename T> struct sf67_op : public sf_base<T> { typedef typename sf_base<T>::Type Type; static inline T process(Type x, Type y, Type z, Type w) { return ((x * y) * z) - w; } static inline std::string id() { return "((t*t)*t)-t";} };
+      template <typename T> struct sf68_op : public sf_base<T> { typedef typename sf_base<T>::Type Type; static inline T process(Type x, Type y, Type z, Type w) { return ((x / y) * z) - w; } static inline std::string id() { return "((t/t)*t)-t";} };
+      template <typename T> struct sf69_op : public sf_base<T> { typedef typename sf_base<T>::Type Type; static inline T process(Type x, Type y, Type z, Type w) { return ((x + y) / z) - w; } static inline std::string id() { return "((t+t)/t)-t";} };
+      template <typename T> struct sf70_op : public sf_base<T> { typedef typename sf_base<T>::Type Type; static inline T process(Type x, Type y, Type z, Type w) { return ((x - y) / z) - w; } static inline std::string id() { return "((t-t)/t)-t";} };
+      template <typename T> struct sf71_op : public sf_base<T> { typedef typename sf_base<T>::Type Type; static inline T process(Type x, Type y, Type z, Type w) { return ((x * y) / z) - w; } static inline std::string id() { return "((t*t)/t)-t";} };
+      template <typename T> struct sf72_op : public sf_base<T> { typedef typename sf_base<T>::Type Type; static inline T process(Type x, Type y, Type z, Type w) { return ((x / y) / z) - w; } static inline std::string id() { return "((t/t)/t)-t";} };
+      template <typename T> struct sf73_op : public sf_base<T> { typedef typename sf_base<T>::Type Type; static inline T process(Type x, Type y, Type z, Type w) { return (x * y) + (z * w); } static inline std::string id() { return "(t*t)+(t*t)";} };
+      template <typename T> struct sf74_op : public sf_base<T> { typedef typename sf_base<T>::Type Type; static inline T process(Type x, Type y, Type z, Type w) { return (x * y) - (z * w); } static inline std::string id() { return "(t*t)-(t*t)";} };
+      template <typename T> struct sf75_op : public sf_base<T> { typedef typename sf_base<T>::Type Type; static inline T process(Type x, Type y, Type z, Type w) { return (x * y) + (z / w); } static inline std::string id() { return "(t*t)+(t/t)";} };
+      template <typename T> struct sf76_op : public sf_base<T> { typedef typename sf_base<T>::Type Type; static inline T process(Type x, Type y, Type z, Type w) { return (x * y) - (z / w); } static inline std::string id() { return "(t*t)-(t/t)";} };
+      template <typename T> struct sf77_op : public sf_base<T> { typedef typename sf_base<T>::Type Type; static inline T process(Type x, Type y, Type z, Type w) { return (x / y) + (z / w); } static inline std::string id() { return "(t/t)+(t/t)";} };
+      template <typename T> struct sf78_op : public sf_base<T> { typedef typename sf_base<T>::Type Type; static inline T process(Type x, Type y, Type z, Type w) { return (x / y) - (z / w); } static inline std::string id() { return "(t/t)-(t/t)";} };
+      template <typename T> struct sf79_op : public sf_base<T> { typedef typename sf_base<T>::Type Type; static inline T process(Type x, Type y, Type z, Type w) { return (x / y) - (z * w); } static inline std::string id() { return "(t/t)-(t*t)";} };
+      template <typename T> struct sf80_op : public sf_base<T> { typedef typename sf_base<T>::Type Type; static inline T process(Type x, Type y, Type z, Type w) { return x / (y + (z * w)); } static inline std::string id() { return "t/(t+(t*t))";} };
+      template <typename T> struct sf81_op : public sf_base<T> { typedef typename sf_base<T>::Type Type; static inline T process(Type x, Type y, Type z, Type w) { return x / (y - (z * w)); } static inline std::string id() { return "t/(t-(t*t))";} };
+      template <typename T> struct sf82_op : public sf_base<T> { typedef typename sf_base<T>::Type Type; static inline T process(Type x, Type y, Type z, Type w) { return x * (y + (z * w)); } static inline std::string id() { return "t*(t+(t*t))";} };
+      template <typename T> struct sf83_op : public sf_base<T> { typedef typename sf_base<T>::Type Type; static inline T process(Type x, Type y, Type z, Type w) { return x * (y - (z * w)); } static inline std::string id() { return "t*(t-(t*t))";} };
+      template <typename T> struct sf84_op : public sf_base<T> { typedef typename sf_base<T>::Type Type; static inline T process(Type x, Type y, Type z, Type w) { return axn<T,2>(x,y) + axn<T,2>(z,w); } }; //x*y^2+z*w^2
+      template <typename T> struct sf85_op : public sf_base<T> { typedef typename sf_base<T>::Type Type; static inline T process(Type x, Type y, Type z, Type w) { return axn<T,3>(x,y) + axn<T,3>(z,w); } }; //x*y^3+z*w^3
+      template <typename T> struct sf86_op : public sf_base<T> { typedef typename sf_base<T>::Type Type; static inline T process(Type x, Type y, Type z, Type w) { return axn<T,4>(x,y) + axn<T,4>(z,w); } }; //x*y^4+z*w^4
+      template <typename T> struct sf87_op : public sf_base<T> { typedef typename sf_base<T>::Type Type; static inline T process(Type x, Type y, Type z, Type w) { return axn<T,5>(x,y) + axn<T,5>(z,w); } }; //x*y^5+z*w^5
+      template <typename T> struct sf88_op : public sf_base<T> { typedef typename sf_base<T>::Type Type; static inline T process(Type x, Type y, Type z, Type w) { return axn<T,6>(x,y) + axn<T,6>(z,w); } }; //x*y^6+z*w^6
+      template <typename T> struct sf89_op : public sf_base<T> { typedef typename sf_base<T>::Type Type; static inline T process(Type x, Type y, Type z, Type w) { return axn<T,7>(x,y) + axn<T,7>(z,w); } }; //x*y^7+z*w^7
+      template <typename T> struct sf90_op : public sf_base<T> { typedef typename sf_base<T>::Type Type; static inline T process(Type x, Type y, Type z, Type w) { return axn<T,8>(x,y) + axn<T,8>(z,w); } }; //x*y^8+z*w^8
+      template <typename T> struct sf91_op : public sf_base<T> { typedef typename sf_base<T>::Type Type; static inline T process(Type x, Type y, Type z, Type w) { return axn<T,9>(x,y) + axn<T,9>(z,w); } }; //x*y^9+z*w^9
+      template <typename T> struct sf92_op : public sf_base<T> { typedef typename sf_base<T>::Type Type; static inline T process(Type x, Type y, Type z, Type w) { return (is_true(x) && is_true(y)) ? z : w; } };
+      template <typename T> struct sf93_op : public sf_base<T> { typedef typename sf_base<T>::Type Type; static inline T process(Type x, Type y, Type z, Type w) { return (is_true(x) || is_true(y)) ? z : w; } };
+      template <typename T> struct sf94_op : public sf_base<T> { typedef typename sf_base<T>::Type Type; static inline T process(Type x, Type y, Type z, Type w) { return (x <  y) ? z : w; } };
+      template <typename T> struct sf95_op : public sf_base<T> { typedef typename sf_base<T>::Type Type; static inline T process(Type x, Type y, Type z, Type w) { return (x <= y) ? z : w; } };
+      template <typename T> struct sf96_op : public sf_base<T> { typedef typename sf_base<T>::Type Type; static inline T process(Type x, Type y, Type z, Type w) { return (x >  y) ? z : w; } };
+      template <typename T> struct sf97_op : public sf_base<T> { typedef typename sf_base<T>::Type Type; static inline T process(Type x, Type y, Type z, Type w) { return (x >= y) ? z : w; } };
+      template <typename T> struct sf98_op : public sf_base<T> { typedef typename sf_base<T>::Type Type; static inline T process(Type x, Type y, Type z, Type w) { return numeric::equal(x,y) ? z : w; } };
+      template <typename T> struct sf99_op : public sf_base<T> { typedef typename sf_base<T>::Type Type; static inline T process(Type x, Type y, Type z, Type w) { return x * numeric::sin(y) + z * numeric::cos(w); } };
 
       template <typename T> struct sfext00_op : public sf_base<T> { typedef typename sf_base<T>::Type Type; static inline T process(Type x, Type y, Type z, Type w) { return (x + y) - (z * w); } static inline std::string id() { return "(t+t)-(t*t)";} };
       template <typename T> struct sfext01_op : public sf_base<T> { typedef typename sf_base<T>::Type Type; static inline T process(Type x, Type y, Type z, Type w) { return (x + y) - (z / w); } static inline std::string id() { return "(t+t)-(t/t)";} };
@@ -12035,7 +12036,7 @@ namespace exprtk
             return error_node();
          }
 
-         const std::size_t sf_3_to_4 = details::e_sf47;
+         const std::size_t sf_3_to_4 = details::e_sf48;
          const details::operator_type opt_type = details::operator_type(id + 1000);
          const std::size_t NumberOfParameters = (id < (sf_3_to_4 - 1000)) ? 3 : 4;
 
@@ -12536,7 +12537,7 @@ namespace exprtk
                    (details::e_frac  == operation) || (details::e_trunc == operation);
          }
 
-         inline bool sf3_optimizable(const std::string sf3id, trinary_functor_t& tfunc)
+         inline bool sf3_optimizable(const std::string& sf3id, trinary_functor_t& tfunc)
          {
             typename sf3_map_t::iterator itr = sf3_map_->find(sf3id);
             if (sf3_map_->end() == itr)
@@ -12546,7 +12547,7 @@ namespace exprtk
             return true;
          }
 
-         inline bool sf4_optimizable(const std::string sf4id, quaternary_functor_t& qfunc)
+         inline bool sf4_optimizable(const std::string& sf4id, quaternary_functor_t& qfunc)
          {
             typename sf4_map_t::iterator itr = sf4_map_->find(sf4id);
             if (sf4_map_->end() == itr)
@@ -12556,7 +12557,7 @@ namespace exprtk
             return true;
          }
 
-         inline bool sf3_optimizable(const std::string sf3id, details::operator_type& operation)
+         inline bool sf3_optimizable(const std::string& sf3id, details::operator_type& operation)
          {
             typename sf3_map_t::iterator itr = sf3_map_->find(sf3id);
             if (sf3_map_->end() == itr)
@@ -12566,7 +12567,7 @@ namespace exprtk
             return true;
          }
 
-         inline bool sf4_optimizable(const std::string sf4id, details::operator_type& operation)
+         inline bool sf4_optimizable(const std::string& sf4id, details::operator_type& operation)
          {
             typename sf4_map_t::iterator itr = sf4_map_->find(sf4id);
             if (sf4_map_->end() == itr)
@@ -13213,7 +13214,7 @@ namespace exprtk
                case_stmt(details::e_sf40,details::sf40_op) case_stmt(details::e_sf41,details::sf41_op)
                case_stmt(details::e_sf42,details::sf42_op) case_stmt(details::e_sf43,details::sf43_op)
                case_stmt(details::e_sf44,details::sf44_op) case_stmt(details::e_sf45,details::sf45_op)
-               case_stmt(details::e_sf46,details::sf46_op)
+               case_stmt(details::e_sf46,details::sf46_op) case_stmt(details::e_sf47,details::sf47_op)
                #undef case_stmt
                default : return error_node();
             }
@@ -13261,7 +13262,7 @@ namespace exprtk
                case_stmt(details::e_sf40,details::sf40_op) case_stmt(details::e_sf41,details::sf41_op)
                case_stmt(details::e_sf42,details::sf42_op) case_stmt(details::e_sf43,details::sf43_op)
                case_stmt(details::e_sf44,details::sf44_op) case_stmt(details::e_sf45,details::sf45_op)
-               case_stmt(details::e_sf46,details::sf46_op)
+               case_stmt(details::e_sf46,details::sf46_op) case_stmt(details::e_sf47,details::sf47_op)
                #undef case_stmt
                default : return error_node();
             }
@@ -13306,7 +13307,7 @@ namespace exprtk
                   case_stmt(details::e_sf40,details::sf40_op) case_stmt(details::e_sf41,details::sf41_op)
                   case_stmt(details::e_sf42,details::sf42_op) case_stmt(details::e_sf43,details::sf43_op)
                   case_stmt(details::e_sf44,details::sf44_op) case_stmt(details::e_sf45,details::sf45_op)
-                  case_stmt(details::e_sf46,details::sf46_op)
+                  case_stmt(details::e_sf46,details::sf46_op) case_stmt(details::e_sf47,details::sf47_op)
                   #undef case_stmt
                   default : return error_node();
                }
@@ -13323,32 +13324,32 @@ namespace exprtk
                                          allocate<details::sf4_node<Type,op1<Type> > >(operation,branch); \
                           break;                                                                          \
 
-               case_stmt(details::e_sf47,details::sf47_op) case_stmt(details::e_sf48,details::sf48_op)
-               case_stmt(details::e_sf49,details::sf49_op) case_stmt(details::e_sf50,details::sf50_op)
-               case_stmt(details::e_sf51,details::sf51_op) case_stmt(details::e_sf52,details::sf52_op)
-               case_stmt(details::e_sf53,details::sf53_op) case_stmt(details::e_sf54,details::sf54_op)
-               case_stmt(details::e_sf55,details::sf55_op) case_stmt(details::e_sf56,details::sf56_op)
-               case_stmt(details::e_sf57,details::sf57_op) case_stmt(details::e_sf58,details::sf58_op)
-               case_stmt(details::e_sf59,details::sf59_op) case_stmt(details::e_sf60,details::sf60_op)
-               case_stmt(details::e_sf61,details::sf61_op) case_stmt(details::e_sf62,details::sf62_op)
-               case_stmt(details::e_sf63,details::sf63_op) case_stmt(details::e_sf64,details::sf64_op)
-               case_stmt(details::e_sf65,details::sf65_op) case_stmt(details::e_sf66,details::sf66_op)
-               case_stmt(details::e_sf67,details::sf67_op) case_stmt(details::e_sf68,details::sf68_op)
-               case_stmt(details::e_sf69,details::sf69_op) case_stmt(details::e_sf70,details::sf70_op)
-               case_stmt(details::e_sf71,details::sf71_op) case_stmt(details::e_sf72,details::sf72_op)
-               case_stmt(details::e_sf73,details::sf73_op) case_stmt(details::e_sf74,details::sf74_op)
-               case_stmt(details::e_sf75,details::sf75_op) case_stmt(details::e_sf76,details::sf76_op)
-               case_stmt(details::e_sf77,details::sf77_op) case_stmt(details::e_sf78,details::sf78_op)
-               case_stmt(details::e_sf79,details::sf79_op) case_stmt(details::e_sf80,details::sf80_op)
-               case_stmt(details::e_sf81,details::sf81_op) case_stmt(details::e_sf82,details::sf82_op)
-               case_stmt(details::e_sf83,details::sf83_op) case_stmt(details::e_sf84,details::sf84_op)
-               case_stmt(details::e_sf85,details::sf85_op) case_stmt(details::e_sf86,details::sf86_op)
-               case_stmt(details::e_sf87,details::sf87_op) case_stmt(details::e_sf88,details::sf88_op)
-               case_stmt(details::e_sf89,details::sf89_op) case_stmt(details::e_sf90,details::sf90_op)
-               case_stmt(details::e_sf91,details::sf91_op) case_stmt(details::e_sf92,details::sf92_op)
-               case_stmt(details::e_sf93,details::sf93_op) case_stmt(details::e_sf94,details::sf94_op)
-               case_stmt(details::e_sf95,details::sf95_op) case_stmt(details::e_sf96,details::sf96_op)
-               case_stmt(details::e_sf97,details::sf97_op) case_stmt(details::e_sf98,details::sf98_op)
+               case_stmt(details::e_sf48,details::sf48_op) case_stmt(details::e_sf49,details::sf49_op)
+               case_stmt(details::e_sf50,details::sf50_op) case_stmt(details::e_sf51,details::sf51_op)
+               case_stmt(details::e_sf52,details::sf52_op) case_stmt(details::e_sf53,details::sf53_op)
+               case_stmt(details::e_sf54,details::sf54_op) case_stmt(details::e_sf55,details::sf55_op)
+               case_stmt(details::e_sf56,details::sf56_op) case_stmt(details::e_sf57,details::sf57_op)
+               case_stmt(details::e_sf58,details::sf58_op) case_stmt(details::e_sf59,details::sf59_op)
+               case_stmt(details::e_sf60,details::sf60_op) case_stmt(details::e_sf61,details::sf61_op)
+               case_stmt(details::e_sf62,details::sf62_op) case_stmt(details::e_sf63,details::sf63_op)
+               case_stmt(details::e_sf64,details::sf64_op) case_stmt(details::e_sf65,details::sf65_op)
+               case_stmt(details::e_sf66,details::sf66_op) case_stmt(details::e_sf67,details::sf67_op)
+               case_stmt(details::e_sf68,details::sf68_op) case_stmt(details::e_sf69,details::sf69_op)
+               case_stmt(details::e_sf70,details::sf70_op) case_stmt(details::e_sf71,details::sf71_op)
+               case_stmt(details::e_sf72,details::sf72_op) case_stmt(details::e_sf73,details::sf73_op)
+               case_stmt(details::e_sf74,details::sf74_op) case_stmt(details::e_sf75,details::sf75_op)
+               case_stmt(details::e_sf76,details::sf76_op) case_stmt(details::e_sf77,details::sf77_op)
+               case_stmt(details::e_sf78,details::sf78_op) case_stmt(details::e_sf79,details::sf79_op)
+               case_stmt(details::e_sf80,details::sf80_op) case_stmt(details::e_sf81,details::sf81_op)
+               case_stmt(details::e_sf82,details::sf82_op) case_stmt(details::e_sf83,details::sf83_op)
+               case_stmt(details::e_sf84,details::sf84_op) case_stmt(details::e_sf85,details::sf85_op)
+               case_stmt(details::e_sf86,details::sf86_op) case_stmt(details::e_sf87,details::sf87_op)
+               case_stmt(details::e_sf88,details::sf88_op) case_stmt(details::e_sf89,details::sf89_op)
+               case_stmt(details::e_sf90,details::sf90_op) case_stmt(details::e_sf91,details::sf91_op)
+               case_stmt(details::e_sf92,details::sf92_op) case_stmt(details::e_sf93,details::sf93_op)
+               case_stmt(details::e_sf94,details::sf94_op) case_stmt(details::e_sf95,details::sf95_op)
+               case_stmt(details::e_sf96,details::sf96_op) case_stmt(details::e_sf97,details::sf97_op)
+               case_stmt(details::e_sf98,details::sf98_op) case_stmt(details::e_sf99,details::sf99_op)
                #undef case_stmt
                default : return error_node();
             }
@@ -13370,32 +13371,32 @@ namespace exprtk
                case op0 : return node_allocator_->                                                \
                              allocate_rrrr<details::sf4_var_node<Type,op1<Type> > >(v0,v1,v2,v3); \
 
-               case_stmt(details::e_sf47,details::sf47_op) case_stmt(details::e_sf48,details::sf48_op)
-               case_stmt(details::e_sf49,details::sf49_op) case_stmt(details::e_sf50,details::sf50_op)
-               case_stmt(details::e_sf51,details::sf51_op) case_stmt(details::e_sf52,details::sf52_op)
-               case_stmt(details::e_sf53,details::sf53_op) case_stmt(details::e_sf54,details::sf54_op)
-               case_stmt(details::e_sf55,details::sf55_op) case_stmt(details::e_sf56,details::sf56_op)
-               case_stmt(details::e_sf57,details::sf57_op) case_stmt(details::e_sf58,details::sf58_op)
-               case_stmt(details::e_sf59,details::sf59_op) case_stmt(details::e_sf60,details::sf60_op)
-               case_stmt(details::e_sf61,details::sf61_op) case_stmt(details::e_sf62,details::sf62_op)
-               case_stmt(details::e_sf63,details::sf63_op) case_stmt(details::e_sf64,details::sf64_op)
-               case_stmt(details::e_sf65,details::sf65_op) case_stmt(details::e_sf66,details::sf66_op)
-               case_stmt(details::e_sf67,details::sf67_op) case_stmt(details::e_sf68,details::sf68_op)
-               case_stmt(details::e_sf69,details::sf69_op) case_stmt(details::e_sf70,details::sf70_op)
-               case_stmt(details::e_sf71,details::sf71_op) case_stmt(details::e_sf72,details::sf72_op)
-               case_stmt(details::e_sf73,details::sf73_op) case_stmt(details::e_sf74,details::sf74_op)
-               case_stmt(details::e_sf75,details::sf75_op) case_stmt(details::e_sf76,details::sf76_op)
-               case_stmt(details::e_sf77,details::sf77_op) case_stmt(details::e_sf78,details::sf78_op)
-               case_stmt(details::e_sf79,details::sf79_op) case_stmt(details::e_sf80,details::sf80_op)
-               case_stmt(details::e_sf81,details::sf81_op) case_stmt(details::e_sf82,details::sf82_op)
-               case_stmt(details::e_sf83,details::sf83_op) case_stmt(details::e_sf84,details::sf84_op)
-               case_stmt(details::e_sf85,details::sf85_op) case_stmt(details::e_sf86,details::sf86_op)
-               case_stmt(details::e_sf87,details::sf87_op) case_stmt(details::e_sf88,details::sf88_op)
-               case_stmt(details::e_sf89,details::sf89_op) case_stmt(details::e_sf90,details::sf90_op)
-               case_stmt(details::e_sf91,details::sf91_op) case_stmt(details::e_sf92,details::sf92_op)
-               case_stmt(details::e_sf93,details::sf93_op) case_stmt(details::e_sf94,details::sf94_op)
-               case_stmt(details::e_sf95,details::sf95_op) case_stmt(details::e_sf96,details::sf96_op)
-               case_stmt(details::e_sf97,details::sf97_op) case_stmt(details::e_sf98,details::sf98_op)
+               case_stmt(details::e_sf48,details::sf48_op) case_stmt(details::e_sf49,details::sf49_op)
+               case_stmt(details::e_sf50,details::sf50_op) case_stmt(details::e_sf51,details::sf51_op)
+               case_stmt(details::e_sf52,details::sf52_op) case_stmt(details::e_sf53,details::sf53_op)
+               case_stmt(details::e_sf54,details::sf54_op) case_stmt(details::e_sf55,details::sf55_op)
+               case_stmt(details::e_sf56,details::sf56_op) case_stmt(details::e_sf57,details::sf57_op)
+               case_stmt(details::e_sf58,details::sf58_op) case_stmt(details::e_sf59,details::sf59_op)
+               case_stmt(details::e_sf60,details::sf60_op) case_stmt(details::e_sf61,details::sf61_op)
+               case_stmt(details::e_sf62,details::sf62_op) case_stmt(details::e_sf63,details::sf63_op)
+               case_stmt(details::e_sf64,details::sf64_op) case_stmt(details::e_sf65,details::sf65_op)
+               case_stmt(details::e_sf66,details::sf66_op) case_stmt(details::e_sf67,details::sf67_op)
+               case_stmt(details::e_sf68,details::sf68_op) case_stmt(details::e_sf69,details::sf69_op)
+               case_stmt(details::e_sf70,details::sf70_op) case_stmt(details::e_sf71,details::sf71_op)
+               case_stmt(details::e_sf72,details::sf72_op) case_stmt(details::e_sf73,details::sf73_op)
+               case_stmt(details::e_sf74,details::sf74_op) case_stmt(details::e_sf75,details::sf75_op)
+               case_stmt(details::e_sf76,details::sf76_op) case_stmt(details::e_sf77,details::sf77_op)
+               case_stmt(details::e_sf78,details::sf78_op) case_stmt(details::e_sf79,details::sf79_op)
+               case_stmt(details::e_sf80,details::sf80_op) case_stmt(details::e_sf81,details::sf81_op)
+               case_stmt(details::e_sf82,details::sf82_op) case_stmt(details::e_sf83,details::sf83_op)
+               case_stmt(details::e_sf84,details::sf84_op) case_stmt(details::e_sf85,details::sf85_op)
+               case_stmt(details::e_sf86,details::sf86_op) case_stmt(details::e_sf87,details::sf87_op)
+               case_stmt(details::e_sf88,details::sf88_op) case_stmt(details::e_sf89,details::sf89_op)
+               case_stmt(details::e_sf90,details::sf90_op) case_stmt(details::e_sf91,details::sf91_op)
+               case_stmt(details::e_sf92,details::sf92_op) case_stmt(details::e_sf93,details::sf93_op)
+               case_stmt(details::e_sf94,details::sf94_op) case_stmt(details::e_sf95,details::sf95_op)
+               case_stmt(details::e_sf96,details::sf96_op) case_stmt(details::e_sf97,details::sf97_op)
+               case_stmt(details::e_sf98,details::sf98_op) case_stmt(details::e_sf99,details::sf99_op)
                #undef case_stmt
                default : return error_node();
             }
@@ -13415,32 +13416,32 @@ namespace exprtk
                case op0 : return node_allocator_->                                            \
                              allocate<details::sf4_node<Type,op1<Type> > >(operation,branch); \
 
-               case_stmt(details::e_sf47,details::sf47_op) case_stmt(details::e_sf48,details::sf48_op)
-               case_stmt(details::e_sf49,details::sf49_op) case_stmt(details::e_sf50,details::sf50_op)
-               case_stmt(details::e_sf51,details::sf51_op) case_stmt(details::e_sf52,details::sf52_op)
-               case_stmt(details::e_sf53,details::sf53_op) case_stmt(details::e_sf54,details::sf54_op)
-               case_stmt(details::e_sf55,details::sf55_op) case_stmt(details::e_sf56,details::sf56_op)
-               case_stmt(details::e_sf57,details::sf57_op) case_stmt(details::e_sf58,details::sf58_op)
-               case_stmt(details::e_sf59,details::sf59_op) case_stmt(details::e_sf60,details::sf60_op)
-               case_stmt(details::e_sf61,details::sf61_op) case_stmt(details::e_sf62,details::sf62_op)
-               case_stmt(details::e_sf63,details::sf63_op) case_stmt(details::e_sf64,details::sf64_op)
-               case_stmt(details::e_sf65,details::sf65_op) case_stmt(details::e_sf66,details::sf66_op)
-               case_stmt(details::e_sf67,details::sf67_op) case_stmt(details::e_sf68,details::sf68_op)
-               case_stmt(details::e_sf69,details::sf69_op) case_stmt(details::e_sf70,details::sf70_op)
-               case_stmt(details::e_sf71,details::sf71_op) case_stmt(details::e_sf72,details::sf72_op)
-               case_stmt(details::e_sf73,details::sf73_op) case_stmt(details::e_sf74,details::sf74_op)
-               case_stmt(details::e_sf75,details::sf75_op) case_stmt(details::e_sf76,details::sf76_op)
-               case_stmt(details::e_sf77,details::sf77_op) case_stmt(details::e_sf78,details::sf78_op)
-               case_stmt(details::e_sf79,details::sf79_op) case_stmt(details::e_sf80,details::sf80_op)
-               case_stmt(details::e_sf81,details::sf81_op) case_stmt(details::e_sf82,details::sf82_op)
-               case_stmt(details::e_sf83,details::sf83_op) case_stmt(details::e_sf84,details::sf84_op)
-               case_stmt(details::e_sf85,details::sf85_op) case_stmt(details::e_sf86,details::sf86_op)
-               case_stmt(details::e_sf87,details::sf87_op) case_stmt(details::e_sf88,details::sf88_op)
-               case_stmt(details::e_sf89,details::sf89_op) case_stmt(details::e_sf90,details::sf90_op)
-               case_stmt(details::e_sf91,details::sf91_op) case_stmt(details::e_sf92,details::sf92_op)
-               case_stmt(details::e_sf93,details::sf93_op) case_stmt(details::e_sf94,details::sf94_op)
-               case_stmt(details::e_sf95,details::sf95_op) case_stmt(details::e_sf96,details::sf96_op)
-               case_stmt(details::e_sf97,details::sf97_op) case_stmt(details::e_sf98,details::sf98_op)
+               case_stmt(details::e_sf48,details::sf48_op) case_stmt(details::e_sf49,details::sf49_op)
+               case_stmt(details::e_sf50,details::sf50_op) case_stmt(details::e_sf51,details::sf51_op)
+               case_stmt(details::e_sf52,details::sf52_op) case_stmt(details::e_sf53,details::sf53_op)
+               case_stmt(details::e_sf54,details::sf54_op) case_stmt(details::e_sf55,details::sf55_op)
+               case_stmt(details::e_sf56,details::sf56_op) case_stmt(details::e_sf57,details::sf57_op)
+               case_stmt(details::e_sf58,details::sf58_op) case_stmt(details::e_sf59,details::sf59_op)
+               case_stmt(details::e_sf60,details::sf60_op) case_stmt(details::e_sf61,details::sf61_op)
+               case_stmt(details::e_sf62,details::sf62_op) case_stmt(details::e_sf63,details::sf63_op)
+               case_stmt(details::e_sf64,details::sf64_op) case_stmt(details::e_sf65,details::sf65_op)
+               case_stmt(details::e_sf66,details::sf66_op) case_stmt(details::e_sf67,details::sf67_op)
+               case_stmt(details::e_sf68,details::sf68_op) case_stmt(details::e_sf69,details::sf69_op)
+               case_stmt(details::e_sf70,details::sf70_op) case_stmt(details::e_sf71,details::sf71_op)
+               case_stmt(details::e_sf72,details::sf72_op) case_stmt(details::e_sf73,details::sf73_op)
+               case_stmt(details::e_sf74,details::sf74_op) case_stmt(details::e_sf75,details::sf75_op)
+               case_stmt(details::e_sf76,details::sf76_op) case_stmt(details::e_sf77,details::sf77_op)
+               case_stmt(details::e_sf78,details::sf78_op) case_stmt(details::e_sf79,details::sf79_op)
+               case_stmt(details::e_sf80,details::sf80_op) case_stmt(details::e_sf81,details::sf81_op)
+               case_stmt(details::e_sf82,details::sf82_op) case_stmt(details::e_sf83,details::sf83_op)
+               case_stmt(details::e_sf84,details::sf84_op) case_stmt(details::e_sf85,details::sf85_op)
+               case_stmt(details::e_sf86,details::sf86_op) case_stmt(details::e_sf87,details::sf87_op)
+               case_stmt(details::e_sf88,details::sf88_op) case_stmt(details::e_sf89,details::sf89_op)
+               case_stmt(details::e_sf90,details::sf90_op) case_stmt(details::e_sf91,details::sf91_op)
+               case_stmt(details::e_sf92,details::sf92_op) case_stmt(details::e_sf93,details::sf93_op)
+               case_stmt(details::e_sf94,details::sf94_op) case_stmt(details::e_sf95,details::sf95_op)
+               case_stmt(details::e_sf96,details::sf96_op) case_stmt(details::e_sf97,details::sf97_op)
+               case_stmt(details::e_sf98,details::sf98_op) case_stmt(details::e_sf99,details::sf99_op)
                #undef case_stmt
                default : return error_node();
             }
@@ -14082,6 +14083,7 @@ namespace exprtk
                   case_stmt(details::e_sf24,details::sf24_op) case_stmt(details::e_sf25,details::sf25_op)
                   case_stmt(details::e_sf26,details::sf26_op) case_stmt(details::e_sf27,details::sf27_op)
                   case_stmt(details::e_sf28,details::sf28_op) case_stmt(details::e_sf29,details::sf29_op)
+                  case_stmt(details::e_sf30,details::sf30_op)
                   #undef case_stmt
                   default : return error_node();
                }
@@ -14115,24 +14117,24 @@ namespace exprtk
                   case op0 : return details::T0oT1oT2oT3_sf4ext<Type,T0,T1,T2,T3,op1<Type> >:: \
                                        allocate(*(expr_gen.node_allocator_),t0,t1,t2,t3);      \
 
-                  case_stmt(details::e_sf47,details::sf47_op) case_stmt(details::e_sf48,details::sf48_op)
-                  case_stmt(details::e_sf49,details::sf49_op) case_stmt(details::e_sf50,details::sf50_op)
-                  case_stmt(details::e_sf51,details::sf51_op) case_stmt(details::e_sf52,details::sf52_op)
-                  case_stmt(details::e_sf53,details::sf53_op) case_stmt(details::e_sf54,details::sf54_op)
-                  case_stmt(details::e_sf55,details::sf55_op) case_stmt(details::e_sf56,details::sf56_op)
-                  case_stmt(details::e_sf57,details::sf57_op) case_stmt(details::e_sf58,details::sf58_op)
-                  case_stmt(details::e_sf59,details::sf59_op) case_stmt(details::e_sf60,details::sf60_op)
-                  case_stmt(details::e_sf61,details::sf61_op) case_stmt(details::e_sf62,details::sf62_op)
-                  case_stmt(details::e_sf63,details::sf63_op) case_stmt(details::e_sf64,details::sf64_op)
-                  case_stmt(details::e_sf65,details::sf65_op) case_stmt(details::e_sf66,details::sf66_op)
-                  case_stmt(details::e_sf67,details::sf67_op) case_stmt(details::e_sf68,details::sf68_op)
-                  case_stmt(details::e_sf69,details::sf69_op) case_stmt(details::e_sf70,details::sf70_op)
-                  case_stmt(details::e_sf71,details::sf71_op) case_stmt(details::e_sf72,details::sf72_op)
-                  case_stmt(details::e_sf73,details::sf73_op) case_stmt(details::e_sf74,details::sf74_op)
-                  case_stmt(details::e_sf75,details::sf75_op) case_stmt(details::e_sf76,details::sf76_op)
-                  case_stmt(details::e_sf77,details::sf77_op) case_stmt(details::e_sf78,details::sf78_op)
-                  case_stmt(details::e_sf79,details::sf79_op) case_stmt(details::e_sf80,details::sf80_op)
-                  case_stmt(details::e_sf81,details::sf81_op) case_stmt(details::e_sf82,details::sf82_op)
+                  case_stmt(details::e_sf48,details::sf48_op) case_stmt(details::e_sf49,details::sf49_op)
+                  case_stmt(details::e_sf50,details::sf50_op) case_stmt(details::e_sf51,details::sf51_op)
+                  case_stmt(details::e_sf52,details::sf52_op) case_stmt(details::e_sf53,details::sf53_op)
+                  case_stmt(details::e_sf54,details::sf54_op) case_stmt(details::e_sf55,details::sf55_op)
+                  case_stmt(details::e_sf56,details::sf56_op) case_stmt(details::e_sf57,details::sf57_op)
+                  case_stmt(details::e_sf58,details::sf58_op) case_stmt(details::e_sf59,details::sf59_op)
+                  case_stmt(details::e_sf60,details::sf60_op) case_stmt(details::e_sf61,details::sf61_op)
+                  case_stmt(details::e_sf62,details::sf62_op) case_stmt(details::e_sf63,details::sf63_op)
+                  case_stmt(details::e_sf64,details::sf64_op) case_stmt(details::e_sf65,details::sf65_op)
+                  case_stmt(details::e_sf66,details::sf66_op) case_stmt(details::e_sf67,details::sf67_op)
+                  case_stmt(details::e_sf68,details::sf68_op) case_stmt(details::e_sf69,details::sf69_op)
+                  case_stmt(details::e_sf70,details::sf70_op) case_stmt(details::e_sf71,details::sf71_op)
+                  case_stmt(details::e_sf72,details::sf72_op) case_stmt(details::e_sf73,details::sf73_op)
+                  case_stmt(details::e_sf74,details::sf74_op) case_stmt(details::e_sf75,details::sf75_op)
+                  case_stmt(details::e_sf76,details::sf76_op) case_stmt(details::e_sf77,details::sf77_op)
+                  case_stmt(details::e_sf78,details::sf78_op) case_stmt(details::e_sf79,details::sf79_op)
+                  case_stmt(details::e_sf80,details::sf80_op) case_stmt(details::e_sf81,details::sf81_op)
+                  case_stmt(details::e_sf82,details::sf82_op) case_stmt(details::e_sf83,details::sf83_op)
                   case_stmt(details::e_sf4ext00,details::sfext00_op) case_stmt(details::e_sf4ext01,details::sfext01_op)
                   case_stmt(details::e_sf4ext02,details::sfext02_op) case_stmt(details::e_sf4ext03,details::sfext03_op)
                   case_stmt(details::e_sf4ext04,details::sfext04_op) case_stmt(details::e_sf4ext05,details::sfext05_op)
@@ -15210,11 +15212,19 @@ namespace exprtk
                   return (synthesis_result) ? result : error_node();
                }
                // (c0 + v0) - (c1 + v1) --> (covov) (c0 - c1) + v0 - v1
-               if ((details::e_add == o0) && (details::e_sub == o1) && (details::e_add == o2))
+               else if ((details::e_add == o0) && (details::e_sub == o1) && (details::e_add == o2))
                {
                   const bool synthesis_result =
                      synthesize_sf3ext_expression::
                         template compile<ctype,vtype,vtype>(expr_gen,"(t+t)-t",(c0 - c1),v0,v1,result);
+                  return (synthesis_result) ? result : error_node();
+               }
+               // (c0 - v0) - (c1 - v1) --> (covov) (c0 - c1) - v0 + v1
+               else if ((details::e_sub == o0) && (details::e_sub == o1) && (details::e_sub == o2))
+               {
+                  const bool synthesis_result =
+                     synthesize_sf3ext_expression::
+                        template compile<ctype,vtype,vtype>(expr_gen,"(t-t)+t",(c0 - c1),v0,v1,result);
                   return (synthesis_result) ? result : error_node();
                }
                // (c0 * v0) * (c1 * v1) --> (covov) (c0 * c1) * v0 * v1
@@ -15282,11 +15292,19 @@ namespace exprtk
                   return (synthesis_result) ? result : error_node();
                }
                // (v0 + c0) - (v1 + c1) --> (covov) (c0 - c1) + v0 - v1
-               if ((details::e_add == o0) && (details::e_sub == o1) && (details::e_add == o2))
+               else if ((details::e_add == o0) && (details::e_sub == o1) && (details::e_add == o2))
                {
                   const bool synthesis_result =
                      synthesize_sf3ext_expression::
                         template compile<ctype,vtype,vtype>(expr_gen,"(t+t)-t",(c0 - c1),v0,v1,result);
+                  return (synthesis_result) ? result : error_node();
+               }
+               // (v0 - c0) - (v1 - c1) --> (covov) (c1 - c0) + v0 - v1
+               else if ((details::e_sub == o0) && (details::e_sub == o1) && (details::e_sub == o2))
+               {
+                  const bool synthesis_result =
+                     synthesize_sf3ext_expression::
+                        template compile<ctype,vtype,vtype>(expr_gen,"(t+t)-t",(c1 - c0),v0,v1,result);
                   return (synthesis_result) ? result : error_node();
                }
                // (c0 * v0) * (c1 * v1) --> (covov) (c0 * c1) * v0 * v1
@@ -15344,7 +15362,40 @@ namespace exprtk
                details::free_node(*(expr_gen.node_allocator_),branch[0]);
                details::free_node(*(expr_gen.node_allocator_),branch[1]);
                expression_node_ptr result = error_node();
-               if (synthesize_sf4ext_expression::template compile<T0,T1,T2,T3>(expr_gen,id(expr_gen,o0,o1,o2),c0,v0,v1,c1,result))
+
+               // (c0 + v0) + (v1 + c1) --> (covov) (c0 + c1) + v0 + v1
+               if ((details::e_add == o0) && (details::e_add == o1) && (details::e_add == o2))
+               {
+                  const bool synthesis_result =
+                     synthesize_sf3ext_expression::
+                        template compile<ctype,vtype,vtype>(expr_gen,"(t+t)+t",(c0 + c1),v0,v1,result);
+                  return (synthesis_result) ? result : error_node();
+               }
+               // (c0 + v0) - (v1 + c1) --> (covov) (c0 - c1) + v0 - v1
+               else if ((details::e_add == o0) && (details::e_sub == o1) && (details::e_add == o2))
+               {
+                  const bool synthesis_result =
+                     synthesize_sf3ext_expression::
+                        template compile<ctype,vtype,vtype>(expr_gen,"(t+t)-t",(c0 - c1),v0,v1,result);
+                  return (synthesis_result) ? result : error_node();
+               }
+               // (c0 - v0) - (v1 - c1) --> (covov) (c0 + c1) - v0 - v1
+               else if ((details::e_sub == o0) && (details::e_sub == o1) && (details::e_sub == o2))
+               {
+                  const bool synthesis_result =
+                     synthesize_sf3ext_expression::
+                        template compile<ctype,vtype,vtype>(expr_gen,"t-(t+t)",(c0 + c1),v0,v1,result);
+                  return (synthesis_result) ? result : error_node();
+               }
+               // (c0 * v0) * (c1 * v1) --> (covov) (c0 * c1) * v0 * v1
+               else if ((details::e_mul == o0) && (details::e_mul == o1) && (details::e_mul == o2))
+               {
+                  const bool synthesis_result =
+                     synthesize_sf3ext_expression::
+                        template compile<ctype,vtype,vtype>(expr_gen,"(t*t)*t",(c0 * c1),v0,v1,result);
+                  return (synthesis_result) ? result : error_node();
+               }
+               else if (synthesize_sf4ext_expression::template compile<T0,T1,T2,T3>(expr_gen,id(expr_gen,o0,o1,o2),c0,v0,v1,c1,result))
                   return result;
                else if (!expr_gen.valid_operator(o0,f0))
                   return error_node();
@@ -15391,7 +15442,40 @@ namespace exprtk
                details::free_node(*(expr_gen.node_allocator_),branch[0]);
                details::free_node(*(expr_gen.node_allocator_),branch[1]);
                expression_node_ptr result = error_node();
-               if (synthesize_sf4ext_expression::template compile<T0,T1,T2,T3>(expr_gen,id(expr_gen,o0,o1,o2),v0,c0,c1,v1,result))
+
+               // (v0 + c0) + (c1 + v1) --> (covov) (c0 + c1) + v0 + v1
+               if ((details::e_add == o0) && (details::e_add == o1) && (details::e_add == o2))
+               {
+                  const bool synthesis_result =
+                     synthesize_sf3ext_expression::
+                        template compile<ctype,vtype,vtype>(expr_gen,"(t+t)+t",(c0 + c1),v0,v1,result);
+                  return (synthesis_result) ? result : error_node();
+               }
+               // (v0 + c0) - (c1 + v1) --> (covov) (c0 - c1) + v0 - v1
+               else if ((details::e_add == o0) && (details::e_sub == o1) && (details::e_add == o2))
+               {
+                  const bool synthesis_result =
+                     synthesize_sf3ext_expression::
+                        template compile<ctype,vtype,vtype>(expr_gen,"(t+t)-t",(c0 - c1),v0,v1,result);
+                  return (synthesis_result) ? result : error_node();
+               }
+               // (v0 - c0) - (c1 - v1) --> (vovoc) v0 + v1 - (c1 + c0)
+               else if ((details::e_sub == o0) && (details::e_sub == o1) && (details::e_sub == o2))
+               {
+                  const bool synthesis_result =
+                     synthesize_sf3ext_expression::
+                        template compile<vtype,vtype,ctype>(expr_gen,"(t+t)-t",v0,v1,(c1 + c0),result);
+                  return (synthesis_result) ? result : error_node();
+               }
+               // (c0 * v0) * (c1 * v1) --> (covov) (c0 * c1) * v0 * v1
+               else if ((details::e_mul == o0) && (details::e_mul == o1) && (details::e_mul == o2))
+               {
+                  const bool synthesis_result =
+                     synthesize_sf3ext_expression::
+                        template compile<ctype,vtype,vtype>(expr_gen,"(t*t)*t",(c0 * c1),v0,v1,result);
+                  return (synthesis_result) ? result : error_node();
+               }
+               else if (synthesize_sf4ext_expression::template compile<T0,T1,T2,T3>(expr_gen,id(expr_gen,o0,o1,o2),v0,c0,c1,v1,result))
                   return result;
                else if (!expr_gen.valid_operator(o0,f0))
                   return error_node();
@@ -17559,7 +17643,7 @@ namespace exprtk
          register_sf3(16) register_sf3(17) register_sf3(18) register_sf3(19)
          register_sf3(20) register_sf3(21) register_sf3(22) register_sf3(23)
          register_sf3(24) register_sf3(25) register_sf3(26) register_sf3(27)
-         register_sf3(28) register_sf3(29)
+         register_sf3(28) register_sf3(29) register_sf3(30)
          #undef register_sf3
       }
 
@@ -17570,15 +17654,15 @@ namespace exprtk
          #define register_sf4(Op)                                                                             \
          sf4_map[details::sf##Op##_op<T>::id()] = pair_t(details::sf##Op##_op<T>::process,details::e_sf##Op); \
 
-         register_sf4(47) register_sf4(48) register_sf4(49) register_sf4(50)
-         register_sf4(51) register_sf4(52) register_sf4(53) register_sf4(54)
-         register_sf4(55) register_sf4(56) register_sf4(57) register_sf4(58)
-         register_sf4(59) register_sf4(60) register_sf4(61) register_sf4(62)
-         register_sf4(63) register_sf4(64) register_sf4(65) register_sf4(66)
-         register_sf4(67) register_sf4(68) register_sf4(69) register_sf4(70)
-         register_sf4(71) register_sf4(72) register_sf4(73) register_sf4(74)
-         register_sf4(75) register_sf4(76) register_sf4(77) register_sf4(78)
-         register_sf4(79) register_sf4(80) register_sf4(81) register_sf4(82)
+         register_sf4(48) register_sf4(49) register_sf4(50) register_sf4(51)
+         register_sf4(52) register_sf4(53) register_sf4(54) register_sf4(55)
+         register_sf4(56) register_sf4(57) register_sf4(58) register_sf4(59)
+         register_sf4(60) register_sf4(61) register_sf4(62) register_sf4(63)
+         register_sf4(64) register_sf4(65) register_sf4(66) register_sf4(67)
+         register_sf4(68) register_sf4(69) register_sf4(70) register_sf4(71)
+         register_sf4(72) register_sf4(73) register_sf4(74) register_sf4(75)
+         register_sf4(76) register_sf4(77) register_sf4(78) register_sf4(79)
+         register_sf4(80) register_sf4(81) register_sf4(82) register_sf4(83)
          #undef register_sf4
 
          #define register_sf4ext(Op)                                                                                    \
