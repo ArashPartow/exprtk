@@ -415,9 +415,9 @@ There are three primary components, that are specialized upon a  given
 numeric type, which make up the core of ExprTk. The components are  as
 follows:
 
-  1. Symbol Table  exprtk::symbol_table<T>
-  2. Expression    exprtk::expression<T>
-  3. Parser        exprtk::parser<T>
+  1. Symbol Table  exprtk::symbol_table<NumericType>
+  2. Expression    exprtk::expression<NumericType>
+  3. Parser        exprtk::parser<NumericType>
 
 
 (1) Symbol Table
@@ -447,15 +447,15 @@ Expression:  z := (x + y^-2.345) * sin(pi / min(w - 7.3,v))
      /                \                 ___/      \___
  Variable(x)       [Power]             /              \
               ______/   \______  Constant(pi)  [Binary-Func(min)]
-             /                 \                 ___/    \___
-        Variable(y)         [Negate]            /            \
-                               |               /         Variable(v)
-                        Constant(2.345)       /
-                                             /
-                                       [Subtract]
-                                    ____/      \___
-                                   /               \
-                              Variable(w)     Constant(7.3)
+             /                 \                ____/    \____
+        Variable(y)         [Negate]           /              \
+                               |              /           Variable(v)
+                        Constant(2.345)      /
+                                            /
+                                      [Subtract]
+                                   ____/      \____
+                                  /                \
+                             Variable(w)      Constant(7.3)
 
 (3) Parser
 A  structure  which  takes  as input  a  string  representation  of an
@@ -484,58 +484,58 @@ correctly optimize such expressions for a given architecture.
  +-------------+-------------+    +--------------+------------------+
  |  Prototype  |  Operation  |    |  Prototype   |    Operation     |
  +-------------+-------------+    +--------------+------------------+
-   $f00(x,y,z) | (x + y) / z       $f47(x,y,z,w) | x + ((y + z) / w)
-   $f01(x,y,z) | (x + y) * z       $f48(x,y,z,w) | x + ((y + z) * w)
-   $f02(x,y,z) | (x + y) - z       $f49(x,y,z,w) | x + ((y - z) / w)
-   $f03(x,y,z) | (x + y) + z       $f50(x,y,z,w) | x + ((y - z) * w)
-   $f04(x,y,z) | (x - y) / z       $f51(x,y,z,w) | x + ((y * z) / w)
-   $f05(x,y,z) | (x - y) * z       $f52(x,y,z,w) | x + ((y * z) * w)
-   $f06(x,y,z) | (x * y) + z       $f53(x,y,z,w) | x + ((y / z) + w)
-   $f07(x,y,z) | (x * y) - z       $f54(x,y,z,w) | x + ((y / z) / w)
-   $f08(x,y,z) | (x * y) / z       $f55(x,y,z,w) | x + ((y / z) * w)
-   $f09(x,y,z) | (x * y) * z       $f56(x,y,z,w) | x - ((y + z) / w)
-   $f10(x,y,z) | (x / y) + z       $f57(x,y,z,w) | x - ((y + z) * w)
-   $f11(x,y,z) | (x / y) - z       $f58(x,y,z,w) | x - ((y - z) / w)
-   $f12(x,y,z) | (x / y) / z       $f59(x,y,z,w) | x - ((y - z) * w)
-   $f13(x,y,z) | (x / y) * z       $f60(x,y,z,w) | x - ((y * z) / w)
-   $f14(x,y,z) | x / (y + z)       $f61(x,y,z,w) | x - ((y * z) * w)
-   $f15(x,y,z) | x / (y - z)       $f62(x,y,z,w) | x - ((y / z) / w)
-   $f16(x,y,z) | x / (y * z)       $f63(x,y,z,w) | x - ((y / z) * w)
-   $f17(x,y,z) | x / (y / z)       $f64(x,y,z,w) | ((x + y) * z) - w
-   $f18(x,y,z) | x * (y + z)       $f65(x,y,z,w) | ((x - y) * z) - w
-   $f19(x,y,z) | x * (y - z)       $f66(x,y,z,w) | ((x * y) * z) - w
-   $f20(x,y,z) | x * (y * z)       $f67(x,y,z,w) | ((x / y) * z) - w
-   $f21(x,y,z) | x * (y / z)       $f68(x,y,z,w) | ((x + y) / z) - w
-   $f22(x,y,z) | x - (y + z)       $f69(x,y,z,w) | ((x - y) / z) - w
-   $f23(x,y,z) | x - (y - z)       $f70(x,y,z,w) | ((x * y) / z) - w
-   $f24(x,y,z) | x - (y / z)       $f71(x,y,z,w) | ((x / y) / z) - w
-   $f25(x,y,z) | x - (y * z)       $f72(x,y,z,w) | (x * y) + (z * w)
-   $f26(x,y,z) | x + (y * z)       $f73(x,y,z,w) | (x * y) - (z * w)
-   $f27(x,y,z) | x + (y / z)       $f74(x,y,z,w) | (x * y) + (z / w)
-   $f28(x,y,z) | x + (y + z)       $f75(x,y,z,w) | (x * y) - (z / w)
-   $f29(x,y,z) | x + (y - z)       $f76(x,y,z,w) | (x / y) + (z / w)
-   $f30(x,y,z) | x * y^2 + z       $f77(x,y,z,w) | (x / y) - (z / w)
-   $f31(x,y,z) | x * y^3 + z       $f78(x,y,z,w) | (x / y) - (z * w)
-   $f32(x,y,z) | x * y^4 + z       $f79(x,y,z,w) | x / (y + (z * w))
-   $f33(x,y,z) | x * y^5 + z       $f80(x,y,z,w) | x / (y - (z * w))
-   $f34(x,y,z) | x * y^6 + z       $f81(x,y,z,w) | x * (y + (z * w))
-   $f35(x,y,z) | x * y^7 + z       $f82(x,y,z,w) | x * (y - (z * w))
-   $f36(x,y,z) | x * y^8 + z       $f83(x,y,z,w) | x*y^2 + z*w^2
-   $f37(x,y,z) | x * y^9 + z       $f84(x,y,z,w) | x*y^3 + z*w^3
-   $f38(x,y,z) | x * log(y)+z      $f85(x,y,z,w) | x*y^4 + z*w^4
-   $f39(x,y,z) | x * log(y)-z      $f86(x,y,z,w) | x*y^5 + z*w^5
-   $f40(x,y,z) | x * log10(y)+z    $f87(x,y,z,w) | x*y^6 + z*w^6
-   $f41(x,y,z) | x * log10(y)-z    $f88(x,y,z,w) | x*y^7 + z*w^7
-   $f42(x,y,z) | x * sin(y)+z      $f89(x,y,z,w) | x*y^8 + z*w^8
-   $f43(x,y,z) | x * sin(y)-z      $f90(x,y,z,w) | x*y^9 + z*w^9
-   $f44(x,y,z) | x * cos(y)+z      $f91(x,y,z,w) | (x and y) ? z : w
-   $f45(x,y,z) | x * cos(y)-z      $f92(x,y,z,w) | (x or  y) ? z : w
-   $f46(x,y,z) | x ? y : z         $f93(x,y,z,w) | (x <   y) ? z : w
-                                   $f94(x,y,z,w) | (x <=  y) ? z : w
-                                   $f95(x,y,z,w) | (x >   y) ? z : w
-                                   $f96(x,y,z,w) | (x >=  y) ? z : w
-                                   $f97(x,y,z,w) | (x ==  y) ? z : w
-                                   $f98(x,y,z,w) | x * sin(y) + z * cos(w)
+   $f00(x,y,z) | (x + y) / z       $f48(x,y,z,w) | x + ((y + z) / w)
+   $f01(x,y,z) | (x + y) * z       $f49(x,y,z,w) | x + ((y + z) * w)
+   $f02(x,y,z) | (x + y) - z       $f50(x,y,z,w) | x + ((y - z) / w)
+   $f03(x,y,z) | (x + y) + z       $f51(x,y,z,w) | x + ((y - z) * w)
+   $f04(x,y,z) | (x - y) + z       $f52(x,y,z,w) | x + ((y * z) / w)
+   $f05(x,y,z) | (x - y) / z       $f53(x,y,z,w) | x + ((y * z) * w)
+   $f06(x,y,z) | (x - y) * z       $f54(x,y,z,w) | x + ((y / z) + w)
+   $f07(x,y,z) | (x * y) + z       $f55(x,y,z,w) | x + ((y / z) / w)
+   $f08(x,y,z) | (x * y) - z       $f56(x,y,z,w) | x + ((y / z) * w)
+   $f09(x,y,z) | (x * y) / z       $f57(x,y,z,w) | x - ((y + z) / w)
+   $f10(x,y,z) | (x * y) * z       $f58(x,y,z,w) | x - ((y + z) * w)
+   $f11(x,y,z) | (x / y) + z       $f59(x,y,z,w) | x - ((y - z) / w)
+   $f12(x,y,z) | (x / y) - z       $f60(x,y,z,w) | x - ((y - z) * w)
+   $f13(x,y,z) | (x / y) / z       $f61(x,y,z,w) | x - ((y * z) / w)
+   $f14(x,y,z) | (x / y) * z       $f62(x,y,z,w) | x - ((y * z) * w)
+   $f15(x,y,z) | x / (y + z)       $f63(x,y,z,w) | x - ((y / z) / w)
+   $f16(x,y,z) | x / (y - z)       $f64(x,y,z,w) | x - ((y / z) * w)
+   $f17(x,y,z) | x / (y * z)       $f65(x,y,z,w) | ((x + y) * z) - w
+   $f18(x,y,z) | x / (y / z)       $f66(x,y,z,w) | ((x - y) * z) - w
+   $f19(x,y,z) | x * (y + z)       $f67(x,y,z,w) | ((x * y) * z) - w
+   $f20(x,y,z) | x * (y - z)       $f68(x,y,z,w) | ((x / y) * z) - w
+   $f21(x,y,z) | x * (y * z)       $f69(x,y,z,w) | ((x + y) / z) - w
+   $f22(x,y,z) | x * (y / z)       $f70(x,y,z,w) | ((x - y) / z) - w
+   $f23(x,y,z) | x - (y + z)       $f71(x,y,z,w) | ((x * y) / z) - w
+   $f24(x,y,z) | x - (y - z)       $f72(x,y,z,w) | ((x / y) / z) - w
+   $f25(x,y,z) | x - (y / z)       $f73(x,y,z,w) | (x * y) + (z * w)
+   $f26(x,y,z) | x - (y * z)       $f74(x,y,z,w) | (x * y) - (z * w)
+   $f27(x,y,z) | x + (y * z)       $f75(x,y,z,w) | (x * y) + (z / w)
+   $f28(x,y,z) | x + (y / z)       $f76(x,y,z,w) | (x * y) - (z / w)
+   $f29(x,y,z) | x + (y + z)       $f77(x,y,z,w) | (x / y) + (z / w)
+   $f30(x,y,z) | x + (y - z)       $f78(x,y,z,w) | (x / y) - (z / w)
+   $f31(x,y,z) | x * y^2 + z       $f79(x,y,z,w) | (x / y) - (z * w)
+   $f32(x,y,z) | x * y^3 + z       $f80(x,y,z,w) | x / (y + (z * w))
+   $f33(x,y,z) | x * y^4 + z       $f81(x,y,z,w) | x / (y - (z * w))
+   $f34(x,y,z) | x * y^5 + z       $f82(x,y,z,w) | x * (y + (z * w))
+   $f35(x,y,z) | x * y^6 + z       $f83(x,y,z,w) | x * (y - (z * w))
+   $f36(x,y,z) | x * y^7 + z       $f84(x,y,z,w) | x*y^2 + z*w^2
+   $f37(x,y,z) | x * y^8 + z       $f85(x,y,z,w) | x*y^3 + z*w^3
+   $f38(x,y,z) | x * y^9 + z       $f86(x,y,z,w) | x*y^4 + z*w^4
+   $f39(x,y,z) | x * log(y)+z      $f87(x,y,z,w) | x*y^5 + z*w^5
+   $f40(x,y,z) | x * log(y)-z      $f88(x,y,z,w) | x*y^6 + z*w^6
+   $f41(x,y,z) | x * log10(y)+z    $f89(x,y,z,w) | x*y^7 + z*w^7
+   $f42(x,y,z) | x * log10(y)-z    $f90(x,y,z,w) | x*y^8 + z*w^8
+   $f43(x,y,z) | x * sin(y)+z      $f91(x,y,z,w) | x*y^9 + z*w^9
+   $f44(x,y,z) | x * sin(y)-z      $f92(x,y,z,w) | (x and y) ? z : w
+   $f45(x,y,z) | x * cos(y)+z      $f93(x,y,z,w) | (x or  y) ? z : w
+   $f46(x,y,z) | x * cos(y)-z      $f94(x,y,z,w) | (x <   y) ? z : w
+   $f47(x,y,z) | x ? y : z         $f95(x,y,z,w) | (x <=  y) ? z : w
+                                   $f96(x,y,z,w) | (x >   y) ? z : w
+                                   $f97(x,y,z,w) | (x >=  y) ? z : w
+                                   $f98(x,y,z,w) | (x ==  y) ? z : w
+                                   $f99(x,y,z,w) | x * sin(y) + z * cos(w)
 
 
 
@@ -604,14 +604,26 @@ correctly optimize such expressions for a given architecture.
  (18) Recursive calls made from within composited functions will have
       a stack size bound by the stack of the executing architecture.
 
- (19) The following are examples of compliant floating point value
+ (19) The entity relationship between symbol_table and an expression
+      is one-to-many. Hence the intended use case is to have a single
+      symbol table manage the variable and function requirements of
+      multiple expressions. An inappropriate approach would be to have
+      a unique symbol table for each unique expression.
+
+ (20) The common use-case for an expression is to have it compiled
+      only once and then subsequently have it evaluated multiple
+      times. An extremely inefficient approach would be to recompile
+      an expression from its string form every time it requires
+      evaluating.
+
+ (21) The following are examples of compliant floating point value
       representations:
       (a) 12345        (b) -123.456
       (c) +123.456e+12 (d) 123.456E-12
       (e) +012.045e+07 (f) .1234
       (g) 123.456f     (h) -321.654E+3L
 
- (20) Expressions may contain any of the following comment styles:
+ (22) Expressions may contain any of the following comment styles:
       1. // .... \n
       2. #  .... \n
       3. /* .... */

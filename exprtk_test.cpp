@@ -1138,287 +1138,386 @@ struct test_xy
 };
 
 template <typename T>
+struct test_xyz
+{
+   test_xyz(std::string e, const T& v0, const T& v1, const T& v2, const T& r)
+   : expr(e),
+     x(v0),
+     y(v1),
+     z(v2),
+     result(r)
+   {}
+
+   std::string expr;
+   T x;
+   T y;
+   T z;
+   T result;
+};
+
+template <typename T>
 inline bool run_test01()
 {
-   static const test_xy<T> test_list[] =
-                           {
-                              test_xy<T>("x + y"             ,T(2.2),T(3.3),T(5.5  )),
-                              test_xy<T>("x - y"             ,T(3.3),T(2.2),T(1.1  )),
-                              test_xy<T>("x * y"             ,T(3.3),T(2.2),T(7.26 )),
-                              test_xy<T>("x / y"             ,T(3.3),T(2.2),T(1.5  )),
-                              test_xy<T>("(x + y) * (x + y)" ,T(2.2),T(3.3),T(30.25)),
-                              test_xy<T>("(x + y) / (x + y)" ,T(2.2),T(3.3),T(1.0  )),
-                              test_xy<T>("x + y > x and  x + y > y" ,T(2.2),T(3.3),T(1.0)),
-                              test_xy<T>("1 + (x + y)"       ,T(2.2),T(3.3),T(6.5  )),
-                              test_xy<T>("(x + y) - 1"       ,T(2.2),T(3.3),T(4.5  )),
-                              test_xy<T>("1 + (x + y) * 2"   ,T(2.2),T(3.3),T(12.0  )),
-                              test_xy<T>("2 * (x + y) - 1"   ,T(2.2),T(3.3),T(10.0  )),
-                              test_xy<T>("y + (x + 1)"       ,T(2.2),T(3.3),T(6.5  )),
-                              test_xy<T>("(x + 1) + y"       ,T(2.2),T(3.3),T(6.5  )),
-                              test_xy<T>("2 * x"  ,T(2.2),T(0.0),T(4.4)),
-                              test_xy<T>("x * 2"  ,T(2.2),T(0.0),T(4.4)),
-                              test_xy<T>("1.1 + x",T(2.2),T(0.0),T(3.3)),
-                              test_xy<T>("x + 1.1",T(2.2),T(0.0),T(3.3)),
-                              test_xy<T>("x * 1 == x"    ,T(2.0),T(3.0),T(1.0)),
-                              test_xy<T>("1 * x == x"    ,T(2.0),T(3.0),T(1.0)),
-                              test_xy<T>("y * 1 == y"    ,T(2.0),T(3.0),T(1.0)),
-                              test_xy<T>("1 * y == y"    ,T(2.0),T(3.0),T(1.0)),
-                              test_xy<T>("x * 0 == 0"    ,T(2.0),T(3.0),T(1.0)),
-                              test_xy<T>("0 * x == 0"    ,T(2.0),T(3.0),T(1.0)),
-                              test_xy<T>("y * 0 == 0"    ,T(2.0),T(3.0),T(1.0)),
-                              test_xy<T>("0 * y == 0"    ,T(2.0),T(3.0),T(1.0)),
-                              test_xy<T>("x + 1 == 1 + x",T(2.0),T(3.0),T(1.0)),
-                              test_xy<T>("y + 1 == 1 + y",T(2.0),T(3.0),T(1.0)),
-                              test_xy<T>("x + y == y + x",T(2.0),T(3.0),T(1.0)),
-                              test_xy<T>("x * y == y * x",T(2.0),T(3.0),T(1.0)),
-                              test_xy<T>("x < y"         ,T(2.0),T(3.0),T(1.0)),
-                              test_xy<T>("y > x"         ,T(2.0),T(3.0),T(1.0)),
-                              test_xy<T>("x <= y"        ,T(2.0),T(3.0),T(1.0)),
-                              test_xy<T>("y >= x"        ,T(2.0),T(3.0),T(1.0)),
-                              test_xy<T>("x + y > y"     ,T(2.0),T(3.0),T(1.0)),
-                              test_xy<T>("x + y > x"     ,T(2.0),T(3.0),T(1.0)),
-                              test_xy<T>("x * y > y"     ,T(2.0),T(3.0),T(1.0)),
-                              test_xy<T>("x * y > x"     ,T(2.0),T(3.0),T(1.0)),
-                              test_xy<T>("(x + y) > y"   ,T(2.0),T(3.0),T(1.0)),
-                              test_xy<T>("(x + y) > x"   ,T(2.0),T(3.0),T(1.0)),
-                              test_xy<T>("(x * y) > y"   ,T(2.0),T(3.0),T(1.0)),
-                              test_xy<T>("(x * y) > x"   ,T(2.0),T(3.0),T(1.0)),
-                              test_xy<T>("(2x + 3y)  == (2*x + 3*y)" ,T(2.0),T(3.0),T(1.0)),
-                              test_xy<T>("2(x +  y)  == (2*x + 2*y)" ,T(2.0),T(3.0),T(1.0)),
-                              test_xy<T>(" (x +  y)3 == (3*x + 3*y)" ,T(2.0),T(3.0),T(1.0)),
-                              test_xy<T>("2x + 3y    ==   2*x + 3*y" ,T(2.0),T(3.0),T(1.0)),
-                              test_xy<T>("2(x +  y)  ==   2*x + 2*y" ,T(2.0),T(3.0),T(1.0)),
-                              test_xy<T>(" (x +  y)3 ==   3*x + 3*y" ,T(2.0),T(3.0),T(1.0)),
-                              test_xy<T>("equal(x^2.2^1.1,17.15193942371376191362)" ,T(3.3),T(0.0),T(1.0)),
-                              test_xy<T>("equal(3.3^x^1.1,17.15193942371376191362)" ,T(2.2),T(0.0),T(1.0)),
-                              test_xy<T>("equal(3.3^2.2^x,17.15193942371376191362)" ,T(1.1),T(0.0),T(1.0)),
-                              test_xy<T>("equal(x^2.2^y,17.15193942371376191362)" ,T(3.3),T(1.1),T(1.0)),
-                              test_xy<T>("equal(x^y^1.1,17.15193942371376191362)" ,T(3.3),T(2.2),T(1.0)),
-                              test_xy<T>("equal(3.3^x^y,17.15193942371376191362)" ,T(2.2),T(1.1),T(1.0)),
-                              test_xy<T>("equal(x+y^3/7,x+(y*y*y)/7)",T(2.0),T(3.0),T(1.0)),
-                              test_xy<T>("equal(1-x^3+y^2*7,1-(x*x*x)+(y*y)*7)",T(2.0),T(3.0),T(1.0)),
-                              test_xy<T>("equal( x^0,1)",T(12.34),T(0.0),T(1.0)),
-                              test_xy<T>("equal( x^1,x)",T(12.34),T(0.0),T(1.0)),
-                              test_xy<T>("equal( x^2,x*x)",T(12.34),T(0.0),T(1.0)),
-                              test_xy<T>("equal( x^3,x*x*x)",T(12.34),T(0.0),T(1.0)),
-                              test_xy<T>("equal( x^4,x*x*x*x)",T(12.34),T(0.0),T(1.0)),
-                              test_xy<T>("equal( x^5,x*x*x*x*x)",T(12.34),T(0.0),T(1.0)),
-                              test_xy<T>("equal( x^6,x*x*x*x*x*x)",T(12.34),T(0.0),T(1.0)),
-                              test_xy<T>("equal( x^7,x*x*x*x*x*x*x)",T(12.34),T(0.0),T(1.0)),
-                              test_xy<T>("equal( x^8,x*x*x*x*x*x*x*x)",T(12.34),T(0.0),T(1.0)),
-                              test_xy<T>("equal( x^9,x*x*x*x*x*x*x*x*x)",T(12.34),T(0.0),T(1.0)),
-                              test_xy<T>("equal(x^10,x*x*x*x*x*x*x*x*x*x)",T(12.34),T(0.0),T(1.0)),
-                              test_xy<T>("equal(x^11,x*x*x*x*x*x*x*x*x*x*x)",T(12.34),T(0.0),T(1.0)),
-                              test_xy<T>("equal(x^12,x*x*x*x*x*x*x*x*x*x*x*x)",T(12.34),T(0.0),T(1.0)),
-                              test_xy<T>("equal(x^13,x*x*x*x*x*x*x*x*x*x*x*x*x)",T(12.34),T(0.0),T(1.0)),
-                              test_xy<T>("equal(x^14,x*x*x*x*x*x*x*x*x*x*x*x*x*x)",T(12.34),T(0.0),T(1.0)),
-                              test_xy<T>("equal(x^15,x*x*x*x*x*x*x*x*x*x*x*x*x*x*x)",T(12.34),T(0.0),T(1.0)),
-                              test_xy<T>("equal(x^16,x*x*x*x*x*x*x*x*x*x*x*x*x*x*x*x)",T(12.34),T(0.0),T(1.0)),
-                              test_xy<T>("equal(x^17,x*x*x*x*x*x*x*x*x*x*x*x*x*x*x*x*x)",T(12.34),T(0.0),T(1.0)),
-                              test_xy<T>("equal(x^18,x*x*x*x*x*x*x*x*x*x*x*x*x*x*x*x*x*x)",T(12.34),T(0.0),T(1.0)),
-                              test_xy<T>("equal(x^19,x*x*x*x*x*x*x*x*x*x*x*x*x*x*x*x*x*x*x)",T(12.34),T(0.0),T(1.0)),
-                              test_xy<T>("equal(x^20,x*x*x*x*x*x*x*x*x*x*x*x*x*x*x*x*x*x*x*x)",T(12.34),T(0.0),T(1.0)),
-                              test_xy<T>("equal(x^21,x*x*x*x*x*x*x*x*x*x*x*x*x*x*x*x*x*x*x*x*x)",T(12.34),T(0.0),T(1.0)),
-                              test_xy<T>("equal(x^22,x*x*x*x*x*x*x*x*x*x*x*x*x*x*x*x*x*x*x*x*x*x)",T(12.34),T(0.0),T(1.0)),
-                              test_xy<T>("equal(x^23,x*x*x*x*x*x*x*x*x*x*x*x*x*x*x*x*x*x*x*x*x*x*x)",T(12.34),T(0.0),T(1.0)),
-                              test_xy<T>("equal(x^24,x*x*x*x*x*x*x*x*x*x*x*x*x*x*x*x*x*x*x*x*x*x*x*x)",T(12.34),T(0.0),T(1.0)),
-                              test_xy<T>("equal(x^25,x*x*x*x*x*x*x*x*x*x*x*x*x*x*x*x*x*x*x*x*x*x*x*x*x)",T(12.34),T(0.0),T(1.0)),
-                              test_xy<T>("equal( y^0,1)",T(0.0),T(12.34),T(1.0)),
-                              test_xy<T>("equal( y^1,y)",T(0.0),T(12.34),T(1.0)),
-                              test_xy<T>("equal( y^2,y*y)",T(0.0),T(12.34),T(1.0)),
-                              test_xy<T>("equal( y^3,y*y*y)",T(0.0),T(12.34),T(1.0)),
-                              test_xy<T>("equal( y^4,y*y*y*y)",T(0.0),T(12.34),T(1.0)),
-                              test_xy<T>("equal( y^5,y*y*y*y*y)",T(0.0),T(12.34),T(1.0)),
-                              test_xy<T>("equal( y^6,y*y*y*y*y*y)",T(0.0),T(12.34),T(1.0)),
-                              test_xy<T>("equal( y^7,y*y*y*y*y*y*y)",T(0.0),T(12.34),T(1.0)),
-                              test_xy<T>("equal( y^8,y*y*y*y*y*y*y*y)",T(0.0),T(12.34),T(1.0)),
-                              test_xy<T>("equal( y^9,y*y*y*y*y*y*y*y*y)",T(0.0),T(12.34),T(1.0)),
-                              test_xy<T>("equal(y^10,y*y*y*y*y*y*y*y*y*y)",T(0.0),T(12.34),T(1.0)),
-                              test_xy<T>("equal(y^11,y*y*y*y*y*y*y*y*y*y*y)",T(0.0),T(12.34),T(1.0)),
-                              test_xy<T>("equal(y^12,y*y*y*y*y*y*y*y*y*y*y*y)",T(0.0),T(12.34),T(1.0)),
-                              test_xy<T>("equal(y^13,y*y*y*y*y*y*y*y*y*y*y*y*y)",T(0.0),T(12.34),T(1.0)),
-                              test_xy<T>("equal(y^14,y*y*y*y*y*y*y*y*y*y*y*y*y*y)",T(0.0),T(12.34),T(1.0)),
-                              test_xy<T>("equal(y^15,y*y*y*y*y*y*y*y*y*y*y*y*y*y*y)",T(0.0),T(12.34),T(1.0)),
-                              test_xy<T>("equal(y^16,y*y*y*y*y*y*y*y*y*y*y*y*y*y*y*y)",T(0.0),T(12.34),T(1.0)),
-                              test_xy<T>("equal(y^17,y*y*y*y*y*y*y*y*y*y*y*y*y*y*y*y*y)",T(0.0),T(12.34),T(1.0)),
-                              test_xy<T>("equal(y^18,y*y*y*y*y*y*y*y*y*y*y*y*y*y*y*y*y*y)",T(0.0),T(12.34),T(1.0)),
-                              test_xy<T>("equal(y^19,y*y*y*y*y*y*y*y*y*y*y*y*y*y*y*y*y*y*y)",T(0.0),T(12.34),T(1.0)),
-                              test_xy<T>("equal(y^20,y*y*y*y*y*y*y*y*y*y*y*y*y*y*y*y*y*y*y*y)",T(0.0),T(12.34),T(1.0)),
-                              test_xy<T>("equal(y^21,y*y*y*y*y*y*y*y*y*y*y*y*y*y*y*y*y*y*y*y*y)",T(0.0),T(12.34),T(1.0)),
-                              test_xy<T>("equal(y^22,y*y*y*y*y*y*y*y*y*y*y*y*y*y*y*y*y*y*y*y*y*y)",T(0.0),T(12.34),T(1.0)),
-                              test_xy<T>("equal(y^23,y*y*y*y*y*y*y*y*y*y*y*y*y*y*y*y*y*y*y*y*y*y*y)",T(0.0),T(12.34),T(1.0)),
-                              test_xy<T>("equal(y^24,y*y*y*y*y*y*y*y*y*y*y*y*y*y*y*y*y*y*y*y*y*y*y*y)",T(0.0),T(12.34),T(1.0)),
-                              test_xy<T>("equal(y^25,y*y*y*y*y*y*y*y*y*y*y*y*y*y*y*y*y*y*y*y*y*y*y*y*y)",T(0.0),T(12.34),T(1.0)),
-                              test_xy<T>("equal( x^-0,1/1)",T(12.34),T(0.0),T(1.0)),
-                              test_xy<T>("equal( x^-1,1/(x))",T(12.34),T(0.0),T(1.0)),
-                              test_xy<T>("equal( x^-2,1/(x*x))",T(12.34),T(0.0),T(1.0)),
-                              test_xy<T>("equal( x^-3,1/(x*x*x))",T(12.34),T(0.0),T(1.0)),
-                              test_xy<T>("equal( x^-4,1/(x*x*x*x))",T(12.34),T(0.0),T(1.0)),
-                              test_xy<T>("equal( x^-5,1/(x*x*x*x*x))",T(12.34),T(0.0),T(1.0)),
-                              test_xy<T>("equal( x^-6,1/(x*x*x*x*x*x))",T(12.34),T(0.0),T(1.0)),
-                              test_xy<T>("equal( x^-7,1/(x*x*x*x*x*x*x))",T(12.34),T(0.0),T(1.0)),
-                              test_xy<T>("equal( x^-8,1/(x*x*x*x*x*x*x*x))",T(12.34),T(0.0),T(1.0)),
-                              test_xy<T>("equal( x^-9,1/(x*x*x*x*x*x*x*x*x))",T(12.34),T(0.0),T(1.0)),
-                              test_xy<T>("equal(x^-10,1/(x*x*x*x*x*x*x*x*x*x))",T(12.34),T(0.0),T(1.0)),
-                              test_xy<T>("equal(x^-11,1/(x*x*x*x*x*x*x*x*x*x*x))",T(12.34),T(0.0),T(1.0)),
-                              test_xy<T>("equal(x^-12,1/(x*x*x*x*x*x*x*x*x*x*x*x))",T(12.34),T(0.0),T(1.0)),
-                              test_xy<T>("equal(x^-13,1/(x*x*x*x*x*x*x*x*x*x*x*x*x))",T(12.34),T(0.0),T(1.0)),
-                              test_xy<T>("equal(x^-14,1/(x*x*x*x*x*x*x*x*x*x*x*x*x*x))",T(12.34),T(0.0),T(1.0)),
-                              test_xy<T>("equal(x^-15,1/(x*x*x*x*x*x*x*x*x*x*x*x*x*x*x))",T(12.34),T(0.0),T(1.0)),
-                              test_xy<T>("equal(x^-16,1/(x*x*x*x*x*x*x*x*x*x*x*x*x*x*x*x))",T(12.34),T(0.0),T(1.0)),
-                              test_xy<T>("equal(x^-17,1/(x*x*x*x*x*x*x*x*x*x*x*x*x*x*x*x*x))",T(12.34),T(0.0),T(1.0)),
-                              test_xy<T>("equal(x^-18,1/(x*x*x*x*x*x*x*x*x*x*x*x*x*x*x*x*x*x))",T(12.34),T(0.0),T(1.0)),
-                              test_xy<T>("equal(x^-19,1/(x*x*x*x*x*x*x*x*x*x*x*x*x*x*x*x*x*x*x))",T(12.34),T(0.0),T(1.0)),
-                              test_xy<T>("equal(x^-20,1/(x*x*x*x*x*x*x*x*x*x*x*x*x*x*x*x*x*x*x*x))",T(12.34),T(0.0),T(1.0)),
-                              test_xy<T>("equal(x^-21,1/(x*x*x*x*x*x*x*x*x*x*x*x*x*x*x*x*x*x*x*x*x))",T(12.34),T(0.0),T(1.0)),
-                              test_xy<T>("equal(x^-22,1/(x*x*x*x*x*x*x*x*x*x*x*x*x*x*x*x*x*x*x*x*x*x))",T(12.34),T(0.0),T(1.0)),
-                              test_xy<T>("equal(x^-23,1/(x*x*x*x*x*x*x*x*x*x*x*x*x*x*x*x*x*x*x*x*x*x*x))",T(12.34),T(0.0),T(1.0)),
-                              test_xy<T>("equal(x^-24,1/(x*x*x*x*x*x*x*x*x*x*x*x*x*x*x*x*x*x*x*x*x*x*x*x))",T(12.34),T(0.0),T(1.0)),
-                              test_xy<T>("equal(x^-25,1/(x*x*x*x*x*x*x*x*x*x*x*x*x*x*x*x*x*x*x*x*x*x*x*x*x))",T(12.34),T(0.0),T(1.0)),
-                              test_xy<T>("equal( y^-0,1/1)",T(0.0),T(12.34),T(1.0)),
-                              test_xy<T>("equal( y^-1,1/(y))",T(0.0),T(12.34),T(1.0)),
-                              test_xy<T>("equal( y^-2,1/(y*y))",T(0.0),T(12.34),T(1.0)),
-                              test_xy<T>("equal( y^-3,1/(y*y*y))",T(0.0),T(12.34),T(1.0)),
-                              test_xy<T>("equal( y^-4,1/(y*y*y*y))",T(0.0),T(12.34),T(1.0)),
-                              test_xy<T>("equal( y^-5,1/(y*y*y*y*y))",T(0.0),T(12.34),T(1.0)),
-                              test_xy<T>("equal( y^-6,1/(y*y*y*y*y*y))",T(0.0),T(12.34),T(1.0)),
-                              test_xy<T>("equal( y^-7,1/(y*y*y*y*y*y*y))",T(0.0),T(12.34),T(1.0)),
-                              test_xy<T>("equal( y^-8,1/(y*y*y*y*y*y*y*y))",T(0.0),T(12.34),T(1.0)),
-                              test_xy<T>("equal( y^-9,1/(y*y*y*y*y*y*y*y*y))",T(0.0),T(12.34),T(1.0)),
-                              test_xy<T>("equal(y^-10,1/(y*y*y*y*y*y*y*y*y*y))",T(0.0),T(12.34),T(1.0)),
-                              test_xy<T>("equal(y^-11,1/(y*y*y*y*y*y*y*y*y*y*y))",T(0.0),T(12.34),T(1.0)),
-                              test_xy<T>("equal(y^-12,1/(y*y*y*y*y*y*y*y*y*y*y*y))",T(0.0),T(12.34),T(1.0)),
-                              test_xy<T>("equal(y^-13,1/(y*y*y*y*y*y*y*y*y*y*y*y*y))",T(0.0),T(12.34),T(1.0)),
-                              test_xy<T>("equal(y^-14,1/(y*y*y*y*y*y*y*y*y*y*y*y*y*y))",T(0.0),T(12.34),T(1.0)),
-                              test_xy<T>("equal(y^-15,1/(y*y*y*y*y*y*y*y*y*y*y*y*y*y*y))",T(0.0),T(12.34),T(1.0)),
-                              test_xy<T>("equal(y^-16,1/(y*y*y*y*y*y*y*y*y*y*y*y*y*y*y*y))",T(0.0),T(12.34),T(1.0)),
-                              test_xy<T>("equal(y^-17,1/(y*y*y*y*y*y*y*y*y*y*y*y*y*y*y*y*y))",T(0.0),T(12.34),T(1.0)),
-                              test_xy<T>("equal(y^-18,1/(y*y*y*y*y*y*y*y*y*y*y*y*y*y*y*y*y*y))",T(0.0),T(12.34),T(1.0)),
-                              test_xy<T>("equal(y^-19,1/(y*y*y*y*y*y*y*y*y*y*y*y*y*y*y*y*y*y*y))",T(0.0),T(12.34),T(1.0)),
-                              test_xy<T>("equal(y^-20,1/(y*y*y*y*y*y*y*y*y*y*y*y*y*y*y*y*y*y*y*y))",T(0.0),T(12.34),T(1.0)),
-                              test_xy<T>("equal(y^-21,1/(y*y*y*y*y*y*y*y*y*y*y*y*y*y*y*y*y*y*y*y*y))",T(0.0),T(12.34),T(1.0)),
-                              test_xy<T>("equal(y^-22,1/(y*y*y*y*y*y*y*y*y*y*y*y*y*y*y*y*y*y*y*y*y*y))",T(0.0),T(12.34),T(1.0)),
-                              test_xy<T>("equal(y^-23,1/(y*y*y*y*y*y*y*y*y*y*y*y*y*y*y*y*y*y*y*y*y*y*y))",T(0.0),T(12.34),T(1.0)),
-                              test_xy<T>("equal(y^-24,1/(y*y*y*y*y*y*y*y*y*y*y*y*y*y*y*y*y*y*y*y*y*y*y*y))",T(0.0),T(12.34),T(1.0)),
-                              test_xy<T>("equal(y^-25,1/(y*y*y*y*y*y*y*y*y*y*y*y*y*y*y*y*y*y*y*y*y*y*y*y*y))",T(0.0),T(12.34),T(1.0)),
-                              test_xy<T>("(2 + x) + 7",T(3.0),T(0.0),T((2.0 + 3.0) + 7.0)),
-                              test_xy<T>("(2 + x) - 7",T(3.0),T(0.0),T((2.0 + 3.0) - 7.0)),
-                              test_xy<T>("(2 - x) + 7",T(3.0),T(0.0),T((2.0 - 3.0) + 7.0)),
-                              test_xy<T>("(2 - x) - 7",T(3.0),T(0.0),T((2.0 - 3.0) - 7.0)),
-                              test_xy<T>("(2 * x) * 7",T(3.0),T(0.0),T((2.0 * 3.0) * 7.0)),
-                              test_xy<T>("(2 * x) / 7",T(3.0),T(0.0),T((2.0 * 3.0) / 7.0)),
-                              test_xy<T>("(2 / x) * 7",T(3.0),T(0.0),T((2.0 / 3.0) * 7.0)),
-                              test_xy<T>("(2 / x) / 7",T(3.0),T(0.0),T((2.0 / 3.0) / 7.0)),
-                              test_xy<T>("2 + (x + 7)",T(3.0),T(0.0),T(2.0 + (3.0 + 7.0))),
-                              test_xy<T>("2 + (x - 7)",T(3.0),T(0.0),T(2.0 + (3.0 - 7.0))),
-                              test_xy<T>("2 - (x + 7)",T(3.0),T(0.0),T(2.0 - (3.0 + 7.0))),
-                              test_xy<T>("2 - (x - 7)",T(3.0),T(0.0),T(2.0 - (3.0 - 7.0))),
-                              test_xy<T>("2 * (x * 7)",T(3.0),T(0.0),T(2.0 * (3.0 * 7.0))),
-                              test_xy<T>("2 * (x / 7)",T(3.0),T(0.0),T(2.0 * (3.0 / 7.0))),
-                              test_xy<T>("2 / (x * 7)",T(3.0),T(0.0),T(2.0 / (3.0 * 7.0))),
-                              test_xy<T>("2 / (x / 7)",T(3.0),T(0.0),T(2.0 / (3.0 / 7.0))),
-                              test_xy<T>("2 + (7 + x)",T(3.0),T(0.0),T(2.0 + (7.0 + 3.0))),
-                              test_xy<T>("2 + (7 - x)",T(3.0),T(0.0),T(2.0 + (7.0 - 3.0))),
-                              test_xy<T>("2 - (7 + x)",T(3.0),T(0.0),T(2.0 - (7.0 + 3.0))),
-                              test_xy<T>("2 - (7 - x)",T(3.0),T(0.0),T(2.0 - (7.0 - 3.0))),
-                              test_xy<T>("2 * (7 * x)",T(3.0),T(0.0),T(2.0 * (7.0 * 3.0))),
-                              test_xy<T>("2 * (7 / x)",T(3.0),T(0.0),T(2.0 * (7.0 / 3.0))),
-                              test_xy<T>("2 / (7 * x)",T(3.0),T(0.0),T(2.0 / (7.0 * 3.0))),
-                              test_xy<T>("2 / (7 / x)",T(3.0),T(0.0),T(2.0 / (7.0 / 3.0))),
-                              test_xy<T>("(x + 2) + 7",T(3.0),T(0.0),T((3.0 + 2.0) + 7.0)),
-                              test_xy<T>("(x + 2) - 7",T(3.0),T(0.0),T((3.0 + 2.0) - 7.0)),
-                              test_xy<T>("(x - 2) + 7",T(3.0),T(0.0),T((3.0 - 2.0) + 7.0)),
-                              test_xy<T>("(x - 2) - 7",T(3.0),T(0.0),T((3.0 - 2.0) - 7.0)),
-                              test_xy<T>("(x * 2) * 7",T(3.0),T(0.0),T((3.0 * 2.0) * 7.0)),
-                              test_xy<T>("(x * 2) / 7",T(3.0),T(0.0),T((3.0 * 2.0) / 7.0)),
-                              test_xy<T>("(x / 2) * 7",T(3.0),T(0.0),T((3.0 / 2.0) * 7.0)),
-                              test_xy<T>("(x / 2) / 7",T(3.0),T(0.0),T((3.0 / 2.0) / 7.0)),
-                              test_xy<T>("((2 + x) + (3 + y))",T(7.0),T(9.0),T(((2.0 + 7.0) + (3.0 + 9.0)))),
-                              test_xy<T>("((2 + x) - (3 + y))",T(7.0),T(9.0),T(((2.0 + 7.0) - (3.0 + 9.0)))),
-                              test_xy<T>("((2 - x) - (3 - y))",T(7.0),T(9.0),T(((2.0 - 7.0) - (3.0 - 9.0)))),
-                              test_xy<T>("((2 * x) * (3 * y))",T(7.0),T(9.0),T(((2.0 * 7.0) * (3.0 * 9.0)))),
-                              test_xy<T>("((x + 2) + (y + 3))",T(7.0),T(9.0),T(((7.0 + 2.0) + (9.0 + 3.0)))),
-                              test_xy<T>("((x + 2) - (y + 3))",T(7.0),T(9.0),T(((7.0 + 2.0) - (9.0 + 3.0)))),
-                              test_xy<T>("((x - 2) - (y - 3))",T(7.0),T(9.0),T(((7.0 - 2.0) - (9.0 - 3.0)))),
-                              test_xy<T>("((2 * x) * (3 * y))",T(7.0),T(9.0),T(((2.0 * 7.0) * (3.0 * 9.0)))),
-                              test_xy<T>("((2 + x) + (y + 3))",T(7.0),T(9.0),T(((2.0 + 7.0) + (9.0 + 3.0)))),
-                              test_xy<T>("((2 + x) - (y + 3))",T(7.0),T(9.0),T(((2.0 + 7.0) - (9.0 + 3.0)))),
-                              test_xy<T>("((2 - x) - (y - 3))",T(7.0),T(9.0),T(((2.0 - 7.0) - (9.0 - 3.0)))),
-                              test_xy<T>("((2 * x) * (3 * y))",T(7.0),T(9.0),T(((2.0 * 7.0) * (3.0 * 9.0)))),
-                              test_xy<T>("((x + 2) + (3 + y))",T(7.0),T(9.0),T(((7.0 + 2.0) + (3.0 + 9.0)))),
-                              test_xy<T>("((x + 2) - (3 + y))",T(7.0),T(9.0),T(((7.0 + 2.0) - (3.0 + 9.0)))),
-                              test_xy<T>("((x - 2) - (3 - y))",T(7.0),T(9.0),T(((7.0 - 2.0) - (3.0 - 9.0)))),
-                              test_xy<T>("((2 * x) * (3 * y))",T(7.0),T(9.0),T(((2.0 * 7.0) * (3.0 * 9.0)))),
-                              test_xy<T>("0 * (abs  (x) + acos (y) + asin (x) + atan (y))",T(1.0),T(1.0),T(0.0)),
-                              test_xy<T>("0 * (ceil (x) + cos  (y) + cosh (x) + exp  (y))",T(1.0),T(1.0),T(0.0)),
-                              test_xy<T>("0 * (floor(x) + log  (y) + log10(x) + round(y))",T(1.0),T(1.0),T(0.0)),
-                              test_xy<T>("0 * (sin  (x) + sinh (y) + sqrt (x) + tan  (y))",T(1.0),T(1.0),T(0.0)),
-                              test_xy<T>("0 * (sec  (x) + csc  (y) + tanh (x) + cot  (y))",T(1.0),T(1.0),T(0.0)),
-                              test_xy<T>("0 * (erf  (x) + erfc (y) + sgn  (y) + frac (y))",T(1.0),T(1.0),T(0.0)),
-                              test_xy<T>("0 * (log1p(x) + expm1(y) + acosh(x) + asinh(y))",T(1.0),T(1.0),T(0.0)),
-                              test_xy<T>("0 * (deg2grad(x) + grad2deg(y) + rad2deg(x) + deg2rad(y))",T(1.0),T(1.0),T(0.0)),
-                              test_xy<T>("switch { case (x <= y) : (y - x); default: 1.12345; }",T(1.0),T(2.0),T(1.0)),
-                              test_xy<T>("switch { case (x >  y) : 0; case (x <= y) : (y - x); default: 1.12345; }",T(1.0),T(2.0),T(1.0)),
-                              test_xy<T>("switch { case (x <= y) : switch { case (x <= y) : (y - x); default: 1.12345; }; default: 1.12345; }",T(1.0),T(2.0),T(1.0)),
-                              test_xy<T>("switch { case [x <= y] : [y - x]; default: 1.12345; }",T(1.0),T(2.0),T(1.0)),
-                              test_xy<T>("switch { case [x >  y] : 0; case [x <= y] : [y - x]; default: 1.12345; }",T(1.0),T(2.0),T(1.0)),
-                              test_xy<T>("switch { case [x <= y] : switch { case [x <= y] : {y - x}; default: 1.12345; }; default: 1.12345; }",T(1.0),T(2.0),T(1.0)),
-                              test_xy<T>("switch { case {x <= y} : x; default: 1.12345; }",T(1.0),T(2.0),T(1.0)),
-                              test_xy<T>("switch { case {x >  y} : 0; case {x <= y} : {y - x}; default: 1.12345; }",T(1.0),T(2.0),T(1.0)),
-                              test_xy<T>("switch { case {x <= y} : switch { case {x <= y} : x; default: 1.12345; }; default: 1.12345; }",T(1.0),T(2.0),T(1.0)),
-                              test_xy<T>("switch { case [(x <= y)] : {y - x}; default: 1.12345; }",T(1.0),T(2.0),T(1.0)),
-                              test_xy<T>("switch { case ([x >  y]) : [0]; case ([x <= y]) : [y - x]; default: 1.12345; }",T(1.0),T(2.0),T(1.0)),
-                              test_xy<T>("switch { case {(x <= y)} : switch { case ({x <= y}) : x; default: 1.12345; }; default: 1.12345; }",T(1.0),T(2.0),T(1.0)),
-                              test_xy<T>("[*]{ case x < y : x + y; case y < x : y - x; }",T(2.0),T(3.0),T(5.0)),
-                              test_xy<T>("[*]{ case x > y : x + y; case y > x : y - x; }",T(2.0),T(3.0),T(1.0)),
-                              test_xy<T>("[*]{ case x > y : x - y; case y < x : y + x; }",T(2.0),T(3.0),T(0.0))
-                           };
-
-   static const std::size_t test_list_size = sizeof(test_list) / sizeof(test_xy<T>);
-
-   const std::size_t rounds = 60;
-
-   for (std::size_t r = 0; r < rounds; ++r)
    {
-      bool loop_result = true;
-      for (std::size_t i = 0; i < test_list_size; ++i)
+      static const test_xy<T> test_list[] =
+                              {
+                                 test_xy<T>("x + y"             ,T(2.2),T(3.3),T(5.5  )),
+                                 test_xy<T>("x - y"             ,T(3.3),T(2.2),T(1.1  )),
+                                 test_xy<T>("x * y"             ,T(3.3),T(2.2),T(7.26 )),
+                                 test_xy<T>("x / y"             ,T(3.3),T(2.2),T(1.5  )),
+                                 test_xy<T>("(x + y) * (x + y)" ,T(2.2),T(3.3),T(30.25)),
+                                 test_xy<T>("(x + y) / (x + y)" ,T(2.2),T(3.3),T(1.0  )),
+                                 test_xy<T>("x + y > x and  x + y > y" ,T(2.2),T(3.3),T(1.0)),
+                                 test_xy<T>("1 + (x + y)"       ,T(2.2),T(3.3),T(6.5  )),
+                                 test_xy<T>("(x + y) - 1"       ,T(2.2),T(3.3),T(4.5  )),
+                                 test_xy<T>("1 + (x + y) * 2"   ,T(2.2),T(3.3),T(12.0  )),
+                                 test_xy<T>("2 * (x + y) - 1"   ,T(2.2),T(3.3),T(10.0  )),
+                                 test_xy<T>("y + (x + 1)"       ,T(2.2),T(3.3),T(6.5  )),
+                                 test_xy<T>("(x + 1) + y"       ,T(2.2),T(3.3),T(6.5  )),
+                                 test_xy<T>("2 * x"  ,T(2.2),T(0.0),T(4.4)),
+                                 test_xy<T>("x * 2"  ,T(2.2),T(0.0),T(4.4)),
+                                 test_xy<T>("1.1 + x",T(2.2),T(0.0),T(3.3)),
+                                 test_xy<T>("x + 1.1",T(2.2),T(0.0),T(3.3)),
+                                 test_xy<T>("x * 1 == x"    ,T(2.0),T(3.0),T(1.0)),
+                                 test_xy<T>("1 * x == x"    ,T(2.0),T(3.0),T(1.0)),
+                                 test_xy<T>("y * 1 == y"    ,T(2.0),T(3.0),T(1.0)),
+                                 test_xy<T>("1 * y == y"    ,T(2.0),T(3.0),T(1.0)),
+                                 test_xy<T>("x * 0 == 0"    ,T(2.0),T(3.0),T(1.0)),
+                                 test_xy<T>("0 * x == 0"    ,T(2.0),T(3.0),T(1.0)),
+                                 test_xy<T>("y * 0 == 0"    ,T(2.0),T(3.0),T(1.0)),
+                                 test_xy<T>("0 * y == 0"    ,T(2.0),T(3.0),T(1.0)),
+                                 test_xy<T>("x + 1 == 1 + x",T(2.0),T(3.0),T(1.0)),
+                                 test_xy<T>("y + 1 == 1 + y",T(2.0),T(3.0),T(1.0)),
+                                 test_xy<T>("x + y == y + x",T(2.0),T(3.0),T(1.0)),
+                                 test_xy<T>("x * y == y * x",T(2.0),T(3.0),T(1.0)),
+                                 test_xy<T>("x < y"         ,T(2.0),T(3.0),T(1.0)),
+                                 test_xy<T>("y > x"         ,T(2.0),T(3.0),T(1.0)),
+                                 test_xy<T>("x <= y"        ,T(2.0),T(3.0),T(1.0)),
+                                 test_xy<T>("y >= x"        ,T(2.0),T(3.0),T(1.0)),
+                                 test_xy<T>("x + y > y"     ,T(2.0),T(3.0),T(1.0)),
+                                 test_xy<T>("x + y > x"     ,T(2.0),T(3.0),T(1.0)),
+                                 test_xy<T>("x * y > y"     ,T(2.0),T(3.0),T(1.0)),
+                                 test_xy<T>("x * y > x"     ,T(2.0),T(3.0),T(1.0)),
+                                 test_xy<T>("(x + y) > y"   ,T(2.0),T(3.0),T(1.0)),
+                                 test_xy<T>("(x + y) > x"   ,T(2.0),T(3.0),T(1.0)),
+                                 test_xy<T>("(x * y) > y"   ,T(2.0),T(3.0),T(1.0)),
+                                 test_xy<T>("(x * y) > x"   ,T(2.0),T(3.0),T(1.0)),
+                                 test_xy<T>("(2x + 3y)  == (2*x + 3*y)" ,T(2.0),T(3.0),T(1.0)),
+                                 test_xy<T>("2(x +  y)  == (2*x + 2*y)" ,T(2.0),T(3.0),T(1.0)),
+                                 test_xy<T>(" (x +  y)3 == (3*x + 3*y)" ,T(2.0),T(3.0),T(1.0)),
+                                 test_xy<T>("2x + 3y    ==   2*x + 3*y" ,T(2.0),T(3.0),T(1.0)),
+                                 test_xy<T>("2(x +  y)  ==   2*x + 2*y" ,T(2.0),T(3.0),T(1.0)),
+                                 test_xy<T>(" (x +  y)3 ==   3*x + 3*y" ,T(2.0),T(3.0),T(1.0)),
+                                 test_xy<T>("equal(x^2.2^1.1,17.15193942371376191362)" ,T(3.3),T(0.0),T(1.0)),
+                                 test_xy<T>("equal(3.3^x^1.1,17.15193942371376191362)" ,T(2.2),T(0.0),T(1.0)),
+                                 test_xy<T>("equal(3.3^2.2^x,17.15193942371376191362)" ,T(1.1),T(0.0),T(1.0)),
+                                 test_xy<T>("equal(x^2.2^y,17.15193942371376191362)" ,T(3.3),T(1.1),T(1.0)),
+                                 test_xy<T>("equal(x^y^1.1,17.15193942371376191362)" ,T(3.3),T(2.2),T(1.0)),
+                                 test_xy<T>("equal(3.3^x^y,17.15193942371376191362)" ,T(2.2),T(1.1),T(1.0)),
+                                 test_xy<T>("equal(x+y^3/7,x+(y*y*y)/7)",T(2.0),T(3.0),T(1.0)),
+                                 test_xy<T>("equal(1-x^3+y^2*7,1-(x*x*x)+(y*y)*7)",T(2.0),T(3.0),T(1.0)),
+                                 test_xy<T>("equal( x^0,1)",T(12.34),T(0.0),T(1.0)),
+                                 test_xy<T>("equal( x^1,x)",T(12.34),T(0.0),T(1.0)),
+                                 test_xy<T>("equal( x^2,x*x)",T(12.34),T(0.0),T(1.0)),
+                                 test_xy<T>("equal( x^3,x*x*x)",T(12.34),T(0.0),T(1.0)),
+                                 test_xy<T>("equal( x^4,x*x*x*x)",T(12.34),T(0.0),T(1.0)),
+                                 test_xy<T>("equal( x^5,x*x*x*x*x)",T(12.34),T(0.0),T(1.0)),
+                                 test_xy<T>("equal( x^6,x*x*x*x*x*x)",T(12.34),T(0.0),T(1.0)),
+                                 test_xy<T>("equal( x^7,x*x*x*x*x*x*x)",T(12.34),T(0.0),T(1.0)),
+                                 test_xy<T>("equal( x^8,x*x*x*x*x*x*x*x)",T(12.34),T(0.0),T(1.0)),
+                                 test_xy<T>("equal( x^9,x*x*x*x*x*x*x*x*x)",T(12.34),T(0.0),T(1.0)),
+                                 test_xy<T>("equal(x^10,x*x*x*x*x*x*x*x*x*x)",T(12.34),T(0.0),T(1.0)),
+                                 test_xy<T>("equal(x^11,x*x*x*x*x*x*x*x*x*x*x)",T(12.34),T(0.0),T(1.0)),
+                                 test_xy<T>("equal(x^12,x*x*x*x*x*x*x*x*x*x*x*x)",T(12.34),T(0.0),T(1.0)),
+                                 test_xy<T>("equal(x^13,x*x*x*x*x*x*x*x*x*x*x*x*x)",T(12.34),T(0.0),T(1.0)),
+                                 test_xy<T>("equal(x^14,x*x*x*x*x*x*x*x*x*x*x*x*x*x)",T(12.34),T(0.0),T(1.0)),
+                                 test_xy<T>("equal(x^15,x*x*x*x*x*x*x*x*x*x*x*x*x*x*x)",T(12.34),T(0.0),T(1.0)),
+                                 test_xy<T>("equal(x^16,x*x*x*x*x*x*x*x*x*x*x*x*x*x*x*x)",T(12.34),T(0.0),T(1.0)),
+                                 test_xy<T>("equal(x^17,x*x*x*x*x*x*x*x*x*x*x*x*x*x*x*x*x)",T(12.34),T(0.0),T(1.0)),
+                                 test_xy<T>("equal(x^18,x*x*x*x*x*x*x*x*x*x*x*x*x*x*x*x*x*x)",T(12.34),T(0.0),T(1.0)),
+                                 test_xy<T>("equal(x^19,x*x*x*x*x*x*x*x*x*x*x*x*x*x*x*x*x*x*x)",T(12.34),T(0.0),T(1.0)),
+                                 test_xy<T>("equal(x^20,x*x*x*x*x*x*x*x*x*x*x*x*x*x*x*x*x*x*x*x)",T(12.34),T(0.0),T(1.0)),
+                                 test_xy<T>("equal(x^21,x*x*x*x*x*x*x*x*x*x*x*x*x*x*x*x*x*x*x*x*x)",T(12.34),T(0.0),T(1.0)),
+                                 test_xy<T>("equal(x^22,x*x*x*x*x*x*x*x*x*x*x*x*x*x*x*x*x*x*x*x*x*x)",T(12.34),T(0.0),T(1.0)),
+                                 test_xy<T>("equal(x^23,x*x*x*x*x*x*x*x*x*x*x*x*x*x*x*x*x*x*x*x*x*x*x)",T(12.34),T(0.0),T(1.0)),
+                                 test_xy<T>("equal(x^24,x*x*x*x*x*x*x*x*x*x*x*x*x*x*x*x*x*x*x*x*x*x*x*x)",T(12.34),T(0.0),T(1.0)),
+                                 test_xy<T>("equal(x^25,x*x*x*x*x*x*x*x*x*x*x*x*x*x*x*x*x*x*x*x*x*x*x*x*x)",T(12.34),T(0.0),T(1.0)),
+                                 test_xy<T>("equal( y^0,1)",T(0.0),T(12.34),T(1.0)),
+                                 test_xy<T>("equal( y^1,y)",T(0.0),T(12.34),T(1.0)),
+                                 test_xy<T>("equal( y^2,y*y)",T(0.0),T(12.34),T(1.0)),
+                                 test_xy<T>("equal( y^3,y*y*y)",T(0.0),T(12.34),T(1.0)),
+                                 test_xy<T>("equal( y^4,y*y*y*y)",T(0.0),T(12.34),T(1.0)),
+                                 test_xy<T>("equal( y^5,y*y*y*y*y)",T(0.0),T(12.34),T(1.0)),
+                                 test_xy<T>("equal( y^6,y*y*y*y*y*y)",T(0.0),T(12.34),T(1.0)),
+                                 test_xy<T>("equal( y^7,y*y*y*y*y*y*y)",T(0.0),T(12.34),T(1.0)),
+                                 test_xy<T>("equal( y^8,y*y*y*y*y*y*y*y)",T(0.0),T(12.34),T(1.0)),
+                                 test_xy<T>("equal( y^9,y*y*y*y*y*y*y*y*y)",T(0.0),T(12.34),T(1.0)),
+                                 test_xy<T>("equal(y^10,y*y*y*y*y*y*y*y*y*y)",T(0.0),T(12.34),T(1.0)),
+                                 test_xy<T>("equal(y^11,y*y*y*y*y*y*y*y*y*y*y)",T(0.0),T(12.34),T(1.0)),
+                                 test_xy<T>("equal(y^12,y*y*y*y*y*y*y*y*y*y*y*y)",T(0.0),T(12.34),T(1.0)),
+                                 test_xy<T>("equal(y^13,y*y*y*y*y*y*y*y*y*y*y*y*y)",T(0.0),T(12.34),T(1.0)),
+                                 test_xy<T>("equal(y^14,y*y*y*y*y*y*y*y*y*y*y*y*y*y)",T(0.0),T(12.34),T(1.0)),
+                                 test_xy<T>("equal(y^15,y*y*y*y*y*y*y*y*y*y*y*y*y*y*y)",T(0.0),T(12.34),T(1.0)),
+                                 test_xy<T>("equal(y^16,y*y*y*y*y*y*y*y*y*y*y*y*y*y*y*y)",T(0.0),T(12.34),T(1.0)),
+                                 test_xy<T>("equal(y^17,y*y*y*y*y*y*y*y*y*y*y*y*y*y*y*y*y)",T(0.0),T(12.34),T(1.0)),
+                                 test_xy<T>("equal(y^18,y*y*y*y*y*y*y*y*y*y*y*y*y*y*y*y*y*y)",T(0.0),T(12.34),T(1.0)),
+                                 test_xy<T>("equal(y^19,y*y*y*y*y*y*y*y*y*y*y*y*y*y*y*y*y*y*y)",T(0.0),T(12.34),T(1.0)),
+                                 test_xy<T>("equal(y^20,y*y*y*y*y*y*y*y*y*y*y*y*y*y*y*y*y*y*y*y)",T(0.0),T(12.34),T(1.0)),
+                                 test_xy<T>("equal(y^21,y*y*y*y*y*y*y*y*y*y*y*y*y*y*y*y*y*y*y*y*y)",T(0.0),T(12.34),T(1.0)),
+                                 test_xy<T>("equal(y^22,y*y*y*y*y*y*y*y*y*y*y*y*y*y*y*y*y*y*y*y*y*y)",T(0.0),T(12.34),T(1.0)),
+                                 test_xy<T>("equal(y^23,y*y*y*y*y*y*y*y*y*y*y*y*y*y*y*y*y*y*y*y*y*y*y)",T(0.0),T(12.34),T(1.0)),
+                                 test_xy<T>("equal(y^24,y*y*y*y*y*y*y*y*y*y*y*y*y*y*y*y*y*y*y*y*y*y*y*y)",T(0.0),T(12.34),T(1.0)),
+                                 test_xy<T>("equal(y^25,y*y*y*y*y*y*y*y*y*y*y*y*y*y*y*y*y*y*y*y*y*y*y*y*y)",T(0.0),T(12.34),T(1.0)),
+                                 test_xy<T>("equal( x^-0,1/1)",T(12.34),T(0.0),T(1.0)),
+                                 test_xy<T>("equal( x^-1,1/(x))",T(12.34),T(0.0),T(1.0)),
+                                 test_xy<T>("equal( x^-2,1/(x*x))",T(12.34),T(0.0),T(1.0)),
+                                 test_xy<T>("equal( x^-3,1/(x*x*x))",T(12.34),T(0.0),T(1.0)),
+                                 test_xy<T>("equal( x^-4,1/(x*x*x*x))",T(12.34),T(0.0),T(1.0)),
+                                 test_xy<T>("equal( x^-5,1/(x*x*x*x*x))",T(12.34),T(0.0),T(1.0)),
+                                 test_xy<T>("equal( x^-6,1/(x*x*x*x*x*x))",T(12.34),T(0.0),T(1.0)),
+                                 test_xy<T>("equal( x^-7,1/(x*x*x*x*x*x*x))",T(12.34),T(0.0),T(1.0)),
+                                 test_xy<T>("equal( x^-8,1/(x*x*x*x*x*x*x*x))",T(12.34),T(0.0),T(1.0)),
+                                 test_xy<T>("equal( x^-9,1/(x*x*x*x*x*x*x*x*x))",T(12.34),T(0.0),T(1.0)),
+                                 test_xy<T>("equal(x^-10,1/(x*x*x*x*x*x*x*x*x*x))",T(12.34),T(0.0),T(1.0)),
+                                 test_xy<T>("equal(x^-11,1/(x*x*x*x*x*x*x*x*x*x*x))",T(12.34),T(0.0),T(1.0)),
+                                 test_xy<T>("equal(x^-12,1/(x*x*x*x*x*x*x*x*x*x*x*x))",T(12.34),T(0.0),T(1.0)),
+                                 test_xy<T>("equal(x^-13,1/(x*x*x*x*x*x*x*x*x*x*x*x*x))",T(12.34),T(0.0),T(1.0)),
+                                 test_xy<T>("equal(x^-14,1/(x*x*x*x*x*x*x*x*x*x*x*x*x*x))",T(12.34),T(0.0),T(1.0)),
+                                 test_xy<T>("equal(x^-15,1/(x*x*x*x*x*x*x*x*x*x*x*x*x*x*x))",T(12.34),T(0.0),T(1.0)),
+                                 test_xy<T>("equal(x^-16,1/(x*x*x*x*x*x*x*x*x*x*x*x*x*x*x*x))",T(12.34),T(0.0),T(1.0)),
+                                 test_xy<T>("equal(x^-17,1/(x*x*x*x*x*x*x*x*x*x*x*x*x*x*x*x*x))",T(12.34),T(0.0),T(1.0)),
+                                 test_xy<T>("equal(x^-18,1/(x*x*x*x*x*x*x*x*x*x*x*x*x*x*x*x*x*x))",T(12.34),T(0.0),T(1.0)),
+                                 test_xy<T>("equal(x^-19,1/(x*x*x*x*x*x*x*x*x*x*x*x*x*x*x*x*x*x*x))",T(12.34),T(0.0),T(1.0)),
+                                 test_xy<T>("equal(x^-20,1/(x*x*x*x*x*x*x*x*x*x*x*x*x*x*x*x*x*x*x*x))",T(12.34),T(0.0),T(1.0)),
+                                 test_xy<T>("equal(x^-21,1/(x*x*x*x*x*x*x*x*x*x*x*x*x*x*x*x*x*x*x*x*x))",T(12.34),T(0.0),T(1.0)),
+                                 test_xy<T>("equal(x^-22,1/(x*x*x*x*x*x*x*x*x*x*x*x*x*x*x*x*x*x*x*x*x*x))",T(12.34),T(0.0),T(1.0)),
+                                 test_xy<T>("equal(x^-23,1/(x*x*x*x*x*x*x*x*x*x*x*x*x*x*x*x*x*x*x*x*x*x*x))",T(12.34),T(0.0),T(1.0)),
+                                 test_xy<T>("equal(x^-24,1/(x*x*x*x*x*x*x*x*x*x*x*x*x*x*x*x*x*x*x*x*x*x*x*x))",T(12.34),T(0.0),T(1.0)),
+                                 test_xy<T>("equal(x^-25,1/(x*x*x*x*x*x*x*x*x*x*x*x*x*x*x*x*x*x*x*x*x*x*x*x*x))",T(12.34),T(0.0),T(1.0)),
+                                 test_xy<T>("equal( y^-0,1/1)",T(0.0),T(12.34),T(1.0)),
+                                 test_xy<T>("equal( y^-1,1/(y))",T(0.0),T(12.34),T(1.0)),
+                                 test_xy<T>("equal( y^-2,1/(y*y))",T(0.0),T(12.34),T(1.0)),
+                                 test_xy<T>("equal( y^-3,1/(y*y*y))",T(0.0),T(12.34),T(1.0)),
+                                 test_xy<T>("equal( y^-4,1/(y*y*y*y))",T(0.0),T(12.34),T(1.0)),
+                                 test_xy<T>("equal( y^-5,1/(y*y*y*y*y))",T(0.0),T(12.34),T(1.0)),
+                                 test_xy<T>("equal( y^-6,1/(y*y*y*y*y*y))",T(0.0),T(12.34),T(1.0)),
+                                 test_xy<T>("equal( y^-7,1/(y*y*y*y*y*y*y))",T(0.0),T(12.34),T(1.0)),
+                                 test_xy<T>("equal( y^-8,1/(y*y*y*y*y*y*y*y))",T(0.0),T(12.34),T(1.0)),
+                                 test_xy<T>("equal( y^-9,1/(y*y*y*y*y*y*y*y*y))",T(0.0),T(12.34),T(1.0)),
+                                 test_xy<T>("equal(y^-10,1/(y*y*y*y*y*y*y*y*y*y))",T(0.0),T(12.34),T(1.0)),
+                                 test_xy<T>("equal(y^-11,1/(y*y*y*y*y*y*y*y*y*y*y))",T(0.0),T(12.34),T(1.0)),
+                                 test_xy<T>("equal(y^-12,1/(y*y*y*y*y*y*y*y*y*y*y*y))",T(0.0),T(12.34),T(1.0)),
+                                 test_xy<T>("equal(y^-13,1/(y*y*y*y*y*y*y*y*y*y*y*y*y))",T(0.0),T(12.34),T(1.0)),
+                                 test_xy<T>("equal(y^-14,1/(y*y*y*y*y*y*y*y*y*y*y*y*y*y))",T(0.0),T(12.34),T(1.0)),
+                                 test_xy<T>("equal(y^-15,1/(y*y*y*y*y*y*y*y*y*y*y*y*y*y*y))",T(0.0),T(12.34),T(1.0)),
+                                 test_xy<T>("equal(y^-16,1/(y*y*y*y*y*y*y*y*y*y*y*y*y*y*y*y))",T(0.0),T(12.34),T(1.0)),
+                                 test_xy<T>("equal(y^-17,1/(y*y*y*y*y*y*y*y*y*y*y*y*y*y*y*y*y))",T(0.0),T(12.34),T(1.0)),
+                                 test_xy<T>("equal(y^-18,1/(y*y*y*y*y*y*y*y*y*y*y*y*y*y*y*y*y*y))",T(0.0),T(12.34),T(1.0)),
+                                 test_xy<T>("equal(y^-19,1/(y*y*y*y*y*y*y*y*y*y*y*y*y*y*y*y*y*y*y))",T(0.0),T(12.34),T(1.0)),
+                                 test_xy<T>("equal(y^-20,1/(y*y*y*y*y*y*y*y*y*y*y*y*y*y*y*y*y*y*y*y))",T(0.0),T(12.34),T(1.0)),
+                                 test_xy<T>("equal(y^-21,1/(y*y*y*y*y*y*y*y*y*y*y*y*y*y*y*y*y*y*y*y*y))",T(0.0),T(12.34),T(1.0)),
+                                 test_xy<T>("equal(y^-22,1/(y*y*y*y*y*y*y*y*y*y*y*y*y*y*y*y*y*y*y*y*y*y))",T(0.0),T(12.34),T(1.0)),
+                                 test_xy<T>("equal(y^-23,1/(y*y*y*y*y*y*y*y*y*y*y*y*y*y*y*y*y*y*y*y*y*y*y))",T(0.0),T(12.34),T(1.0)),
+                                 test_xy<T>("equal(y^-24,1/(y*y*y*y*y*y*y*y*y*y*y*y*y*y*y*y*y*y*y*y*y*y*y*y))",T(0.0),T(12.34),T(1.0)),
+                                 test_xy<T>("equal(y^-25,1/(y*y*y*y*y*y*y*y*y*y*y*y*y*y*y*y*y*y*y*y*y*y*y*y*y))",T(0.0),T(12.34),T(1.0)),
+                                 test_xy<T>("(2 + x) + 7",T(3.0),T(0.0),T((2.0 + 3.0) + 7.0)),
+                                 test_xy<T>("(2 + x) - 7",T(3.0),T(0.0),T((2.0 + 3.0) - 7.0)),
+                                 test_xy<T>("(2 - x) + 7",T(3.0),T(0.0),T((2.0 - 3.0) + 7.0)),
+                                 test_xy<T>("(2 - x) - 7",T(3.0),T(0.0),T((2.0 - 3.0) - 7.0)),
+                                 test_xy<T>("(2 * x) * 7",T(3.0),T(0.0),T((2.0 * 3.0) * 7.0)),
+                                 test_xy<T>("(2 * x) / 7",T(3.0),T(0.0),T((2.0 * 3.0) / 7.0)),
+                                 test_xy<T>("(2 / x) * 7",T(3.0),T(0.0),T((2.0 / 3.0) * 7.0)),
+                                 test_xy<T>("(2 / x) / 7",T(3.0),T(0.0),T((2.0 / 3.0) / 7.0)),
+                                 test_xy<T>("2 + (x + 7)",T(3.0),T(0.0),T(2.0 + (3.0 + 7.0))),
+                                 test_xy<T>("2 + (x - 7)",T(3.0),T(0.0),T(2.0 + (3.0 - 7.0))),
+                                 test_xy<T>("2 - (x + 7)",T(3.0),T(0.0),T(2.0 - (3.0 + 7.0))),
+                                 test_xy<T>("2 - (x - 7)",T(3.0),T(0.0),T(2.0 - (3.0 - 7.0))),
+                                 test_xy<T>("2 * (x * 7)",T(3.0),T(0.0),T(2.0 * (3.0 * 7.0))),
+                                 test_xy<T>("2 * (x / 7)",T(3.0),T(0.0),T(2.0 * (3.0 / 7.0))),
+                                 test_xy<T>("2 / (x * 7)",T(3.0),T(0.0),T(2.0 / (3.0 * 7.0))),
+                                 test_xy<T>("2 / (x / 7)",T(3.0),T(0.0),T(2.0 / (3.0 / 7.0))),
+                                 test_xy<T>("2 + (7 + x)",T(3.0),T(0.0),T(2.0 + (7.0 + 3.0))),
+                                 test_xy<T>("2 + (7 - x)",T(3.0),T(0.0),T(2.0 + (7.0 - 3.0))),
+                                 test_xy<T>("2 - (7 + x)",T(3.0),T(0.0),T(2.0 - (7.0 + 3.0))),
+                                 test_xy<T>("2 - (7 - x)",T(3.0),T(0.0),T(2.0 - (7.0 - 3.0))),
+                                 test_xy<T>("2 * (7 * x)",T(3.0),T(0.0),T(2.0 * (7.0 * 3.0))),
+                                 test_xy<T>("2 * (7 / x)",T(3.0),T(0.0),T(2.0 * (7.0 / 3.0))),
+                                 test_xy<T>("2 / (7 * x)",T(3.0),T(0.0),T(2.0 / (7.0 * 3.0))),
+                                 test_xy<T>("2 / (7 / x)",T(3.0),T(0.0),T(2.0 / (7.0 / 3.0))),
+                                 test_xy<T>("(x + 2) + 7",T(3.0),T(0.0),T((3.0 + 2.0) + 7.0)),
+                                 test_xy<T>("(x + 2) - 7",T(3.0),T(0.0),T((3.0 + 2.0) - 7.0)),
+                                 test_xy<T>("(x - 2) + 7",T(3.0),T(0.0),T((3.0 - 2.0) + 7.0)),
+                                 test_xy<T>("(x - 2) - 7",T(3.0),T(0.0),T((3.0 - 2.0) - 7.0)),
+                                 test_xy<T>("(x * 2) * 7",T(3.0),T(0.0),T((3.0 * 2.0) * 7.0)),
+                                 test_xy<T>("(x * 2) / 7",T(3.0),T(0.0),T((3.0 * 2.0) / 7.0)),
+                                 test_xy<T>("(x / 2) * 7",T(3.0),T(0.0),T((3.0 / 2.0) * 7.0)),
+                                 test_xy<T>("(x / 2) / 7",T(3.0),T(0.0),T((3.0 / 2.0) / 7.0)),
+                                 test_xy<T>("((2 + x) + (3 + y))",T(7.0),T(9.0),T(((2.0 + 7.0) + (3.0 + 9.0)))),
+                                 test_xy<T>("((2 + x) - (3 + y))",T(7.0),T(9.0),T(((2.0 + 7.0) - (3.0 + 9.0)))),
+                                 test_xy<T>("((2 - x) - (3 - y))",T(7.0),T(9.0),T(((2.0 - 7.0) - (3.0 - 9.0)))),
+                                 test_xy<T>("((2 * x) * (3 * y))",T(7.0),T(9.0),T(((2.0 * 7.0) * (3.0 * 9.0)))),
+                                 test_xy<T>("((x + 2) + (y + 3))",T(7.0),T(9.0),T(((7.0 + 2.0) + (9.0 + 3.0)))),
+                                 test_xy<T>("((x + 2) - (y + 3))",T(7.0),T(9.0),T(((7.0 + 2.0) - (9.0 + 3.0)))),
+                                 test_xy<T>("((x - 2) - (y - 3))",T(7.0),T(9.0),T(((7.0 - 2.0) - (9.0 - 3.0)))),
+                                 test_xy<T>("((2 * x) * (3 * y))",T(7.0),T(9.0),T(((2.0 * 7.0) * (3.0 * 9.0)))),
+                                 test_xy<T>("((2 + x) + (y + 3))",T(7.0),T(9.0),T(((2.0 + 7.0) + (9.0 + 3.0)))),
+                                 test_xy<T>("((2 + x) - (y + 3))",T(7.0),T(9.0),T(((2.0 + 7.0) - (9.0 + 3.0)))),
+                                 test_xy<T>("((2 - x) - (y - 3))",T(7.0),T(9.0),T(((2.0 - 7.0) - (9.0 - 3.0)))),
+                                 test_xy<T>("((2 * x) * (3 * y))",T(7.0),T(9.0),T(((2.0 * 7.0) * (3.0 * 9.0)))),
+                                 test_xy<T>("((x + 2) + (3 + y))",T(7.0),T(9.0),T(((7.0 + 2.0) + (3.0 + 9.0)))),
+                                 test_xy<T>("((x + 2) - (3 + y))",T(7.0),T(9.0),T(((7.0 + 2.0) - (3.0 + 9.0)))),
+                                 test_xy<T>("((x - 2) - (3 - y))",T(7.0),T(9.0),T(((7.0 - 2.0) - (3.0 - 9.0)))),
+                                 test_xy<T>("((2 * x) * (3 * y))",T(7.0),T(9.0),T(((2.0 * 7.0) * (3.0 * 9.0)))),
+                                 test_xy<T>("((2 * x) / (3 * y))",T(7.0),T(9.0),T(((2.0 * 7.0) / (3.0 * 9.0)))),
+                                 test_xy<T>("((2 / x) * (3 / y))",T(7.0),T(9.0),T(((2.0 / 7.0) * (3.0 / 9.0)))),
+                                 test_xy<T>("((2 * x) / (3 / y))",T(7.0),T(9.0),T(((2.0 * 7.0) / (3.0 / 9.0)))),
+                                 test_xy<T>("((2 / x) / (3 * y))",T(7.0),T(9.0),T(((2.0 / 7.0) / (3.0 * 9.0)))),
+                                 test_xy<T>("((x * 2) / (y * 3))",T(7.0),T(9.0),T(((7.0 * 2.0) / (9.0 * 3.0)))),
+                                 test_xy<T>("((x / 2) * (y / 3))",T(7.0),T(9.0),T(((7.0 / 2.0) * (9.0 / 3.0)))),
+                                 test_xy<T>("((x * 2) / (y / 3))",T(7.0),T(9.0),T(((7.0 * 2.0) / (9.0 / 3.0)))),
+                                 test_xy<T>("((x / 2) / (y * 3))",T(7.0),T(9.0),T(((7.0 / 2.0) / (9.0 * 3.0)))),
+                                 test_xy<T>("((2 * x) / (y * 3))",T(7.0),T(9.0),T(((2.0 * 7.0) / (9.0 * 3.0)))),
+                                 test_xy<T>("((2 / x) * (y / 3))",T(7.0),T(9.0),T(((2.0 / 7.0) * (9.0 / 3.0)))),
+                                 test_xy<T>("((2 * x) / (y / 3))",T(7.0),T(9.0),T(((2.0 * 7.0) / (9.0 / 3.0)))),
+                                 test_xy<T>("((2 / x) / (y * 3))",T(7.0),T(9.0),T(((2.0 / 7.0) / (9.0 * 3.0)))),
+                                 test_xy<T>("((x * 2) / (3 * y))",T(7.0),T(9.0),T(((7.0 * 2.0) / (3.0 * 9.0)))),
+                                 test_xy<T>("((x / 2) * (3 / y))",T(7.0),T(9.0),T(((7.0 / 2.0) * (3.0 / 9.0)))),
+                                 test_xy<T>("((x * 2) / (3 / y))",T(7.0),T(9.0),T(((7.0 * 2.0) / (3.0 / 9.0)))),
+                                 test_xy<T>("((x / 2) / (3 * y))",T(7.0),T(9.0),T(((7.0 / 2.0) / (3.0 * 9.0)))),
+                                 test_xy<T>("0 * (abs  (x) + acos (y) + asin (x) + atan (y))",T(1.0),T(1.0),T(0.0)),
+                                 test_xy<T>("0 * (ceil (x) + cos  (y) + cosh (x) + exp  (y))",T(1.0),T(1.0),T(0.0)),
+                                 test_xy<T>("0 * (floor(x) + log  (y) + log10(x) + round(y))",T(1.0),T(1.0),T(0.0)),
+                                 test_xy<T>("0 * (sin  (x) + sinh (y) + sqrt (x) + tan  (y))",T(1.0),T(1.0),T(0.0)),
+                                 test_xy<T>("0 * (sec  (x) + csc  (y) + tanh (x) + cot  (y))",T(1.0),T(1.0),T(0.0)),
+                                 test_xy<T>("0 * (erf  (x) + erfc (y) + sgn  (y) + frac (y))",T(1.0),T(1.0),T(0.0)),
+                                 test_xy<T>("0 * (log1p(x) + expm1(y) + acosh(x) + asinh(y))",T(1.0),T(1.0),T(0.0)),
+                                 test_xy<T>("0 * (deg2grad(x) + grad2deg(y) + rad2deg(x) + deg2rad(y))",T(1.0),T(1.0),T(0.0)),
+                                 test_xy<T>("switch { case (x <= y) : (y - x); default: 1.12345; }",T(1.0),T(2.0),T(1.0)),
+                                 test_xy<T>("switch { case (x >  y) : 0; case (x <= y) : (y - x); default: 1.12345; }",T(1.0),T(2.0),T(1.0)),
+                                 test_xy<T>("switch { case (x <= y) : switch { case (x <= y) : (y - x); default: 1.12345; }; default: 1.12345; }",T(1.0),T(2.0),T(1.0)),
+                                 test_xy<T>("switch { case [x <= y] : [y - x]; default: 1.12345; }",T(1.0),T(2.0),T(1.0)),
+                                 test_xy<T>("switch { case [x >  y] : 0; case [x <= y] : [y - x]; default: 1.12345; }",T(1.0),T(2.0),T(1.0)),
+                                 test_xy<T>("switch { case [x <= y] : switch { case [x <= y] : {y - x}; default: 1.12345; }; default: 1.12345; }",T(1.0),T(2.0),T(1.0)),
+                                 test_xy<T>("switch { case {x <= y} : x; default: 1.12345; }",T(1.0),T(2.0),T(1.0)),
+                                 test_xy<T>("switch { case {x >  y} : 0; case {x <= y} : {y - x}; default: 1.12345; }",T(1.0),T(2.0),T(1.0)),
+                                 test_xy<T>("switch { case {x <= y} : switch { case {x <= y} : x; default: 1.12345; }; default: 1.12345; }",T(1.0),T(2.0),T(1.0)),
+                                 test_xy<T>("switch { case [(x <= y)] : {y - x}; default: 1.12345; }",T(1.0),T(2.0),T(1.0)),
+                                 test_xy<T>("switch { case ([x >  y]) : [0]; case ([x <= y]) : [y - x]; default: 1.12345; }",T(1.0),T(2.0),T(1.0)),
+                                 test_xy<T>("switch { case {(x <= y)} : switch { case ({x <= y}) : x; default: 1.12345; }; default: 1.12345; }",T(1.0),T(2.0),T(1.0)),
+                                 test_xy<T>("[*]{ case x < y : x + y; case y < x : y - x; }",T(2.0),T(3.0),T(5.0)),
+                                 test_xy<T>("[*]{ case x > y : x + y; case y > x : y - x; }",T(2.0),T(3.0),T(1.0)),
+                                 test_xy<T>("[*]{ case x > y : x - y; case y < x : y + x; }",T(2.0),T(3.0),T(0.0))
+                              };
+
+      static const std::size_t test_list_size = sizeof(test_list) / sizeof(test_xy<T>);
+
+      const std::size_t rounds = 60;
+
+      for (std::size_t r = 0; r < rounds; ++r)
       {
-         test_xy<T>& test = const_cast<test_xy<T>&>(test_list[i]);
-
-         exprtk::symbol_table<T> symbol_table;
-         symbol_table.add_variable("x",test.x);
-         symbol_table.add_variable("y",test.y);
-
-         exprtk::expression<T> expression;
-         expression.register_symbol_table(symbol_table);
-
+         bool loop_result = true;
+         for (std::size_t i = 0; i < test_list_size; ++i)
          {
-            exprtk::parser<T> parser;
-            if (!parser.compile(test.expr,expression))
+            test_xy<T>& test = const_cast<test_xy<T>&>(test_list[i]);
+
+            exprtk::symbol_table<T> symbol_table;
+            symbol_table.add_variable("x",test.x);
+            symbol_table.add_variable("y",test.y);
+
+            exprtk::expression<T> expression;
+            expression.register_symbol_table(symbol_table);
+
             {
-               printf("run_test01() - Error: %s   Expression: %s\n",
-                      parser.error().c_str(),
-                      test.expr.c_str());
+               exprtk::parser<T> parser;
+               if (!parser.compile(test.expr,expression))
+               {
+                  printf("run_test01() - Error: %s   Expression: %s\n",
+                         parser.error().c_str(),
+                         test.expr.c_str());
+                  loop_result = false;
+                  continue;
+               }
+            }
+
+            T result = expression.value();
+
+            if (not_equal(result,test.result))
+            {
+               printf("run_test01() - Computation Error:  Expression: [%s]\tExpected: %19.15f\tResult: %19.15f\n",
+                      test.expr.c_str(),
+                      test.result,
+                      result);
                loop_result = false;
-               continue;
             }
          }
 
-         T result = expression.value();
-
-         if (not_equal(result,test.result))
+         if (!loop_result)
          {
-            printf("run_test01() - Computation Error:  Expression: [%s]\tExpected: %19.15f\tResult: %19.15f\n",
-                   test.expr.c_str(),
-                   test.result,
-                   result);
-            loop_result = false;
+            return false;
          }
       }
+   }
 
-      if (!loop_result)
+   {
+      static const test_xyz<T> test_list[] =
+                              {
+                                test_xyz<T>("((x /  y) / z )",T(7.0),T(9.0),T(3.0),T(((7.0 /  9.0) / 3.0 ))),
+                                test_xyz<T>("((x /  y) / 2 )",T(7.0),T(9.0),T(3.0),T(((7.0 /  9.0) / 2.0 ))),
+                                test_xyz<T>("((x /  2) / y )",T(7.0),T(9.0),T(3.0),T(((7.0 /  2.0) / 9.0 ))),
+                                test_xyz<T>("((2 /  x) / y )",T(7.0),T(9.0),T(3.0),T(((2.0 /  7.0) / 9.0 ))),
+                                test_xyz<T>("( x / (y /  z))",T(7.0),T(9.0),T(3.0),T(( 7.0 / (9.0  / 3.0)))),
+                                test_xyz<T>("( x / (y /  2))",T(7.0),T(9.0),T(3.0),T(( 7.0 / (9.0  / 2.0)))),
+                                test_xyz<T>("( x / (2  / y))",T(7.0),T(9.0),T(3.0),T(( 7.0 / (2.0  / 9.0)))),
+                                test_xyz<T>("( 2 / (x /  y))",T(7.0),T(9.0),T(3.0),T(( 2.0 / (7.0  / 9.0))))
+                              };
+
+      static const std::size_t test_list_size = sizeof(test_list) / sizeof(test_xyz<T>);
+
+      const std::size_t rounds = 60;
+
+      for (std::size_t r = 0; r < rounds; ++r)
       {
-         return false;
+         bool loop_result = true;
+         for (std::size_t i = 0; i < test_list_size; ++i)
+         {
+            test_xyz<T>& test = const_cast<test_xyz<T>&>(test_list[i]);
+
+            exprtk::symbol_table<T> symbol_table;
+            symbol_table.add_variable("x",test.x);
+            symbol_table.add_variable("y",test.y);
+            symbol_table.add_variable("z",test.z);
+
+            exprtk::expression<T> expression;
+            expression.register_symbol_table(symbol_table);
+
+            {
+               exprtk::parser<T> parser;
+               if (!parser.compile(test.expr,expression))
+               {
+                  printf("run_test01() - Error: %s   Expression: %s\n",
+                         parser.error().c_str(),
+                         test.expr.c_str());
+                  loop_result = false;
+                  continue;
+               }
+            }
+
+            T result = expression.value();
+
+            if (not_equal(result,test.result))
+            {
+               printf("run_test01() - Computation Error:  Expression: [%s]\tExpected: %19.15f\tResult: %19.15f\n",
+                      test.expr.c_str(),
+                      test.result,
+                      result);
+               loop_result = false;
+            }
+         }
+
+         if (!loop_result)
+         {
+            return false;
+         }
       }
    }
 
