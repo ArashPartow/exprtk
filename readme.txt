@@ -41,6 +41,8 @@ operations, functions and processes:
 
 (8) Calculus:        numerical integration and differentiation
 
+(9) Optimisations:   constant-folding and simple strength reduction
+
 
 
 [02 - EXAMPLE EXPRESSIONS]
@@ -591,39 +593,44 @@ correctly optimize such expressions for a given architecture.
 
  (14) The inbuilt polynomial functions can be at most of degree 12.
 
- (15) Where appropriate constant folding optimisations will be
+ (15) Where appropriate constant folding optimisations may be
       applied. (eg: The expression '2+(3-(x/y))' becomes '5-(x/y)')
 
- (16) String processing capabilities are available by default.
+ (16) Where applicable strength reduction optimisations may be
+      applied. The following are example of such optimisations:
+      (a) '(x / y) / z'  -->  'x / (y * z)'
+      (b) '(x / 3)'      -->  'x * (1 / 3)'
+
+ (17) String processing capabilities are available by default.
       To turn them off, the following needs to be defined at
       compile time: exprtk_disable_string_capabilities
 
- (17) Composited functions can call themselves or any other functions
+ (18) Composited functions can call themselves or any other functions
       that have been defined prior to their own definition.
 
- (18) Recursive calls made from within composited functions will have
+ (19) Recursive calls made from within composited functions will have
       a stack size bound by the stack of the executing architecture.
 
- (19) The entity relationship between symbol_table and an expression
+ (20) The entity relationship between symbol_table and an expression
       is one-to-many. Hence the intended use case is to have a single
       symbol table manage the variable and function requirements of
       multiple expressions. An inappropriate approach would be to have
       a unique symbol table for each unique expression.
 
- (20) The common use-case for an expression is to have it compiled
+ (21) The common use-case for an expression is to have it compiled
       only once and then subsequently have it evaluated multiple
       times. An extremely inefficient approach would be to recompile
       an expression from its string form every time it requires
       evaluating.
 
- (21) The following are examples of compliant floating point value
+ (22) The following are examples of compliant floating point value
       representations:
       (a) 12345        (b) -123.456
       (c) +123.456e+12 (d) 123.456E-12
       (e) +012.045e+07 (f) .1234
       (g) 123.456f     (h) -321.654E+3L
 
- (22) Expressions may contain any of the following comment styles:
+ (23) Expressions may contain any of the following comment styles:
       1. // .... \n
       2. #  .... \n
       3. /* .... */
