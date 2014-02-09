@@ -815,7 +815,7 @@ namespace exprtk
                return erfc_impl(static_cast<double>(v),real_type_tag());
             }
 
-            template <typename T> inline T   abs_impl(const T v, real_type_tag) { return std::abs  (v); }
+            template <typename T> inline T   abs_impl(const T v, real_type_tag) { return ((v >= T(0)) ? v : -v); }
             template <typename T> inline T  acos_impl(const T v, real_type_tag) { return std::acos (v); }
             template <typename T> inline T acosh_impl(const T v, real_type_tag) { return std::log(v + std::sqrt((v * v) - T(1))); }
             template <typename T> inline T  asin_impl(const T v, real_type_tag) { return std::asin (v); }
@@ -848,7 +848,7 @@ namespace exprtk
             template <typename T> inline T  frac_impl(const T v, real_type_tag) { return (v - static_cast<long long>(v)); }
             template <typename T> inline T trunc_impl(const T v, real_type_tag) { return T(static_cast<long long>(v));    }
 
-            template <typename T> inline T   abs_impl(const T v, int_type_tag) { return std::abs  (v); }
+            template <typename T> inline T   abs_impl(const T v, int_type_tag) { return ((v >= T(0)) ? v : -v); }
             template <typename T> inline T   exp_impl(const T v, int_type_tag) { return std::exp  (v); }
             template <typename T> inline T   log_impl(const T v, int_type_tag) { return std::log  (v); }
             template <typename T> inline T log10_impl(const T v, int_type_tag) { return std::log10(v); }
@@ -1331,8 +1331,8 @@ namespace exprtk
                   }
 
                   if (
-                        (exp < numeric::numeric_info<T>::min_exp) ||
-                        (numeric::numeric_info<T>::max_exp < exp)
+                       (exp < numeric::numeric_info<T>::min_exp) ||
+                       (numeric::numeric_info<T>::max_exp < exp)
                      )
                      return false;
                   exponent += exp;
@@ -2522,7 +2522,17 @@ namespace exprtk
 
             bool result()
             {
-               return state_ && stack_.empty();
+               if (!stack_.empty())
+               {
+                  lexer::token t;
+                  t.value      = stack_.top().first;
+                  t.position   = stack_.top().second;
+                  error_token_ = t;
+                  state_ = false;
+                  return false;
+               }
+               else
+                  return state_;
             }
 
             lexer::token error_token()
@@ -2533,7 +2543,7 @@ namespace exprtk
             void reset()
             {
                //why? because msvc doesn't support swap properly.
-               stack_ = std::stack<char>();
+               stack_ = std::stack<std::pair<char,std::size_t> >();
                state_ = true;
                error_token_.clear();
             }
@@ -2547,9 +2557,9 @@ namespace exprtk
                   )
                {
                   char c = t.value[0];
-                       if (t.type == lexer::token::e_lbracket)    stack_.push(')');
-                  else if (t.type == lexer::token::e_lcrlbracket) stack_.push('}');
-                  else if (t.type == lexer::token::e_lsqrbracket) stack_.push(']');
+                       if (t.type == lexer::token::e_lbracket)    stack_.push(std::make_pair(')',t.position));
+                  else if (t.type == lexer::token::e_lcrlbracket) stack_.push(std::make_pair('}',t.position));
+                  else if (t.type == lexer::token::e_lsqrbracket) stack_.push(std::make_pair(']',t.position));
                   else if (exprtk::details::is_right_bracket(c))
                   {
                      if (stack_.empty())
@@ -2558,7 +2568,7 @@ namespace exprtk
                         error_token_ = t;
                         return false;
                      }
-                     else if (c != stack_.top())
+                     else if (c != stack_.top().first)
                      {
                         state_ = false;
                         error_token_ = t;
@@ -2575,7 +2585,7 @@ namespace exprtk
          private:
 
             bool state_;
-            std::stack<char> stack_;
+            std::stack<std::pair<char,std::size_t> > stack_;
             lexer::token error_token_;
          };
 
@@ -3063,7 +3073,8 @@ namespace exprtk
          e_sf4ext28 = 2028, e_sf4ext29 = 2029, e_sf4ext30 = 2030, e_sf4ext31 = 2031,
          e_sf4ext32 = 2032, e_sf4ext33 = 2033, e_sf4ext34 = 2034, e_sf4ext35 = 2035,
          e_sf4ext36 = 2036, e_sf4ext37 = 2037, e_sf4ext38 = 2038, e_sf4ext39 = 2039,
-         e_sf4ext40 = 2040, e_sf4ext41 = 2041, e_sf4ext42 = 2042, e_sf4ext43 = 2043
+         e_sf4ext40 = 2040, e_sf4ext41 = 2041, e_sf4ext42 = 2042, e_sf4ext43 = 2043,
+         e_sf4ext44 = 2044, e_sf4ext45 = 2045
       };
 
       struct base_operation_t
@@ -3798,7 +3809,7 @@ namespace exprtk
                case e_iclamp  : if ((arg1 <= arg0) || (arg1 >= arg2))
                                    return arg1;
                                 else
-                                   return ((T(2.0) * arg1  <= (arg2 + arg0)) ? arg0 : arg2);
+                                   return ((T(2) * arg1  <= (arg2 + arg0)) ? arg0 : arg2);
                default        : return std::numeric_limits<T>::quiet_NaN();
             }
          }
@@ -4640,11 +4651,13 @@ namespace exprtk
       template <typename T> struct sfext36_op : public sf_base<T> { typedef typename sf_base<T>::Type Type; static inline T process(Type x, Type y, Type z, Type w) { return (x * y) / (z - w); } static inline std::string id() { return "(t*t)/(t-t)";} };
       template <typename T> struct sfext37_op : public sf_base<T> { typedef typename sf_base<T>::Type Type; static inline T process(Type x, Type y, Type z, Type w) { return (x / y) / (z - w); } static inline std::string id() { return "(t/t)/(t-t)";} };
       template <typename T> struct sfext38_op : public sf_base<T> { typedef typename sf_base<T>::Type Type; static inline T process(Type x, Type y, Type z, Type w) { return (x * y) * (z - w); } static inline std::string id() { return "(t*t)*(t-t)";} };
-      template <typename T> struct sfext39_op : public sf_base<T> { typedef typename sf_base<T>::Type Type; static inline T process(Type x, Type y, Type z, Type w) { return (x / y) * (z - w); } static inline std::string id() { return "(t/t)*(t-t)";} };
-      template <typename T> struct sfext40_op : public sf_base<T> { typedef typename sf_base<T>::Type Type; static inline T process(Type x, Type y, Type z, Type w) { return x + (y * (z / w)); } static inline std::string id() { return "t+(t*(t/t))";} };
-      template <typename T> struct sfext41_op : public sf_base<T> { typedef typename sf_base<T>::Type Type; static inline T process(Type x, Type y, Type z, Type w) { return x - (y * (z / w)); } static inline std::string id() { return "t-(t*(t/t))";} };
-      template <typename T> struct sfext42_op : public sf_base<T> { typedef typename sf_base<T>::Type Type; static inline T process(Type x, Type y, Type z, Type w) { return x + (y / (z * w)); } static inline std::string id() { return "t+(t/(t*t))";} };
-      template <typename T> struct sfext43_op : public sf_base<T> { typedef typename sf_base<T>::Type Type; static inline T process(Type x, Type y, Type z, Type w) { return x - (y / (z * w)); } static inline std::string id() { return "t-(t/(t*t))";} };
+      template <typename T> struct sfext39_op : public sf_base<T> { typedef typename sf_base<T>::Type Type; static inline T process(Type x, Type y, Type z, Type w) { return (x * y) / (z * w); } static inline std::string id() { return "(t*t)/(t*t)";} };
+      template <typename T> struct sfext40_op : public sf_base<T> { typedef typename sf_base<T>::Type Type; static inline T process(Type x, Type y, Type z, Type w) { return (x / y) * (z - w); } static inline std::string id() { return "(t/t)*(t-t)";} };
+      template <typename T> struct sfext41_op : public sf_base<T> { typedef typename sf_base<T>::Type Type; static inline T process(Type x, Type y, Type z, Type w) { return (x * y) * (z * w); } static inline std::string id() { return "(t*t)*(t*t)";} };
+      template <typename T> struct sfext42_op : public sf_base<T> { typedef typename sf_base<T>::Type Type; static inline T process(Type x, Type y, Type z, Type w) { return x + (y * (z / w)); } static inline std::string id() { return "t+(t*(t/t))";} };
+      template <typename T> struct sfext43_op : public sf_base<T> { typedef typename sf_base<T>::Type Type; static inline T process(Type x, Type y, Type z, Type w) { return x - (y * (z / w)); } static inline std::string id() { return "t-(t*(t/t))";} };
+      template <typename T> struct sfext44_op : public sf_base<T> { typedef typename sf_base<T>::Type Type; static inline T process(Type x, Type y, Type z, Type w) { return x + (y / (z * w)); } static inline std::string id() { return "t+(t/(t*t))";} };
+      template <typename T> struct sfext45_op : public sf_base<T> { typedef typename sf_base<T>::Type Type; static inline T process(Type x, Type y, Type z, Type w) { return x - (y / (z * w)); } static inline std::string id() { return "t-(t/(t*t))";} };
 
       template <typename T, typename SpecialFunction>
       class sf3_node : public trinary_node<T>
@@ -6287,6 +6300,8 @@ namespace exprtk
          virtual const T c() const = 0;
 
          virtual void set_c(const T) = 0;
+
+         virtual expression_node<T>* move_branch(const std::size_t& index) = 0;
       };
 
       template <typename T>
@@ -6345,8 +6360,6 @@ namespace exprtk
       public:
 
          virtual std::string type_id() const = 0;
-
-         virtual std::string type_id2() const { return ""; }
       };
 
       template <typename T>
@@ -7140,30 +7153,6 @@ namespace exprtk
             return id();
          }
 
-         std::string type_id2() const
-         {
-            std::string t[] = {
-                                param_to_str<is_const_ref<T0>::result>::result(),
-                                param_to_str<is_const_ref<T1>::result>::result(),
-                                param_to_str<is_const_ref<T2>::result>::result()
-                              };
-
-            std::string sf3id = id();
-
-            for (std::size_t i = 0; i < 3; ++i)
-            {
-               std::size_t index = std::string::npos;
-               if (std::string::npos != (index = sf3id.find("t")))
-               {
-                  sf3id[index] = t[i][0];
-               }
-               else
-                  break;
-            }
-
-            return sf3id;
-         }
-
          static inline std::string id()
          {
             return SF3Operation::id();
@@ -7698,6 +7687,12 @@ namespace exprtk
 
          inline expression_node<T>* branch(const std::size_t&) const
          {
+            return branch_[0].first;
+         }
+
+         inline expression_node<T>* move_branch(const std::size_t&)
+         {
+            branch_[0].second = false;
             return branch_[0].first;
          }
 
@@ -10141,13 +10136,14 @@ namespace exprtk
 
       enum precompilation_step
       {
-         e_unknown           =  0,
-         e_replacer          =  1,
-         e_joiner            =  2,
-         e_numeric_check     =  4,
-         e_bracket_check     =  8,
-         e_sequence_check    = 16,
-         e_commutative_check = 32
+         e_unknown            =  0,
+         e_replacer           =  1,
+         e_joiner             =  2,
+         e_numeric_check      =  4,
+         e_bracket_check      =  8,
+         e_sequence_check     = 16,
+         e_commutative_check  = 32,
+         e_strength_reduction = 64
       };
 
       struct unknown_symbol_resolver
@@ -10171,16 +10167,17 @@ namespace exprtk
          }
       };
 
-      static const std::size_t precompile_all_opts = e_replacer         +
-                                                     e_joiner           +
-                                                     e_numeric_check    +
-                                                     e_bracket_check    +
-                                                     e_sequence_check   +
-                                                     e_commutative_check;
+      static const std::size_t compile_all_opts = e_replacer          +
+                                                  e_joiner            +
+                                                  e_numeric_check     +
+                                                  e_bracket_check     +
+                                                  e_sequence_check    +
+                                                  e_commutative_check +
+                                                  e_strength_reduction;
 
-      parser(const std::size_t precompile_options = precompile_all_opts)
+      parser(const std::size_t compile_options = compile_all_opts)
       : symbol_name_caching_(false),
-        precompile_options_(precompile_options),
+        compile_options_(compile_options),
         resolve_unknown_symbol_(false),
         unknown_symbol_resolver_(reinterpret_cast<unknown_symbol_resolver*>(0)),
         operator_joiner_2_(2),
@@ -10199,6 +10196,7 @@ namespace exprtk
          expression_generator_.set_ibom(inv_binary_op_map_);
          expression_generator_.set_sf3m(sf3_map_);
          expression_generator_.set_sf4m(sf4_map_);
+         expression_generator_.set_strength_reduction_state(strength_reduction_enabled());
       }
 
       inline void init_precompilation()
@@ -10347,32 +10345,37 @@ namespace exprtk
 
       inline bool replacer_enabled() const
       {
-         return ((precompile_options_ & e_replacer) == e_replacer);
+         return ((compile_options_ & e_replacer) == e_replacer);
       }
 
       inline bool commutative_check_enabled() const
       {
-         return ((precompile_options_ & e_commutative_check) == e_commutative_check);
+         return ((compile_options_ & e_commutative_check) == e_commutative_check);
       }
 
       inline bool joiner_enabled() const
       {
-         return ((precompile_options_ & e_joiner) == e_joiner);
+         return ((compile_options_ & e_joiner) == e_joiner);
       }
 
       inline bool numeric_check_enabled() const
       {
-         return ((precompile_options_ & e_numeric_check) == e_numeric_check);
+         return ((compile_options_ & e_numeric_check) == e_numeric_check);
       }
 
       inline bool bracket_check_enabled() const
       {
-         return ((precompile_options_ & e_bracket_check) == e_bracket_check);
+         return ((compile_options_ & e_bracket_check) == e_bracket_check);
       }
 
       inline bool sequence_check_enabled() const
       {
-         return ((precompile_options_ & e_sequence_check) == e_sequence_check);
+         return ((compile_options_ & e_sequence_check) == e_sequence_check);
+      }
+
+      inline bool strength_reduction_enabled() const
+      {
+         return ((compile_options_ & e_strength_reduction) == e_strength_reduction);
       }
 
       inline bool run_assemblies()
@@ -10411,7 +10414,7 @@ namespace exprtk
                      set_error(
                         make_error(parser_error::e_token,
                                    bracket_checker_ptr->error_token(),
-                                   "ERR04 - Mismatched brackets: " + bracket_checker_ptr->error_token().value));
+                                   "ERR04 - Mismatched brackets: '" + bracket_checker_ptr->error_token().value + "'"));
                   }
                   else if (0 != (numeric_checker_ptr = dynamic_cast<lexer::helper::numeric_checker*>(helper_assembly_.error_token_scanner)))
                   {
@@ -10421,7 +10424,7 @@ namespace exprtk
                         set_error(
                            make_error(parser_error::e_token,
                                       error_token,
-                                      "ERR05 - Invalid numeric token: " + error_token.value));
+                                      "ERR05 - Invalid numeric token: '" + error_token.value + "'"));
                      }
                   }
                   else if (0 != (sequence_validator_ptr = dynamic_cast<lexer::helper::sequence_validator*>(helper_assembly_.error_token_scanner)))
@@ -11510,7 +11513,7 @@ namespace exprtk
       {
          if (expression_list.empty())
             return error_node();
-         if (1 == expression_list.size())
+         else if (1 == expression_list.size())
             return expression_list[0];
 
          Sequence<expression_node_ptr,Allocator> tmp_expression_list;
@@ -12469,6 +12472,16 @@ namespace exprtk
          inline void set_allocator(details::node_allocator& na)
          {
             node_allocator_ = &na;
+         }
+
+         inline void set_strength_reduction_state(const bool strength_reduction_enabled)
+         {
+            strength_reduction_enabled_ = strength_reduction_enabled;
+         }
+
+         inline bool strength_reduction_enabled() const
+         {
+            return strength_reduction_enabled_;
          }
 
          inline bool valid_operator(const details::operator_type& operation, binary_functor_t& bop)
@@ -13737,6 +13750,11 @@ namespace exprtk
             const unsigned int p = static_cast<unsigned int>(std::abs(c));
             if (0 == p)
                return node_allocator_->allocate_c<literal_node_t>(T(1));
+            else if (T(2) == c)
+            {
+               return node_allocator_->
+                  template allocate_rr<typename details::vov_node<Type,details::mul_op<Type> > >(v,v);
+            }
             else
             {
                if (not_recipricol)
@@ -13879,6 +13897,56 @@ namespace exprtk
                         return cobnode;
                      }
                   }
+
+                  if (operation == details::e_mul)
+                  {
+                     details::cob_base_node<Type>* cobnode = dynamic_cast<details::cob_base_node<Type>*>(branch[1]);
+                     details::operator_type cob_opr = cobnode->operation();
+
+                     if (
+                          (details::e_div == cob_opr) ||
+                          (details::e_mul == cob_opr)
+                        )
+                     {
+                        switch (cob_opr)
+                        {
+                           case details::e_div : cobnode->set_c(c * cobnode->c()); break;
+                           case details::e_mul : cobnode->set_c(cobnode->c() / c); break;
+                           default             : return error_node();
+                        }
+                        return cobnode;
+                     }
+                  }
+                  else if (operation == details::e_div)
+                  {
+                     details::cob_base_node<Type>* cobnode = dynamic_cast<details::cob_base_node<Type>*>(branch[1]);
+                     details::operator_type cob_opr = cobnode->operation();
+
+                     if (
+                          (details::e_div == cob_opr) ||
+                          (details::e_mul == cob_opr)
+                        )
+                     {
+                        details::expression_node<Type>* new_cobnode = error_node();
+                        switch (cob_opr)
+                        {
+                           case details::e_div : new_cobnode = expr_gen.node_allocator_->
+                                                                  template allocate_tt<typename details::cob_node<Type,details::mul_op<Type> > >
+                                                                     (c / cobnode->c(),cobnode->move_branch(0));
+                                                 break;
+
+                           case details::e_mul : new_cobnode = expr_gen.node_allocator_->
+                                                                  template allocate_tt<typename details::cob_node<Type,details::div_op<Type> > >
+                                                                     (c / cobnode->c(),cobnode->move_branch(0));
+                                                 break;
+
+                           default             : return error_node();
+                        }
+
+                        free_node(*expr_gen.node_allocator_,branch[1]);
+                        return new_cobnode;
+                     }
+                  }
                }
                else if (details::is_sf3ext_node(branch[1]))
                {
@@ -13894,7 +13962,7 @@ namespace exprtk
                {
                   #define case_stmt(op0,op1)                                                       \
                   case op0 : return expr_gen.node_allocator_->                                     \
-                                template allocate_rc<typename details::cob_node<Type,op1<Type> > > \
+                                template allocate_tt<typename details::cob_node<Type,op1<Type> > > \
                                    (c,branch[1]);                                                  \
 
                   basic_opr_switch_statements
@@ -13930,6 +13998,25 @@ namespace exprtk
                         {
                            case details::e_add : bocnode->set_c(c + bocnode->c()); break;
                            case details::e_mul : bocnode->set_c(c * bocnode->c()); break;
+                           default             : return error_node();
+                        }
+                        return bocnode;
+                     }
+                  }
+                  else if (operation == details::e_div)
+                  {
+                     details::boc_base_node<Type>* bocnode = dynamic_cast<details::boc_base_node<Type>*>(branch[0]);
+                     details::operator_type boc_opr = bocnode->operation();
+
+                     if (
+                          (details::e_div == boc_opr) ||
+                          (details::e_mul == boc_opr)
+                        )
+                     {
+                        switch (boc_opr)
+                        {
+                           case details::e_div : bocnode->set_c(c * bocnode->c()); break;
+                           case details::e_mul : bocnode->set_c(bocnode->c() / c); break;
                            default             : return error_node();
                         }
                         return bocnode;
@@ -14037,7 +14124,10 @@ namespace exprtk
 
                if (expr_gen.cardinal_pow_optimizable(operation,c))
                {
-                  return expr_gen.cardinal_pow_optimization(v,c);
+                  if (T(1) == c)
+                     return branch[0];
+                  else
+                     return expr_gen.cardinal_pow_optimization(v,c);
                }
 
                switch (operation)
@@ -14157,6 +14247,7 @@ namespace exprtk
                   case_stmt(details::e_sf4ext38,details::sfext38_op) case_stmt(details::e_sf4ext39,details::sfext39_op)
                   case_stmt(details::e_sf4ext40,details::sfext40_op) case_stmt(details::e_sf4ext41,details::sfext41_op)
                   case_stmt(details::e_sf4ext42,details::sfext42_op) case_stmt(details::e_sf4ext43,details::sfext43_op)
+                  case_stmt(details::e_sf4ext44,details::sfext44_op) case_stmt(details::e_sf4ext45,details::sfext45_op)
                   #undef case_stmt
                   default : return error_node();
                }
@@ -14307,15 +14398,19 @@ namespace exprtk
                details::free_node(*(expr_gen.node_allocator_),branch[0]);
                expression_node_ptr result = error_node();
 
-               // (v0 / v1) / v2 --> (vovov) v0 / (v1 * v2)
-               if ((details::e_div == o0) && (details::e_div == o1))
+               if (expr_gen.strength_reduction_enabled())
                {
-                  const bool synthesis_result =
-                     synthesize_sf3ext_expression::
-                        template compile<vtype,vtype,vtype>(expr_gen,"t/(t*t)",v0,v1,v2,result);
-                  return (synthesis_result) ? result : error_node();
+                  // (v0 / v1) / v2 --> (vovov) v0 / (v1 * v2)
+                  if ((details::e_div == o0) && (details::e_div == o1))
+                  {
+                     const bool synthesis_result =
+                        synthesize_sf3ext_expression::
+                           template compile<vtype,vtype,vtype>(expr_gen,"t/(t*t)",v0,v1,v2,result);
+                     return (synthesis_result) ? result : error_node();
+                  }
                }
-               else if (synthesize_sf3ext_expression::template compile<vtype,vtype,vtype>(expr_gen,id(expr_gen,o0,o1),v0,v1,v2,result))
+
+               if (synthesize_sf3ext_expression::template compile<vtype,vtype,vtype>(expr_gen,id(expr_gen,o0,o1),v0,v1,v2,result))
                   return result;
                else if (!expr_gen.valid_operator(o0,f0))
                   return error_node();
@@ -14352,15 +14447,19 @@ namespace exprtk
                details::free_node(*(expr_gen.node_allocator_),branch[1]);
                expression_node_ptr result = error_node();
 
-               // v0 / (v1 / v2) --> (vovov) (v0 * v2) / v1
-               if ((details::e_div == o0) && (details::e_div == o1))
+               if (expr_gen.strength_reduction_enabled())
                {
-                  const bool synthesis_result =
-                     synthesize_sf3ext_expression::
-                        template compile<vtype,vtype,vtype>(expr_gen,"(t*t)/t",v0,v2,v1,result);
-                  return (synthesis_result) ? result : error_node();
+                  // v0 / (v1 / v2) --> (vovov) (v0 * v2) / v1
+                  if ((details::e_div == o0) && (details::e_div == o1))
+                  {
+                     const bool synthesis_result =
+                        synthesize_sf3ext_expression::
+                           template compile<vtype,vtype,vtype>(expr_gen,"(t*t)/t",v0,v2,v1,result);
+                     return (synthesis_result) ? result : error_node();
+                  }
                }
-               else if (synthesize_sf3ext_expression::template compile<vtype,vtype,vtype>(expr_gen,id(expr_gen,o0,o1),v0,v1,v2,result))
+
+               if (synthesize_sf3ext_expression::template compile<vtype,vtype,vtype>(expr_gen,id(expr_gen,o0,o1),v0,v1,v2,result))
                   return result;
                else if (!expr_gen.valid_operator(o0,f0))
                   return error_node();
@@ -14398,15 +14497,19 @@ namespace exprtk
                details::free_node(*(expr_gen.node_allocator_),branch[1]);
                expression_node_ptr result = error_node();
 
-               // (v0 / v1) / c --> (vovoc) v0 / (v1 * c)
-               if ((details::e_div == o0) && (details::e_div == o1))
+               if (expr_gen.strength_reduction_enabled())
                {
-                  const bool synthesis_result =
-                     synthesize_sf3ext_expression::
-                        template compile<vtype,vtype,ctype>(expr_gen,"t/(t*t)",v0,v1,c,result);
-                  return (synthesis_result) ? result : error_node();
+                  // (v0 / v1) / c --> (vovoc) v0 / (v1 * c)
+                  if ((details::e_div == o0) && (details::e_div == o1))
+                  {
+                     const bool synthesis_result =
+                        synthesize_sf3ext_expression::
+                           template compile<vtype,vtype,ctype>(expr_gen,"t/(t*t)",v0,v1,c,result);
+                     return (synthesis_result) ? result : error_node();
+                  }
                }
-               else if (synthesize_sf3ext_expression::template compile<vtype,vtype,ctype>(expr_gen,id(expr_gen,o0,o1),v0,v1,c,result))
+
+               if (synthesize_sf3ext_expression::template compile<vtype,vtype,ctype>(expr_gen,id(expr_gen,o0,o1),v0,v1,c,result))
                   return result;
                else if (!expr_gen.valid_operator(o0,f0))
                   return error_node();
@@ -14443,15 +14546,19 @@ namespace exprtk
                details::free_node(*(expr_gen.node_allocator_),branch[1]);
                expression_node_ptr result = error_node();
 
-               // v0 / (v1 / c) --> (vocov) (v0 * c) / v1
-               if ((details::e_div == o0) && (details::e_div == o1))
+               if (expr_gen.strength_reduction_enabled())
                {
-                  const bool synthesis_result =
-                     synthesize_sf3ext_expression::
-                        template compile<vtype,ctype,vtype>(expr_gen,"(t*t)/t",v0,c,v1,result);
-                  return (synthesis_result) ? result : error_node();
+                  // v0 / (v1 / c) --> (vocov) (v0 * c) / v1
+                  if ((details::e_div == o0) && (details::e_div == o1))
+                  {
+                     const bool synthesis_result =
+                        synthesize_sf3ext_expression::
+                           template compile<vtype,ctype,vtype>(expr_gen,"(t*t)/t",v0,c,v1,result);
+                     return (synthesis_result) ? result : error_node();
+                  }
                }
-               else if (synthesize_sf3ext_expression::template compile<vtype,vtype,ctype>(expr_gen,id(expr_gen,o0,o1),v0,v1,c,result))
+
+               if (synthesize_sf3ext_expression::template compile<vtype,vtype,ctype>(expr_gen,id(expr_gen,o0,o1),v0,v1,c,result))
                   return result;
                else if (!expr_gen.valid_operator(o0,f0))
                   return error_node();
@@ -14488,15 +14595,19 @@ namespace exprtk
                details::free_node(*(expr_gen.node_allocator_),branch[0]);
                expression_node_ptr result = error_node();
 
-               // (v0 / c) / v1 --> (vovoc) v0 / (v1 * c)
-               if ((details::e_div == o0) && (details::e_div == o1))
+               if (expr_gen.strength_reduction_enabled())
                {
-                  const bool synthesis_result =
-                     synthesize_sf3ext_expression::
-                        template compile<vtype,vtype,ctype>(expr_gen,"t/(t*t)",v0,v1,c,result);
-                  return (synthesis_result) ? result : error_node();
+                  // (v0 / c) / v1 --> (vovoc) v0 / (v1 * c)
+                  if ((details::e_div == o0) && (details::e_div == o1))
+                  {
+                     const bool synthesis_result =
+                        synthesize_sf3ext_expression::
+                           template compile<vtype,vtype,ctype>(expr_gen,"t/(t*t)",v0,v1,c,result);
+                     return (synthesis_result) ? result : error_node();
+                  }
                }
-               else if (synthesize_sf3ext_expression::template compile<vtype,ctype,vtype>(expr_gen,id(expr_gen,o0,o1),v0,c,v1,result))
+
+               if (synthesize_sf3ext_expression::template compile<vtype,ctype,vtype>(expr_gen,id(expr_gen,o0,o1),v0,c,v1,result))
                   return result;
                else if (!expr_gen.valid_operator(o0,f0))
                   return error_node();
@@ -14533,15 +14644,19 @@ namespace exprtk
                details::free_node(*(expr_gen.node_allocator_),branch[1]);
                expression_node_ptr result = error_node();
 
-               // v0 / (c / v1) --> (vovoc) (v0 * v1) / c
-               if ((details::e_div == o0) && (details::e_div == o1))
+               if (expr_gen.strength_reduction_enabled())
                {
-                  const bool synthesis_result =
-                     synthesize_sf3ext_expression::
-                        template compile<vtype,vtype,ctype>(expr_gen,"(t*t)/t",v0,v1,c,result);
-                  return (synthesis_result) ? result : error_node();
+                  // v0 / (c / v1) --> (vovoc) (v0 * v1) / c
+                  if ((details::e_div == o0) && (details::e_div == o1))
+                  {
+                     const bool synthesis_result =
+                        synthesize_sf3ext_expression::
+                           template compile<vtype,vtype,ctype>(expr_gen,"(t*t)/t",v0,v1,c,result);
+                     return (synthesis_result) ? result : error_node();
+                  }
                }
-               else if (synthesize_sf3ext_expression::template compile<vtype,ctype,vtype>(expr_gen,id(expr_gen,o0,o1),v0,c,v1,result))
+
+               if (synthesize_sf3ext_expression::template compile<vtype,ctype,vtype>(expr_gen,id(expr_gen,o0,o1),v0,c,v1,result))
                   return result;
                else if (!expr_gen.valid_operator(o0,f0))
                   return error_node();
@@ -14578,15 +14693,19 @@ namespace exprtk
                details::free_node(*(expr_gen.node_allocator_),branch[0]);
                expression_node_ptr result = error_node();
 
-               // (c / v0) / v1 --> (covov) c / (v0 * v1)
-               if ((details::e_div == o0) && (details::e_div == o1))
+               if (expr_gen.strength_reduction_enabled())
                {
-                  const bool synthesis_result =
-                     synthesize_sf3ext_expression::
-                        template compile<ctype,vtype,vtype>(expr_gen,"t/(t*t)",c,v0,v1,result);
-                  return (synthesis_result) ? result : error_node();
+                  // (c / v0) / v1 --> (covov) c / (v0 * v1)
+                  if ((details::e_div == o0) && (details::e_div == o1))
+                  {
+                     const bool synthesis_result =
+                        synthesize_sf3ext_expression::
+                           template compile<ctype,vtype,vtype>(expr_gen,"t/(t*t)",c,v0,v1,result);
+                     return (synthesis_result) ? result : error_node();
+                  }
                }
-               else if (synthesize_sf3ext_expression::template compile<ctype,vtype,vtype>(expr_gen,id(expr_gen,o0,o1),c,v0,v1,result))
+
+               if (synthesize_sf3ext_expression::template compile<ctype,vtype,vtype>(expr_gen,id(expr_gen,o0,o1),c,v0,v1,result))
                   return result;
                else if (!expr_gen.valid_operator(o0,f0))
                   return error_node();
@@ -14624,15 +14743,19 @@ namespace exprtk
                details::free_node(*(expr_gen.node_allocator_),branch[1]);
                expression_node_ptr result = error_node();
 
-               // c / (v0 / v1) --> (covov) (c * v1) / v0
-               if ((details::e_div == o0) && (details::e_div == o1))
+               if (expr_gen.strength_reduction_enabled())
                {
-                  const bool synthesis_result =
-                     synthesize_sf3ext_expression::
-                        template compile<ctype,vtype,vtype>(expr_gen,"(t*t)/t",c,v1,v0,result);
-                  return (synthesis_result) ? result : error_node();
+                  // c / (v0 / v1) --> (covov) (c * v1) / v0
+                  if ((details::e_div == o0) && (details::e_div == o1))
+                  {
+                     const bool synthesis_result =
+                        synthesize_sf3ext_expression::
+                           template compile<ctype,vtype,vtype>(expr_gen,"(t*t)/t",c,v1,v0,result);
+                     return (synthesis_result) ? result : error_node();
+                  }
                }
-               else if (synthesize_sf3ext_expression::template compile<ctype,vtype,vtype>(expr_gen,id(expr_gen,o0,o1),c,v0,v1,result))
+
+               if (synthesize_sf3ext_expression::template compile<ctype,vtype,vtype>(expr_gen,id(expr_gen,o0,o1),c,v0,v1,result))
                   return result;
                else if (!expr_gen.valid_operator(o0,f0))
                   return error_node();
@@ -14669,55 +14792,59 @@ namespace exprtk
                details::free_node(*(expr_gen.node_allocator_),branch[1]);
                expression_node_ptr result = error_node();
 
-               // (c0 + v) + c1 --> (cov) (c0 + c1) + v
-               if ((details::e_add == o0) && (details::e_add == o1))
+               if (expr_gen.strength_reduction_enabled())
                {
-                  return expr_gen.node_allocator_->
-                            template allocate_cr<typename details::cov_node<Type,details::add_op<Type> > >(c0 + c1,v);
+                  // (c0 + v) + c1 --> (cov) (c0 + c1) + v
+                  if ((details::e_add == o0) && (details::e_add == o1))
+                  {
+                     return expr_gen.node_allocator_->
+                               template allocate_cr<typename details::cov_node<Type,details::add_op<Type> > >(c0 + c1,v);
+                  }
+                  // (c0 + v) - c1 --> (cov) (c0 - c1) + v
+                  else if ((details::e_add == o0) && (details::e_sub == o1))
+                  {
+                     return expr_gen.node_allocator_->
+                               template allocate_cr<typename details::cov_node<Type,details::add_op<Type> > >(c0 - c1,v);
+                  }
+                  // (c0 - v) + c1 --> (cov) (c0 + c1) - v
+                  else if ((details::e_sub == o0) && (details::e_add == o1))
+                  {
+                     return expr_gen.node_allocator_->
+                               template allocate_cr<typename details::cov_node<Type,details::sub_op<Type> > >(c0 + c1,v);
+                  }
+                  // (c0 - v) - c1 --> (cov) (c0 - c1) - v
+                  else if ((details::e_sub == o0) && (details::e_sub == o1))
+                  {
+                     return expr_gen.node_allocator_->
+                               template allocate_cr<typename details::cov_node<Type,details::sub_op<Type> > >(c0 - c1,v);
+                  }
+                  // (c0 * v) * c1 --> (cov) (c0 * c1) * v
+                  else if ((details::e_mul == o0) && (details::e_mul == o1))
+                  {
+                     return expr_gen.node_allocator_->
+                               template allocate_cr<typename details::cov_node<Type,details::mul_op<Type> > >(c0 * c1,v);
+                  }
+                  // (c0 * v) / c1 --> (cov) (c0 / c1) * v
+                  else if ((details::e_mul == o0) && (details::e_div == o1))
+                  {
+                     return expr_gen.node_allocator_->
+                               template allocate_cr<typename details::cov_node<Type,details::mul_op<Type> > >(c0 / c1,v);
+                  }
+                  // (c0 / v) * c1 --> (cov) (c0 * c1) / v
+                  else if ((details::e_div == o0) && (details::e_mul == o1))
+                  {
+                     return expr_gen.node_allocator_->
+                               template allocate_cr<typename details::cov_node<Type,details::div_op<Type> > >(c0 * c1,v);
+                  }
+                  // (c0 / v) / c1 --> (cov) (c0 / c1) / v
+                  else if ((details::e_div == o0) && (details::e_div == o1))
+                  {
+                     return expr_gen.node_allocator_->
+                               template allocate_cr<typename details::cov_node<Type,details::div_op<Type> > >(c0 / c1,v);
+                  }
                }
-               // (c0 + v) - c1 --> (cov) (c0 - c1) + v
-               else if ((details::e_add == o0) && (details::e_sub == o1))
-               {
-                  return expr_gen.node_allocator_->
-                            template allocate_cr<typename details::cov_node<Type,details::add_op<Type> > >(c0 - c1,v);
-               }
-               // (c0 - v) + c1 --> (cov) (c0 + c1) - v
-               else if ((details::e_sub == o0) && (details::e_add == o1))
-               {
-                  return expr_gen.node_allocator_->
-                            template allocate_cr<typename details::cov_node<Type,details::sub_op<Type> > >(c0 + c1,v);
-               }
-               // (c0 - v) - c1 --> (cov) (c0 - c1) - v
-               else if ((details::e_sub == o0) && (details::e_sub == o1))
-               {
-                  return expr_gen.node_allocator_->
-                            template allocate_cr<typename details::cov_node<Type,details::sub_op<Type> > >(c0 - c1,v);
-               }
-               // (c0 * v) * c1 --> (cov) (c0 * c1) * v
-               else if ((details::e_mul == o0) && (details::e_mul == o1))
-               {
-                  return expr_gen.node_allocator_->
-                            template allocate_cr<typename details::cov_node<Type,details::mul_op<Type> > >(c0 * c1,v);
-               }
-               // (c0 * v) / c1 --> (cov) (c0 / c1) * v
-               else if ((details::e_mul == o0) && (details::e_div == o1))
-               {
-                  return expr_gen.node_allocator_->
-                            template allocate_cr<typename details::cov_node<Type,details::mul_op<Type> > >(c0 / c1,v);
-               }
-               // (c0 / v) * c1 --> (cov) (c0 * c1) / v
-               else if ((details::e_div == o0) && (details::e_mul == o1))
-               {
-                  return expr_gen.node_allocator_->
-                            template allocate_cr<typename details::cov_node<Type,details::div_op<Type> > >(c0 * c1,v);
-               }
-               // (c0 / v) / c1 --> (cov) (c0 / c1) / v
-               else if ((details::e_div == o0) && (details::e_div == o1))
-               {
-                  return expr_gen.node_allocator_->
-                            template allocate_cr<typename details::cov_node<Type,details::div_op<Type> > >(c0 / c1,v);
-               }
-               else if (synthesize_sf3ext_expression::template compile<ctype,vtype,ctype>(expr_gen,id(expr_gen,o0,o1),c0,v,c1,result))
+
+               if (synthesize_sf3ext_expression::template compile<ctype,vtype,ctype>(expr_gen,id(expr_gen,o0,o1),c0,v,c1,result))
                   return result;
                else if (!expr_gen.valid_operator(o0,f0))
                   return error_node();
@@ -14755,55 +14882,59 @@ namespace exprtk
                details::free_node(*(expr_gen.node_allocator_),branch[1]);
                expression_node_ptr result = error_node();
 
-               // (c0) + (v + c1) --> (cov) (c0 + c1) + v
-               if ((details::e_add == o0) && (details::e_add == o1))
+               if (expr_gen.strength_reduction_enabled())
                {
-                  return expr_gen.node_allocator_->
-                            template allocate_cr<typename details::cov_node<Type,details::add_op<Type> > >(c0 + c1,v);
+                  // (c0) + (v + c1) --> (cov) (c0 + c1) + v
+                  if ((details::e_add == o0) && (details::e_add == o1))
+                  {
+                     return expr_gen.node_allocator_->
+                               template allocate_cr<typename details::cov_node<Type,details::add_op<Type> > >(c0 + c1,v);
+                  }
+                  // (c0) + (v - c1) --> (cov) (c0 - c1) + v
+                  else if ((details::e_add == o0) && (details::e_sub == o1))
+                  {
+                     return expr_gen.node_allocator_->
+                               template allocate_cr<typename details::cov_node<Type,details::add_op<Type> > >(c0 - c1,v);
+                  }
+                  // (c0) - (v + c1) --> (cov) (c0 - c1) - v
+                  else if ((details::e_sub == o0) && (details::e_add == o1))
+                  {
+                     return expr_gen.node_allocator_->
+                               template allocate_cr<typename details::cov_node<Type,details::sub_op<Type> > >(c0 - c1,v);
+                  }
+                  // (c0) - (v - c1) --> (cov) (c0 + c1) - v
+                  else if ((details::e_sub == o0) && (details::e_sub == o1))
+                  {
+                     return expr_gen.node_allocator_->
+                               template allocate_cr<typename details::cov_node<Type,details::sub_op<Type> > >(c0 + c1,v);
+                  }
+                  // (c0) * (v * c1) --> (voc) v * (c0 * c1)
+                  else if ((details::e_mul == o0) && (details::e_mul == o1))
+                  {
+                     return expr_gen.node_allocator_->
+                               template allocate_cr<typename details::cov_node<Type,details::mul_op<Type> > >(c0 * c1,v);
+                  }
+                  // (c0) * (v / c1) --> (cov) (c0 / c1) * v
+                  else if ((details::e_mul == o0) && (details::e_div == o1))
+                  {
+                     return expr_gen.node_allocator_->
+                               template allocate_cr<typename details::cov_node<Type,details::mul_op<Type> > >(c0 / c1,v);
+                  }
+                  // (c0) / (v * c1) --> (cov) (c0 / c1) / v
+                  else if ((details::e_div == o0) && (details::e_mul == o1))
+                  {
+                     return expr_gen.node_allocator_->
+                               template allocate_cr<typename details::cov_node<Type,details::div_op<Type> > >(c0 / c1,v);
+                  }
+                  // (c0) / (v / c1) --> (cov) (c0 * c1) / v
+                  else if ((details::e_div == o0) && (details::e_div == o1))
+                  {
+                     return expr_gen.node_allocator_->
+                               template allocate_cr<typename details::cov_node<Type,details::div_op<Type> > >(c0 * c1,v);
+                  }
                }
-               // (c0) + (v - c1) --> (cov) (c0 - c1) + v
-               else if ((details::e_add == o0) && (details::e_sub == o1))
-               {
-                  return expr_gen.node_allocator_->
-                            template allocate_cr<typename details::cov_node<Type,details::add_op<Type> > >(c0 - c1,v);
-               }
-               // (c0) - (v + c1) --> (cov) (c0 - c1) - v
-               else if ((details::e_sub == o0) && (details::e_add == o1))
-               {
-                  return expr_gen.node_allocator_->
-                            template allocate_cr<typename details::cov_node<Type,details::sub_op<Type> > >(c0 - c1,v);
-               }
-               // (c0) - (v - c1) --> (cov) (c0 + c1) - v
-               else if ((details::e_sub == o0) && (details::e_sub == o1))
-               {
-                  return expr_gen.node_allocator_->
-                            template allocate_cr<typename details::cov_node<Type,details::sub_op<Type> > >(c0 + c1,v);
-               }
-               // (c0) * (v * c1) --> (voc) v * (c0 * c1)
-               else if ((details::e_mul == o0) && (details::e_mul == o1))
-               {
-                  return expr_gen.node_allocator_->
-                            template allocate_cr<typename details::cov_node<Type,details::mul_op<Type> > >(c0 * c1,v);
-               }
-               // (c0) * (v / c1) --> (cov) (c0 / c1) * v
-               else if ((details::e_mul == o0) && (details::e_div == o1))
-               {
-                  return expr_gen.node_allocator_->
-                            template allocate_cr<typename details::cov_node<Type,details::mul_op<Type> > >(c0 / c1,v);
-               }
-               // (c0) / (v * c1) --> (cov) (c0 / c1) / v
-               else if ((details::e_div == o0) && (details::e_mul == o1))
-               {
-                  return expr_gen.node_allocator_->
-                            template allocate_cr<typename details::cov_node<Type,details::div_op<Type> > >(c0 / c1,v);
-               }
-               // (c0) / (v / c1) --> (cov) (c0 * c1) / v
-               else if ((details::e_div == o0) && (details::e_div == o1))
-               {
-                  return expr_gen.node_allocator_->
-                            template allocate_cr<typename details::cov_node<Type,details::div_op<Type> > >(c0 * c1,v);
-               }
-               else if (synthesize_sf3ext_expression::template compile<ctype,vtype,ctype>(expr_gen,id(expr_gen,o0,o1),c0,v,c1,result))
+
+               if (synthesize_sf3ext_expression::template compile<ctype,vtype,ctype>(expr_gen,id(expr_gen,o0,o1),c0,v,c1,result))
                   return result;
                else if (!expr_gen.valid_operator(o0,f0))
                   return error_node();
@@ -14851,55 +14982,59 @@ namespace exprtk
                details::free_node(*(expr_gen.node_allocator_),branch[1]);
                expression_node_ptr result = error_node();
 
-               // (c0) + (c1 + v) --> (cov) (c0 + c1) + v
-               if ((details::e_add == o0) && (details::e_add == o1))
+               if (expr_gen.strength_reduction_enabled())
                {
-                  return expr_gen.node_allocator_->
-                            template allocate_cr<typename details::cov_node<Type,details::add_op<Type> > >(c0 + c1,v);
+                  // (c0) + (c1 + v) --> (cov) (c0 + c1) + v
+                  if ((details::e_add == o0) && (details::e_add == o1))
+                  {
+                     return expr_gen.node_allocator_->
+                               template allocate_cr<typename details::cov_node<Type,details::add_op<Type> > >(c0 + c1,v);
+                  }
+                  // (c0) + (c1 - v) --> (cov) (c0 + c1) - v
+                  else if ((details::e_add == o0) && (details::e_sub == o1))
+                  {
+                     return expr_gen.node_allocator_->
+                               template allocate_cr<typename details::cov_node<Type,details::sub_op<Type> > >(c0 + c1,v);
+                  }
+                  // (c0) - (c1 + v) --> (cov) (c0 - c1) - v
+                  else if ((details::e_sub == o0) && (details::e_add == o1))
+                  {
+                     return expr_gen.node_allocator_->
+                               template allocate_cr<typename details::cov_node<Type,details::sub_op<Type> > >(c0 - c1,v);
+                  }
+                  // (c0) - (c1 - v) --> (cov) (c0 - c1) + v
+                  else if ((details::e_sub == o0) && (details::e_sub == o1))
+                  {
+                     return expr_gen.node_allocator_->
+                               template allocate_cr<typename details::cov_node<Type,details::add_op<Type> > >(c0 - c1,v);
+                  }
+                  // (c0) * (c1 * v) --> (cov) (c0 * c1) * v
+                  else if ((details::e_mul == o0) && (details::e_mul == o1))
+                  {
+                     return expr_gen.node_allocator_->
+                               template allocate_cr<typename details::cov_node<Type,details::mul_op<Type> > >(c0 * c1,v);
+                  }
+                  // (c0) * (c1 / v) --> (cov) (c0 * c1) / v
+                  else if ((details::e_mul == o0) && (details::e_div == o1))
+                  {
+                     return expr_gen.node_allocator_->
+                               template allocate_cr<typename details::cov_node<Type,details::div_op<Type> > >(c0 * c1,v);
+                  }
+                  // (c0) / (c1 * v) --> (cov) (c0 / c1) / v
+                  else if ((details::e_div == o0) && (details::e_mul == o1))
+                  {
+                     return expr_gen.node_allocator_->
+                               template allocate_cr<typename details::cov_node<Type,details::div_op<Type> > >(c0 / c1,v);
+                  }
+                  // (c0) / (c1 / v) --> (cov) (c0 / c1) * v
+                  else if ((details::e_div == o0) && (details::e_div == o1))
+                  {
+                     return expr_gen.node_allocator_->
+                               template allocate_cr<typename details::cov_node<Type,details::mul_op<Type> > >(c0 / c1,v);
+                  }
                }
-               // (c0) + (c1 - v) --> (cov) (c0 + c1) - v
-               else if ((details::e_add == o0) && (details::e_sub == o1))
-               {
-                  return expr_gen.node_allocator_->
-                            template allocate_cr<typename details::cov_node<Type,details::sub_op<Type> > >(c0 + c1,v);
-               }
-               // (c0) - (c1 + v) --> (cov) (c0 - c1) - v
-               else if ((details::e_sub == o0) && (details::e_add == o1))
-               {
-                  return expr_gen.node_allocator_->
-                            template allocate_cr<typename details::cov_node<Type,details::sub_op<Type> > >(c0 - c1,v);
-               }
-               // (c0) - (c1 - v) --> (cov) (c0 - c1) + v
-               else if ((details::e_sub == o0) && (details::e_sub == o1))
-               {
-                  return expr_gen.node_allocator_->
-                            template allocate_cr<typename details::cov_node<Type,details::add_op<Type> > >(c0 - c1,v);
-               }
-               // (c0) * (c1 * v) --> (cov) (c0 * c1) * v
-               else if ((details::e_mul == o0) && (details::e_mul == o1))
-               {
-                  return expr_gen.node_allocator_->
-                            template allocate_cr<typename details::cov_node<Type,details::mul_op<Type> > >(c0 * c1,v);
-               }
-               // (c0) * (c1 / v) --> (cov) (c0 * c1) / v
-               else if ((details::e_mul == o0) && (details::e_div == o1))
-               {
-                  return expr_gen.node_allocator_->
-                            template allocate_cr<typename details::cov_node<Type,details::div_op<Type> > >(c0 * c1,v);
-               }
-               // (c0) / (c1 * v) --> (cov) (c0 / c1) / v
-               else if ((details::e_div == o0) && (details::e_mul == o1))
-               {
-                  return expr_gen.node_allocator_->
-                            template allocate_cr<typename details::cov_node<Type,details::div_op<Type> > >(c0 / c1,v);
-               }
-               // (c0) / (c1 / v) --> (cov) (c0 / c1) * v
-               else if ((details::e_div == o0) && (details::e_div == o1))
-               {
-                  return expr_gen.node_allocator_->
-                            template allocate_cr<typename details::cov_node<Type,details::mul_op<Type> > >(c0 / c1,v);
-               }
-               else if (synthesize_sf3ext_expression::template compile<ctype,ctype,vtype>(expr_gen,id(expr_gen,o0,o1),c0,c1,v,result))
+
+               if (synthesize_sf3ext_expression::template compile<ctype,ctype,vtype>(expr_gen,id(expr_gen,o0,o1),c0,c1,v,result))
                   return result;
                else if (!expr_gen.valid_operator(o0,f0))
                   return error_node();
@@ -14936,55 +15071,59 @@ namespace exprtk
                details::free_node(*(expr_gen.node_allocator_),branch[1]);
                expression_node_ptr result = error_node();
 
-               // (v + c0) + c1 --> (voc) v + (c0 + c1)
-               if ((details::e_add == o0) && (details::e_add == o1))
+               if (expr_gen.strength_reduction_enabled())
                {
-                  return expr_gen.node_allocator_->
-                            template allocate_rc<typename details::voc_node<Type,details::add_op<Type> > >(v,c0 + c1);
+                  // (v + c0) + c1 --> (voc) v + (c0 + c1)
+                  if ((details::e_add == o0) && (details::e_add == o1))
+                  {
+                     return expr_gen.node_allocator_->
+                               template allocate_rc<typename details::voc_node<Type,details::add_op<Type> > >(v,c0 + c1);
+                  }
+                  // (v + c0) - c1 --> (voc) v + (c0 - c1)
+                  else if ((details::e_add == o0) && (details::e_sub == o1))
+                  {
+                     return expr_gen.node_allocator_->
+                               template allocate_rc<typename details::voc_node<Type,details::add_op<Type> > >(v,c0 - c1);
+                  }
+                  // (v - c0) + c1 --> (voc) v - (c0 + c1)
+                  else if ((details::e_sub == o0) && (details::e_add == o1))
+                  {
+                     return expr_gen.node_allocator_->
+                               template allocate_rc<typename details::voc_node<Type,details::add_op<Type> > >(v,c1 - c0);
+                  }
+                  // (v - c0) - c1 --> (voc) v - (c0 + c1)
+                  else if ((details::e_sub == o0) && (details::e_sub == o1))
+                  {
+                     return expr_gen.node_allocator_->
+                               template allocate_rc<typename details::voc_node<Type,details::sub_op<Type> > >(v,c0 + c1);
+                  }
+                  // (v * c0) * c1 --> (voc) v * (c0 * c1)
+                  else if ((details::e_mul == o0) && (details::e_mul == o1))
+                  {
+                     return expr_gen.node_allocator_->
+                               template allocate_rc<typename details::voc_node<Type,details::mul_op<Type> > >(v,c0 * c1);
+                  }
+                  // (v * c0) / c1 --> (voc) v * (c0 / c1)
+                  else if ((details::e_mul == o0) && (details::e_div == o1))
+                  {
+                     return expr_gen.node_allocator_->
+                               template allocate_rc<typename details::voc_node<Type,details::mul_op<Type> > >(v,c0 / c1);
+                  }
+                  // (v / c0) * c1 --> (voc) v * (c1 / c0)
+                  else if ((details::e_div == o0) && (details::e_mul == o1))
+                  {
+                     return expr_gen.node_allocator_->
+                               template allocate_rc<typename details::voc_node<Type,details::mul_op<Type> > >(v,c1 / c0);
+                  }
+                  // (v / c0) / c1 --> (voc) v / (c0 * c1)
+                  else if ((details::e_div == o0) && (details::e_div == o1))
+                  {
+                     return expr_gen.node_allocator_->
+                               template allocate_rc<typename details::voc_node<Type,details::div_op<Type> > >(v,c0 * c1);
+                  }
                }
-               // (v + c0) - c1 --> (voc) v + (c0 - c1)
-               else if ((details::e_add == o0) && (details::e_sub == o1))
-               {
-                  return expr_gen.node_allocator_->
-                            template allocate_rc<typename details::voc_node<Type,details::add_op<Type> > >(v,c0 - c1);
-               }
-               // (v - c0) + c1 --> (voc) v - (c0 + c1)
-               else if ((details::e_sub == o0) && (details::e_add == o1))
-               {
-                  return expr_gen.node_allocator_->
-                            template allocate_rc<typename details::voc_node<Type,details::add_op<Type> > >(v,c1 - c0);
-               }
-               // (v - c0) - c1 --> (voc) v - (c0 + c1)
-               else if ((details::e_sub == o0) && (details::e_sub == o1))
-               {
-                  return expr_gen.node_allocator_->
-                            template allocate_rc<typename details::voc_node<Type,details::sub_op<Type> > >(v,c0 + c1);
-               }
-               // (v * c0) * c1 --> (voc) v * (c0 * c1)
-               else if ((details::e_mul == o0) && (details::e_mul == o1))
-               {
-                  return expr_gen.node_allocator_->
-                            template allocate_rc<typename details::voc_node<Type,details::mul_op<Type> > >(v,c0 * c1);
-               }
-               // (v * c0) / c1 --> (voc) v * (c0 / c1)
-               else if ((details::e_mul == o0) && (details::e_div == o1))
-               {
-                  return expr_gen.node_allocator_->
-                            template allocate_rc<typename details::voc_node<Type,details::mul_op<Type> > >(v,c0 / c1);
-               }
-               // (v / c0) * c1 --> (voc) v * (c1 / c0)
-               else if ((details::e_div == o0) && (details::e_mul == o1))
-               {
-                  return expr_gen.node_allocator_->
-                            template allocate_rc<typename details::voc_node<Type,details::mul_op<Type> > >(v,c1 / c0);
-               }
-               // (v / c0) / c1 --> (voc) v / (c0 * c1)
-               else if ((details::e_div == o0) && (details::e_div == o1))
-               {
-                  return expr_gen.node_allocator_->
-                            template allocate_rc<typename details::voc_node<Type,details::div_op<Type> > >(v,c0 * c1);
-               }
-               else if (synthesize_sf3ext_expression::template compile<vtype,ctype,ctype>(expr_gen,id(expr_gen,o0,o1),v,c0,c1,result))
+
+               if (synthesize_sf3ext_expression::template compile<vtype,ctype,ctype>(expr_gen,id(expr_gen,o0,o1),v,c0,c1,result))
                   return result;
                else if (!expr_gen.valid_operator(o0,f0))
                   return error_node();
@@ -15040,6 +15179,27 @@ namespace exprtk
                details::free_node(*(expr_gen.node_allocator_),branch[0]);
                details::free_node(*(expr_gen.node_allocator_),branch[1]);
                expression_node_ptr result = error_node();
+
+               if (expr_gen.strength_reduction_enabled())
+               {
+                  // (v0 / v1) * (v2 / v3) --> (vovovov) (v0 * v2) / (v1 * v3)
+                  if ((details::e_div == o0) && (details::e_mul == o1) && (details::e_div == o2))
+                  {
+                     const bool synthesis_result =
+                        synthesize_sf4ext_expression::
+                           template compile<vtype,vtype,vtype,vtype>(expr_gen,"(t*t)/(t*t)",v0,v2,v1,v3,result);
+                     return (synthesis_result) ? result : error_node();
+                  }
+                  // (v0 / v1) / (v2 / v3) --> (vovovov) (v0 * v3) / (v1 * v2)
+                  if ((details::e_div == o0) && (details::e_div == o1) && (details::e_div == o2))
+                  {
+                     const bool synthesis_result =
+                        synthesize_sf4ext_expression::
+                           template compile<vtype,vtype,vtype,vtype>(expr_gen,"(t*t)/(t*t)",v0,v3,v1,v2,result);
+                     return (synthesis_result) ? result : error_node();
+                  }
+               }
+
                if (synthesize_sf4ext_expression::template compile<T0,T1,T2,T3>(expr_gen,id(expr_gen,o0,o1,o2),v0,v1,v2,v3,result))
                   return result;
                else if (!expr_gen.valid_operator(o0,f0))
@@ -15275,71 +15435,94 @@ namespace exprtk
                details::free_node(*(expr_gen.node_allocator_),branch[1]);
                expression_node_ptr result = error_node();
 
-               // (c0 + v0) + (c1 + v1) --> (covov) (c0 + c1) + v0 + v1
-               if ((details::e_add == o0) && (details::e_add == o1) && (details::e_add == o2))
+               if (expr_gen.strength_reduction_enabled())
                {
-                  const bool synthesis_result =
-                     synthesize_sf3ext_expression::
-                        template compile<ctype,vtype,vtype>(expr_gen,"(t+t)+t",(c0 + c1),v0,v1,result);
-                  return (synthesis_result) ? result : error_node();
+                  // (c0 + v0) + (c1 + v1) --> (covov) (c0 + c1) + v0 + v1
+                  if ((details::e_add == o0) && (details::e_add == o1) && (details::e_add == o2))
+                  {
+                     const bool synthesis_result =
+                        synthesize_sf3ext_expression::
+                           template compile<ctype,vtype,vtype>(expr_gen,"(t+t)+t",(c0 + c1),v0,v1,result);
+                     return (synthesis_result) ? result : error_node();
+                  }
+                  // (c0 + v0) - (c1 + v1) --> (covov) (c0 - c1) + v0 - v1
+                  else if ((details::e_add == o0) && (details::e_sub == o1) && (details::e_add == o2))
+                  {
+                     const bool synthesis_result =
+                        synthesize_sf3ext_expression::
+                           template compile<ctype,vtype,vtype>(expr_gen,"(t+t)-t",(c0 - c1),v0,v1,result);
+                     return (synthesis_result) ? result : error_node();
+                  }
+                  // (c0 - v0) - (c1 - v1) --> (covov) (c0 - c1) - v0 + v1
+                  else if ((details::e_sub == o0) && (details::e_sub == o1) && (details::e_sub == o2))
+                  {
+                     const bool synthesis_result =
+                        synthesize_sf3ext_expression::
+                           template compile<ctype,vtype,vtype>(expr_gen,"(t-t)+t",(c0 - c1),v0,v1,result);
+                     return (synthesis_result) ? result : error_node();
+                  }
+                  // (c0 * v0) * (c1 * v1) --> (covov) (c0 * c1) * v0 * v1
+                  else if ((details::e_mul == o0) && (details::e_mul == o1) && (details::e_mul == o2))
+                  {
+                     const bool synthesis_result =
+                        synthesize_sf3ext_expression::
+                           template compile<ctype,vtype,vtype>(expr_gen,"(t*t)*t",(c0 * c1),v0,v1,result);
+                     return (synthesis_result) ? result : error_node();
+                  }
+                  // (c0 * v0) / (c1 * v1) --> (covov) (c0 / c1) * (v0 / v1)
+                  else if ((details::e_mul == o0) && (details::e_div == o1) && (details::e_mul == o2))
+                  {
+                     const bool synthesis_result =
+                        synthesize_sf3ext_expression::
+                           template compile<ctype,vtype,vtype>(expr_gen,"(t*t)/t",(c0 / c1),v0,v1,result);
+                     return (synthesis_result) ? result : error_node();
+                  }
+                  // (c0 / v0) * (c1 / v1) --> (covov) (c0 * c1) / (v0 * v1)
+                  else if ((details::e_div == o0) && (details::e_mul == o1) && (details::e_div == o2))
+                  {
+                     const bool synthesis_result =
+                        synthesize_sf3ext_expression::
+                           template compile<ctype,vtype,vtype>(expr_gen,"t/(t*t)",(c0 * c1),v0,v1,result);
+                     return (synthesis_result) ? result : error_node();
+                  }
+                  // (c0 * v0) / (c1 / v1) --> (covov) (c0 / c1) * (v0 * v1)
+                  else if ((details::e_mul == o0) && (details::e_div == o1) && (details::e_div == o2))
+                  {
+                     const bool synthesis_result =
+                        synthesize_sf3ext_expression::
+                           template compile<ctype,vtype,vtype>(expr_gen,"t*(t*t)",(c0 / c1),v0,v1,result);
+                     return (synthesis_result) ? result : error_node();
+                  }
+                  // (c0 / v0) / (c1 * v1) --> (covov) (c0 / c1) / (v0 * v1)
+                  else if ((details::e_div == o0) && (details::e_div == o1) && (details::e_mul == o2))
+                  {
+                     const bool synthesis_result =
+                        synthesize_sf3ext_expression::
+                           template compile<ctype,vtype,vtype>(expr_gen,"t/(t*t)",(c0 / c1),v0,v1,result);
+                     return (synthesis_result) ? result : error_node();
+                  }
+                  // (c * v0) +/- (c * v1) --> (covov) c * (v0 +/- v1)
+                  else if (
+                            (details::e_mul == o0) && (details::e_mul == o2) && (c0 == c1) &&
+                            ((details::e_add == o1) || (details::e_sub == o1))
+                          )
+                  {
+                     std::string specfunc;
+                     switch (o1)
+                     {
+                        case details::e_add : specfunc = "t*(t+t)"; break;
+                        case details::e_sub : specfunc = "t*(t-t)"; break;
+                        default             : return error_node();
+                     }
+
+                     const bool synthesis_result =
+                        synthesize_sf3ext_expression::
+                           template compile<ctype,vtype,vtype>(expr_gen,specfunc,c0,v0,v1,result);
+                     return (synthesis_result) ? result : error_node();
+                  }
                }
-               // (c0 + v0) - (c1 + v1) --> (covov) (c0 - c1) + v0 - v1
-               else if ((details::e_add == o0) && (details::e_sub == o1) && (details::e_add == o2))
-               {
-                  const bool synthesis_result =
-                     synthesize_sf3ext_expression::
-                        template compile<ctype,vtype,vtype>(expr_gen,"(t+t)-t",(c0 - c1),v0,v1,result);
-                  return (synthesis_result) ? result : error_node();
-               }
-               // (c0 - v0) - (c1 - v1) --> (covov) (c0 - c1) - v0 + v1
-               else if ((details::e_sub == o0) && (details::e_sub == o1) && (details::e_sub == o2))
-               {
-                  const bool synthesis_result =
-                     synthesize_sf3ext_expression::
-                        template compile<ctype,vtype,vtype>(expr_gen,"(t-t)+t",(c0 - c1),v0,v1,result);
-                  return (synthesis_result) ? result : error_node();
-               }
-               // (c0 * v0) * (c1 * v1) --> (covov) (c0 * c1) * v0 * v1
-               else if ((details::e_mul == o0) && (details::e_mul == o1) && (details::e_mul == o2))
-               {
-                  const bool synthesis_result =
-                     synthesize_sf3ext_expression::
-                        template compile<ctype,vtype,vtype>(expr_gen,"(t*t)*t",(c0 * c1),v0,v1,result);
-                  return (synthesis_result) ? result : error_node();
-               }
-               // (c0 * v0) / (c1 * v1) --> (covov) (c0 / c1) * (v0 / v1)
-               else if ((details::e_mul == o0) && (details::e_div == o1) && (details::e_mul == o2))
-               {
-                  const bool synthesis_result =
-                     synthesize_sf3ext_expression::
-                        template compile<ctype,vtype,vtype>(expr_gen,"(t*t)/t",(c0 / c1),v0,v1,result);
-                  return (synthesis_result) ? result : error_node();
-               }
-               // (c0 / v0) * (c1 / v1) --> (covov) (c0 * c1) / (v0 * v1)
-               else if ((details::e_div == o0) && (details::e_mul == o1) && (details::e_div == o2))
-               {
-                  const bool synthesis_result =
-                     synthesize_sf3ext_expression::
-                        template compile<ctype,vtype,vtype>(expr_gen,"t/(t*t)",(c0 * c1),v0,v1,result);
-                  return (synthesis_result) ? result : error_node();
-               }
-               // (c0 * v0) / (c1 / v1) --> (covov) (c0 / c1) * (v0 * v1)
-               else if ((details::e_mul == o0) && (details::e_div == o1) && (details::e_div == o2))
-               {
-                  const bool synthesis_result =
-                     synthesize_sf3ext_expression::
-                        template compile<ctype,vtype,vtype>(expr_gen,"t*(t*t)",(c0 / c1),v0,v1,result);
-                  return (synthesis_result) ? result : error_node();
-               }
-               // (c0 / v0) / (c1 * v1) --> (covov) (c0 / c1) / (v0 * v1)
-               else if ((details::e_div == o0) && (details::e_div == o1) && (details::e_mul == o2))
-               {
-                  const bool synthesis_result =
-                     synthesize_sf3ext_expression::
-                        template compile<ctype,vtype,vtype>(expr_gen,"t/(t*t)",(c0 / c1),v0,v1,result);
-                  return (synthesis_result) ? result : error_node();
-               }
-               else if (synthesize_sf4ext_expression::template compile<T0,T1,T2,T3>(expr_gen,id(expr_gen,o0,o1,o2),c0,v0,c1,v1,result))
+
+               if (synthesize_sf4ext_expression::template compile<T0,T1,T2,T3>(expr_gen,id(expr_gen,o0,o1,o2),c0,v0,c1,v1,result))
                   return result;
                else if (!expr_gen.valid_operator(o0,f0))
                   return error_node();
@@ -15387,71 +15570,94 @@ namespace exprtk
                details::free_node(*(expr_gen.node_allocator_),branch[1]);
                expression_node_ptr result = error_node();
 
-               // (v0 + c0) + (v1 + c1) --> (covov) (c0 + c1) + v0 + v1
-               if ((details::e_add == o0) && (details::e_add == o1) && (details::e_add == o2))
+               if (expr_gen.strength_reduction_enabled())
                {
-                  const bool synthesis_result =
-                     synthesize_sf3ext_expression::
-                        template compile<ctype,vtype,vtype>(expr_gen,"(t+t)+t",(c0 + c1),v0,v1,result);
-                  return (synthesis_result) ? result : error_node();
+                  // (v0 + c0) + (v1 + c1) --> (covov) (c0 + c1) + v0 + v1
+                  if ((details::e_add == o0) && (details::e_add == o1) && (details::e_add == o2))
+                  {
+                     const bool synthesis_result =
+                        synthesize_sf3ext_expression::
+                           template compile<ctype,vtype,vtype>(expr_gen,"(t+t)+t",(c0 + c1),v0,v1,result);
+                     return (synthesis_result) ? result : error_node();
+                  }
+                  // (v0 + c0) - (v1 + c1) --> (covov) (c0 - c1) + v0 - v1
+                  else if ((details::e_add == o0) && (details::e_sub == o1) && (details::e_add == o2))
+                  {
+                     const bool synthesis_result =
+                        synthesize_sf3ext_expression::
+                           template compile<ctype,vtype,vtype>(expr_gen,"(t+t)-t",(c0 - c1),v0,v1,result);
+                     return (synthesis_result) ? result : error_node();
+                  }
+                  // (v0 - c0) - (v1 - c1) --> (covov) (c1 - c0) + v0 - v1
+                  else if ((details::e_sub == o0) && (details::e_sub == o1) && (details::e_sub == o2))
+                  {
+                     const bool synthesis_result =
+                        synthesize_sf3ext_expression::
+                           template compile<ctype,vtype,vtype>(expr_gen,"(t+t)-t",(c1 - c0),v0,v1,result);
+                     return (synthesis_result) ? result : error_node();
+                  }
+                  // (v0 * c0) * (v1 * c1) --> (covov) (c0 * c1) * v0 * v1
+                  else if ((details::e_mul == o0) && (details::e_mul == o1) && (details::e_mul == o2))
+                  {
+                     const bool synthesis_result =
+                        synthesize_sf3ext_expression::
+                           template compile<ctype,vtype,vtype>(expr_gen,"(t*t)*t",(c0 * c1),v0,v1,result);
+                     return (synthesis_result) ? result : error_node();
+                  }
+                  // (v0 * c0) / (v1 * c1) --> (covov) (c0 / c1) * (v0 / v1)
+                  else if ((details::e_mul == o0) && (details::e_div == o1) && (details::e_mul == o2))
+                  {
+                     const bool synthesis_result =
+                        synthesize_sf3ext_expression::
+                           template compile<ctype,vtype,vtype>(expr_gen,"(t*t)/t",(c0 / c1),v0,v1,result);
+                     return (synthesis_result) ? result : error_node();
+                  }
+                  // (v0 / c0) * (v1 / c1) --> (covov) (1 / (c0 * c1)) * v0 * v1
+                  else if ((details::e_div == o0) && (details::e_mul == o1) && (details::e_div == o2))
+                  {
+                     const bool synthesis_result =
+                        synthesize_sf3ext_expression::
+                           template compile<ctype,vtype,vtype>(expr_gen,"(t*t)*t",Type(1) / (c0 * c1),v0,v1,result);
+                     return (synthesis_result) ? result : error_node();
+                  }
+                  // (v0 * c0) / (v1 / c1) --> (covov) (c0 * c1) * (v0 / v1)
+                  else if ((details::e_mul == o0) && (details::e_div == o1) && (details::e_mul == o2))
+                  {
+                     const bool synthesis_result =
+                        synthesize_sf3ext_expression::
+                           template compile<ctype,vtype,vtype>(expr_gen,"t*(t/t)",(c0 * c1),v0,v1,result);
+                     return (synthesis_result) ? result : error_node();
+                  }
+                  // (v0 / c0) / (v1 * c1) --> (covov) (1 / (c0 * c1)) * v0 / v1
+                  else if ((details::e_div == o0) && (details::e_div == o1) && (details::e_mul == o2))
+                  {
+                     const bool synthesis_result =
+                        synthesize_sf3ext_expression::
+                           template compile<ctype,vtype,vtype>(expr_gen,"t*(t/t)",Type(1) / (c0 * c1),v0,v1,result);
+                     return (synthesis_result) ? result : error_node();
+                  }
+                  // (v0 * c) +/- (v1 * c) --> (covov) c * (v0 +/- v1)
+                  else if (
+                            (details::e_mul == o0) && (details::e_mul == o2) && (c0 == c1) &&
+                            ((details::e_add == o1) || (details::e_sub == o1))
+                          )
+                  {
+                     std::string specfunc;
+                     switch (o1)
+                     {
+                        case details::e_add : specfunc = "t*(t+t)"; break;
+                        case details::e_sub : specfunc = "t*(t-t)"; break;
+                        default             : return error_node();
+                     }
+
+                     const bool synthesis_result =
+                        synthesize_sf3ext_expression::
+                           template compile<ctype,vtype,vtype>(expr_gen,specfunc,c0,v0,v1,result);
+                     return (synthesis_result) ? result : error_node();
+                  }
                }
-               // (v0 + c0) - (v1 + c1) --> (covov) (c0 - c1) + v0 - v1
-               else if ((details::e_add == o0) && (details::e_sub == o1) && (details::e_add == o2))
-               {
-                  const bool synthesis_result =
-                     synthesize_sf3ext_expression::
-                        template compile<ctype,vtype,vtype>(expr_gen,"(t+t)-t",(c0 - c1),v0,v1,result);
-                  return (synthesis_result) ? result : error_node();
-               }
-               // (v0 - c0) - (v1 - c1) --> (covov) (c1 - c0) + v0 - v1
-               else if ((details::e_sub == o0) && (details::e_sub == o1) && (details::e_sub == o2))
-               {
-                  const bool synthesis_result =
-                     synthesize_sf3ext_expression::
-                        template compile<ctype,vtype,vtype>(expr_gen,"(t+t)-t",(c1 - c0),v0,v1,result);
-                  return (synthesis_result) ? result : error_node();
-               }
-               // (v0 * c0) * (v1 * c1) --> (covov) (c0 * c1) * v0 * v1
-               else if ((details::e_mul == o0) && (details::e_mul == o1) && (details::e_mul == o2))
-               {
-                  const bool synthesis_result =
-                     synthesize_sf3ext_expression::
-                        template compile<ctype,vtype,vtype>(expr_gen,"(t*t)*t",(c0 * c1),v0,v1,result);
-                  return (synthesis_result) ? result : error_node();
-               }
-               // (v0 * c0) / (v1 * c1) --> (covov) (c0 / c1) * (v0 / v1)
-               else if ((details::e_mul == o0) && (details::e_div == o1) && (details::e_mul == o2))
-               {
-                  const bool synthesis_result =
-                     synthesize_sf3ext_expression::
-                        template compile<ctype,vtype,vtype>(expr_gen,"(t*t)/t",(c0 / c1),v0,v1,result);
-                  return (synthesis_result) ? result : error_node();
-               }
-               // (v0 / c0) * (v1 / c1) --> (covov) (1 / (c0 * c1)) * v0 * v1
-               else if ((details::e_div == o0) && (details::e_mul == o1) && (details::e_div == o2))
-               {
-                  const bool synthesis_result =
-                     synthesize_sf3ext_expression::
-                        template compile<ctype,vtype,vtype>(expr_gen,"(t*t)*t",Type(1) / (c0 * c1),v0,v1,result);
-                  return (synthesis_result) ? result : error_node();
-               }
-               // (v0 * c0) / (v1 / c1) --> (covov) (c0 * c1) * (v0 / v1)
-               else if ((details::e_mul == o0) && (details::e_div == o1) && (details::e_mul == o2))
-               {
-                  const bool synthesis_result =
-                     synthesize_sf3ext_expression::
-                        template compile<ctype,vtype,vtype>(expr_gen,"t*(t/t)",(c0 * c1),v0,v1,result);
-                  return (synthesis_result) ? result : error_node();
-               }
-               // (v0 / c0) / (v1 * c1) --> (covov) (1 / (c0 * c1)) * v0 / v1
-               else if ((details::e_div == o0) && (details::e_div == o1) && (details::e_mul == o2))
-               {
-                  const bool synthesis_result =
-                     synthesize_sf3ext_expression::
-                        template compile<ctype,vtype,vtype>(expr_gen,"t*(t/t)",Type(1) / (c0 * c1),v0,v1,result);
-                  return (synthesis_result) ? result : error_node();
-               }
-               else if (synthesize_sf4ext_expression::template compile<T0,T1,T2,T3>(expr_gen,id(expr_gen,o0,o1,o2),v0,c0,v1,c1,result))
+
+               if (synthesize_sf4ext_expression::template compile<T0,T1,T2,T3>(expr_gen,id(expr_gen,o0,o1,o2),v0,c0,v1,c1,result))
                   return result;
                else if (!expr_gen.valid_operator(o0,f0))
                   return error_node();
@@ -15499,71 +15705,94 @@ namespace exprtk
                details::free_node(*(expr_gen.node_allocator_),branch[1]);
                expression_node_ptr result = error_node();
 
-               // (c0 + v0) + (v1 + c1) --> (covov) (c0 + c1) + v0 + v1
-               if ((details::e_add == o0) && (details::e_add == o1) && (details::e_add == o2))
+               if (expr_gen.strength_reduction_enabled())
                {
-                  const bool synthesis_result =
-                     synthesize_sf3ext_expression::
-                        template compile<ctype,vtype,vtype>(expr_gen,"(t+t)+t",(c0 + c1),v0,v1,result);
-                  return (synthesis_result) ? result : error_node();
+                  // (c0 + v0) + (v1 + c1) --> (covov) (c0 + c1) + v0 + v1
+                  if ((details::e_add == o0) && (details::e_add == o1) && (details::e_add == o2))
+                  {
+                     const bool synthesis_result =
+                        synthesize_sf3ext_expression::
+                           template compile<ctype,vtype,vtype>(expr_gen,"(t+t)+t",(c0 + c1),v0,v1,result);
+                     return (synthesis_result) ? result : error_node();
+                  }
+                  // (c0 + v0) - (v1 + c1) --> (covov) (c0 - c1) + v0 - v1
+                  else if ((details::e_add == o0) && (details::e_sub == o1) && (details::e_add == o2))
+                  {
+                     const bool synthesis_result =
+                        synthesize_sf3ext_expression::
+                           template compile<ctype,vtype,vtype>(expr_gen,"(t+t)-t",(c0 - c1),v0,v1,result);
+                     return (synthesis_result) ? result : error_node();
+                  }
+                  // (c0 - v0) - (v1 - c1) --> (covov) (c0 + c1) - v0 - v1
+                  else if ((details::e_sub == o0) && (details::e_sub == o1) && (details::e_sub == o2))
+                  {
+                     const bool synthesis_result =
+                        synthesize_sf3ext_expression::
+                           template compile<ctype,vtype,vtype>(expr_gen,"t-(t+t)",(c0 + c1),v0,v1,result);
+                     return (synthesis_result) ? result : error_node();
+                  }
+                  // (c0 * v0) * (v1 * c1) --> (covov) (c0 * c1) * v0 * v1
+                  else if ((details::e_mul == o0) && (details::e_mul == o1) && (details::e_mul == o2))
+                  {
+                     const bool synthesis_result =
+                        synthesize_sf3ext_expression::
+                           template compile<ctype,vtype,vtype>(expr_gen,"(t*t)*t",(c0 * c1),v0,v1,result);
+                     return (synthesis_result) ? result : error_node();
+                  }
+                  // (c0 * v0) / (v1 * c1) --> (covov) (c0 / c1) * (v0 / v1)
+                  else if ((details::e_mul == o0) && (details::e_div == o1) && (details::e_mul == o2))
+                  {
+                     const bool synthesis_result =
+                        synthesize_sf3ext_expression::
+                           template compile<ctype,vtype,vtype>(expr_gen,"(t*t)/t",(c0 / c1),v0,v1,result);
+                     return (synthesis_result) ? result : error_node();
+                  }
+                  // (c0 / v0) * (v1 / c1) --> (covov) (c0 / c1) * (v1 / v0)
+                  else if ((details::e_div == o0) && (details::e_mul == o1) && (details::e_div == o2))
+                  {
+                     const bool synthesis_result =
+                        synthesize_sf3ext_expression::
+                           template compile<ctype,vtype,vtype>(expr_gen,"t*(t/t)",(c0 / c1),v1,v0,result);
+                     return (synthesis_result) ? result : error_node();
+                  }
+                  // (c0 * v0) / (v1 / c1) --> (covov) (c0 * c1) * (v0 / v1)
+                  else if ((details::e_mul == o0) && (details::e_div == o1) && (details::e_div == o2))
+                  {
+                     const bool synthesis_result =
+                        synthesize_sf3ext_expression::
+                           template compile<ctype,vtype,vtype>(expr_gen,"(t*t)/t",(c0 * c1),v0,v1,result);
+                     return (synthesis_result) ? result : error_node();
+                  }
+                  // (c0 / v0) / (v1 * c1) --> (covov) (c0 / c1) / (v0 * v1)
+                  else if ((details::e_div == o0) && (details::e_div == o1) && (details::e_mul == o2))
+                  {
+                     const bool synthesis_result =
+                        synthesize_sf3ext_expression::
+                           template compile<ctype,vtype,vtype>(expr_gen,"t/(t*t)",(c0 / c1),v0,v1,result);
+                     return (synthesis_result) ? result : error_node();
+                  }
+                  // (c * v0) +/- (v1 * c) --> (covov) c * (v0 +/- v1)
+                  else if (
+                            (details::e_mul == o0) && (details::e_mul == o2) && (c0 == c1) &&
+                            ((details::e_add == o1) || (details::e_sub == o1))
+                          )
+                  {
+                     std::string specfunc;
+                     switch (o1)
+                     {
+                        case details::e_add : specfunc = "t*(t+t)"; break;
+                        case details::e_sub : specfunc = "t*(t-t)"; break;
+                        default             : return error_node();
+                     }
+
+                     const bool synthesis_result =
+                        synthesize_sf3ext_expression::
+                           template compile<ctype,vtype,vtype>(expr_gen,specfunc,c0,v0,v1,result);
+                     return (synthesis_result) ? result : error_node();
+                  }
                }
-               // (c0 + v0) - (v1 + c1) --> (covov) (c0 - c1) + v0 - v1
-               else if ((details::e_add == o0) && (details::e_sub == o1) && (details::e_add == o2))
-               {
-                  const bool synthesis_result =
-                     synthesize_sf3ext_expression::
-                        template compile<ctype,vtype,vtype>(expr_gen,"(t+t)-t",(c0 - c1),v0,v1,result);
-                  return (synthesis_result) ? result : error_node();
-               }
-               // (c0 - v0) - (v1 - c1) --> (covov) (c0 + c1) - v0 - v1
-               else if ((details::e_sub == o0) && (details::e_sub == o1) && (details::e_sub == o2))
-               {
-                  const bool synthesis_result =
-                     synthesize_sf3ext_expression::
-                        template compile<ctype,vtype,vtype>(expr_gen,"t-(t+t)",(c0 + c1),v0,v1,result);
-                  return (synthesis_result) ? result : error_node();
-               }
-               // (c0 * v0) * (v1 * c1) --> (covov) (c0 * c1) * v0 * v1
-               else if ((details::e_mul == o0) && (details::e_mul == o1) && (details::e_mul == o2))
-               {
-                  const bool synthesis_result =
-                     synthesize_sf3ext_expression::
-                        template compile<ctype,vtype,vtype>(expr_gen,"(t*t)*t",(c0 * c1),v0,v1,result);
-                  return (synthesis_result) ? result : error_node();
-               }
-               // (c0 * v0) / (v1 * c1) --> (covov) (c0 / c1) * (v0 / v1)
-               else if ((details::e_mul == o0) && (details::e_div == o1) && (details::e_mul == o2))
-               {
-                  const bool synthesis_result =
-                     synthesize_sf3ext_expression::
-                        template compile<ctype,vtype,vtype>(expr_gen,"(t*t)/t",(c0 / c1),v0,v1,result);
-                  return (synthesis_result) ? result : error_node();
-               }
-               // (c0 / v0) * (v1 / c1) --> (covov) (c0 / c1) * (v1 / v0)
-               else if ((details::e_div == o0) && (details::e_mul == o1) && (details::e_div == o2))
-               {
-                  const bool synthesis_result =
-                     synthesize_sf3ext_expression::
-                        template compile<ctype,vtype,vtype>(expr_gen,"t*(t/t)",(c0 / c1),v1,v0,result);
-                  return (synthesis_result) ? result : error_node();
-               }
-               // (c0 * v0) / (v1 / c1) --> (covov) (c0 * c1) * (v0 / v1)
-               else if ((details::e_mul == o0) && (details::e_div == o1) && (details::e_div == o2))
-               {
-                  const bool synthesis_result =
-                     synthesize_sf3ext_expression::
-                        template compile<ctype,vtype,vtype>(expr_gen,"(t*t)/t",(c0 * c1),v0,v1,result);
-                  return (synthesis_result) ? result : error_node();
-               }
-               // (c0 / v0) / (v1 * c1) --> (covov) (c0 / c1) / (v0 * v1)
-               else if ((details::e_div == o0) && (details::e_div == o1) && (details::e_mul == o2))
-               {
-                  const bool synthesis_result =
-                     synthesize_sf3ext_expression::
-                        template compile<ctype,vtype,vtype>(expr_gen,"t/(t*t)",(c0 / c1),v0,v1,result);
-                  return (synthesis_result) ? result : error_node();
-               }
-               else if (synthesize_sf4ext_expression::template compile<T0,T1,T2,T3>(expr_gen,id(expr_gen,o0,o1,o2),c0,v0,v1,c1,result))
+
+               if (synthesize_sf4ext_expression::template compile<T0,T1,T2,T3>(expr_gen,id(expr_gen,o0,o1,o2),c0,v0,v1,c1,result))
                   return result;
                else if (!expr_gen.valid_operator(o0,f0))
                   return error_node();
@@ -15611,71 +15840,94 @@ namespace exprtk
                details::free_node(*(expr_gen.node_allocator_),branch[1]);
                expression_node_ptr result = error_node();
 
-               // (v0 + c0) + (c1 + v1) --> (covov) (c0 + c1) + v0 + v1
-               if ((details::e_add == o0) && (details::e_add == o1) && (details::e_add == o2))
+               if (expr_gen.strength_reduction_enabled())
                {
-                  const bool synthesis_result =
-                     synthesize_sf3ext_expression::
-                        template compile<ctype,vtype,vtype>(expr_gen,"(t+t)+t",(c0 + c1),v0,v1,result);
-                  return (synthesis_result) ? result : error_node();
+                  // (v0 + c0) + (c1 + v1) --> (covov) (c0 + c1) + v0 + v1
+                  if ((details::e_add == o0) && (details::e_add == o1) && (details::e_add == o2))
+                  {
+                     const bool synthesis_result =
+                        synthesize_sf3ext_expression::
+                           template compile<ctype,vtype,vtype>(expr_gen,"(t+t)+t",(c0 + c1),v0,v1,result);
+                     return (synthesis_result) ? result : error_node();
+                  }
+                  // (v0 + c0) - (c1 + v1) --> (covov) (c0 - c1) + v0 - v1
+                  else if ((details::e_add == o0) && (details::e_sub == o1) && (details::e_add == o2))
+                  {
+                     const bool synthesis_result =
+                        synthesize_sf3ext_expression::
+                           template compile<ctype,vtype,vtype>(expr_gen,"(t+t)-t",(c0 - c1),v0,v1,result);
+                     return (synthesis_result) ? result : error_node();
+                  }
+                  // (v0 - c0) - (c1 - v1) --> (vovoc) v0 + v1 - (c1 + c0)
+                  else if ((details::e_sub == o0) && (details::e_sub == o1) && (details::e_sub == o2))
+                  {
+                     const bool synthesis_result =
+                        synthesize_sf3ext_expression::
+                           template compile<vtype,vtype,ctype>(expr_gen,"(t+t)-t",v0,v1,(c1 + c0),result);
+                     return (synthesis_result) ? result : error_node();
+                  }
+                  // (v0 * c0) * (c1 * v1) --> (covov) (c0 * c1) * v0 * v1
+                  else if ((details::e_mul == o0) && (details::e_mul == o1) && (details::e_mul == o2))
+                  {
+                     const bool synthesis_result =
+                        synthesize_sf3ext_expression::
+                           template compile<ctype,vtype,vtype>(expr_gen,"(t*t)*t",(c0 * c1),v0,v1,result);
+                     return (synthesis_result) ? result : error_node();
+                  }
+                  // (v0 * c0) / (c1 * v1) --> (covov) (c0 / c1) * (v0 * v1)
+                  else if ((details::e_mul == o0) && (details::e_div == o1) && (details::e_mul == o2))
+                  {
+                     const bool synthesis_result =
+                        synthesize_sf3ext_expression::
+                           template compile<ctype,vtype,vtype>(expr_gen,"(t*t)/t",(c0 / c1),v0,v1,result);
+                     return (synthesis_result) ? result : error_node();
+                  }
+                  // (v0 / c0) * (c1 / v1) --> (covov) (c1 / c0) * (v0 / v1)
+                  else if ((details::e_div == o0) && (details::e_mul == o1) && (details::e_div == o2))
+                  {
+                     const bool synthesis_result =
+                        synthesize_sf3ext_expression::
+                           template compile<ctype,vtype,vtype>(expr_gen,"(t*t)/t",(c1 / c0),v0,v1,result);
+                     return (synthesis_result) ? result : error_node();
+                  }
+                  // (v0 * c0) / (c1 / v1) --> (covov) (c0 / c1) * (v0 * v1)
+                  else if ((details::e_mul == o0) && (details::e_mul == o1) && (details::e_mul == o2))
+                  {
+                     const bool synthesis_result =
+                        synthesize_sf3ext_expression::
+                           template compile<ctype,vtype,vtype>(expr_gen,"(t*t)*t",(c0 / c1),v0,v1,result);
+                     return (synthesis_result) ? result : error_node();
+                  }
+                  // (v0 / c0) / (c1 * v1) --> (covov) (1 / (c0 * c1)) * (v0 / v1)
+                  else if ((details::e_div == o0) && (details::e_div == o1) && (details::e_mul == o2))
+                  {
+                     const bool synthesis_result =
+                        synthesize_sf3ext_expression::
+                           template compile<ctype,vtype,vtype>(expr_gen,"(t*t)/t",Type(1) / (c0 * c1),v0,v1,result);
+                     return (synthesis_result) ? result : error_node();
+                  }
+                  // (v0 * c) +/- (c * v1) --> (covov) c * (v0 +/- v1)
+                  else if (
+                            (details::e_mul == o0) && (details::e_mul == o2) && (c0 == c1) &&
+                            ((details::e_add == o1) || (details::e_sub == o1))
+                          )
+                  {
+                     std::string specfunc;
+                     switch (o1)
+                     {
+                        case details::e_add : specfunc = "t*(t+t)"; break;
+                        case details::e_sub : specfunc = "t*(t-t)"; break;
+                        default             : return error_node();
+                     }
+
+                     const bool synthesis_result =
+                        synthesize_sf3ext_expression::
+                           template compile<ctype,vtype,vtype>(expr_gen,specfunc,c0,v0,v1,result);
+                     return (synthesis_result) ? result : error_node();
+                  }
                }
-               // (v0 + c0) - (c1 + v1) --> (covov) (c0 - c1) + v0 - v1
-               else if ((details::e_add == o0) && (details::e_sub == o1) && (details::e_add == o2))
-               {
-                  const bool synthesis_result =
-                     synthesize_sf3ext_expression::
-                        template compile<ctype,vtype,vtype>(expr_gen,"(t+t)-t",(c0 - c1),v0,v1,result);
-                  return (synthesis_result) ? result : error_node();
-               }
-               // (v0 - c0) - (c1 - v1) --> (vovoc) v0 + v1 - (c1 + c0)
-               else if ((details::e_sub == o0) && (details::e_sub == o1) && (details::e_sub == o2))
-               {
-                  const bool synthesis_result =
-                     synthesize_sf3ext_expression::
-                        template compile<vtype,vtype,ctype>(expr_gen,"(t+t)-t",v0,v1,(c1 + c0),result);
-                  return (synthesis_result) ? result : error_node();
-               }
-               // (v0 * c0) * (c1 * v1) --> (covov) (c0 * c1) * v0 * v1
-               else if ((details::e_mul == o0) && (details::e_mul == o1) && (details::e_mul == o2))
-               {
-                  const bool synthesis_result =
-                     synthesize_sf3ext_expression::
-                        template compile<ctype,vtype,vtype>(expr_gen,"(t*t)*t",(c0 * c1),v0,v1,result);
-                  return (synthesis_result) ? result : error_node();
-               }
-               // (v0 * c0) / (c1 * v1) --> (covov) (c0 / c1) * (v0 * v1)
-               else if ((details::e_mul == o0) && (details::e_div == o1) && (details::e_mul == o2))
-               {
-                  const bool synthesis_result =
-                     synthesize_sf3ext_expression::
-                        template compile<ctype,vtype,vtype>(expr_gen,"(t*t)/t",(c0 / c1),v0,v1,result);
-                  return (synthesis_result) ? result : error_node();
-               }
-               // (v0 / c0) * (c1 / v1) --> (covov) (c1 / c0) * (v0 / v1)
-               else if ((details::e_div == o0) && (details::e_mul == o1) && (details::e_div == o2))
-               {
-                  const bool synthesis_result =
-                     synthesize_sf3ext_expression::
-                        template compile<ctype,vtype,vtype>(expr_gen,"(t*t)/t",(c1 / c0),v0,v1,result);
-                  return (synthesis_result) ? result : error_node();
-               }
-               // (v0 * c0) / (c1 / v1) --> (covov) (c0 / c1) * (v0 * v1)
-               else if ((details::e_mul == o0) && (details::e_mul == o1) && (details::e_mul == o2))
-               {
-                  const bool synthesis_result =
-                     synthesize_sf3ext_expression::
-                        template compile<ctype,vtype,vtype>(expr_gen,"(t*t)*t",(c0 / c1),v0,v1,result);
-                  return (synthesis_result) ? result : error_node();
-               }
-               // (v0 / c0) / (c1 * v1) --> (covov) (1 / (c0 * c1)) * (v0 / v1)
-               else if ((details::e_div == o0) && (details::e_div == o1) && (details::e_mul == o2))
-               {
-                  const bool synthesis_result =
-                     synthesize_sf3ext_expression::
-                        template compile<ctype,vtype,vtype>(expr_gen,"(t*t)/t",Type(1) / (c0 * c1),v0,v1,result);
-                  return (synthesis_result) ? result : error_node();
-               }
-               else if (synthesize_sf4ext_expression::template compile<T0,T1,T2,T3>(expr_gen,id(expr_gen,o0,o1,o2),v0,c0,c1,v1,result))
+
+               if (synthesize_sf4ext_expression::template compile<T0,T1,T2,T3>(expr_gen,id(expr_gen,o0,o1,o2),v0,c0,c1,v1,result))
                   return result;
                else if (!expr_gen.valid_operator(o0,f0))
                   return error_node();
@@ -17710,6 +17962,7 @@ namespace exprtk
                return expression_point;
          }
 
+         bool strength_reduction_enabled_;
          details::node_allocator* node_allocator_;
          synthesize_map_t synthesize_map_;
          unary_op_map_t* unary_op_map_;
@@ -17879,6 +18132,7 @@ namespace exprtk
          register_sf4ext(32) register_sf4ext(33) register_sf4ext(34) register_sf4ext(35)
          register_sf4ext(36) register_sf4ext(36) register_sf4ext(38) register_sf4ext(39)
          register_sf4ext(40) register_sf4ext(41) register_sf4ext(42) register_sf4ext(43)
+         register_sf4ext(44) register_sf4ext(45)
          #undef register_sf4ext
       }
 
@@ -17894,7 +18148,7 @@ namespace exprtk
       details::node_allocator node_allocator_;
       symbol_table<T> symbol_table_;
       bool symbol_name_caching_;
-      std::size_t precompile_options_;
+      std::size_t compile_options_;
       std::deque<std::string> symbol_name_cache_;
       std::deque<parser_error::type> error_list_;
       bool resolve_unknown_symbol_;

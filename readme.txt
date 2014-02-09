@@ -49,26 +49,26 @@ operations, functions and processes:
 The  following  is  a  short listing  of  the types  of  mathematical
 expressions that can be parsed and evaluated using the ExprTk library.
 
-(01) sqrt(1 - (x^2))
-(02) clamp(-1, sin(2 * pi * x) + cos(y / 2 * pi), +1)
-(03) sin(2.34e-3 * x)
-(04) if(((x + 2) == 3) and ((y + 5) <= 9),1 + w, 2 / z)
-(05) inrange(-2,m,+2) == if(({-2 <= m} and [m <= +2]),1,0)
-(06) ({1/1}*[1/2]+(1/3))-{1/4}^[1/5]+(1/6)-({1/7}+[1/8]*(1/9))
-(07) a * exp(2.2 / 3.3 * t) + c
-(08) z := x + sin(2.567 * pi / y)
-(09) u := 2.123 * (pi * z) / (w := x + cos(y / pi))
-(10) 2x + 3y + 4z + 5w == 2 * x + 3 * y + 4 * z + 5 * w
-(11) 3(x + y) / 2.9 + 1.234e+12 == 3 * (x + y) / 2.9 + 1.234e+12
-(12) (x + y)3.3 + 1 / 4.5 == (x + y) * 3.3 + 1 / 4.5
-(13) (x + y)z + 1.1 / 2.7 == (x + y) * z + 1.1 / 2.7
-(14) (sin(x / pi) cos(2y) + 1) == (sin(x / pi) * cos(2 * y) + 1)
-(15) 75x^17 + 25.1x^5 - 35x^4 - 15.2x^3 + 40x^2 - 15.3x + 1
-(16) if (avg(x,y) <= x + y, x - y, x * y) + 2.345 * pi / x
-(17) fib_i := fib_i + (x := y + 0 * (fib_i := x + (y := fib_i)))
-(18) while (x <= 100) { x := x + 1 }
-(19) x <= 'abc123' and (y in 'AString') or ('1x2y3z' != z)
-(20) (x like '*123*') or ('a123b' ilike y)
+  (01) sqrt(1 - (x^2))
+  (02) clamp(-1, sin(2 * pi * x) + cos(y / 2 * pi), +1)
+  (03) sin(2.34e-3 * x)
+  (04) if(((x + 2) == 3) and ((y + 5) <= 9),1 + w, 2 / z)
+  (05) inrange(-2,m,+2) == if(({-2 <= m} and [m <= +2]),1,0)
+  (06) ({1/1}*[1/2]+(1/3))-{1/4}^[1/5]+(1/6)-({1/7}+[1/8]*(1/9))
+  (07) a * exp(2.2 / 3.3 * t) + c
+  (08) z := x + sin(2.567 * pi / y)
+  (09) u := 2.123 * (pi * z) / (w := x + cos(y / pi))
+  (10) 2x + 3y + 4z + 5w == 2 * x + 3 * y + 4 * z + 5 * w
+  (11) 3(x + y) / 2.9 + 1.234e+12 == 3 * (x + y) / 2.9 + 1.234e+12
+  (12) (x + y)3.3 + 1 / 4.5 == (x + y) * 3.3 + 1 / 4.5
+  (13) (x + y)z + 1.1 / 2.7 == (x + y) * z + 1.1 / 2.7
+  (14) (sin(x / pi) cos(2y) + 1) == (sin(x / pi) * cos(2 * y) + 1)
+  (15) 75x^17 + 25.1x^5 - 35x^4 - 15.2x^3 + 40x^2 - 15.3x + 1
+  (16) if (avg(x,y) <= x + y, x - y, x * y) + 2.345 * pi / x
+  (17) fib_i := fib_i + (x := y + 0 * (fib_i := x + (y := fib_i)))
+  (18) while (x <= 100) { x := x + 1 }
+  (19) x <= 'abc123' and (y in 'AString') or ('1x2y3z' != z)
+  (20) (x like '*123*') or ('a123b' ilike y)
 
 
 
@@ -86,8 +86,8 @@ The most  recent version  of the  C++ Mathematical  Expression Toolkit
 Library including all updates and tests can be found at the  following
 locations:
 
- (1) http://www.partow.net/programming/exprtk/index.html
- (2) svn checkout http://exprtk.googlecode.com/svn/ exprtk
+  (1) http://www.partow.net/programming/exprtk/index.html
+  (2) svn checkout http://exprtk.googlecode.com/svn/ exprtk
 
 
 
@@ -98,20 +98,21 @@ include path (e.g: /usr/include/).
 
 
 [06 - COMPILATION]
-(1) For a complete build: make clean all
-(2) For a PGO build: make clean pgo
-(3) To strip executables: make strip_bin
+ (1) For a complete build: make clean all
+ (2) For a PGO build: make clean pgo
+ (3) To strip executables: make strip_bin
+ (5) Execute valgrind check: make valgrind_check
 
 
 
 [07 - COMPILER COMPATIBILITY]
-(*) GNU Compiler Collection (4.1+)
-(*) Intel C++ Compiler (9.x+)
-(*) Clang/LLVM (1.1+)
-(*) PGI C++ (10.x+)
-(*) Microsoft Visual Studio C++ Compiler (8.1+)
-(*) Comeau C++ Compiler (4.3+)
-(*) IBM XL C/C++ (10.x+)
+ (*) GNU Compiler Collection (4.1+)
+ (*) Intel C++ Compiler (9.x+)
+ (*) Clang/LLVM (1.1+)
+ (*) PGI C++ (10.x+)
+ (*) Microsoft Visual Studio C++ Compiler (8.1+)
+ (*) Comeau C++ Compiler (4.3+)
+ (*) IBM XL C/C++ (10.x+)
 
 
 
@@ -424,7 +425,11 @@ follows:
 
 (1) Symbol Table
 A structure that is used  to store references to variables,  constants
-and functions that are to be used within expressions.
+and functions that are to  be used within expressions. Furthermore  in
+the context  of composited  recursive functions  the symbol  table can
+also be thought of as a simple representation of a stack specific  for
+the expression(s) that reference it.
+
 
 (2) Expression
 A structure that holds an AST  for a specified expression and is  used
@@ -459,6 +464,7 @@ Expression:  z := (x + y^-2.345) * sin(pi / min(w - 7.3,v))
                                   /                \
                              Variable(w)      Constant(7.3)
 
+
 (3) Parser
 A  structure  which  takes  as input  a  string  representation  of an
 expression and attempts to compile said input with the result being an
@@ -470,7 +476,118 @@ interface.
 
 
 
-[10 - SPECIAL FUNCTIONS]
+[10 - COMPILATION OPTIONS]
+The exprtk::parser  when being  instantiated takes  as input  a set of
+options  to be  used during  the compilation  process of  expressions.
+An  example instantiation  of exprtk::parser  where only  the  joiner,
+commutative and strength reduction options are enabled is as  follows:
+
+   const std::size_t compile_options = e_joiner            +
+                                       e_commutative_check +
+                                       e_strength_reduction;
+
+   exprtk::parser<NumericType> parser(compile_options);
+
+
+Currently  seven  types  of  options  are  supported,  and  enabled by
+default. The options and their explanations are as follows:
+
+(1) Replacer (e_replacer)
+Enable replacement of specific  tokens with other tokens.  For example
+the token  "true" of  type symbol  will be  replaced with  the numeric
+token of value one.
+
+   (a) (x < y) == true   --->  (x < y) == 1
+   (b) false == (x > y)  --->  0 == (x > y)
+
+
+(2) Joiner (e_joiner)
+Enable  joining  of  multi-character  operators  that  may  have  been
+incorrectly  disjoint in the  string  representation  of the specified
+expression. For example the consecutive tokens of ">" "=" will  become
+">=" representing  the "greater  than or  equal to"  operator. If  not
+properly resolved the  original form will  cause a compilation  error.
+The  following is  a listing  of the  scenarios that  the joiner  can
+handle:
+
+   (a) ':' '='  --->  ':=' (assignment)
+   (b) '>' '='  --->  '>=' (gte)
+   (c) '<' '='  --->  '<=' (lte)
+   (d) '=' '='  --->  '==' (equal)
+   (e) '!' '='  --->  '!=' (not-equal)
+   (f) '<' '>'  --->  '<>' (not-equal)
+
+An example of the transformation that takes place is as follows:
+
+   (a) (x > = y) and (z ! = w)  --->  (x >= y) and (z != w)
+
+
+(3) Numeric Check (e_numeric_check)
+Enable validation of tokens representing numeric types so as to  catch
+any errors prior  to the costly  process of the  main compilation step
+commencing.
+
+
+(4) Bracket Check (e_bracket_check)
+Enable  the  check for  validating  the ordering  of  brackets in  the
+specified expression.
+
+
+(5) Sequence Check (e_sequence_check)
+Enable the  check for  validating that  sequences of  either pairs  or
+triplets of tokens make sense.  For example the following sequence  of
+tokens when encountered will raise an error:
+
+   (a) (x + * 3)  --->  sequence error
+
+
+(6) Commutative Check (e_commutative_check)
+Enable the check that will transform sequences of pairs of tokens that
+imply a multiplication operation.  The following are some  examples of
+such transformations:
+
+   (a) 2x             --->  2 * x
+   (b) 25x^3          --->  25 * x^3
+   (c) 3(x + 1)       --->  3 * (x + 1)
+   (d) (x + 1)4       --->  (x + 1) * 4
+   (e) 5foo(x,y)      --->  5 * foo(x,y)
+   (f) foo(x,y)6 + 1  --->  foo(x,y) * 6 + 1
+
+
+(7) Strength Reduction Check (e_strength_reduction)
+Enable  the  use  of  strength  reduction  optimisations  during   the
+compilation  process.  In  ExprTk  strength  reduction   optimisations
+predominantly involve  transforming sub-expressions  into other  forms
+that  are algebraically  equivalent yet  less costly  to compute.  The
+following are examples of the various transformations that can occur:
+
+   (a) (x / y) / z        --->  x / (y * z)
+   (b) (x / y) / (z / w)  --->  (x * w) / (y * z)
+   (c) (2 * x) - (2 * y)  --->  2 * (x - y)
+   (d) (2 / x) / (3 / y)  --->  (2 / 3) / (x * y)
+   (e) (2 * x) * (3 * y)  --->  (2 * 3) * (x * y)
+
+Note:
+When using  strength reduction  in conjunction  with expressions whose
+inputs or sub-expressions may result  in values nearing either of  the
+bounds of the underlying numeric  type (eg: double), there may  be the
+possibility of a decrease in the precision of results.
+
+In  the following  example the  given expression  which represents  an
+attempt at computing the average  between x and y will  be transformed
+as follows:
+
+   (x * 0.5) + (y * 0.5) ---> 0.5 * (x + y)
+
+There  may be  situations where  the above  transformation will  cause
+numerical overflows and  that the original  form of the  expression is
+desired over the strength reduced form. In these situations it is best
+to turn off strength reduction optimisations  or to use a type with  a
+larger numerical bound.
+
+
+
+[11 - SPECIAL FUNCTIONS]
 The purpose  of special  functions in  ExprTk is  to provide  compiler
 generated equivalents of common mathematical expressions which can  be
 invoked by  using the  'special function'  syntax (eg:  $f12(x,y,z) or
@@ -537,11 +654,11 @@ correctly optimize such expressions for a given architecture.
                                    $f96(x,y,z,w) | (x >   y) ? z : w
                                    $f97(x,y,z,w) | (x >=  y) ? z : w
                                    $f98(x,y,z,w) | (x ==  y) ? z : w
-                                   $f99(x,y,z,w) | x * sin(y) + z * cos(w)
+                                   $f99(x,y,z,w) | x*sin(y)+z*cos(w)
 
 
 
-[11 - EXPRTK NOTES]
+[12 - EXPRTK NOTES]
  (00) Precision and performance of expression evaluations are the
       dominant principles of the ExprTk library.
 
@@ -596,10 +713,9 @@ correctly optimize such expressions for a given architecture.
  (15) Where appropriate constant folding optimisations may be
       applied. (eg: The expression '2+(3-(x/y))' becomes '5-(x/y)')
 
- (16) Where applicable strength reduction optimisations may be
-      applied. The following are example of such optimisations:
-      (a) '(x / y) / z'  -->  'x / (y * z)'
-      (b) '(x / 3)'      -->  'x * (1 / 3)'
+ (16) If the strength reduction compilation option has been enabled,
+      then where applicable strength reduction optimisations may be
+      applied.
 
  (17) String processing capabilities are available by default.
       To turn them off, the following needs to be defined at
@@ -614,8 +730,7 @@ correctly optimize such expressions for a given architecture.
  (20) The entity relationship between symbol_table and an expression
       is one-to-many. Hence the intended use case is to have a single
       symbol table manage the variable and function requirements of
-      multiple expressions. An inappropriate approach would be to have
-      a unique symbol table for each unique expression.
+      multiple expressions.
 
  (21) The common use-case for an expression is to have it compiled
       only once and then subsequently have it evaluated multiple
@@ -637,7 +752,7 @@ correctly optimize such expressions for a given architecture.
 
 
 
-[12 - SIMPLE EXPRTK EXAMPLE]
+[13 - SIMPLE EXPRTK EXAMPLE]
 --- snip ---
 #include <cstdio>
 #include <string>
@@ -684,12 +799,18 @@ int main()
 
    if (!parser.compile(expression_str,expression))
    {
+      // A compilation error has occured. Attempt to
+      // print all errors to the stdout.
+
       printf("Error: %s\tExpression: %s\n",
              parser.error().c_str(),
              expression_str.c_str());
 
       for (std::size_t i = 0; i < parser.error_count(); ++i)
       {
+         // Include the specific nature of each error
+         // and its position in the expression string.
+
          error_t error = parser.get_error(i);
          printf("Error: %02d Position: %02d "
                 "Type: [%s] "
@@ -705,6 +826,8 @@ int main()
       return 1;
    }
 
+   // Evaluate the expression and obtain its result.
+
    double result = expression.value();
 
    printf("Result: %10.5f\n",result);
@@ -715,7 +838,7 @@ int main()
 
 
 
-[13 - FILES]
+[14 - FILES]
 (00) Makefile
 (01) readme.txt
 (02) exprtk.hpp
