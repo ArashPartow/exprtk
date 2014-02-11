@@ -10,38 +10,38 @@ easily extendible.
 
 
 [01 - CAPABILITIES]
-The ExprTk  evaluator  supports the following  fundamental  arithmetic
-operations, functions and processes:
+The  ExprTk expression  evaluator supports  the following  fundamental
+arithmetic operations, functions and processes:
 
-(0) Basic operators: +, -, *, /, %, ^
+ (0) Basic operators: +, -, *, /, %, ^
 
-(1) Functions:       abs, avg, ceil, clamp, equal, erf, erfc, exp,
-                     expm1, floor, frac, log, log10, log1p, log2,
-                     logn, max, min, mul, nequal, root, round,
-                     roundn, sgn, sqrt, sum, trunc
+ (1) Functions:       abs, avg, ceil, clamp, equal, erf, erfc, exp,
+                      expm1, floor, frac, log, log10, log1p, log2,
+                      logn, max, min, mul, nequal, root, round,
+                      roundn, sgn, sqrt, sum, trunc
 
-(2) Trigonometry:    acos, acosh, asin, asinh, atan, atanh, atan2,
-                     cos, cosh, cot, csc, deg2grad, deg2rad, grad2deg,
-                     hypot, rad2deg, sec, sin, sinh, tan, tanh
+ (2) Trigonometry:    acos, acosh, asin, asinh, atan, atanh, atan2,
+                      cos, cosh, cot, csc, sec, sin, sinh, tan, tanh,
+                      hypot, rad2deg,  deg2grad, deg2rad, grad2deg
 
-(3) Equalities &
-    Inequalities:    =, ==, <>, !=, <, <=, >, >=
+ (3) Equalities &
+     Inequalities:    =, ==, <>, !=, <, <=, >, >=
 
-(4) Boolean logic:   and, mand, mor, nand, nor, not, or, shl, shr,
-                     xnor, xor, true, false
+ (4) Boolean logic:   and, mand, mor, nand, nor, not, or, shl, shr,
+                      xnor, xor, true, false
 
-(5) Conditional,
-    Switch &
-    Loop statements: if-then-else, switch-case, while, repeat-until
+ (5) Conditional,
+     Switch &
+     Loop statements: if-then-else, switch-case, while, repeat-until
 
-(6) Assignment:      :=
+ (6) Assignment:      :=
 
-(7) String
-    processing:      in, like, ilike
+ (7) String
+     processing:      in, like, ilike
 
-(8) Calculus:        numerical integration and differentiation
+ (8) Optimisations:   constant-folding and simple strength reduction
 
-(9) Optimisations:   constant-folding and simple strength reduction
+ (9) Calculus:        numerical integration and differentiation
 
 
 
@@ -49,7 +49,7 @@ operations, functions and processes:
 The  following  is  a  short listing  of  the types  of  mathematical
 expressions that can be parsed and evaluated using the ExprTk library.
 
-  (01) sqrt(1 - (x^2))
+  (01) sqrt(1 - (3 / x^2))
   (02) clamp(-1, sin(2 * pi * x) + cos(y / 2 * pi), +1)
   (03) sin(2.34e-3 * x)
   (04) if(((x + 2) == 3) and ((y + 5) <= 9),1 + w, 2 / z)
@@ -57,10 +57,10 @@ expressions that can be parsed and evaluated using the ExprTk library.
   (06) ({1/1}*[1/2]+(1/3))-{1/4}^[1/5]+(1/6)-({1/7}+[1/8]*(1/9))
   (07) a * exp(2.2 / 3.3 * t) + c
   (08) z := x + sin(2.567 * pi / y)
-  (09) u := 2.123 * (pi * z) / (w := x + cos(y / pi))
+  (09) u := 2.123 * {pi * z} / (w := x + cos(y / pi))
   (10) 2x + 3y + 4z + 5w == 2 * x + 3 * y + 4 * z + 5 * w
   (11) 3(x + y) / 2.9 + 1.234e+12 == 3 * (x + y) / 2.9 + 1.234e+12
-  (12) (x + y)3.3 + 1 / 4.5 == (x + y) * 3.3 + 1 / 4.5
+  (12) (x + y)3.3 + 1 / 4.5 == [x + y] * 3.3 + 1 / 4.5
   (13) (x + y)z + 1.1 / 2.7 == (x + y) * z + 1.1 / 2.7
   (14) (sin(x / pi) cos(2y) + 1) == (sin(x / pi) * cos(2 * y) + 1)
   (15) 75x^17 + 25.1x^5 - 35x^4 - 15.2x^3 + 40x^2 - 15.3x + 1
@@ -86,8 +86,8 @@ The most  recent version  of the  C++ Mathematical  Expression Toolkit
 Library including all updates and tests can be found at the  following
 locations:
 
-  (1) http://www.partow.net/programming/exprtk/index.html
-  (2) svn checkout http://exprtk.googlecode.com/svn/ exprtk
+  (1) Download:   http://www.partow.net/programming/exprtk/index.html
+  (2) Repository: https://exprtk.googlecode.com/svn/
 
 
 
@@ -98,10 +98,10 @@ include path (e.g: /usr/include/).
 
 
 [06 - COMPILATION]
- (1) For a complete build: make clean all
- (2) For a PGO build: make clean pgo
- (3) To strip executables: make strip_bin
- (5) Execute valgrind check: make valgrind_check
+ (a) For a complete build: make clean all
+ (b) For a PGO build: make clean pgo
+ (c) To strip executables: make strip_bin
+ (d) Execute valgrind check: make valgrind_check
 
 
 
@@ -113,6 +113,7 @@ include path (e.g: /usr/include/).
  (*) Microsoft Visual Studio C++ Compiler (8.1+)
  (*) Comeau C++ Compiler (4.3+)
  (*) IBM XL C/C++ (10.x+)
+ (*) C++ Builder (XE4+)
 
 
 
@@ -168,11 +169,11 @@ include path (e.g: /usr/include/).
 +----------+---------------------------------------------------------+
 | mand     | Multi-input logical AND, True only if all inputs are    |
 |          | true. Left to right short-circuiting of expressions.    |
-|          | (eg: mand(x > y,z < w,u or v,w and x))                  |
+|          | (eg: mand(x > y, z < w, u or v, w and x))               |
 +----------+---------------------------------------------------------+
 | mor      | Multi-input logical OR, True if at least one of the     |
 |          | inputs are true. Left to right short-circuiting of      |
-|          | expressions. (eg: mor(x > y,z < w,u or v,w and x))      |
+|          | expressions. (eg: mor(x > y, z < w, u or v, w and x))   |
 +----------+---------------------------------------------------------+
 | nand     | Logical NAND, True only if either x or y is false.      |
 |          | (eg: x nand y)                                          |
@@ -202,7 +203,7 @@ include path (e.g: /usr/include/).
 +----------+---------------------------------------------------------+
 | FUNCTION | DEFINITION                                              |
 +----------+---------------------------------------------------------+
-| abs      | Absolute value of x.                                    |
+| abs      | Absolute value of x.  (eg: abs(x))                      |
 +----------+---------------------------------------------------------+
 | avg      | Average of all the inputs.                              |
 |          | (eg: avg(x,y,z,w,u,v) == (x + y + z + w + u + v) / 6)   |
@@ -214,18 +215,19 @@ include path (e.g: /usr/include/).
 +----------+---------------------------------------------------------+
 | equal    | Equality test between x and y using normalized epsilon  |
 +----------+---------------------------------------------------------+
-| erf      | Error function of x.                                    |
+| erf      | Error function of x.  (eg: erf(x))                      |
 +----------+---------------------------------------------------------+
-| erfc     | Complimentary error function of x.                      |
+| erfc     | Complimentary error function of x.  (eg: erfc(x))       |
 +----------+---------------------------------------------------------+
-| exp      | e to the power of x.                                    |
+| exp      | e to the power of x.  (eg: exp(x))                      |
 +----------+---------------------------------------------------------+
 | expm1    | e to the power of x minus 1, where x is very small.     |
 |          | (eg: expm1(x))                                          |
 +----------+---------------------------------------------------------+
 | floor    | Largest integer that is less than or equal to x.        |
+|          | (eg: floor(x))                                          |
 +----------+---------------------------------------------------------+
-| frac     | Fractional portion of x.                                |
+| frac     | Fractional portion of x.  (eg: frac(x))                 |
 +----------+---------------------------------------------------------+
 | hypot    | Hypotenuse of x and y (eg: hypot(x,y) = sqrt(x*x + y*y))|
 +----------+---------------------------------------------------------+
@@ -233,17 +235,17 @@ include path (e.g: /usr/include/).
 |          | r0 < r1. If x is within the range it will snap to the   |
 |          | closest bound. (eg: iclamp(r0,x,r1)                     |
 +----------+---------------------------------------------------------+
-| log      | Natural logarithm of x.                                 |
+| log      | Natural logarithm of x.  (eg: log(x))                   |
 +----------+---------------------------------------------------------+
-| log10    | Base 10 logarithm of x.                                 |
+| log10    | Base 10 logarithm of x.  (eg: log10(x))                 |
 +----------+---------------------------------------------------------+
 | log1p    | Natural logarithm of 1 + x, where x is very small.      |
 |          | (eg: log1p(x))                                          |
 +----------+---------------------------------------------------------+
-| log2     | Base 2 logarithm of x.                                  |
+| log2     | Base 2 logarithm of x.  (eg: log2(x))                   |
 +----------+---------------------------------------------------------+
-| logn     | Base N logarithm of x (eg: logn(1235,8))                |
-|          | where n > 0 and is an integer.                          |
+| logn     | Base N logarithm of x. where n is a positive integer.   |
+|          | (eg: logn(x,8))                                         |
 +----------+---------------------------------------------------------+
 | max      | Largest value of all the inputs. (eg: max(x,y,z,w,u,v)) |
 +----------+---------------------------------------------------------+
@@ -254,23 +256,24 @@ include path (e.g: /usr/include/).
 +----------+---------------------------------------------------------+
 | nequal   | Not-equal test between x and y using normalized epsilon |
 +----------+---------------------------------------------------------+
-| root     | Nth-Root of x (eg: root(x,3))                           |
-|          | where n > 0 and is an integer.                          |
+| root     | Nth-Root of x. where n is a positive integer.           |
+|          | (eg: root(x,3))                                         |
 +----------+---------------------------------------------------------+
-| round    | Round x to the nearest integer.                         |
+| round    | Round x to the nearest integer.  (eg: round(x))         |
 +----------+---------------------------------------------------------+
-| roundn   | Round x to n decimal places (eg: roundn(x,3))           |
+| roundn   | Round x to n decimal places  (eg: roundn(x,3))          |
 |          | where n > 0 and is an integer.                          |
 |          | (eg: roundn(1.2345678,4) == 1.2346)                     |
 +----------+---------------------------------------------------------+
 | sgn      | Sign of x, -1 where x < 0, +1 where x > 0, else zero.   |
+|          | (eg: sgn(x))                                            |
 +----------+---------------------------------------------------------+
-| sqrt     | Square root of x, where x > 0                           |
+| sqrt     | Square root of x, where x > 0.  (eg: sqrt(x))           |
 +----------+---------------------------------------------------------+
 | sum      | Sum of all the inputs.                                  |
 |          | (eg: sum(x,y,z,w,u,v,t) == (x + y + z + w + u + v + t)) |
 +----------+---------------------------------------------------------+
-| trunc    | Integer portion of x.                                   |
+| trunc    | Integer portion of x.  (eg: trunc(x))                   |
 +----------+---------------------------------------------------------+
 
 (4) Trigonometry Functions
@@ -278,50 +281,61 @@ include path (e.g: /usr/include/).
 | FUNCTION | DEFINITION                                              |
 +----------+---------------------------------------------------------+
 | acos     | Arc cosine of x expressed in radians. Interval [-1,+1]  |
+|          | (eg: acos(x))                                           |
 +----------+---------------------------------------------------------+
 | acosh    | Inverse hyperbolic cosine of x expressed in radians.    |
+|          | (eg: acosh(x))                                          |
 +----------+---------------------------------------------------------+
 | asin     | Arc sine of x expressed in radians. Interval [-1,+1]    |
+|          | (eg: asin(x))                                           |
 +----------+---------------------------------------------------------+
 | asinh    | Inverse hyperbolic sine of x expressed in radians.      |
+|          | (eg: asinh(x))                                          |
 +----------+---------------------------------------------------------+
 | atan     | Arc tangent of x expressed in radians. Interval [-1,+1] |
+|          | (eg: atan(x))                                           |
 +----------+---------------------------------------------------------+
 | atan2    | Arc tangent of (x/y) expressed in radians. [-pi,+pi]    |
 |          | eg: atan2(x,y)                                          |
 +----------+---------------------------------------------------------+
 | atanh    | Inverse hyperbolic tangent of x expressed in radians.   |
+|          | (eg: atanh(x))                                          |
 +----------+---------------------------------------------------------+
-| cos      | Cosine of x.                                            |
+| cos      | Cosine of x.  (eg: cos(x))                              |
 +----------+---------------------------------------------------------+
-| cosh     | Hyperbolic cosine of x.                                 |
+| cosh     | Hyperbolic cosine of x.  (eg: cosh(x))                  |
 +----------+---------------------------------------------------------+
-| cot      | Cotangent of x.                                         |
+| cot      | Cotangent of x.  (eg: cot(x))                           |
 +----------+---------------------------------------------------------+
-| csc      | Cosecant of x.                                          |
+| csc      | Cosecant of x.  (eg: csc(x))                            |
 +----------+---------------------------------------------------------+
-| sec      | Secant of x.                                            |
+| sec      | Secant of x.  (eg: sec(x))                              |
 +----------+---------------------------------------------------------+
-| sin      | Sine of x.                                              |
+| sin      | Sine of x.  (eg: sin(x))                                |
 +----------+---------------------------------------------------------+
-| sinh     | Hyperbolic sine of x.                                   |
+| sinh     | Hyperbolic sine of x.  (eg: sinh(x))                    |
 +----------+---------------------------------------------------------+
-| tan      | Tangent of x.                                           |
+| tan      | Tangent of x.  (eg: tan(x))                             |
 +----------+---------------------------------------------------------+
-| tanh     | Hyperbolic tangent of x.                                |
+| tanh     | Hyperbolic tangent of x.  (eg: tanh(x))                 |
 +----------+---------------------------------------------------------+
-| deg2rad  | Convert x from degrees to radians.                      |
+| deg2rad  | Convert x from degrees to radians.  (eg: deg2rad(x))    |
 +----------+---------------------------------------------------------+
-| deg2grad | Convert x from degrees to gradians.                     |
+| deg2grad | Convert x from degrees to gradians.  (eg: deg2grad(x))  |
 +----------+---------------------------------------------------------+
-| rad2deg  | Convert x from radians to degrees.                      |
+| rad2deg  | Convert x from radians to degrees.  (eg: rad2deg(x))    |
 +----------+---------------------------------------------------------+
-| grad2deg | Convert x from gradians to degrees.                     |
+| grad2deg | Convert x from gradians to degrees.  (eg: grad2deg(x))  |
 +----------+---------------------------------------------------------+
 
 (5) String Processing
 +----------+---------------------------------------------------------+
 | FUNCTION | DEFINITION                                              |
++----------+---------------------------------------------------------+
+|  = , ==  | All common equality/inequality operators are applicable |
+|  !=, <>  | to strings and are applied in a case sensitive manner.  |
+|  <=, >=  | In the following example x, y and z are of type string. |
+|  < , >   | (eg: not((x <= 'AbC') and ('1x2y3z' <> y)) or (z == x)  |
 +----------+---------------------------------------------------------+
 | in       | True only if x is a substring of y.                     |
 |          | (eg: x in y or 'abc' in 'abcdefgh')                     |
@@ -348,7 +362,7 @@ include path (e.g: /usr/include/).
 |          | Note: Both r0 and r1 are assumed to be integers, where  |
 |          | r0 <= r1. They may also be the result of an expression, |
 |          | in the event they have fractional components truncation |
-|          | will be performed. (eg: 1.67 -> 1)                      |
+|          | will be performed. (eg: 1.67 --> 1)                     |
 +----------+---------------------------------------------------------+
 
 (6) Control Structures
@@ -411,6 +425,13 @@ include path (e.g: /usr/include/).
 |          | }                                                       |
 +----------+---------------------------------------------------------+
 
+Note: In the above tables, the symbols x, y, z and w where appropriate
+can represent any of one the following:
+
+   1. Literal numeric/string value
+   2. A variable
+   3. An expression comprised of [1] or [2] (eg: 2 + x)
+
 
 
 [09 - COMPONENTS]
@@ -428,7 +449,15 @@ A structure that is used  to store references to variables,  constants
 and functions that are to  be used within expressions. Furthermore  in
 the context  of composited  recursive functions  the symbol  table can
 also be thought of as a simple representation of a stack specific  for
-the expression(s) that reference it.
+the expression(s) that reference it. The following is a list of the
+types a symbol table can handle:
+
+   (a) Numeric variables
+   (b) Numeric constants
+   (c) String variables
+   (d) String constants
+   (e) Functions
+   (f) Vararg functions
 
 
 (2) Expression
@@ -489,8 +518,8 @@ commutative and strength reduction options are enabled is as  follows:
    exprtk::parser<NumericType> parser(compile_options);
 
 
-Currently  seven  types  of  options  are  supported,  and  enabled by
-default. The options and their explanations are as follows:
+Currently  seven  types of  compile  time options  are  supported, and
+enabled by default. The options and their explanations are as follows:
 
 (1) Replacer (e_replacer)
 Enable replacement of specific  tokens with other tokens.  For example
@@ -552,6 +581,7 @@ such transformations:
    (d) (x + 1)4       --->  (x + 1) * 4
    (e) 5foo(x,y)      --->  5 * foo(x,y)
    (f) foo(x,y)6 + 1  --->  foo(x,y) * 6 + 1
+   (g) (4((2x)3))     --->  4 * ((2 * x) * 3)
 
 
 (7) Strength Reduction Check (e_strength_reduction)
@@ -812,6 +842,7 @@ int main()
          // and its position in the expression string.
 
          error_t error = parser.get_error(i);
+
          printf("Error: %02d Position: %02d "
                 "Type: [%s] "
                 "Message: %s "

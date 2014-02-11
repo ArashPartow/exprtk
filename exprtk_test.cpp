@@ -1536,7 +1536,7 @@ inline bool run_test01()
                                 test_xyz<T>("(4 - [3 / (min(x,y) + z)])",T(5.0),T(7.0),T(9.0),T((4.0 - (3.0 / (std::min(5.0,7.0) + 9.0))))),
                                 test_xyz<T>("(4 + [3 / (min(x,y) + z)])",T(5.0),T(7.0),T(9.0),T((4.0 + (3.0 / (std::min(5.0,7.0) + 9.0))))),
                                 test_xyz<T>("(4 * [3 / (min(x,y) + z)])",T(5.0),T(7.0),T(9.0),T((4.0 * (3.0 / (std::min(5.0,7.0) + 9.0))))),
-                                test_xyz<T>("(4 / [3 / (min(x,y) + z)])",T(5.0),T(7.0),T(9.0),T((4.0 / (3.0 / (std::min(5.0,7.0) + 9.0))))),
+                                test_xyz<T>("(4 / [3 / (min(x,y) + z)])",T(5.0),T(7.0),T(9.0),T((4.0 / (3.0 / (std::min(5.0,7.0) + 9.0)))))
                               };
 
       static const std::size_t test_list_size = sizeof(test_list) / sizeof(test_xyz<T>);

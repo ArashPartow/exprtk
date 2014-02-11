@@ -19712,8 +19712,8 @@ namespace exprtk
    namespace information
    {
       static const char* library = "Mathematical Expression Toolkit";
-      static const char* version = "2.718281828459045235360287471352662497";
-      static const char* date    = "20140104";
+      static const char* version = "2.71828182845904523536028747135266249775";
+      static const char* date    = "20140202";
 
       static inline std::string data()
       {
