@@ -511,11 +511,13 @@ options  to be  used during  the compilation  process of  expressions.
 An  example instantiation  of exprtk::parser  where only  the  joiner,
 commutative and strength reduction options are enabled is as  follows:
 
-   const std::size_t compile_options = e_joiner            +
-                                       e_commutative_check +
-                                       e_strength_reduction;
+   typedef exprtk::parser<NumericType> parser_t;
 
-   exprtk::parser<NumericType> parser(compile_options);
+   std::size_t compile_options = parser_t::e_joiner            +
+                                 parser_t::e_commutative_check +
+                                 parser_t::e_strength_reduction;
+
+   parser_t parser(compile_options);
 
 
 Currently  seven  types of  compile  time options  are  supported, and
