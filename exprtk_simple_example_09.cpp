@@ -41,9 +41,9 @@ void primes()
    //Mode 1 - if statement based
    compositor
       .add("is_prime_impl1",
-           "if(y == 1,true,              "
-           "   if(0 == (x % y),false,    "
-           "      is_prime_impl1(x,y-1)))",
+           "if(y == 1,true,                "
+           "   if(0 == (x % y),false,      "
+           "      is_prime_impl1(x,y - 1)))",
            "x","y");
 
    compositor
