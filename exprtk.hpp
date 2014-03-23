@@ -2034,7 +2034,7 @@ namespace exprtk
             token_t t;
             if (std::distance(s_itr_,s_end_) < 2)
             {
-               t.set_error(token::e_err_string,begin,s_itr_,base_itr_);
+               t.set_error(token::e_err_string,s_itr_,s_end_,base_itr_);
                token_list_.push_back(t);
                return;
             }
@@ -2739,25 +2739,26 @@ namespace exprtk
                add_invalid(lexer::token::e_string,lexer::token::e_string);
                add_invalid(lexer::token::e_number,lexer::token::e_string);
                add_invalid(lexer::token::e_string,lexer::token::e_number);
-               add_invalid(lexer::token::e_string,lexer::token::e_colon);
-               add_invalid(lexer::token::e_colon,lexer::token::e_string);
+               add_invalid(lexer::token::e_string,lexer::token::e_colon );
+               add_invalid(lexer::token::e_colon ,lexer::token::e_string);
+               add_invalid(lexer::token::e_assign,lexer::token::e_string);
                add_invalid_set1(lexer::token::e_assign);
-               add_invalid_set1(lexer::token::e_shr);
-               add_invalid_set1(lexer::token::e_shl);
-               add_invalid_set1(lexer::token::e_lte);
-               add_invalid_set1(lexer::token::e_ne);
-               add_invalid_set1(lexer::token::e_gte);
-               add_invalid_set1(lexer::token::e_lt);
-               add_invalid_set1(lexer::token::e_gt);
-               add_invalid_set1(lexer::token::e_eq);
-               add_invalid_set1(lexer::token::e_comma);
-               add_invalid_set1(lexer::token::e_add);
-               add_invalid_set1(lexer::token::e_sub);
-               add_invalid_set1(lexer::token::e_div);
-               add_invalid_set1(lexer::token::e_mul);
-               add_invalid_set1(lexer::token::e_mod);
-               add_invalid_set1(lexer::token::e_pow);
-               add_invalid_set1(lexer::token::e_colon);
+               add_invalid_set1(lexer::token::e_shr   );
+               add_invalid_set1(lexer::token::e_shl   );
+               add_invalid_set1(lexer::token::e_lte   );
+               add_invalid_set1(lexer::token::e_ne    );
+               add_invalid_set1(lexer::token::e_gte   );
+               add_invalid_set1(lexer::token::e_lt    );
+               add_invalid_set1(lexer::token::e_gt    );
+               add_invalid_set1(lexer::token::e_eq    );
+               add_invalid_set1(lexer::token::e_comma );
+               add_invalid_set1(lexer::token::e_add   );
+               add_invalid_set1(lexer::token::e_sub   );
+               add_invalid_set1(lexer::token::e_div   );
+               add_invalid_set1(lexer::token::e_mul   );
+               add_invalid_set1(lexer::token::e_mod   );
+               add_invalid_set1(lexer::token::e_pow   );
+               add_invalid_set1(lexer::token::e_colon );
             }
 
             bool result()
@@ -2810,20 +2811,20 @@ namespace exprtk
             void add_invalid_set1(lexer::token::token_type t)
             {
                add_invalid(t,lexer::token::e_assign);
-               add_invalid(t,lexer::token::e_shr);
-               add_invalid(t,lexer::token::e_shl);
-               add_invalid(t,lexer::token::e_lte);
-               add_invalid(t,lexer::token::e_ne);
-               add_invalid(t,lexer::token::e_gte);
-               add_invalid(t,lexer::token::e_lt);
-               add_invalid(t,lexer::token::e_gt);
-               add_invalid(t,lexer::token::e_eq);
-               add_invalid(t,lexer::token::e_comma);
-               add_invalid(t,lexer::token::e_div);
-               add_invalid(t,lexer::token::e_mul);
-               add_invalid(t,lexer::token::e_mod);
-               add_invalid(t,lexer::token::e_pow);
-               add_invalid(t,lexer::token::e_colon);
+               add_invalid(t,lexer::token::e_shr   );
+               add_invalid(t,lexer::token::e_shl   );
+               add_invalid(t,lexer::token::e_lte   );
+               add_invalid(t,lexer::token::e_ne    );
+               add_invalid(t,lexer::token::e_gte   );
+               add_invalid(t,lexer::token::e_lt    );
+               add_invalid(t,lexer::token::e_gt    );
+               add_invalid(t,lexer::token::e_eq    );
+               add_invalid(t,lexer::token::e_comma );
+               add_invalid(t,lexer::token::e_div   );
+               add_invalid(t,lexer::token::e_mul   );
+               add_invalid(t,lexer::token::e_mod   );
+               add_invalid(t,lexer::token::e_pow   );
+               add_invalid(t,lexer::token::e_colon );
             }
 
             bool invalid_bracket_check(lexer::token::token_type base, lexer::token::token_type t)
@@ -10133,6 +10134,7 @@ namespace exprtk
          load_sf3_map(sf3_map_);
          load_sf4_map(sf4_map_);
          expression_generator_.init_synthesize_map();
+         expression_generator_.set_parser(*this);
          expression_generator_.set_uom(unary_op_map_);
          expression_generator_.set_bom(binary_op_map_);
          expression_generator_.set_ibom(inv_binary_op_map_);
@@ -10197,6 +10199,7 @@ namespace exprtk
 
       inline bool compile(const std::string& expression_string, expression<T>& expr)
       {
+         synthesis_error_.clear();
          error_list_.clear();
          expression_generator_.set_allocator(node_allocator_);
 
@@ -10709,25 +10712,38 @@ namespace exprtk
             next_token();
 
             expression_node_ptr right_branch = parse_expression(current_state.right);
+            expression_node_ptr new_expression = error_node();
 
             if (right_branch)
             {
-               expression = expression_generator_(
-                                                   current_state.operation,
-                                                   expression,
-                                                   right_branch
-                                                 );
+               new_expression = expression_generator_(
+                                                       current_state.operation,
+                                                       expression,
+                                                       right_branch
+                                                     );
             }
 
-            if ((0 == expression) || (0 == right_branch))
+            if ((0 == new_expression) || (0 == right_branch))
             {
-               set_error(
-                  make_error(parser_error::e_syntax,
-                             current_token_,
-                             "ERR08 - General parsing error."));
+               if (error_list_.empty())
+               {
+                  set_error(
+                     make_error(parser_error::e_syntax,
+                                prev_token,
+                                !synthesis_error_.empty() ?
+                                synthesis_error_ :
+                                "ERR08 - General parsing error at token: '" + prev_token.value + "'"));
+               }
+
+               free_node(node_allocator_,  expression);
+               free_node(node_allocator_,right_branch);
+
                return error_node();
             }
+            else
+               expression = new_expression;
          }
+
          return expression;
       }
 
@@ -12436,6 +12452,7 @@ namespace exprtk
          typedef details::expression_node<Type>* expression_node_ptr;
          typedef expression_node_ptr (*synthesize_functor_t)(expression_generator<T>&, const details::operator_type& operation, expression_node_ptr (&branch)[2]);
          typedef std::map<std::string,synthesize_functor_t> synthesize_map_t;
+         typedef typename exprtk::parser<Type> parser_t;
          typedef const Type& vtype;
          typedef const Type  ctype;
 
@@ -12508,6 +12525,11 @@ namespace exprtk
             register_synthezier(synthesize_covocov_expression4)
             register_synthezier(synthesize_vocovoc_expression4)
             register_synthezier(synthesize_covovoc_expression4)
+         }
+
+         inline void set_parser(parser_t& p)
+         {
+            parser_ = &p;
          }
 
          inline void set_uom(unary_op_map_t& unary_op_map)
@@ -12869,7 +12891,7 @@ namespace exprtk
                result = true;
             if (result)
             {
-               details::free_all_nodes(*node_allocator_,branch);
+               parser_->set_synthesis_error("Invalid string operation.");
             }
             return result;
          }
@@ -12886,7 +12908,7 @@ namespace exprtk
                result = true;
             if (result)
             {
-               details::free_all_nodes(*node_allocator_,branch);
+               parser_->set_synthesis_error("Invalid string operation.");
             }
             return result;
          }
@@ -12927,10 +12949,7 @@ namespace exprtk
          inline expression_node_ptr operator()(const details::operator_type& operation, expression_node_ptr (&branch)[2])
          {
             if ((0 == branch[0]) || (0 == branch[1]))
-            {
-               details::free_all_nodes(*node_allocator_,branch);
                return error_node();
-            }
             else if (is_invalid_string_op(operation,branch))
                return error_node();
             else if (details::e_assign == operation)
@@ -13003,11 +13022,7 @@ namespace exprtk
          inline expression_node_ptr operator()(const details::operator_type& operation, expression_node_ptr b0, expression_node_ptr b1)
          {
             if ((0 == b0) || (0 == b1))
-            {
-               details::free_node(*node_allocator_,b0);
-               details::free_node(*node_allocator_,b1);
                return error_node();
-            }
             else
             {
                expression_node_ptr branch[2] = { b0, b1 };
@@ -13736,7 +13751,10 @@ namespace exprtk
             if (details::is_variable_node(branch[0]))
                return synthesize_expression<assignment_node_t,2>(operation,branch);
             else
+            {
+               parser_->set_synthesis_error("Invalid assignment operation.");
                return error_node();
+            }
          }
 
          #ifndef exprtk_disable_sc_andor
@@ -18057,6 +18075,7 @@ namespace exprtk
          inv_binary_op_map_t* inv_binary_op_map_;
          sf3_map_t* sf3_map_;
          sf4_map_t* sf4_map_;
+         parser_t* parser_;
       };
 
       inline void set_error(const parser_error::type& error_type)
@@ -18069,6 +18088,14 @@ namespace exprtk
          if (!error_list_.empty())
          {
             error_list_.pop_back();
+         }
+      }
+
+      inline void set_synthesis_error(const std::string& synthesis_error_message)
+      {
+         if (synthesis_error_.empty())
+         {
+            synthesis_error_ = synthesis_error_message;
          }
       }
 
@@ -18247,6 +18274,7 @@ namespace exprtk
       inv_binary_op_map_t inv_binary_op_map_;
       sf3_map_t sf3_map_;
       sf4_map_t sf4_map_;
+      std::string synthesis_error_;
 
       lexer::helper::helper_assembly helper_assembly_;
 
