@@ -27,8 +27,8 @@
 
 #include "exprtk.hpp"
 
-
-typedef std::pair<std::string,double> test_t;
+typedef double numeric_type;
+typedef std::pair<std::string,numeric_type> test_t;
 
 static const test_t test_list[] =
                   {
@@ -1095,8 +1095,8 @@ inline bool test_expression(const std::string& expression_string, const T& expec
    {
       printf("test_expression() - Computation Error:  Expression: [%s]\tExpected: %19.15f\tResult: %19.15f\n",
              expression_string.c_str(),
-             expected_result,
-             result);
+             (double)expected_result,
+             (double)result);
       return false;
    }
 
@@ -1481,8 +1481,8 @@ inline bool run_test01()
             {
                printf("run_test01() - Computation Error:  Expression: [%s]\tExpected: %19.15f\tResult: %19.15f\n",
                       test.expr.c_str(),
-                      test.result,
-                      result);
+                      (double)test.result,
+                      (double)result);
                loop_result = false;
             }
          }
@@ -1576,8 +1576,8 @@ inline bool run_test01()
             {
                printf("run_test01() - Computation Error:  Expression: [%s]\tExpected: %19.15f\tResult: %19.15f\n",
                       test.expr.c_str(),
-                      test.result,
-                      result);
+                      (double)test.result,
+                      (double)result);
                loop_result = false;
             }
          }
@@ -1900,8 +1900,8 @@ inline bool run_test02()
          {
             printf("run_test02() - Computation Error:  Expression: [%s]\tExpected: %19.15f\tResult: %19.15f\n",
                    test.expr.c_str(),
-                   test.result,
-                   result);
+                   (double)test.result,
+                   (double)result);
             return false;
          }
       }
@@ -2038,10 +2038,10 @@ inline bool run_test04()
       {
          printf("run_test04() - Computation Error:  Expression: [%s]\tExpected: %19.15f\tResult: %19.15f x:%19.15f\ty:%19.15f\n",
                 expression_string.c_str(),
-                result1,
-                result2,
-                x,
-                y);
+                (double)result1,
+                (double)result2,
+                (double)x,
+                (double)y);
          return false;
       }
 
@@ -2103,10 +2103,10 @@ inline bool run_test05()
          {
             printf("run_test05() - Computation Error:  Expression: [%s]\tExpected: %19.15f\tResult: %19.15f x:%19.15f\ty:%19.15f\tIndex:%d\n",
                    expression_string.c_str(),
-                   real_result,
-                   result,
-                   x,
-                   y,
+                   (double)real_result,
+                   (double)result,
+                   (double)x,
+                   (double)y,
                    static_cast<unsigned int>(i));
             return false;
          }
@@ -2156,8 +2156,8 @@ inline bool run_test06()
    if (not_equal(total_area1,T(pi) / T(2),T(0.000001)))
    {
       printf("run_test06() - Integration Error:  Expected: %19.15f\tResult: %19.15f\n",
-             pi / T(2),
-             total_area1);
+             (double)(pi / T(2)),
+             (double)total_area1);
       return false;
    }
 
@@ -2205,9 +2205,9 @@ inline bool run_test07()
          if (not_equal(deriv1_result1,deriv1_real_result,T(0.00001)))
          {
             printf("run_test07() - 1st Derivative Error:  x: %19.15f\tExpected: %19.15f\tResult: %19.15f\n",
-                   x,
-                   deriv1_real_result,
-                   deriv1_result1);
+                   (double)x,
+                   (double)deriv1_real_result,
+                   (double)deriv1_result1);
             return false;
          }
       }
@@ -2226,9 +2226,9 @@ inline bool run_test07()
          if (not_equal(deriv2_result1,deriv2_real_result,T(0.01)))
          {
             printf("run_test07() - 2nd Derivative Error:  x: %19.15f\tExpected: %19.15f\tResult: %19.15f\n",
-                   x,
-                   deriv2_real_result,
-                   deriv2_result1);
+                   (double)x,
+                   (double)deriv2_real_result,
+                   (double)deriv2_result1);
             return false;
          }
       }
@@ -2247,9 +2247,9 @@ inline bool run_test07()
          if (not_equal(deriv3_result1,deriv3_real_result,T(0.01)))
          {
             printf("run_test07() - 3rd Derivative Error:  x: %19.15f\tExpected: %19.15f\tResult: %19.15f\n",
-                   x,
-                   deriv3_real_result,
-                   deriv3_result1);
+                   (double)x,
+                   (double)deriv3_real_result,
+                   (double)deriv3_result1);
             return false;
          }
       }
@@ -2454,26 +2454,26 @@ inline bool run_test09()
    for (std::size_t i = 0; i < rounds; ++i)
    {
       typedef exprtk::expression<T> expression_t;
-      std::string expression_string = "myfunc0(sin(x*pi),y/2)+myfunc1(sin(x*pi),y/2)+"
-                                      "myfunc2(sin(x*pi),y/2)+myfunc3(sin(x*pi),y/2)+"
-                                      "myfunc4(sin(x*pi),y/2)+myfunc5(sin(x*pi),y/2)+"
-                                      "myfunc6(sin(x*pi),y/2)+myfunc7(sin(x*pi),y/2)+"
-                                      "myfunc8(sin(x*pi),y/2)+myfunc9(sin(x*pi),y/2)+"
-                                      "myfunc0(sin(x*pi),y/2)+myfunc1(sin(x*pi),y/2)+"
-                                      "myfunc2(sin(x*pi),y/2)+myfunc3(sin(x*pi),y/2)+"
-                                      "myfunc4(sin(x*pi),y/2)+myfunc5(sin(x*pi),y/2)+"
-                                      "myfunc6(sin(x*pi),y/2)+myfunc7(sin(x*pi),y/2)+"
-                                      "myfunc8(sin(x*pi),y/2)+myfunc9(sin(x*pi),y/2)+"
-                                      "myfunc0(sin(x*pi),y/2)+myfunc1(sin(x*pi),y/2)+"
-                                      "myfunc2(sin(x*pi),y/2)+myfunc3(sin(x*pi),y/2)+"
-                                      "myfunc4(sin(x*pi),y/2)+myfunc5(sin(x*pi),y/2)+"
-                                      "myfunc6(sin(x*pi),y/2)+myfunc7(sin(x*pi),y/2)+"
-                                      "myfunc8(sin(x*pi),y/2)+myfunc9(sin(x*pi),y/2)+"
-                                      "myfunc0(sin(x*pi),y/2)+myfunc1(sin(x*pi),y/2)+"
-                                      "myfunc2(sin(x*pi),y/2)+myfunc3(sin(x*pi),y/2)+"
-                                      "myfunc4(sin(x*pi),y/2)+myfunc5(sin(x*pi),y/2)+"
-                                      "myfunc6(sin(x*pi),y/2)+myfunc7(sin(x*pi),y/2)+"
-                                      "myfunc8(sin(x*pi),y/2)+myfunc9(sin(x*pi),y/2)";
+      std::string expression_string = "myfunc0(sin(x * pi),y / 2) + myfunc1(sin(x * pi),y / 2)+"
+                                      "myfunc2(sin(x * pi),y / 2) + myfunc3(sin(x * pi),y / 2)+"
+                                      "myfunc4(sin(x * pi),y / 2) + myfunc5(sin(x * pi),y / 2)+"
+                                      "myfunc6(sin(x * pi),y / 2) + myfunc7(sin(x * pi),y / 2)+"
+                                      "myfunc8(sin(x * pi),y / 2) + myfunc9(sin(x * pi),y / 2)+"
+                                      "myfunc0(sin(x * pi),y / 2) + myfunc1(sin(x * pi),y / 2)+"
+                                      "myfunc2(sin(x * pi),y / 2) + myfunc3(sin(x * pi),y / 2)+"
+                                      "myfunc4(sin(x * pi),y / 2) + myfunc5(sin(x * pi),y / 2)+"
+                                      "myfunc6(sin(x * pi),y / 2) + myfunc7(sin(x * pi),y / 2)+"
+                                      "myfunc8(sin(x * pi),y / 2) + myfunc9(sin(x * pi),y / 2)+"
+                                      "myfunc0(sin(x * pi),y / 2) + myfunc1(sin(x * pi),y / 2)+"
+                                      "myfunc2(sin(x * pi),y / 2) + myfunc3(sin(x * pi),y / 2)+"
+                                      "myfunc4(sin(x * pi),y / 2) + myfunc5(sin(x * pi),y / 2)+"
+                                      "myfunc6(sin(x * pi),y / 2) + myfunc7(sin(x * pi),y / 2)+"
+                                      "myfunc8(sin(x * pi),y / 2) + myfunc9(sin(x * pi),y / 2)+"
+                                      "myfunc0(sin(x * pi),y / 2) + myfunc1(sin(x * pi),y / 2)+"
+                                      "myfunc2(sin(x * pi),y / 2) + myfunc3(sin(x * pi),y / 2)+"
+                                      "myfunc4(sin(x * pi),y / 2) + myfunc5(sin(x * pi),y / 2)+"
+                                      "myfunc6(sin(x * pi),y / 2) + myfunc7(sin(x * pi),y / 2)+"
+                                      "myfunc8(sin(x * pi),y / 2) + myfunc9(sin(x * pi),y / 2)";
 
       T x = T(1) + (i / T(10000));
       T y = T(2) + (i / T(10000));
@@ -2528,8 +2528,8 @@ inline bool run_test09()
       if (not_equal(result,expected,T(0.0000001)))
       {
          printf("run_test09() - Error Expected: %19.15f\tResult: %19.15f\n",
-                expected,
-                result);
+                (double)expected,
+                (double)result);
          return false;
       }
    }
@@ -3515,8 +3515,8 @@ inline bool run_test15()
       if (not_equal(base_result,result))
       {
          printf("run_test15() - Error in evaluation! (1)  Base: %20.10f\tResult: %20.10f\tExpression: %s\n",
-                base_result,
-                result,
+                (double)base_result,
+                (double)result,
                 expr_str_list[i].c_str());
          failure = true;
       }
@@ -3999,7 +3999,7 @@ inline bool run_test19()
 
       // f1(x) = 5 * (f0 + x)
       compositor
-         .add("f1","5 * (f0+x)","x");
+         .add("f1","5 * (f0 + x)","x");
 
       // f2(x,y) = 7 * (f1(x) + f1(y))
       compositor
@@ -4068,9 +4068,9 @@ inline bool run_test19()
 
       compositor
          .add("is_prime_impl1",
-              "if(y == 1,true,              "
-              "   if(0 == (x % y),false,    "
-              "      is_prime_impl1(x,y-1)))",
+              "if(y == 1,true,                "
+              "   if(0 == (x % y),false,      "
+              "      is_prime_impl1(x,y - 1)))",
               "x","y");
 
       compositor
@@ -4466,8 +4466,8 @@ inline bool run_test19()
             printf("run_test19() - Computation Error  "
                    "Expression: [%s]\tExpected: %12.8f\tResult: %12.8f\n",
                    expression_str.c_str(),
-                   std::sqrt(x),
-                   result);
+                   (double)std::sqrt(x),
+                   (double)result);
             failure = true;
          }
       }
@@ -4566,44 +4566,53 @@ inline bool run_test20()
    return true;
 }
 
+template <typename T>
+struct type_name { static inline std::string value() { return "unknown"; } };
+template <> struct type_name<float>       { static inline std::string value() { return "float";       } };
+template <> struct type_name<double>      { static inline std::string value() { return "double";      } };
+template <> struct type_name<long double> { static inline std::string value() { return "long double"; } };
+
 int main()
 {
-   #define perform_test(Type,Number)                                                                \
-   {                                                                                                \
-      exprtk::timer timer;                                                                          \
-      timer.start();                                                                                \
-      if (!run_test##Number<Type>())                                                                \
-      {                                                                                             \
-         printf("run_test"#Number" ("#Type") *** FAILED! ***\n");                                   \
-      }                                                                                             \
-      else                                                                                          \
-      {                                                                                             \
-         timer.stop();                                                                              \
-         printf("run_test"#Number" ("#Type") - Result: SUCCESS     Time: %8.4fsec\n",timer.time()); \
-      }                                                                                             \
-   }                                                                                                \
+   #define perform_test(Type,Number)                                           \
+   {                                                                           \
+      exprtk::timer timer;                                                     \
+      timer.start();                                                           \
+      if (!run_test##Number<Type>())                                           \
+      {                                                                        \
+         printf("run_test"#Number" (%s) *** FAILED! ***\n",                    \
+                type_name<Type>::value().c_str());                             \
+      }                                                                        \
+      else                                                                     \
+      {                                                                        \
+         timer.stop();                                                         \
+         printf("run_test"#Number" (%s) - Result: SUCCESS   Time: %8.4fsec\n", \
+                type_name<Type>::value().c_str(),                              \
+                timer.time());                                                 \
+      }                                                                        \
+   }                                                                           \
 
-   perform_test(double,00)
-   perform_test(double,01)
-   perform_test(double,02)
-   perform_test(double,03)
-   perform_test(double,04)
-   perform_test(double,05)
-   perform_test(double,06)
-   perform_test(double,07)
-   perform_test(double,08)
-   perform_test(double,09)
-   perform_test(double,10)
-   perform_test(double,11)
-   perform_test(double,12)
-   perform_test(double,13)
-   perform_test(double,14)
-   perform_test(double,15)
-   perform_test(double,16)
-   perform_test(double,17)
-   perform_test(double,18)
-   perform_test(double,19)
-   perform_test(double,20)
+   perform_test(numeric_type,00)
+   perform_test(numeric_type,01)
+   perform_test(numeric_type,02)
+   perform_test(numeric_type,03)
+   perform_test(numeric_type,04)
+   perform_test(numeric_type,05)
+   perform_test(numeric_type,06)
+   perform_test(numeric_type,07)
+   perform_test(numeric_type,08)
+   perform_test(numeric_type,09)
+   perform_test(numeric_type,10)
+   perform_test(numeric_type,11)
+   perform_test(numeric_type,12)
+   perform_test(numeric_type,13)
+   perform_test(numeric_type,14)
+   perform_test(numeric_type,15)
+   perform_test(numeric_type,16)
+   perform_test(numeric_type,17)
+   perform_test(numeric_type,18)
+   perform_test(numeric_type,19)
+   perform_test(numeric_type,20)
 
    #undef perform_test
 

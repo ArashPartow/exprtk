@@ -459,6 +459,36 @@ namespace exprtk
             #undef exprtk_register_int_type_tag
 
             template <typename T>
+            struct epsilon_type
+            {
+               static inline T value()
+               {
+                  const T epsilon = T(0.0000000001);
+                  return epsilon;
+               }
+            };
+
+            template <>
+            struct epsilon_type <float>
+            {
+               static inline float value()
+               {
+                  const float epsilon = float(0.000001f);
+                  return epsilon;
+               }
+            };
+
+            template <>
+            struct epsilon_type <long double>
+            {
+               static inline long double value()
+               {
+                  const long double epsilon = (long double)(0.000000000001);
+                  return epsilon;
+               }
+            };
+
+            template <typename T>
             inline bool is_true_impl(const T v)
             {
                return (v != T(0));
@@ -479,13 +509,13 @@ namespace exprtk
             template <typename T>
             inline T equal_impl(const T v0, const T v1, real_type_tag)
             {
-               static const T epsilon = T(0.0000000001);
+               const T epsilon = epsilon_type<T>::value();
                return (abs_impl(v0 - v1,real_type_tag()) <= (std::max(T(1),std::max(abs_impl(v0,real_type_tag()),abs_impl(v1,real_type_tag()))) * epsilon)) ? T(1) : T(0);
             }
 
             inline float equal_impl(const float v0, const float v1, real_type_tag)
             {
-               static const float epsilon = float(0.000001f);
+               const float epsilon = epsilon_type<float>::value();
                return (abs_impl(v0 - v1,real_type_tag()) <= (std::max(1.0f,std::max(abs_impl(v0,real_type_tag()),abs_impl(v1,real_type_tag()))) * epsilon)) ? 1.0f : 0.0f;
             }
 
@@ -514,13 +544,13 @@ namespace exprtk
             template <typename T>
             inline T nequal_impl(const T v0, const T v1, real_type_tag)
             {
-               static const T epsilon = T(0.0000000001);
+               const T epsilon = epsilon_type<T>::value();
                return (abs_impl(v0 - v1,real_type_tag()) > (std::max(T(1),std::max(abs_impl(v0,real_type_tag()),abs_impl(v1,real_type_tag()))) * epsilon)) ? T(1) : T(0);
             }
 
             inline float nequal_impl(const float v0, const float v1, real_type_tag)
             {
-               static const float epsilon = float(0.000001f);
+               const float epsilon = epsilon_type<float>::value();
                return (abs_impl(v0 - v1,real_type_tag()) > (std::max(1.0f,std::max(abs_impl(v0,real_type_tag()),abs_impl(v1,real_type_tag()))) * epsilon)) ? 1.0f : 0.0f;
             }
 
@@ -3339,6 +3369,11 @@ namespace exprtk
       };
 
       inline bool is_true(const double v)
+      {
+         return (0.0 != v);
+      }
+
+      inline bool is_true(const long double v)
       {
          return (0.0 != v);
       }
@@ -9547,7 +9582,7 @@ namespace exprtk
 
       inline bool add_epsilon()
       {
-         static const T local_epsilon = std::numeric_limits<T>::epsilon();
+         static const T local_epsilon = details::numeric::details::epsilon_type<T>::value();
          return add_constant("epsilon",local_epsilon);
       }
 
