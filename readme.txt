@@ -32,7 +32,8 @@ arithmetic operations, functions and processes:
 
  (5) Conditional,
      Switch &
-     Loop statements: if-then-else, switch-case, while, repeat-until
+     Loop statements: if-then-else, ternary conditional, switch-case,
+                      while, repeat-until
 
  (6) Assignment:      :=
 
@@ -64,7 +65,7 @@ expressions that can be parsed and evaluated using the ExprTk library.
   (13) (x + y)z + 1.1 / 2.7 == (x + y) * z + 1.1 / 2.7
   (14) (sin(x / pi) cos(2y) + 1) == (sin(x / pi) * cos(2 * y) + 1)
   (15) 75x^17 + 25.1x^5 - 35x^4 - 15.2x^3 + 40x^2 - 15.3x + 1
-  (16) if (avg(x,y) <= x + y, x - y, x * y) + 2.345 * pi / x
+  (16) (avg(x,y) <= x + y ? x - y : x * y) + 2.345 * pi / x
   (17) fib_i := fib_i + (x := y + 0 * (fib_i := x + (y := fib_i)))
   (18) while (x <= 100) { x := x + 1 }
   (19) x <= 'abc123' and (y in 'AString') or ('1x2y3z' != z)
@@ -406,6 +407,13 @@ include path (e.g: /usr/include/).
 |          |   w := z + y;                                           |
 |          | until ((x := (x - 1)) <= 0)                             |
 +----------+---------------------------------------------------------+
+| ?:       | Ternary conditional statement, similar to that of the   |
+|          | above denoted if-statement.                             |
+|          | eg:                                                     |
+|          | 0. x ? y : z                                            |
+|          | 1. x + 1 > 2y ? z + 1 : (w / v)                         |
+|          | 2. min(x,y) > z ? (x < y + 1) ? x : y : (w * v)         |
++----------+---------------------------------------------------------+
 | ~        | Evaluate each sub-expression, then return as the result |
 |          | the value of the last sub-expression. This is sometimes |
 |          | known as multiple sequence point evaluation.            |
@@ -459,6 +467,46 @@ types a symbol table can handle:
    (e) Functions
    (f) Vararg functions
 
+During the compilation  process if an  expression is found  to require
+any  of  the  elements   noted  above,  the  expression's   associated
+symbol_table  will  be  queried  for  the  element  and  if  present a
+reference to the element will be embedded within the expression's AST.
+This allows for the original  element to be modified independently  of
+the  expression  instance  and  to also  allow  the  expression  to be
+evaluated using the current value of the element.
+
+The  example  below demonstrates  the  relationship between variables,
+symbol_table and expression. Note  the variables are modified  as they
+normally would in a program, and when the expression is  evaluated the
+current values assigned to the variables will be used.
+
+   typedef exprtk::symbol_table<double> symbol_table_t;
+   typedef exprtk::expression<double>     expression_t;
+   typedef exprtk::parser<double>             parser_t;
+
+   symbol_table_t symbol_table;
+   expression_t   expression;
+   parser_t       parser;
+
+   double x = 0;
+   double y = 0;
+
+   std::string expression_string = "x * y + 3";
+   symbol_table.add_variable("x",x);
+   symbol_table.add_variable("y",y);
+
+   expression.register_symbol_table(symbol_table);
+
+   parser.compile(expression_string,expression);
+
+   x = 1.0;
+   y = 2.0;
+   parser.value(); // 1 * 2 + 3
+   x = 3.7;
+   parser.value(); // 3.7 * 2 + 3
+   y = -9.0;
+   parser.value(); // 3.7 * -9 + 3
+
 
 (2) Expression
 A structure that holds an AST  for a specified expression and is  used
@@ -474,21 +522,21 @@ Expression:  z := (x + y^-2.345) * sin(pi / min(w - 7.3,v))
                [Assignment]
         ________/        \_____
        /                       \
- Variable(z)               [Multiply]
+ Variable(z)            [Multiplication]
                 ____________/      \___________
                /                               \
               /                          [Unary-Func(sin)]
          [Addition]                            |
       ____/      \____                    [Division]
      /                \                 ___/      \___
- Variable(x)       [Power]             /              \
+ Variable(x)   [Exponentiation]        /              \
               ______/   \______  Constant(pi)  [Binary-Func(min)]
              /                 \                ____/    \____
-        Variable(y)         [Negate]           /              \
+        Variable(y)        [Negation]          /              \
                                |              /           Variable(v)
                         Constant(2.345)      /
                                             /
-                                      [Subtract]
+                                     [Subtraction]
                                    ____/      \____
                                   /                \
                              Variable(w)      Constant(7.3)
@@ -809,7 +857,8 @@ int main()
    typedef exprtk::parser<double>             parser_t;
    typedef exprtk::parser_error::type          error_t;
 
-   std::string expression_str = "z := 2 myfunc([4+sin(x/pi)^3],y^2)";
+   std::string expression_str =
+                  "z := 2 myfunc([4 + sin(x / pi)^3],y ^ 2)";
 
    double x = 1.1;
    double y = 2.2;

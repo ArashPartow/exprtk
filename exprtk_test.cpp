@@ -1006,7 +1006,29 @@ static const test_t test_list[] =
                      test_t("repeat 1.1234; 1 < 2; (1.1 + 2.2) until (1 < 2)",3.3),
                      test_t("repeat 1.1234; 1 < 2; 1.1 + 2.2; until (1 < 2)",3.3),
                      test_t("repeat 1.1234; 1 < 2; (1.1 + 2.2); until (1 < 2)",3.3),
-                     test_t("[*] { case 1 < 2 : 1 / 2; case (1 < 3) : 2 / 2; case 1 < 4 : 3 / 2; case (1 < 5) : 4 / 2; }",2.0)
+                     test_t("[*] { case 1 < 2 : 1 / 2; case (1 < 3) : 2 / 2; case 1 < 4 : 3 / 2; case (1 < 5) : 4 / 2; }",2.0),
+                     test_t(" 0 ? 1 : 2",2.0),
+                     test_t(" 1 ? 3 : 4",3.0),
+                     test_t("(0 ? 1 : 2) == 2",1.0),
+                     test_t("(1 ? 3 : 4) == 3",1.0),
+                     test_t("[(0)] ? [(1)] : [(2)]",2.0),
+                     test_t("([(0)] ? [(1)] : [(2)]) == 2",1.0),
+                     test_t("([(1)] ? [(3)] : [(4)]) == 3",1.0),
+                     test_t("(1 < 2 ? 3 : 4) == 3",1.0),
+                     test_t("(1 > 2 ? 3 : 4) == 4",1.0),
+                     test_t("(1 < 2 ? 3 + 5 : 4) == 8",1.0),
+                     test_t("(1 > 2 ? 3 : 4 + 5) == 9",1.0),
+                     test_t("(2 < 3 + 3 ? 7 : 9) == 7",1.0),
+                     test_t("(1 + 1 < 3 ? 7 : 9) == 7",1.0),
+                     test_t("(1 + 1 < 3 + 3 ? 7 : 9) == 7",1.0),
+                     test_t("(2 > 3 + 3 ? 7 : 9) == 9",1.0),
+                     test_t("(1 + 1 > 3 ? 7 : 9) == 9",1.0),
+                     test_t("(1 + 1 > 3 + 3 ? 7 : 9) == 9",1.0),
+                     test_t("(2 < (3 + 3) ? 7 : 9) == 7",1.0),
+                     test_t("((1 + 1) < 3 ? 7 : 9) == 7",1.0),
+                     test_t("((1 + 1) < (3 + 3) ? 7 : 9) == 7",1.0),
+                     test_t("(min(1,2) ? 1 + 3 : 1 + 4) == 4",1.0),
+                     test_t("(min(0,1) ? 1 + 3 : 1 + 4) == 5",1.0)
                   };
 
 static const std::size_t test_list_size = sizeof(test_list) / sizeof(test_t);
@@ -1109,13 +1131,17 @@ inline bool run_test00()
    const std::size_t rounds = 10;
    for (std::size_t r = 0; r < rounds; ++r)
    {
+      bool result = true;
       for (std::size_t i = 0; i < test_list_size; ++i)
       {
          if (!test_expression<T>(test_list[i].first,T(test_list[i].second)))
          {
-            return false;
+            result = false;
          }
       }
+
+      if (!result)
+         return false;
    }
 
    return true;
@@ -1442,7 +1468,23 @@ inline bool run_test01()
                                  test_xy<T>("switch { case {(x <= y)} : switch { case ({x <= y}) : x; default: 1.12345; }; default: 1.12345; }",T(1.0),T(2.0),T(1.0)),
                                  test_xy<T>("[*]{ case x < y : x + y; case y < x : y - x; }",T(2.0),T(3.0),T(5.0)),
                                  test_xy<T>("[*]{ case x > y : x + y; case y > x : y - x; }",T(2.0),T(3.0),T(1.0)),
-                                 test_xy<T>("[*]{ case x > y : x - y; case y < x : y + x; }",T(2.0),T(3.0),T(0.0))
+                                 test_xy<T>("[*]{ case x > y : x - y; case y < x : y + x; }",T(2.0),T(3.0),T(0.0)),
+                                 test_xy<T>("0 ? x : y"                       ,T(1.0),T(2.0),T( 2.0)),
+                                 test_xy<T>("1 ? x : y"                       ,T(1.0),T(2.0),T( 1.0)),
+                                 test_xy<T>("x ? x : y"                       ,T(1.0),T(2.0),T( 1.0)),
+                                 test_xy<T>("x ? x : y"                       ,T(0.0),T(2.0),T( 2.0)),
+                                 test_xy<T>("(x + y < 4) ? 1 : 2"             ,T(1.0),T(2.0),T( 1.0)),
+                                 test_xy<T>("(x + y > 4) ? 1 : 2"             ,T(1.0),T(2.0),T( 2.0)),
+                                 test_xy<T>("x < y ? x + y : x - y"           ,T(1.0),T(2.0),T( 3.0)),
+                                 test_xy<T>("x > y ? x + y : x - y"           ,T(1.0),T(2.0),T(-1.0)),
+                                 test_xy<T>("(x + x < y ? 7 : 9) == 7"        ,T(1.0),T(3.0),T( 1.0)),
+                                 test_xy<T>("(x + x < y + y ? 7 : 9) == 7"    ,T(1.0),T(3.0),T( 1.0)),
+                                 test_xy<T>("(x > y + y ? 7 : 9) == 9"        ,T(1.0),T(3.0),T( 1.0)),
+                                 test_xy<T>("(x + x > y ? 7 : 9) == 9"        ,T(1.0),T(3.0),T( 1.0)),
+                                 test_xy<T>("(x + x > y + 3 ? 7 : 9) == 9"    ,T(1.0),T(3.0),T( 1.0)),
+                                 test_xy<T>("(x < (y + y) ? 7 : 9) == 7"      ,T(1.0),T(3.0),T( 1.0)),
+                                 test_xy<T>("((x + x) < y ? 7 : 9) == 7"      ,T(1.0),T(3.0),T( 1.0)),
+                                 test_xy<T>("((x + x) < (y + y) ? 7 : 9) == 7",T(1.0),T(3.0),T( 1.0)),
                               };
 
       static const std::size_t test_list_size = sizeof(test_list) / sizeof(test_xy<T>);
@@ -2391,6 +2433,13 @@ inline bool run_test08()
                                  "equal($f96(x,y,z,w),if(x > y,z,w))",
                                  "equal($f97(x,y,z,w),if(x >= y,z,w))",
                                  "equal($f98(x,y,z,w),if(equal(x,y),z,w))",
+                                 "equal($f92(x,y,z,w),x and y ? z : w)",
+                                 "equal($f93(x,y,z,w),x or y ? z : w)",
+                                 "equal($f94(x,y,z,w),x < y ? z : w)",
+                                 "equal($f95(x,y,z,w),x <= y ? z : w)",
+                                 "equal($f96(x,y,z,w),x > y ? z : w)",
+                                 "equal($f97(x,y,z,w),x >= y ? z : w)",
+                                 "equal($f98(x,y,z,w),equal(x,y) ? z : w)",
                                  "equal($f99(x,y,z,w),x*sin(y)+z*cos(w))"
                               };
    static const std::size_t expr_str_size = sizeof(expr_str) / sizeof(std::string);
