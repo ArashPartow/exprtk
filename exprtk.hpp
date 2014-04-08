@@ -9978,6 +9978,9 @@ namespace exprtk
          lexer::token token;
          error_mode mode;
          std::string diagnostic;
+         std::string error_line;
+         std::size_t line_no;
+         std::size_t column_no;
       };
 
       inline type make_error(error_mode mode, const std::string& diagnostic = "")
@@ -9986,6 +9989,8 @@ namespace exprtk
          t.mode       = mode;
          t.token.type = lexer::token::e_error;
          t.diagnostic = diagnostic;
+         t.line_no    = 0;
+         t.column_no  = 0;
          return t;
       }
 
@@ -10011,6 +10016,45 @@ namespace exprtk
             case e_helper  : return std::string("Helper Error");
             default        : return std::string("Unknown Error");
          }
+      }
+
+      bool update_error(type& error, const std::string& expression)
+      {
+         if (
+              expression.empty()                                               ||
+              (error.token.position >= expression.size())                      ||
+              (std::numeric_limits<std::size_t>::max() == error.token.position)
+            )
+         {
+            return false;
+         }
+
+         std::size_t error_line_start = 0;
+         for (std::size_t i = error.token.position; i > 0; --i)
+         {
+            if ('\n' == expression[i])
+            {
+               error_line_start = i;
+               break;
+            }
+         }
+
+         std::size_t next_nl_position = std::min(expression.size(),
+                                                 expression.find_first_of('\n',error.token.position + 1));
+
+         error.column_no  = error.token.position - error_line_start;
+         error.error_line = expression.substr(error_line_start,
+                                              next_nl_position - error_line_start);
+
+         error.line_no = 0;
+
+         for (std::size_t i = 0; i < next_nl_position; ++i)
+         {
+            if ('\n' == expression[i])
+               ++error.line_no;
+         }
+
+         return true;
       }
 
       inline void dump_error(const type& error)
@@ -10289,12 +10333,16 @@ namespace exprtk
          {
             set_error(
                make_error(parser_error::e_syntax,
-                          "ERR02 - Incomplete expression!"));
+                          current_token_,
+                          "ERR02 - Incomplete expression due to unexpected token: '" + current_token_.value + "'"));
+
             symbol_name_cache_.clear();
+
             if (0 != e)
             {
                delete e;
             }
+
             return false;
          }
       }
@@ -10594,7 +10642,7 @@ namespace exprtk
                set_error(
                   make_error(parser_error::e_syntax,
                              current_token_,
-                             "ERR07 - Expected ';' at end of sub-expression, instead got: '"+ current_token_.value +"'"));
+                             "ERR07 - Expected ';' at end of sub-expression, instead got: '" + current_token_.value + "'"));
                return error_node();
             }
          }
@@ -11302,7 +11350,7 @@ namespace exprtk
                   set_error(
                      make_error(parser_error::e_syntax,
                                 current_token_,
-                                "ERR34 - Expected '" + token_t::to_str(seperator) +"' for body of repeat until loop"));
+                                "ERR34 - Expected '" + token_t::to_str(seperator) + "' for body of repeat until loop"));
                   return error_node();
                }
 
@@ -11711,7 +11759,7 @@ namespace exprtk
                set_error(
                   make_error(parser_error::e_syntax,
                              current_token_,
-                             "ERR57 - Expected '"+ details::to_str(close_bracket) + "' for call to multi-sequence" +
+                             "ERR57 - Expected '" + details::to_str(close_bracket) + "' for call to multi-sequence" +
                              ((!source.empty()) ? std::string(" section of " + source): "")));
                return error_node();
             }
@@ -11739,7 +11787,7 @@ namespace exprtk
                set_error(
                   make_error(parser_error::e_syntax,
                              current_token_,
-                             "ERR58 - Expected '"+ details::to_str(seperator) +"' for call to multi-sequence section of " + source));
+                             "ERR58 - Expected '" + details::to_str(seperator) + "' for call to multi-sequence section of " + source));
                return error_node();
             }
 
