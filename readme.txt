@@ -83,7 +83,7 @@ http://www.opensource.org/licenses/cpl1.0.php
 
 
 [04 - DOWNLOADS & UPDATES]
-The most  recent version  of the  C++ Mathematical  Expression Toolkit
+The most  recent version  of the C++ Mathematical  Expression  Toolkit
 Library including all updates and tests can be found at the  following
 locations:
 
@@ -93,7 +93,7 @@ locations:
 
 
 [05 - INSTALLATION]
-The header  file exprtk.hpp  should be  placed in  a project or system
+The header  file exprtk.hpp  should be  placed in a project or  system
 include path (e.g: /usr/include/).
 
 
@@ -174,7 +174,7 @@ include path (e.g: /usr/include/).
 +----------+---------------------------------------------------------+
 | mor      | Multi-input logical OR, True if at least one of the     |
 |          | inputs are true. Left to right short-circuiting of      |
-|          | expressions. (eg: mor(x > y, z < w, u or v, w and x))   |
+|          | expressions.  (eg: mor(x > y, z < w, u or v, w and x))  |
 +----------+---------------------------------------------------------+
 | nand     | Logical NAND, True only if either x or y is false.      |
 |          | (eg: x nand y)                                          |
@@ -188,16 +188,16 @@ include path (e.g: /usr/include/).
 | or       | Logical OR, True if either x or y is true. (eg: x or y) |
 +----------+---------------------------------------------------------+
 | xor      | Logical XOR, True only if the logical states of x and y |
-|          | differ. (eg: x xor y)                                   |
+|          | differ.  (eg: x xor y)                                  |
 +----------+---------------------------------------------------------+
 | xnor     | Logical XNOR, True iff the biconditional of x and y is  |
-|          | satisfied. (eg: x xnor y)                               |
+|          | satisfied.  (eg: x xnor y)                              |
 +----------+---------------------------------------------------------+
 | &        | Similar to AND but with left to right expression short  |
-|          | circuiting optimisation. (eg: (x & y) == (y and x))     |
+|          | circuiting optimisation.  (eg: (x & y) == (y and x))    |
 +----------+---------------------------------------------------------+
 | |        | Similar to OR but with left to right expression short   |
-|          | circuiting optimisation. (eg: (x | y) == (y or x))      |
+|          | circuiting optimisation.  (eg: (x | y) == (y or x))     |
 +----------+---------------------------------------------------------+
 
 (3) General Purpose Functions
@@ -296,7 +296,7 @@ include path (e.g: /usr/include/).
 | atan     | Arc tangent of x expressed in radians. Interval [-1,+1] |
 |          | (eg: atan(x))                                           |
 +----------+---------------------------------------------------------+
-| atan2    | Arc tangent of (x/y) expressed in radians. [-pi,+pi]    |
+| atan2    | Arc tangent of (x / y) expressed in radians. [-pi,+pi]  |
 |          | eg: atan2(x,y)                                          |
 +----------+---------------------------------------------------------+
 | atanh    | Inverse hyperbolic tangent of x expressed in radians.   |
@@ -354,11 +354,11 @@ include path (e.g: /usr/include/).
 +----------+---------------------------------------------------------+
 | [r0:r1]  | The closed interval [r0,r1] of the specified string.    |
 |          | eg: Given a string x with a value of 'abcdefgh' then:   |
-|          | 0. x[1:4] == 'bcde'                                     |
-|          | 1. x[ :5] == x[:5] == 'abcdef'                          |
-|          | 2. x[3: ] == x[3:] =='cdefgh'                           |
-|          | 3. x[ : ] == x[:] == 'abcdefgh'                         |
-|          | 4. x[4/2:3+2] == x[2:5] == 'cdef'                       |
+|          | 1. x[1:4] == 'bcde'                                     |
+|          | 2. x[ :5] == x[:5] == 'abcdef'                          |
+|          | 3. x[3: ] == x[3:] =='cdefgh'                           |
+|          | 4. x[ : ] == x[:] == 'abcdefgh'                         |
+|          | 5. x[4/2:3+2] == x[2:5] == 'cdef'                       |
 |          |                                                         |
 |          | Note: Both r0 and r1 are assumed to be integers, where  |
 |          | r0 <= r1. They may also be the result of an expression, |
@@ -371,7 +371,27 @@ include path (e.g: /usr/include/).
 |STRUCTURE | DEFINITION                                              |
 +----------+---------------------------------------------------------+
 | if       | If x is true then return y else return z.               |
-|          | (eg: if(x, y, z) or if((x + 1) > 2y, z + 1, w / v))     |
+|          | eg:                                                     |
+|          | 1. if(x, y, z)                                          |
+|          | 2. if((x + 1) > 2y, z + 1, w / v)                       |
++----------+---------------------------------------------------------+
+| if-else  | The if-else/else-if statement. Subject to the condition |
+|          | branch the statement will return either the value of the|
+|          | consequent or the alternative branch.                   |
+|          | eg:                                                     |
+|          | 1. if (x > y) z; else w;                                |
+|          | 2. if (x > y) z; else if (w != u) v;                    |
+|          | 3. if (x < y) {z; w+1;} else u;                         |
+|          | 4. if ((x != y) and (z > w))                            |
+|          |    {                                                    |
+|          |      y := sin(x) / u;                                   |
+|          |      z := w+1;                                          |
+|          |    }                                                    |
+|          |    else if (x > (z + 1))                                |
+|          |    {                                                    |
+|          |      w := abs (x - y) + z;                              |
+|          |      u := (x + 1) > 2y ? 2u : 3u;                       |
+|          |    }                                                    |
 +----------+---------------------------------------------------------+
 | switch   | The first true case condition that is encountered will  |
 |          | determine the result of the switch. If none of the case |
@@ -410,9 +430,9 @@ include path (e.g: /usr/include/).
 | ?:       | Ternary conditional statement, similar to that of the   |
 |          | above denoted if-statement.                             |
 |          | eg:                                                     |
-|          | 0. x ? y : z                                            |
-|          | 1. x + 1 > 2y ? z + 1 : (w / v)                         |
-|          | 2. min(x,y) > z ? (x < y + 1) ? x : y : (w * v)         |
+|          | 1. x ? y : z                                            |
+|          | 2. x + 1 > 2y ? z + 1 : (w / v)                         |
+|          | 3. min(x,y) > z ? (x < y + 1) ? x : y : (w * v)         |
 +----------+---------------------------------------------------------+
 | ~        | Evaluate each sub-expression, then return as the result |
 |          | the value of the last sub-expression. This is sometimes |
@@ -433,8 +453,8 @@ include path (e.g: /usr/include/).
 |          | }                                                       |
 +----------+---------------------------------------------------------+
 
-Note: In the above tables, the symbols x, y, z and w where appropriate
-can represent any of one the following:
+Note: In  the  above  tables, the  symbols x, y, z, w, u  and v  where
+appropriate may represent any of one the following:
 
    1. Literal numeric/string value
    2. A variable
@@ -447,9 +467,9 @@ There are three primary components, that are specialized upon a  given
 numeric type, which make up the core of ExprTk. The components are  as
 follows:
 
-  1. Symbol Table  exprtk::symbol_table<NumericType>
-  2. Expression    exprtk::expression<NumericType>
-  3. Parser        exprtk::parser<NumericType>
+   1. Symbol Table  exprtk::symbol_table<NumericType>
+   2. Expression    exprtk::expression<NumericType>
+   3. Parser        exprtk::parser<NumericType>
 
 
 (1) Symbol Table

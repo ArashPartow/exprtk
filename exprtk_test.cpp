@@ -1028,7 +1028,31 @@ static const test_t test_list[] =
                      test_t("((1 + 1) < 3 ? 7 : 9) == 7",1.0),
                      test_t("((1 + 1) < (3 + 3) ? 7 : 9) == 7",1.0),
                      test_t("(min(1,2) ? 1 + 3 : 1 + 4) == 4",1.0),
-                     test_t("(min(0,1) ? 1 + 3 : 1 + 4) == 5",1.0)
+                     test_t("(min(0,1) ? 1 + 3 : 1 + 4) == 5",1.0),
+                     test_t("if(1 < 2) 3; == 3",1.0),
+                     test_t("if(1 > 2) 3; == null",1.0),
+                     test_t("if(1 < 2) 3; else 4; == 3",1.0),
+                     test_t("if(1 > 2) 3; else 4; == 4",1.0),
+                     test_t("if(1 < 2) 3; else {1+2; 4;} == 3",1.0),
+                     test_t("if(1 > 2) 3; else {1+2; 4;} == 4",1.0),
+                     test_t("if(1 < 2) 3; else if (1 < 2) 4; == 3",1.0),
+                     test_t("if(1 > 2) 3; else if (1 < 2) 4; == 4",1.0),
+                     test_t("if(1 > 2) 3; else if (1 > 2) 4; == null",1.0),
+                     test_t("if(1 < 2) 3; else if (1 < 2) {1+2; 4;} == 3",1.0),
+                     test_t("if(1 > 2) 3; else if (1 < 2) {1+2; 4;} == 4",1.0),
+                     test_t("if(1 > 2) 3; else if (1 > 2) {1+2; 4;} == null",1.0),
+                     test_t("if(1 < 2) { 1+2; 3;} == 3",1.0),
+                     test_t("if(1 > 2) { 1+2; 3;} == null",1.0),
+                     test_t("if(1 < 2) { 1+2; 3;} else 4; == 3",1.0),
+                     test_t("if(1 > 2) { 1+2; 3;} else 4; == 4",1.0),
+                     test_t("if(1 < 2) { 1+2; 3;} else {1+2; 4;} == 3",1.0),
+                     test_t("if(1 > 2) { 1+2; 3;} else {1+2; 4;} == 4",1.0),
+                     test_t("if(1 < 2) { 1+2; 3;} else if (1 < 2) 4; == 3",1.0),
+                     test_t("if(1 > 2) { 1+2; 3;} else if (1 < 2) 4; == 4",1.0),
+                     test_t("if(1 > 2) { 1+2; 3;} else if (1 > 2) 4; == null",1.0),
+                     test_t("if(1 < 2) { 1+2; 3;} else if (1 < 2) {1+2; 4;} == 3",1.0),
+                     test_t("if(1 > 2) { 1+2; 3;} else if (1 < 2) {1+2; 4;} == 4",1.0),
+                     test_t("if(1 > 2) { 1+2; 3;} else if (1 > 2) {1+2; 4;} == null",1.0)
                   };
 
 static const std::size_t test_list_size = sizeof(test_list) / sizeof(test_t);
@@ -1164,13 +1188,14 @@ struct test_xy
 };
 
 template <typename T>
-struct test_xyz
+struct test_xyzw
 {
-   test_xyz(std::string e, const T& v0, const T& v1, const T& v2, const T& r)
+   test_xyzw(std::string e, const T& v0, const T& v1, const T& v2, const T& v3, const T& r)
    : expr(e),
      x(v0),
      y(v1),
      z(v2),
+     w(v3),
      result(r)
    {}
 
@@ -1178,6 +1203,7 @@ struct test_xyz
    T x;
    T y;
    T z;
+   T w;
    T result;
 };
 
@@ -1537,51 +1563,63 @@ inline bool run_test01()
    }
 
    {
-      static const test_xyz<T> test_list[] =
+      static const test_xyzw<T> test_list[] =
                               {
-                                test_xyz<T>("((x /  y) / z )",T(7.0),T(9.0),T(3.0),T(((7.0 /  9.0) / 3.0 ))),
-                                test_xyz<T>("((x /  y) / 2 )",T(7.0),T(9.0),T(3.0),T(((7.0 /  9.0) / 2.0 ))),
-                                test_xyz<T>("((x /  2) / y )",T(7.0),T(9.0),T(3.0),T(((7.0 /  2.0) / 9.0 ))),
-                                test_xyz<T>("((2 /  x) / y )",T(7.0),T(9.0),T(3.0),T(((2.0 /  7.0) / 9.0 ))),
-                                test_xyz<T>("( x / (y /  z))",T(7.0),T(9.0),T(3.0),T(( 7.0 / (9.0  / 3.0)))),
-                                test_xyz<T>("( x / (y /  2))",T(7.0),T(9.0),T(3.0),T(( 7.0 / (9.0  / 2.0)))),
-                                test_xyz<T>("( x / (2  / y))",T(7.0),T(9.0),T(3.0),T(( 7.0 / (2.0  / 9.0)))),
-                                test_xyz<T>("( 2 / (x /  y))",T(7.0),T(9.0),T(3.0),T(( 2.0 / (7.0  / 9.0)))),
-                                test_xyz<T>("([(min(x,y) + z) + 3] - 4)",T(5.0),T(7.0),T(9.0),T((((std::min(5.0,7.0) + 9.0) + 3.0) - 4.0))),
-                                test_xyz<T>("([(min(x,y) + z) + 3] + 4)",T(5.0),T(7.0),T(9.0),T((((std::min(5.0,7.0) + 9.0) + 3.0) + 4.0))),
-                                test_xyz<T>("([(min(x,y) + z) + 3] * 4)",T(5.0),T(7.0),T(9.0),T((((std::min(5.0,7.0) + 9.0) + 3.0) * 4.0))),
-                                test_xyz<T>("([(min(x,y) + z) + 3] / 4)",T(5.0),T(7.0),T(9.0),T((((std::min(5.0,7.0) + 9.0) + 3.0) / 4.0))),
-                                test_xyz<T>("([(min(x,y) + z) - 3] - 4)",T(5.0),T(7.0),T(9.0),T((((std::min(5.0,7.0) + 9.0) - 3.0) - 4.0))),
-                                test_xyz<T>("([(min(x,y) + z) - 3] + 4)",T(5.0),T(7.0),T(9.0),T((((std::min(5.0,7.0) + 9.0) - 3.0) + 4.0))),
-                                test_xyz<T>("([(min(x,y) + z) - 3] * 4)",T(5.0),T(7.0),T(9.0),T((((std::min(5.0,7.0) + 9.0) - 3.0) * 4.0))),
-                                test_xyz<T>("([(min(x,y) + z) - 3] / 4)",T(5.0),T(7.0),T(9.0),T((((std::min(5.0,7.0) + 9.0) - 3.0) / 4.0))),
-                                test_xyz<T>("([(min(x,y) + z) * 3] - 4)",T(5.0),T(7.0),T(9.0),T((((std::min(5.0,7.0) + 9.0) * 3.0) - 4.0))),
-                                test_xyz<T>("([(min(x,y) + z) * 3] + 4)",T(5.0),T(7.0),T(9.0),T((((std::min(5.0,7.0) + 9.0) * 3.0) + 4.0))),
-                                test_xyz<T>("([(min(x,y) + z) * 3] * 4)",T(5.0),T(7.0),T(9.0),T((((std::min(5.0,7.0) + 9.0) * 3.0) * 4.0))),
-                                test_xyz<T>("([(min(x,y) + z) * 3] / 4)",T(5.0),T(7.0),T(9.0),T((((std::min(5.0,7.0) + 9.0) * 3.0) / 4.0))),
-                                test_xyz<T>("([(min(x,y) + z) / 3] - 4)",T(5.0),T(7.0),T(9.0),T((((std::min(5.0,7.0) + 9.0) / 3.0) - 4.0))),
-                                test_xyz<T>("([(min(x,y) + z) / 3] + 4)",T(5.0),T(7.0),T(9.0),T((((std::min(5.0,7.0) + 9.0) / 3.0) + 4.0))),
-                                test_xyz<T>("([(min(x,y) + z) / 3] * 4)",T(5.0),T(7.0),T(9.0),T((((std::min(5.0,7.0) + 9.0) / 3.0) * 4.0))),
-                                test_xyz<T>("([(min(x,y) + z) / 3] / 4)",T(5.0),T(7.0),T(9.0),T((((std::min(5.0,7.0) + 9.0) / 3.0) / 4.0))),
-                                test_xyz<T>("(4 - [3 + (min(x,y) + z)])",T(5.0),T(7.0),T(9.0),T((4.0 - (3.0 + (std::min(5.0,7.0) + 9.0))))),
-                                test_xyz<T>("(4 + [3 + (min(x,y) + z)])",T(5.0),T(7.0),T(9.0),T((4.0 + (3.0 + (std::min(5.0,7.0) + 9.0))))),
-                                test_xyz<T>("(4 * [3 + (min(x,y) + z)])",T(5.0),T(7.0),T(9.0),T((4.0 * (3.0 + (std::min(5.0,7.0) + 9.0))))),
-                                test_xyz<T>("(4 / [3 + (min(x,y) + z)])",T(5.0),T(7.0),T(9.0),T((4.0 / (3.0 + (std::min(5.0,7.0) + 9.0))))),
-                                test_xyz<T>("(4 - [3 - (min(x,y) + z)])",T(5.0),T(7.0),T(9.0),T((4.0 - (3.0 - (std::min(5.0,7.0) + 9.0))))),
-                                test_xyz<T>("(4 + [3 - (min(x,y) + z)])",T(5.0),T(7.0),T(9.0),T((4.0 + (3.0 - (std::min(5.0,7.0) + 9.0))))),
-                                test_xyz<T>("(4 * [3 - (min(x,y) + z)])",T(5.0),T(7.0),T(9.0),T((4.0 * (3.0 - (std::min(5.0,7.0) + 9.0))))),
-                                test_xyz<T>("(4 / [3 - (min(x,y) + z)])",T(5.0),T(7.0),T(9.0),T((4.0 / (3.0 - (std::min(5.0,7.0) + 9.0))))),
-                                test_xyz<T>("(4 - [3 * (min(x,y) + z)])",T(5.0),T(7.0),T(9.0),T((4.0 - (3.0 * (std::min(5.0,7.0) + 9.0))))),
-                                test_xyz<T>("(4 + [3 * (min(x,y) + z)])",T(5.0),T(7.0),T(9.0),T((4.0 + (3.0 * (std::min(5.0,7.0) + 9.0))))),
-                                test_xyz<T>("(4 * [3 * (min(x,y) + z)])",T(5.0),T(7.0),T(9.0),T((4.0 * (3.0 * (std::min(5.0,7.0) + 9.0))))),
-                                test_xyz<T>("(4 / [3 * (min(x,y) + z)])",T(5.0),T(7.0),T(9.0),T((4.0 / (3.0 * (std::min(5.0,7.0) + 9.0))))),
-                                test_xyz<T>("(4 - [3 / (min(x,y) + z)])",T(5.0),T(7.0),T(9.0),T((4.0 - (3.0 / (std::min(5.0,7.0) + 9.0))))),
-                                test_xyz<T>("(4 + [3 / (min(x,y) + z)])",T(5.0),T(7.0),T(9.0),T((4.0 + (3.0 / (std::min(5.0,7.0) + 9.0))))),
-                                test_xyz<T>("(4 * [3 / (min(x,y) + z)])",T(5.0),T(7.0),T(9.0),T((4.0 * (3.0 / (std::min(5.0,7.0) + 9.0))))),
-                                test_xyz<T>("(4 / [3 / (min(x,y) + z)])",T(5.0),T(7.0),T(9.0),T((4.0 / (3.0 / (std::min(5.0,7.0) + 9.0)))))
+                                test_xyzw<T>("((x /  y) / z )",T(7.0),T(9.0),T(3.0),T(0.0),T(((7.0 /  9.0) / 3.0 ))),
+                                test_xyzw<T>("((x /  y) / 2 )",T(7.0),T(9.0),T(3.0),T(0.0),T(((7.0 /  9.0) / 2.0 ))),
+                                test_xyzw<T>("((x /  2) / y )",T(7.0),T(9.0),T(3.0),T(0.0),T(((7.0 /  2.0) / 9.0 ))),
+                                test_xyzw<T>("((2 /  x) / y )",T(7.0),T(9.0),T(3.0),T(0.0),T(((2.0 /  7.0) / 9.0 ))),
+                                test_xyzw<T>("( x / (y /  z))",T(7.0),T(9.0),T(3.0),T(0.0),T(( 7.0 / (9.0  / 3.0)))),
+                                test_xyzw<T>("( x / (y /  2))",T(7.0),T(9.0),T(3.0),T(0.0),T(( 7.0 / (9.0  / 2.0)))),
+                                test_xyzw<T>("( x / (2  / y))",T(7.0),T(9.0),T(3.0),T(0.0),T(( 7.0 / (2.0  / 9.0)))),
+                                test_xyzw<T>("( 2 / (x /  y))",T(7.0),T(9.0),T(3.0),T(0.0),T(( 2.0 / (7.0  / 9.0)))),
+                                test_xyzw<T>("([(min(x,y) + z) + 3] - 4)",T(5.0),T(7.0),T(9.0),T(0.0),T((((std::min(5.0,7.0) + 9.0) + 3.0) - 4.0))),
+                                test_xyzw<T>("([(min(x,y) + z) + 3] + 4)",T(5.0),T(7.0),T(9.0),T(0.0),T((((std::min(5.0,7.0) + 9.0) + 3.0) + 4.0))),
+                                test_xyzw<T>("([(min(x,y) + z) + 3] * 4)",T(5.0),T(7.0),T(9.0),T(0.0),T((((std::min(5.0,7.0) + 9.0) + 3.0) * 4.0))),
+                                test_xyzw<T>("([(min(x,y) + z) + 3] / 4)",T(5.0),T(7.0),T(9.0),T(0.0),T((((std::min(5.0,7.0) + 9.0) + 3.0) / 4.0))),
+                                test_xyzw<T>("([(min(x,y) + z) - 3] - 4)",T(5.0),T(7.0),T(9.0),T(0.0),T((((std::min(5.0,7.0) + 9.0) - 3.0) - 4.0))),
+                                test_xyzw<T>("([(min(x,y) + z) - 3] + 4)",T(5.0),T(7.0),T(9.0),T(0.0),T((((std::min(5.0,7.0) + 9.0) - 3.0) + 4.0))),
+                                test_xyzw<T>("([(min(x,y) + z) - 3] * 4)",T(5.0),T(7.0),T(9.0),T(0.0),T((((std::min(5.0,7.0) + 9.0) - 3.0) * 4.0))),
+                                test_xyzw<T>("([(min(x,y) + z) - 3] / 4)",T(5.0),T(7.0),T(9.0),T(0.0),T((((std::min(5.0,7.0) + 9.0) - 3.0) / 4.0))),
+                                test_xyzw<T>("([(min(x,y) + z) * 3] - 4)",T(5.0),T(7.0),T(9.0),T(0.0),T((((std::min(5.0,7.0) + 9.0) * 3.0) - 4.0))),
+                                test_xyzw<T>("([(min(x,y) + z) * 3] + 4)",T(5.0),T(7.0),T(9.0),T(0.0),T((((std::min(5.0,7.0) + 9.0) * 3.0) + 4.0))),
+                                test_xyzw<T>("([(min(x,y) + z) * 3] * 4)",T(5.0),T(7.0),T(9.0),T(0.0),T((((std::min(5.0,7.0) + 9.0) * 3.0) * 4.0))),
+                                test_xyzw<T>("([(min(x,y) + z) * 3] / 4)",T(5.0),T(7.0),T(9.0),T(0.0),T((((std::min(5.0,7.0) + 9.0) * 3.0) / 4.0))),
+                                test_xyzw<T>("([(min(x,y) + z) / 3] - 4)",T(5.0),T(7.0),T(9.0),T(0.0),T((((std::min(5.0,7.0) + 9.0) / 3.0) - 4.0))),
+                                test_xyzw<T>("([(min(x,y) + z) / 3] + 4)",T(5.0),T(7.0),T(9.0),T(0.0),T((((std::min(5.0,7.0) + 9.0) / 3.0) + 4.0))),
+                                test_xyzw<T>("([(min(x,y) + z) / 3] * 4)",T(5.0),T(7.0),T(9.0),T(0.0),T((((std::min(5.0,7.0) + 9.0) / 3.0) * 4.0))),
+                                test_xyzw<T>("([(min(x,y) + z) / 3] / 4)",T(5.0),T(7.0),T(9.0),T(0.0),T((((std::min(5.0,7.0) + 9.0) / 3.0) / 4.0))),
+                                test_xyzw<T>("(4 - [3 + (min(x,y) + z)])",T(5.0),T(7.0),T(9.0),T(0.0),T((4.0 - (3.0 + (std::min(5.0,7.0) + 9.0))))),
+                                test_xyzw<T>("(4 + [3 + (min(x,y) + z)])",T(5.0),T(7.0),T(9.0),T(0.0),T((4.0 + (3.0 + (std::min(5.0,7.0) + 9.0))))),
+                                test_xyzw<T>("(4 * [3 + (min(x,y) + z)])",T(5.0),T(7.0),T(9.0),T(0.0),T((4.0 * (3.0 + (std::min(5.0,7.0) + 9.0))))),
+                                test_xyzw<T>("(4 / [3 + (min(x,y) + z)])",T(5.0),T(7.0),T(9.0),T(0.0),T((4.0 / (3.0 + (std::min(5.0,7.0) + 9.0))))),
+                                test_xyzw<T>("(4 - [3 - (min(x,y) + z)])",T(5.0),T(7.0),T(9.0),T(0.0),T((4.0 - (3.0 - (std::min(5.0,7.0) + 9.0))))),
+                                test_xyzw<T>("(4 + [3 - (min(x,y) + z)])",T(5.0),T(7.0),T(9.0),T(0.0),T((4.0 + (3.0 - (std::min(5.0,7.0) + 9.0))))),
+                                test_xyzw<T>("(4 * [3 - (min(x,y) + z)])",T(5.0),T(7.0),T(9.0),T(0.0),T((4.0 * (3.0 - (std::min(5.0,7.0) + 9.0))))),
+                                test_xyzw<T>("(4 / [3 - (min(x,y) + z)])",T(5.0),T(7.0),T(9.0),T(0.0),T((4.0 / (3.0 - (std::min(5.0,7.0) + 9.0))))),
+                                test_xyzw<T>("(4 - [3 * (min(x,y) + z)])",T(5.0),T(7.0),T(9.0),T(0.0),T((4.0 - (3.0 * (std::min(5.0,7.0) + 9.0))))),
+                                test_xyzw<T>("(4 + [3 * (min(x,y) + z)])",T(5.0),T(7.0),T(9.0),T(0.0),T((4.0 + (3.0 * (std::min(5.0,7.0) + 9.0))))),
+                                test_xyzw<T>("(4 * [3 * (min(x,y) + z)])",T(5.0),T(7.0),T(9.0),T(0.0),T((4.0 * (3.0 * (std::min(5.0,7.0) + 9.0))))),
+                                test_xyzw<T>("(4 / [3 * (min(x,y) + z)])",T(5.0),T(7.0),T(9.0),T(0.0),T((4.0 / (3.0 * (std::min(5.0,7.0) + 9.0))))),
+                                test_xyzw<T>("(4 - [3 / (min(x,y) + z)])",T(5.0),T(7.0),T(9.0),T(0.0),T((4.0 - (3.0 / (std::min(5.0,7.0) + 9.0))))),
+                                test_xyzw<T>("(4 + [3 / (min(x,y) + z)])",T(5.0),T(7.0),T(9.0),T(0.0),T((4.0 + (3.0 / (std::min(5.0,7.0) + 9.0))))),
+                                test_xyzw<T>("(4 * [3 / (min(x,y) + z)])",T(5.0),T(7.0),T(9.0),T(0.0),T((4.0 * (3.0 / (std::min(5.0,7.0) + 9.0))))),
+                                test_xyzw<T>("(4 / [3 / (min(x,y) + z)])",T(5.0),T(7.0),T(9.0),T(0.0),T((4.0 / (3.0 / (std::min(5.0,7.0) + 9.0))))),
+                                test_xyzw<T>("if(x < y) { z+2; z;} == z"                             ,T(1.0),T(2.0),T(3.0),T(4.0),T(1.0)),
+                                test_xyzw<T>("if(x > y) { z+2; z;} == null"                          ,T(1.0),T(2.0),T(3.0),T(4.0),T(1.0)),
+                                test_xyzw<T>("if(x < y) { z+2; z;} else w; == z"                     ,T(1.0),T(2.0),T(3.0),T(4.0),T(1.0)),
+                                test_xyzw<T>("if(x > y) { z+2; z;} else 1 + w; == (w + 1)"           ,T(1.0),T(2.0),T(3.0),T(4.0),T(1.0)),
+                                test_xyzw<T>("if(x < y) { z+2; z;} else {1+2; w;} == z"              ,T(1.0),T(2.0),T(3.0),T(4.0),T(1.0)),
+                                test_xyzw<T>("if(x > y) { z+2; z;} else {1+2; w;} == w"              ,T(1.0),T(2.0),T(3.0),T(4.0),T(1.0)),
+                                test_xyzw<T>("if(x < y) { z+2; z;} else if (x < y) w; == z"          ,T(1.0),T(2.0),T(3.0),T(4.0),T(1.0)),
+                                test_xyzw<T>("if(x > y) { z+2; z;} else if (x < y) 1 + w; == w + 1"  ,T(1.0),T(2.0),T(3.0),T(4.0),T(1.0)),
+                                test_xyzw<T>("if(x > y) { z+2; z;} else if (x > y) w; == null"       ,T(1.0),T(2.0),T(3.0),T(4.0),T(1.0)),
+                                test_xyzw<T>("if(x < y) { z+2; z;} else if (x < y) {w+2; w;} == z"   ,T(1.0),T(2.0),T(3.0),T(4.0),T(1.0)),
+                                test_xyzw<T>("if(x > y) { z+2; z;} else if (x < y) {w+2; w;} == w"   ,T(1.0),T(2.0),T(3.0),T(4.0),T(1.0)),
+                                test_xyzw<T>("if(x > y) { z+2; z;} else if (x > y) {w+2; w;} == null",T(1.0),T(2.0),T(3.0),T(4.0),T(1.0))
                               };
 
-      static const std::size_t test_list_size = sizeof(test_list) / sizeof(test_xyz<T>);
+      static const std::size_t test_list_size = sizeof(test_list) / sizeof(test_xyzw<T>);
 
       const std::size_t rounds = 60;
 
@@ -1590,12 +1628,13 @@ inline bool run_test01()
          bool loop_result = true;
          for (std::size_t i = 0; i < test_list_size; ++i)
          {
-            test_xyz<T>& test = const_cast<test_xyz<T>&>(test_list[i]);
+            test_xyzw<T>& test = const_cast<test_xyzw<T>&>(test_list[i]);
 
             exprtk::symbol_table<T> symbol_table;
             symbol_table.add_variable("x",test.x);
             symbol_table.add_variable("y",test.y);
             symbol_table.add_variable("z",test.z);
+            symbol_table.add_variable("w",test.w);
 
             exprtk::expression<T> expression;
             expression.register_symbol_table(symbol_table);
