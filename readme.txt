@@ -33,9 +33,9 @@ arithmetic operations, functions and processes:
  (5) Conditional,
      Switch &
      Loop statements: if-then-else, ternary conditional, switch-case,
-                      while, repeat-until
+                      while, for, repeat-until
 
- (6) Assignment:      :=
+ (6) Assignment:      :=, +=, -=, *=, /=
 
  (7) String
      processing:      in, like, ilike
@@ -107,20 +107,20 @@ include path (e.g: /usr/include/).
 
 
 [07 - COMPILER COMPATIBILITY]
- (*) GNU Compiler Collection (4.1+)
- (*) Intel C++ Compiler (9.x+)
+ (*) GNU Compiler Collection (3.3+)
+ (*) Intel C++ Compiler (8.x+)
  (*) Clang/LLVM (1.1+)
  (*) PGI C++ (10.x+)
  (*) Microsoft Visual Studio C++ Compiler (8.1+)
  (*) Comeau C++ Compiler (4.3+)
- (*) IBM XL C/C++ (10.x+)
+ (*) IBM XL C/C++ (9.x+)
  (*) C++ Builder (XE4+)
 
 
 
 [08 - BUILT-IN OPERATIONS & FUNCTIONS]
 
-(0) Arithmetic Operators
+(0) Arithmetic & Assignment Operators
 +----------+---------------------------------------------------------+
 | OPERATOR | DEFINITION                                              |
 +----------+---------------------------------------------------------+
@@ -138,6 +138,23 @@ include path (e.g: /usr/include/).
 +----------+---------------------------------------------------------+
 |  :=      | Assign the value of x to y. (eg: y := x)                |
 |          | Where y is a variable type.                             |
++----------+---------------------------------------------------------+
+|  +=      | Increment x to by the value of the expression on the    |
+|          | right-hand side. Where x is a variable type.            |
+|          | (eg: x += abs(y - z))                                   |
++----------+---------------------------------------------------------+
+|  -=      | Decrement x to by the value of the expression on the    |
+|          | right-hand side. Where x is a variable type.            |
+|          | (eg: x -= abs(y + z))                                   |
++----------+---------------------------------------------------------+
+|  *=      | Assign the multiplication of x by the value of the      |
+|          | expression on the right-hand side to x. Where x is a    |
+|          | variable type.                                          |
+|          | (eg: x *= abs(y / z))                                   |
++----------+---------------------------------------------------------+
+|  /=      | Assign the division of x by the value of the expression |
+|          | on the right-hand side to x. Where x is a variable type.|
+|          | (eg: x /= abs(y * z))                                   |
 +----------+---------------------------------------------------------+
 
 (1) Equalities & Inequalities
@@ -411,10 +428,10 @@ include path (e.g: /usr/include/).
 |          | statement in the final iteration will be used as the    |
 |          | return value of the loop.                               |
 |          | eg:                                                     |
-|          | while ((x := (x - 1)) > 0)                              |
+|          | while ((x -= 1) > 0)                                    |
 |          | {                                                       |
 |          |   y := x + z;                                           |
-|          |   w := z + y;                                           |
+|          |   w := u + y;                                           |
 |          | }                                                       |
 +----------+---------------------------------------------------------+
 | repeat/  | The structure will repeatedly evaluate the internal     |
@@ -424,8 +441,20 @@ include path (e.g: /usr/include/).
 |          | eg:                                                     |
 |          | repeat                                                  |
 |          |   y := x + z;                                           |
-|          |   w := z + y;                                           |
-|          | until ((x := (x - 1)) <= 0)                             |
+|          |   w := u + y;                                           |
+|          | until ((x - 1) <= 0)                                    |
++----------+---------------------------------------------------------+
+| for      | The structure will repeatedly evaluate the internal     |
+|          | statement(s) while the condition is true. On each loop  |
+|          | iteration, an 'incrementing' expression is evaluated.   |
+|          | The conditional is mandatory whereas the initializer    |
+|          | and incrementing expressions are optional.              |
+|          | eg:                                                     |
+|          | for (x := 0; x < n && (x != y); x := x + 1)             |
+|          | {                                                       |
+|          |   y := y + x / 2 - z;                                   |
+|          |   w := u + y;                                           |
+|          | }                                                       |
 +----------+---------------------------------------------------------+
 | ?:       | Ternary conditional statement, similar to that of the   |
 |          | above denoted if-statement.                             |
@@ -833,10 +862,10 @@ correctly optimize such expressions for a given architecture.
       multiple expressions.
 
  (21) The common use-case for an expression is to have it compiled
-      only once and then subsequently have it evaluated multiple
-      times. An extremely inefficient approach would be to recompile
-      an expression from its string form every time it requires
-      evaluating.
+      only ONCE and then subsequently have it evaluated multiple
+      times. An extremely inefficient and suboptimal approach would
+      be to recompile an expression from its string form every time
+      it requires evaluating.
 
  (22) The following are examples of compliant floating point value
       representations:

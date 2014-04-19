@@ -2,7 +2,7 @@
  **************************************************************
  *         C++ Mathematical Expression Toolkit Library        *
  *                                                            *
- * Simple Example 2                                           *
+ * Simple Example 11                                          *
  * Author: Arash Partow (1999-2014)                           *
  * URL: http://www.partow.net/programming/exprtk/index.html   *
  *                                                            *
@@ -22,16 +22,14 @@
 
 
 template<typename T>
-void square_wave()
+void square_wave2()
 {
-   std::string expr_string = "a*(4/pi)*"
-                             "((1 /1)*sin( 2*pi*f*t)+(1 /3)*sin( 6*pi*f*t)+"
-                             " (1 /5)*sin(10*pi*f*t)+(1 /7)*sin(14*pi*f*t)+"
-                             " (1 /9)*sin(18*pi*f*t)+(1/11)*sin(22*pi*f*t)+"
-                             " (1/13)*sin(26*pi*f*t)+(1/15)*sin(30*pi*f*t)+"
-                             " (1/17)*sin(34*pi*f*t)+(1/19)*sin(38*pi*f*t)+"
-                             " (1/21)*sin(42*pi*f*t)+(1/23)*sin(46*pi*f*t)+"
-                             " (1/25)*sin(50*pi*f*t)+(1/27)*sin(54*pi*f*t))";
+   std::string expr_string = " r := 0;                               "
+                             " for(i := 0; i < 1000; i += 1)         "
+                             " {                                     "
+                             "   r += (1/(2i+1))*sin((4i+2)*pi*f*t); "
+                             " };                                    "
+                             " r *= a*(4 / pi);                      ";
 
    static const T pi = T(3.14159265358979323846);
 
@@ -49,6 +47,8 @@ void square_wave()
    expression.register_symbol_table(symbol_table);
 
    exprtk::parser<T> parser;
+   parser.enable_unknown_symbol_resolver();
+
    parser.compile(expr_string,expression);
 
    const T delta = (T(4) * pi) / T(1000);
@@ -62,6 +62,6 @@ void square_wave()
 
 int main()
 {
-   square_wave<double>();
+   square_wave2<double>();
    return 0;
 }

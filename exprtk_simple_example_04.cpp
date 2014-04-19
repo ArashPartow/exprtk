@@ -33,19 +33,19 @@ void fibonacci()
 
    compositor
       .add("fibonacci_impl",
-           "switch                        "
-           "{                             "
-           "  case x == 0 : 0;            "
-           "  case x == 1 : 1;            "
-           "  default     :               "
-           "    while ((x := (x - 1)) > 0)"
-           "    {                         "
-           "      w := z;                 "
-           "      z := z + y;             "
-           "      y := w;                 "
-           "      z                       "
-           "    };                        "
-           "}                             ",
+           "switch                   "
+           "{                        "
+           "  case x == 0 : 0;       "
+           "  case x == 1 : 1;       "
+           "  default     :          "
+           "    while ((x -= 1) > 0) "
+           "    {                    "
+           "      w := z;            "
+           "      z := z + y;        "
+           "      y := w;            "
+           "      z                  "
+           "    };                   "
+           "}                        ",
            "x","y","z","w");
 
    compositor

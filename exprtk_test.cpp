@@ -1511,6 +1511,17 @@ inline bool run_test01()
                                  test_xy<T>("(x < (y + y) ? 7 : 9) == 7"      ,T(1.0),T(3.0),T( 1.0)),
                                  test_xy<T>("((x + x) < y ? 7 : 9) == 7"      ,T(1.0),T(3.0),T( 1.0)),
                                  test_xy<T>("((x + x) < (y + y) ? 7 : 9) == 7",T(1.0),T(3.0),T( 1.0)),
+                                 test_xy<T>("(x += 2 ) ==    3 "              ,T(1),T(3),T(1)),
+                                 test_xy<T>("(x += 2y) ==    7 "              ,T(1),T(3),T(1)),
+                                 test_xy<T>("(x -= 2 ) ==   -1 "              ,T(1),T(3),T(1)),
+                                 test_xy<T>("(x -= 2y) ==   -5 "              ,T(1),T(3),T(1)),
+                                 test_xy<T>("(x *= 2 ) ==    2 "              ,T(1),T(3),T(1)),
+                                 test_xy<T>("(x *= 2y) ==    6 "              ,T(1),T(3),T(1)),
+                                 test_xy<T>("(x /= 2 ) == (1/2)"              ,T(1),T(3),T(1)),
+                                 test_xy<T>("(x /= 2y) == (1/6)"              ,T(1),T(3),T(1)),
+                                 test_xy<T>("for(i := 0; (i < 10);) { i += 1; }; x;"                   ,T(1),T(20),T( 1)),
+                                 test_xy<T>("for(i := 0; (i < 10) and (i != y); i+=2) { x += i; }; x;" ,T(1),T(20),T(21)),
+                                 test_xy<T>("for(i := 0; (i < 10) and (i != y);) { x += i; i+=2; }; x;",T(1),T(20),T(21))
                               };
 
       static const std::size_t test_list_size = sizeof(test_list) / sizeof(test_xy<T>);
@@ -1524,9 +1535,12 @@ inline bool run_test01()
          {
             test_xy<T>& test = const_cast<test_xy<T>&>(test_list[i]);
 
+            T x = test.x;
+            T y = test.y;
+
             exprtk::symbol_table<T> symbol_table;
-            symbol_table.add_variable("x",test.x);
-            symbol_table.add_variable("y",test.y);
+            symbol_table.add_variable("x",x);
+            symbol_table.add_variable("y",y);
 
             exprtk::expression<T> expression;
             expression.register_symbol_table(symbol_table);
@@ -2056,14 +2070,16 @@ inline bool run_test03()
 
       expression.register_symbol_table(symbol_table);
 
-      exprtk::parser<T> parser;
-
-      if (!parser.compile(expression_string,expression))
       {
-         printf("run_test03() - Error: %s   Expression: %s\n",
-                parser.error().c_str(),
-                expression_string.c_str());
-         return false;
+         exprtk::parser<T> parser;
+
+         if (!parser.compile(expression_string,expression))
+         {
+            printf("run_test03() - Error: %s   Expression: %s\n",
+                   parser.error().c_str(),
+                   expression_string.c_str());
+            return false;
+         }
       }
 
       expression.value();
@@ -2153,15 +2169,18 @@ inline bool run_test05()
    for (std::size_t i = 0; i < expression_count; ++i)
    {
       expression_t e;
-      exprtk::parser<T> parser;
       e.register_symbol_table(symbol_table);
 
-      if (!parser.compile(expression_string,e))
       {
-         printf("run_test05() - Error: %s   Expression: %s\n",
-                parser.error().c_str(),
-                expression_string.c_str());
-         return false;
+         exprtk::parser<T> parser;
+
+         if (!parser.compile(expression_string,e))
+         {
+            printf("run_test05() - Error: %s   Expression: %s\n",
+                   parser.error().c_str(),
+                   expression_string.c_str());
+            return false;
+         }
       }
 
       expression_list.push_back(e);
@@ -2214,14 +2233,16 @@ inline bool run_test06()
    expression_t expression;
    expression.register_symbol_table(symbol_table);
 
-   exprtk::parser<T> parser;
-
-   if (!parser.compile(expression_string,expression))
    {
-      printf("run_test06() - Error: %s   Expression: %s\n",
-             parser.error().c_str(),
-             expression_string.c_str());
-      return false;
+      exprtk::parser<T> parser;
+
+      if (!parser.compile(expression_string,expression))
+      {
+         printf("run_test06() - Error: %s   Expression: %s\n",
+                parser.error().c_str(),
+                expression_string.c_str());
+         return false;
+      }
    }
 
    T total_area1 = exprtk::integrate(expression,x,T(-1),T(1));
@@ -2259,15 +2280,17 @@ inline bool run_test07()
    expression_t expression;
    expression.register_symbol_table(symbol_table);
 
-   exprtk::parser<T> parser;
-
-   if (!parser.compile(expression_string,expression))
    {
-      printf("run_test07() - Error: %s   Expression: %s\n",
-             parser.error().c_str(),
-             expression_string.c_str());
+      exprtk::parser<T> parser;
 
-      return false;
+      if (!parser.compile(expression_string,expression))
+      {
+         printf("run_test07() - Error: %s   Expression: %s\n",
+                parser.error().c_str(),
+                expression_string.c_str());
+
+         return false;
+      }
    }
 
    for (x = T(-200); x < T(200); x += T(0.0001))
@@ -2507,14 +2530,16 @@ inline bool run_test08()
          expression_t expression;
          expression.register_symbol_table(symbol_table);
 
-         exprtk::parser<T> parser;
-
-         if (!parser.compile(expr_str[j],expression))
          {
-            printf("run_test08() - Error: %s   Expression: %s\n",
-                   parser.error().c_str(),
-                   expr_str[j].c_str());
-            return false;
+            exprtk::parser<T> parser;
+
+            if (!parser.compile(expr_str[j],expression))
+            {
+               printf("run_test08() - Error: %s   Expression: %s\n",
+                      parser.error().c_str(),
+                      expr_str[j].c_str());
+               return false;
+            }
          }
 
          expression.value();
@@ -2585,14 +2610,16 @@ inline bool run_test09()
       expression_t expression;
       expression.register_symbol_table(symbol_table);
 
-      exprtk::parser<T> parser;
-
-      if (!parser.compile(expression_string,expression))
       {
-         printf("run_test09() - Error: %s   Expression: %s\n",
-                parser.error().c_str(),
-                expression_string.c_str());
-         return false;
+         exprtk::parser<T> parser;
+
+         if (!parser.compile(expression_string,expression))
+         {
+            printf("run_test09() - Error: %s   Expression: %s\n",
+                   parser.error().c_str(),
+                   expression_string.c_str());
+            return false;
+         }
       }
 
       const T pi = T(3.141592653589793238462);
@@ -4215,41 +4242,33 @@ inline bool run_test19()
       symbol_table.add_constants();
       symbol_table.add_variable("x",x);
 
-      std::string expression_str1 = "is_prime1(x)";
-      std::string expression_str2 = "is_prime2(x)";
-      std::string expression_str3 = "is_prime3(x)";
+      const std::string expression_str[] = {
+                                             "is_prime1(x)",
+                                             "is_prime2(x)",
+                                             "is_prime3(x)"
+                                           };
 
-      expression_t expression1;
-      expression_t expression2;
-      expression_t expression3;
-      expression1.register_symbol_table(symbol_table);
-      expression2.register_symbol_table(symbol_table);
-      expression3.register_symbol_table(symbol_table);
+      const std::size_t expression_count = sizeof(expression_str) / sizeof(std::string);
 
-      parser_t parser;
+      std::vector<expression_t> expression_list;
 
-      if (!parser.compile(expression_str1,expression1))
+      for (std::size_t i = 0; i < expression_count; ++i)
       {
-         printf("run_test19() - Error: %s   Expression1: %s\n",
-                parser.error().c_str(),
-                expression_str1.c_str());
-         return false;
-      }
+         parser_t parser;
 
-      if (!parser.compile(expression_str2,expression2))
-      {
-         printf("run_test19() - Error: %s   Expression2: %s\n",
-                parser.error().c_str(),
-                expression_str2.c_str());
-         return false;
-      }
+         expression_t expression;
+         expression.register_symbol_table(symbol_table);
 
-      if (!parser.compile(expression_str3,expression3))
-      {
-         printf("run_test19() - Error: %s   Expression3: %s\n",
-                parser.error().c_str(),
-                expression_str3.c_str());
-         return false;
+         if (!parser.compile(expression_str[i],expression))
+         {
+            printf("run_test19() - Error: %s   Expression%d: %s\n",
+                   parser.error().c_str(),
+                   static_cast<unsigned int>(i),
+                   expression_str[i].c_str());
+            return false;
+         }
+         else
+            expression_list.push_back(expression);
       }
 
       bool failure = false;
@@ -4276,33 +4295,50 @@ inline bool run_test19()
                            };
       const std::size_t prime_list_size = sizeof(prime_list) / sizeof(std::size_t);
 
-      for (std::size_t i = 0; i < prime_list_size; ++i)
+      for (std::size_t i = 0; (i < prime_list_size) && (!failure); ++i)
       {
          x = prime_list[i];
-         T result1 = expression1.value();
-         T result2 = expression2.value();
-         T result3 = expression3.value();
+         std::vector<T> result(expression_count,T(0));
 
-         if ((result1 != result2) || (result1 != result3))
+         for (std::size_t j = 0; j < expression_list.size(); ++j)
          {
-            printf("run_test19() - Error in evaluation! (3)  Results don't match!  Prime: %d  "
-                   "Expression1: %s  Expression2: %s  Expression3: %s\n",
-                   static_cast<unsigned int>(prime_list[i]),
-                   expression_str1.c_str(),
-                   expression_str2.c_str(),
-                   expression_str3.c_str());
-            failure = true;
+            result[j] = expression_list[j].value();
          }
 
-         if (T(1) != result1)
+         for (std::size_t j = 1; j < expression_list.size(); ++j)
          {
-            printf("run_test19() - Error in evaluation! (3)  Prime: %d  "
-                   "Expression1: %s  Expression2: %s  Expression3: %s\n",
-                   static_cast<unsigned int>(prime_list[i]),
-                   expression_str1.c_str(),
-                   expression_str2.c_str(),
-                   expression_str3.c_str());
-            failure = true;
+            if (result[j] != result[0])
+            {
+               failure = true;
+               break;
+            }
+         }
+
+         if (failure)
+         {
+            printf("run_test19() - Error in evaluation! (3)  Results don't match!  Prime: %d\n",
+                   static_cast<unsigned int>(prime_list[i]));
+
+            for (std::size_t j = 0; j < expression_list.size(); ++j)
+            {
+               printf("Expression[%02d]: %s = %d\n",
+                      static_cast<unsigned int>(j),
+                      expression_str[j].c_str(),
+                      static_cast<unsigned int>(result[j]));
+            }
+         }
+         else  if (T(1) != expression_list[0].value())
+         {
+            printf("run_test19() - Error in evaluation! (4)  Results don't match!  Prime: %d\n",
+                   static_cast<unsigned int>(prime_list[i]));
+
+            for (std::size_t j = 0; j < expression_list.size(); ++j)
+            {
+               printf("Expression[%02d]: %s = %d\n",
+                      static_cast<unsigned int>(j),
+                      expression_str[j].c_str(),
+                      static_cast<unsigned int>(result[j]));
+            }
          }
       }
 
@@ -4334,18 +4370,19 @@ inline bool run_test19()
 
       compositor
          .add("fibonacci_impl3",
-              "switch                                "
-              "{                                     "
-              "  case x == 0 : 0;                    "
-              "  case x == 1 : 1;                    "
-              "  default : while ((x := (x - 1)) > 0)"
-              "            {                         "
-              "              w := z;                 "
-              "              z := z + y;             "
-              "              y := w;                 "
-              "              z                       "
-              "            };                        "
-              "}                                     ",
+              "switch                        "
+              "{                             "
+              "  case x == 0 : 0;            "
+              "  case x == 1 : 1;            "
+              "  default :                   "
+              "    while ((x := (x - 1)) > 0)"
+              "    {                         "
+              "      w := z;                 "
+              "      z := z + y;             "
+              "      y := w;                 "
+              "      z                       "
+              "    };                        "
+              "}                             ",
               "x","y","z","w");
 
       compositor
@@ -4355,18 +4392,19 @@ inline bool run_test19()
 
       compositor
          .add("fibonacci_impl4",
-              "switch                     "
-              "{                          "
-              "  case x == 0 : 0;         "
-              "  case x == 1 : 1;         "
-              "  default : repeat         "
-              "              w := z;      "
-              "              z := z + y;  "
-              "              y := w;      "
-              "              x := x - 1;  "
-              "              z            "
-              "            until (x <= 1);"
-              "}                          ",
+              "switch             "
+              "{                  "
+              "  case x == 0 : 0; "
+              "  case x == 1 : 1; "
+              "  default :        "
+              "    repeat         "
+              "      w := z;      "
+              "      z := z + y;  "
+              "      y := w;      "
+              "      x := x - 1;  "
+              "      z            "
+              "    until (x <= 1);"
+              "}                  ",
               "x","y","z","w");
 
       compositor
@@ -4374,56 +4412,48 @@ inline bool run_test19()
               "fibonacci_impl4(x,0,1,0)",
               "x");
 
+      compositor
+         .add("fibonacci5",
+              "if ((x == 0) or (x == 1))                "
+              "  x;                                     "
+              "else                                     "
+              "  fibonacci5(x - 1) + fibonacci5(x - 2); ",
+              "x");
+
+
       symbol_table_t& symbol_table = compositor.symbol_table();
       symbol_table.add_constants();
       symbol_table.add_variable("x",x);
 
-      std::string expression_str1 = "fibonacci1(x)";
-      std::string expression_str2 = "fibonacci2(x)";
-      std::string expression_str3 = "fibonacci3(x)";
-      std::string expression_str4 = "fibonacci4(x)";
+      const std::string expression_str[] = {
+                                             "fibonacci1(x)",
+                                             "fibonacci2(x)",
+                                             "fibonacci3(x)",
+                                             "fibonacci4(x)",
+                                             "fibonacci5(x)"
+                                           };
 
-      expression_t expression1;
-      expression_t expression2;
-      expression_t expression3;
-      expression_t expression4;
-      expression1.register_symbol_table(symbol_table);
-      expression2.register_symbol_table(symbol_table);
-      expression3.register_symbol_table(symbol_table);
-      expression4.register_symbol_table(symbol_table);
+      const std::size_t expression_count = sizeof(expression_str) / sizeof(std::string);
 
-      parser_t parser;
+      std::vector<expression_t> expression_list;
 
-      if (!parser.compile(expression_str1,expression1))
+      for (std::size_t i = 0; i < expression_count; ++i)
       {
-         printf("run_test19() - Error: %s   Expression1: %s\n",
-                parser.error().c_str(),
-                expression_str1.c_str());
-         return false;
-      }
+         parser_t parser;
 
-      if (!parser.compile(expression_str2,expression2))
-      {
-         printf("run_test19() - Error: %s   Expression2: %s\n",
-                parser.error().c_str(),
-                expression_str2.c_str());
-         return false;
-      }
+         expression_t expression;
+         expression.register_symbol_table(symbol_table);
 
-      if (!parser.compile(expression_str3,expression3))
-      {
-         printf("run_test19() - Error: %s   Expression3: %s\n",
-                parser.error().c_str(),
-                expression_str3.c_str());
-         return false;
-      }
-
-      if (!parser.compile(expression_str4,expression4))
-      {
-         printf("run_test19() - Error: %s   Expression4: %s\n",
-                parser.error().c_str(),
-                expression_str4.c_str());
-         return false;
+         if (!parser.compile(expression_str[i],expression))
+         {
+            printf("run_test19() - Error: %s   Expression[%02d]: %s\n",
+                   parser.error().c_str(),
+                   static_cast<unsigned int>(i),
+                   expression_str[i].c_str());
+            return false;
+         }
+         else
+            expression_list.push_back(expression);
       }
 
       bool failure = false;
@@ -4441,50 +4471,52 @@ inline bool run_test19()
                            };
       const std::size_t fibonacci_list_size = sizeof(fibonacci_list) / sizeof(std::size_t);
 
-      for (std::size_t i = 0; i < fibonacci_list_size; ++i)
+      for (std::size_t i = 0; (i < fibonacci_list_size) && (!failure); ++i)
       {
          x = i;
-         T result1 = expression1.value();
-         T result2 = expression2.value();
-         T result3 = expression3.value();
-         T result4 = expression4.value();
+         std::vector<T> result(expression_count,T(0));
 
-         if (
-              (result1 != result2) ||
-              (result1 != result3) ||
-              (result1 != result4)
-            )
+         for (std::size_t j = 0; j < expression_list.size(); ++j)
          {
-            printf("run_test19() - Error in evaluation! (3)  Results don't match!  fibonacci(%d) = %d "
-                   "Expression1: %s = %d  Expression2: %s = %d  Expression3: %s = %d  Expression4: %s = %d\n",
-                   static_cast<unsigned int>(i),
-                   static_cast<unsigned int>(fibonacci_list[i]),
-                   expression_str1.c_str(),
-                   static_cast<unsigned int>(result1),
-                   expression_str2.c_str(),
-                   static_cast<unsigned int>(result2),
-                   expression_str3.c_str(),
-                   static_cast<unsigned int>(result3),
-                   expression_str4.c_str(),
-                   static_cast<unsigned int>(result4));
-            failure = true;
+            result[j] = expression_list[j].value();
          }
 
-         if (fibonacci_list[i] != expression1.value())
+         for (std::size_t j = 1; j < expression_list.size(); ++j)
          {
-            printf("run_test19() - Error in evaluation! (4)  fibonacci(%d) = %d "
-                   "Expression1: %s = %d  Expression2: %s = %d  Expression3: %s = %d  Expression4: %s = %d\n",
+            if (result[j] != result[0])
+            {
+               failure = true;
+               break;
+            }
+         }
+
+         if (failure)
+         {
+            printf("run_test19() - Error in evaluation! (5)  Results don't match!  fibonacci(%d) = %d\n",
                    static_cast<unsigned int>(i),
-                   static_cast<unsigned int>(fibonacci_list[i]),
-                   expression_str1.c_str(),
-                   static_cast<unsigned int>(result1),
-                   expression_str2.c_str(),
-                   static_cast<unsigned int>(result2),
-                   expression_str3.c_str(),
-                   static_cast<unsigned int>(result3),
-                   expression_str4.c_str(),
-                   static_cast<unsigned int>(result4));
-            failure = true;
+                   static_cast<unsigned int>(fibonacci_list[i]));
+
+            for (std::size_t j = 0; j < expression_list.size(); ++j)
+            {
+               printf("Expression[%02d]: %s = %d\n",
+                      static_cast<unsigned int>(j),
+                      expression_str[j].c_str(),
+                      static_cast<unsigned int>(result[j]));
+            }
+         }
+         else  if (fibonacci_list[i] != expression_list[0].value())
+         {
+            printf("run_test19() - Error in evaluation! (6)  Results don't match!  fibonacci(%d) = %d\n",
+                   static_cast<unsigned int>(i),
+                   static_cast<unsigned int>(fibonacci_list[i]));
+
+            for (std::size_t j = 0; j < expression_list.size(); ++j)
+            {
+               printf("Expression[%02d]: %s = %d\n",
+                      static_cast<unsigned int>(j),
+                      expression_str[j].c_str(),
+                      static_cast<unsigned int>(result[j]));
+            }
          }
       }
 
@@ -4504,22 +4536,24 @@ inline bool run_test19()
 
       compositor
          .add("newton_sqrt_impl",
-              "switch                                "
-              "{                                     "
-              "  case x < 0  : -inf;                 "
-              "  case x == 0 : 0;                    "
-              "  case x == 1 : 1;                    "
-              "  default:                            "
-              "  ~{                                  "
-              "     z := 100;                        "
-              "     y := x / 2;                      "
-              "     while ((z := (z - 1)) > 0)       "
-              "     {                                "
-              "       if (equal(y * y,x), z := 0, 0);"
-              "       y := (1 / 2) * (y + (x / y))   "
-              "     }                                "
-              "   };                                 "
-              "}                                     ",
+              "switch                                 "
+              "{                                      "
+              "  case x < 0  : -inf;                  "
+              "  case x == 0 : 0;                     "
+              "  case x == 1 : 1;                     "
+              "  default:                             "
+              "  ~{                                   "
+              "     z := 100;                         "
+              "     y := x / 2;                       "
+              "     while ((z := (z - 1)) > 0)        "
+              "     {                                 "
+              "       if (equal(y^2,x))               "
+              "         y := y + (z := 0);            "
+              "       else                            "
+              "         y := (1 / 2) * (y + (x / y)); "
+              "     }                                 "
+              "   };                                  "
+              "}                                      ",
               "x","y","z");
 
       compositor
