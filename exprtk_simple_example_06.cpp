@@ -24,9 +24,9 @@
 template<typename T>
 void vector_function()
 {
-   typedef exprtk::symbol_table<double> symbol_table_t;
-   typedef exprtk::expression<double>     expression_t;
-   typedef exprtk::parser<double>             parser_t;
+   typedef exprtk::symbol_table<T> symbol_table_t;
+   typedef exprtk::expression<T>     expression_t;
+   typedef exprtk::parser<T>             parser_t;
 
    std::string expression_string =
                   " for (i := 0; i < min(x[],y[],z[]); i += 1) "

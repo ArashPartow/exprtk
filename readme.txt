@@ -993,3 +993,5 @@ int main()
 (12) exprtk_simple_example_08.cpp
 (13) exprtk_simple_example_09.cpp
 (14) exprtk_simple_example_10.cpp
+(15) exprtk_simple_example_11.cpp
+(16) exprtk_simple_example_12.cpp

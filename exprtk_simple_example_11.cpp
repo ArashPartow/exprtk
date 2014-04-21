@@ -24,6 +24,10 @@
 template<typename T>
 void square_wave2()
 {
+   typedef exprtk::symbol_table<T> symbol_table_t;
+   typedef exprtk::expression<T>     expression_t;
+   typedef exprtk::parser<T>             parser_t;
+
    std::string expr_string = " r := 0;                               "
                              " for(i := 0; i < 1000; i += 1)         "
                              " {                                     "
@@ -37,16 +41,16 @@ void square_wave2()
    T t = T(0);
    T a = T(10);
 
-   exprtk::symbol_table<T> symbol_table;
+   symbol_table_t symbol_table;
    symbol_table.add_variable("f",f);
    symbol_table.add_variable("t",t);
    symbol_table.add_variable("a",a);
    symbol_table.add_constants();
 
-   exprtk::expression<T> expression;
+   expression_t expression;
    expression.register_symbol_table(symbol_table);
 
-   exprtk::parser<T> parser;
+   parser_t parser;
    parser.enable_unknown_symbol_resolver();
 
    parser.compile(expr_string,expression);
