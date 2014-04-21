@@ -1684,6 +1684,85 @@ inline bool run_test01()
       }
    }
 
+   {
+      const std::string expr_list[] =
+                          {
+                            "((v[1] + x) == (x + v[1]))",
+                            "((v[0] += x) == x)",
+                            "((v[0] += x + y) == (x + y))",
+                            "((v[0] -= x) == -x)",
+                            "((v[0] -= (x + y)) == -(x + y))",
+                            "((v[1] + v[2]) == (v[3 - 1] + v[2 * 1/2]))",
+                            "(v[v[1]] == v[1])",
+                            "(v[1] += v[1]) == v[1 + 1]",
+                            "((v[i[1]] + x) == (x + v[i[1]]))",
+                            "((v[i[0]] += x) == x)",
+                            "((v[i[0]] += x + y) == (x + y))",
+                            "((v[i[0]] -= x) == -x)",
+                            "((v[i[0]] -= (x + y)) == -(x + y))",
+                            "((v[i[1]] + v[2]) == (v[i[3] - i[1]] + v[i[2] * 1/2]))",
+                            "(v[v[i[1]]] == v[i[1]])",
+                            "(v[i[1]] += v[i[1]]) == v[i[1] + 1]"
+                          };
+
+      const std::size_t expr_list_size = sizeof(expr_list) / sizeof(std::string);
+
+
+      const std::size_t rounds = 60;
+
+      for (std::size_t r = 0; r < rounds; ++r)
+      {
+         bool loop_result = true;
+         for (std::size_t i = 0; i < expr_list_size; ++i)
+         {
+            T v[]     = { T(0.0), T(1.1), T(2.2), T(3.3), T(4.4), T(5.5) };
+            T index[] = { T(0)  , T(1)  , T(2)  , T(3)  , T(4)  , T(5)   };
+
+            T x = T(6.6);
+            T y = T(7.7);
+            T z = T(8.8);
+
+            exprtk::symbol_table<T> symbol_table;
+            symbol_table.add_variable("x",x);
+            symbol_table.add_variable("y",y);
+            symbol_table.add_variable("z",z);
+            symbol_table.add_vector  ("v",v);
+            symbol_table.add_vector  ("i",index);
+
+            exprtk::expression<T> expression;
+            expression.register_symbol_table(symbol_table);
+
+            {
+               exprtk::parser<T> parser;
+               if (!parser.compile(expr_list[i],expression))
+               {
+                  printf("run_test01() - Error: %s   Expression: %s\n",
+                         parser.error().c_str(),
+                         expr_list[i].c_str());
+                  loop_result = false;
+                  continue;
+               }
+            }
+
+            T result = expression.value();
+
+            if (not_equal(result,T(1)))
+            {
+               printf("run_test01() - Computation Error:  Expression: [%s]\tExpected: %19.15f\tResult: %19.15f\n",
+                      expr_list[i].c_str(),
+                      (double)1.0,
+                      (double)result);
+               loop_result = false;
+            }
+         }
+
+         if (!loop_result)
+         {
+            return false;
+         }
+      }
+   }
+
    return true;
 }
 

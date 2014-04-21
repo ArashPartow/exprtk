@@ -53,7 +53,7 @@ expressions that can be parsed and evaluated using the ExprTk library.
   (01) sqrt(1 - (3 / x^2))
   (02) clamp(-1, sin(2 * pi * x) + cos(y / 2 * pi), +1)
   (03) sin(2.34e-3 * x)
-  (04) if(((x + 2) == 3) and ((y + 5) <= 9),1 + w, 2 / z)
+  (04) if(((x[2] + 2) == 3) and ((y + 5) <= 9),1 + w, 2 / z)
   (05) inrange(-2,m,+2) == if(({-2 <= m} and [m <= +2]),1,0)
   (06) ({1/1}*[1/2]+(1/3))-{1/4}^[1/5]+(1/6)-({1/7}+[1/8]*(1/9))
   (07) a * exp(2.2 / 3.3 * t) + c
@@ -62,12 +62,12 @@ expressions that can be parsed and evaluated using the ExprTk library.
   (10) 2x + 3y + 4z + 5w == 2 * x + 3 * y + 4 * z + 5 * w
   (11) 3(x + y) / 2.9 + 1.234e+12 == 3 * (x + y) / 2.9 + 1.234e+12
   (12) (x + y)3.3 + 1 / 4.5 == [x + y] * 3.3 + 1 / 4.5
-  (13) (x + y)z + 1.1 / 2.7 == (x + y) * z + 1.1 / 2.7
+  (13) (x + y[i])z + 1.1 / 2.7 == (x + y[i]) * z + 1.1 / 2.7
   (14) (sin(x / pi) cos(2y) + 1) == (sin(x / pi) * cos(2 * y) + 1)
   (15) 75x^17 + 25.1x^5 - 35x^4 - 15.2x^3 + 40x^2 - 15.3x + 1
   (16) (avg(x,y) <= x + y ? x - y : x * y) + 2.345 * pi / x
   (17) fib_i := fib_i + (x := y + 0 * (fib_i := x + (y := fib_i)))
-  (18) while (x <= 100) { x := x + 1 }
+  (18) while (x <= 100) { x -= 1; }
   (19) x <= 'abc123' and (y in 'AString') or ('1x2y3z' != z)
   (20) (x like '*123*') or ('a123b' ilike y)
 
@@ -124,37 +124,37 @@ include path (e.g: /usr/include/).
 +----------+---------------------------------------------------------+
 | OPERATOR | DEFINITION                                              |
 +----------+---------------------------------------------------------+
-|  +       | Addition between x and y. (eg: x + y)                   |
+|  +       | Addition between x and y.  (eg: x + y)                  |
 +----------+---------------------------------------------------------+
-|  -       | Subtraction between x and y. (eg: x - y)                |
+|  -       | Subtraction between x and y.  (eg: x - y)               |
 +----------+---------------------------------------------------------+
-|  *       | Multiplication between x and y. (eg: x * y)             |
+|  *       | Multiplication between x and y.  (eg: x * y)            |
 +----------+---------------------------------------------------------+
-|  /       | Division between x and y (eg: x / y)                    |
+|  /       | Division between x and y.  (eg: x / y)                  |
 +----------+---------------------------------------------------------+
-|  %       | Modulus of x with respect to y. (eg: x % y)             |
+|  %       | Modulus of x with respect to y.  (eg: x % y)            |
 +----------+---------------------------------------------------------+
-|  ^       | x to the power of y. (eg: x ^ y)                        |
+|  ^       | x to the power of y.  (eg: x ^ y)                       |
 +----------+---------------------------------------------------------+
-|  :=      | Assign the value of x to y. (eg: y := x)                |
-|          | Where y is a variable type.                             |
+|  :=      | Assign the value of x to y. Where y is either a variable|
+|          | or vector type.  (eg: y := x)                           |
 +----------+---------------------------------------------------------+
 |  +=      | Increment x to by the value of the expression on the    |
-|          | right-hand side. Where x is a variable type.            |
-|          | (eg: x += abs(y - z))                                   |
+|          | right-hand side. Where x is either a variable or vector |
+|          | type.  (eg: x += abs(y - z))                            |
 +----------+---------------------------------------------------------+
 |  -=      | Decrement x to by the value of the expression on the    |
-|          | right-hand side. Where x is a variable type.            |
-|          | (eg: x -= abs(y + z))                                   |
+|          | right-hand side. Where x is either a variable or vector |
+|          | type.  (eg: x[i] -= abs(y + z))                         |
 +----------+---------------------------------------------------------+
 |  *=      | Assign the multiplication of x by the value of the      |
-|          | expression on the right-hand side to x. Where x is a    |
-|          | variable type.                                          |
+|          | expression on the righthand side to x. Where x is either|
+|          | variable or vector type.                                |
 |          | (eg: x *= abs(y / z))                                   |
 +----------+---------------------------------------------------------+
 |  /=      | Assign the division of x by the value of the expression |
-|          | on the right-hand side to x. Where x is a variable type.|
-|          | (eg: x /= abs(y * z))                                   |
+|          | on the right-hand side to x. Where x is either a        |
+|          | variable or vector type.  (eg: x[i+j] /= abs(y * z))    |
 +----------+---------------------------------------------------------+
 
 (1) Equalities & Inequalities
@@ -442,7 +442,7 @@ include path (e.g: /usr/include/).
 |          | repeat                                                  |
 |          |   y := x + z;                                           |
 |          |   w := u + y;                                           |
-|          | until ((x - 1) <= 0)                                    |
+|          | until ((x += 1) > 100)                                  |
 +----------+---------------------------------------------------------+
 | for      | The structure will repeatedly evaluate the internal     |
 |          | statement(s) while the condition is true. On each loop  |
@@ -450,7 +450,7 @@ include path (e.g: /usr/include/).
 |          | The conditional is mandatory whereas the initializer    |
 |          | and incrementing expressions are optional.              |
 |          | eg:                                                     |
-|          | for (x := 0; x < n && (x != y); x := x + 1)             |
+|          | for (x := 0; x < n && (x != y); x += 1)                 |
 |          | {                                                       |
 |          |   y := y + x / 2 - z;                                   |
 |          |   w := u + y;                                           |
@@ -487,7 +487,8 @@ appropriate may represent any of one the following:
 
    1. Literal numeric/string value
    2. A variable
-   3. An expression comprised of [1] or [2] (eg: 2 + x)
+   3. A vector element
+   3. An expression comprised of [1], [2] or [3] (eg: 2 + x / vec[3])
 
 
 
@@ -511,10 +512,11 @@ types a symbol table can handle:
 
    (a) Numeric variables
    (b) Numeric constants
-   (c) String variables
-   (d) String constants
-   (e) Functions
-   (f) Vararg functions
+   (c) Numeric vector elements
+   (d) String variables
+   (e) String constants
+   (f) Functions
+   (g) Vararg functions
 
 During the compilation  process if an  expression is found  to require
 any  of  the  elements   noted  above,  the  expression's   associated
@@ -638,12 +640,18 @@ properly resolved the  original form will  cause a compilation  error.
 The  following is  a listing  of the  scenarios that  the joiner  can
 handle:
 
-   (a) ':' '='  --->  ':=' (assignment)
-   (b) '>' '='  --->  '>=' (gte)
-   (c) '<' '='  --->  '<=' (lte)
-   (d) '=' '='  --->  '==' (equal)
-   (e) '!' '='  --->  '!=' (not-equal)
-   (f) '<' '>'  --->  '<>' (not-equal)
+   (a) '>' '='  --->  '>=' (gte)
+   (b) '<' '='  --->  '<=' (lte)
+   (c) '=' '='  --->  '==' (equal)
+   (d) '!' '='  --->  '!=' (not-equal)
+   (e) '<' '>'  --->  '<>' (not-equal)
+   (f) ':' '='  --->  ':=' (assignment)
+   (g) '+' '='  --->  '+=' (addition assignment)
+   (h) '-' '='  --->  '-=' (subtraction assignment)
+   (i) '*' '='  --->  '*=' (multiplication assignment)
+   (j) '/' '='  --->  '/=' (division assignment)
+
+
 
 An example of the transformation that takes place is as follows:
 

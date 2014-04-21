@@ -53,7 +53,7 @@ void newton_sqrt()
            "     repeat                           "
            "       if (equal(y * y,x), z := 0, 0);"
            "       y := (1 / 2) * (y + (x / y));  "
-           "     until ((z := (z - 1)) <= 0)      "
+           "     until ((z -= 1) <= 0)            "
            "   };                                 "
            "}                                     ",
            "x","y","z");
