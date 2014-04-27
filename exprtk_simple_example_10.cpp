@@ -41,21 +41,22 @@ void newton_sqrt()
 
    compositor
       .add("newton_sqrt_impl",
-           "switch                                "
-           "{                                     "
-           "  case x < 0  : -inf;                 "
-           "  case x == 0 : 0;                    "
-           "  case x == 1 : 1;                    "
-           "  default:                            "
-           "  ~{                                  "
-           "     z := 100;                        "
-           "     y := x / 2;                      "
-           "     repeat                           "
-           "       if (equal(y * y,x), z := 0, 0);"
-           "       y := (1 / 2) * (y + (x / y));  "
-           "     until ((z -= 1) <= 0)            "
-           "   };                                 "
-           "}                                     ",
+           "switch                               "
+           "{                                    "
+           "  case x < 0  : -inf;                "
+           "  case x == 0 : 0;                   "
+           "  case x == 1 : 1;                   "
+           "  default:                           "
+           "  ~{                                 "
+           "     z := 100;                       "
+           "     y := x / 2;                     "
+           "     repeat                          "
+           "       y := (1 / 2) * (y + (x / y)); "
+           "       if (equal(y * y,x))           "
+           "         break[y];                   "
+           "     until ((z -= 1) <= 0);          "
+           "   };                                "
+           "}                                    ",
            "x","y","z");
 
    compositor

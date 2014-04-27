@@ -1521,7 +1521,9 @@ inline bool run_test01()
                                  test_xy<T>("(x /= 2y) == (1/6)"              ,T(1),T(3),T(1)),
                                  test_xy<T>("for(i := 0; (i < 10);) { i += 1; }; x;"                   ,T(1),T(20),T( 1)),
                                  test_xy<T>("for(i := 0; (i < 10) and (i != y); i+=2) { x += i; }; x;" ,T(1),T(20),T(21)),
-                                 test_xy<T>("for(i := 0; (i < 10) and (i != y);) { x += i; i+=2; }; x;",T(1),T(20),T(21))
+                                 test_xy<T>("for(i := 0; (i < 10) and (i != y);) { x += i; i+=2; }; x;",T(1),T(20),T(21)),
+                                 test_xy<T>("for(i := 0; (i < y); i += 1) { if (i <= (y / 2)) x += i; else break; }; x;" ,T(0),T(10),T(15)),
+                                 test_xy<T>("for(i := 0; (i < y); i += 1) { if (i <= (y / 2)) continue; else x += i; }; x;" ,T(0),T(10),T(30))
                               };
 
       static const std::size_t test_list_size = sizeof(test_list) / sizeof(test_xy<T>);
@@ -4317,6 +4319,39 @@ inline bool run_test19()
               "}                                                                     ",
               "x");
 
+      compositor
+         .add("is_prime_impl4",
+              "switch                          "
+              "{                               "
+              "  case 1 == x     : false;      "
+              "  case 2 == x     : true;       "
+              "  case 3 == x     : true;       "
+              "  case 5 == x     : true;       "
+              "  case 7 == x     : true;       "
+              "  case 0 == x % 2 : false;      "
+              "  default         :             "
+              "  {                             "
+              "    for (i := 3; i < y; i += 2) "
+              "    {                           "
+              "      if ((x % i) == 0)         "
+              "        break[false];           "
+              "      else                      "
+              "        true;                   "
+              "    }                           "
+              "  };                            "
+              "}                               ",
+              "x","y");
+
+      compositor
+         .add("is_prime4",
+              "switch                                                                "
+              "{                                                                     "
+              "  case x <= 0       : false;                                          "
+              "  case frac(x) != 0 : false;                                          "
+              "  default           : is_prime_impl4(x,min(x - 1,trunc(sqrt(x)) + 1));"
+              "}                                                                     ",
+              "x");
+
       symbol_table_t& symbol_table = compositor.symbol_table();
       symbol_table.add_constants();
       symbol_table.add_variable("x",x);
@@ -4324,7 +4359,8 @@ inline bool run_test19()
       const std::string expression_str[] = {
                                              "is_prime1(x)",
                                              "is_prime2(x)",
-                                             "is_prime3(x)"
+                                             "is_prime3(x)",
+                                             "is_prime4(x)"
                                            };
 
       const std::size_t expression_count = sizeof(expression_str) / sizeof(std::string);
@@ -4615,24 +4651,22 @@ inline bool run_test19()
 
       compositor
          .add("newton_sqrt_impl",
-              "switch                                 "
-              "{                                      "
-              "  case x < 0  : -inf;                  "
-              "  case x == 0 : 0;                     "
-              "  case x == 1 : 1;                     "
-              "  default:                             "
-              "  ~{                                   "
-              "     z := 100;                         "
-              "     y := x / 2;                       "
-              "     while ((z := (z - 1)) > 0)        "
-              "     {                                 "
-              "       if (equal(y^2,x))               "
-              "         y := y + (z := 0);            "
-              "       else                            "
-              "         y := (1 / 2) * (y + (x / y)); "
-              "     }                                 "
-              "   };                                  "
-              "}                                      ",
+              "switch                               "
+              "{                                    "
+              "  case x < 0  : -inf;                "
+              "  case x == 0 : 0;                   "
+              "  case x == 1 : 1;                   "
+              "  default:                           "
+              "  ~{                                 "
+              "     z := 100;                       "
+              "     y := x / 2;                     "
+              "     repeat                          "
+              "       y := (1 / 2) * (y + (x / y)); "
+              "       if (equal(y * y,x))           "
+              "         break[y];                   "
+              "     until ((z -= 1) <= 0);          "
+              "   };                                "
+              "}                                    ",
               "x","y","z");
 
       compositor

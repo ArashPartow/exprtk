@@ -33,7 +33,7 @@ arithmetic operations, functions and processes:
  (5) Conditional,
      Switch &
      Loop statements: if-then-else, ternary conditional, switch-case,
-                      while, for, repeat-until
+                      while, for, repeat-until, break, continue
 
  (6) Assignment:      :=, +=, -=, *=, /=
 
@@ -454,6 +454,33 @@ include path (e.g: /usr/include/).
 |          | {                                                       |
 |          |   y := y + x / 2 - z;                                   |
 |          |   w := u + y;                                           |
+|          | }                                                       |
++----------+---------------------------------------------------------+
+| break    | Break terminates the execution of the nearest enclosed  |
+| break[]  | loop, allowing for the execution to continue on external|
+|          | to the loop. The default break statement will set the   |
+|          | return value of the loop to NaN, where as the return    |
+|          | based form will set the value to that of the break      |
+|          | expression.                                             |
+|          | eg:                                                     |
+|          | while ((i += 1) < 10)                                   |
+|          | {                                                       |
+|          |   if (i < 5)                                            |
+|          |     j -= i + 2;                                         |
+|          |   else if (i % 2 == 0)                                  |
+|          |     break;                                              |
+|          |   else                                                  |
+|          |     break[2i + 3];                                      |
+|          | }                                                       |
++----------+---------------------------------------------------------+
+| continue | Continue results in the remaining portion of the nearest|
+|          | enclosing loop body to be skipped.                      |
+|          | eg:                                                     |
+|          | for (i := 0; i < 10; i+= 1)                             |
+|          | {                                                       |
+|          |   if (i < 5)                                            |
+|          |     continue;                                           |
+|          |   j -= i + 2;                                           |
 |          | }                                                       |
 +----------+---------------------------------------------------------+
 | ?:       | Ternary conditional statement, similar to that of the   |
