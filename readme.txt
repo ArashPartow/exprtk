@@ -13,36 +13,37 @@ easily extendible.
 The  ExprTk expression  evaluator supports  the following  fundamental
 arithmetic operations, functions and processes:
 
- (0) Basic operators: +, -, *, /, %, ^
+ (00) Basic operators: +, -, *, /, %, ^
 
- (1) Functions:       abs, avg, ceil, clamp, equal, erf, erfc, exp,
-                      expm1, floor, frac, log, log10, log1p, log2,
-                      logn, max, min, mul, nequal, root, round,
-                      roundn, sgn, sqrt, sum, trunc
+ (01) Functions:       abs, avg, ceil, clamp, equal, erf, erfc, exp,
+                       expm1, floor, frac, log, log10, log1p, log2,
+                       logn, max, min, mul, nequal, root, round,
+                       roundn, sgn, sqrt, sum, trunc
 
- (2) Trigonometry:    acos, acosh, asin, asinh, atan, atanh, atan2,
-                      cos, cosh, cot, csc, sec, sin, sinh, tan, tanh,
-                      hypot, rad2deg,  deg2grad, deg2rad, grad2deg
+ (02) Trigonometry:    acos, acosh, asin, asinh, atan, atanh, atan2,
+                       cos, cosh, cot, csc, sec, sin, sinc, sinh, tan,
+                       tanh, hypot, rad2deg,  deg2grad, deg2rad,
+                       grad2deg
 
- (3) Equalities &
-     Inequalities:    =, ==, <>, !=, <, <=, >, >=
+ (03) Equalities &
+      Inequalities:    =, ==, <>, !=, <, <=, >, >=
 
- (4) Boolean logic:   and, mand, mor, nand, nor, not, or, shl, shr,
-                      xnor, xor, true, false
+ (04) Boolean logic:   and, mand, mor, nand, nor, not, or, shl, shr,
+                       xnor, xor, true, false
 
- (5) Conditional,
-     Switch &
-     Loop statements: if-then-else, ternary conditional, switch-case,
-                      while, for, repeat-until, break, continue
+ (05) Control
+      structures:      if-then-else, ternary conditional, switch-case
 
- (6) Assignment:      :=, +=, -=, *=, /=
+ (06) Loop statements: while, for, repeat-until, break, continue
 
- (7) String
-     processing:      in, like, ilike
+ (07) Assignment:      :=, +=, -=, *=, /=
 
- (8) Optimisations:   constant-folding and simple strength reduction
+ (08) String
+      processing:      in, like, ilike
 
- (9) Calculus:        numerical integration and differentiation
+ (09) Optimisations:   constant-folding and simple strength reduction
+
+ (10) Calculus:        numerical integration and differentiation
 
 
 
@@ -330,6 +331,8 @@ include path (e.g: /usr/include/).
 | sec      | Secant of x.  (eg: sec(x))                              |
 +----------+---------------------------------------------------------+
 | sin      | Sine of x.  (eg: sin(x))                                |
++----------+---------------------------------------------------------+
+| sinc     | Sine cardinal of x.  (eg: sinc(x))                      |
 +----------+---------------------------------------------------------+
 | sinh     | Hyperbolic sine of x.  (eg: sinh(x))                    |
 +----------+---------------------------------------------------------+
@@ -891,25 +894,32 @@ correctly optimize such expressions for a given architecture.
  (19) Recursive calls made from within composited functions will have
       a stack size bound by the stack of the executing architecture.
 
- (20) The entity relationship between symbol_table and an expression
+ (20) User defined functions by default are assumed to have side
+      effects. As such an "all constant parameter" invocation of such
+      functions wont result in constant folding. If the function has
+      no side effects then that can be noted during the constructor
+      of the ifunction allowing it to be constant folded where
+      appropriate.
+
+ (21) The entity relationship between symbol_table and an expression
       is one-to-many. Hence the intended use case is to have a single
       symbol table manage the variable and function requirements of
       multiple expressions.
 
- (21) The common use-case for an expression is to have it compiled
+ (22) The common use-case for an expression is to have it compiled
       only ONCE and then subsequently have it evaluated multiple
       times. An extremely inefficient and suboptimal approach would
       be to recompile an expression from its string form every time
       it requires evaluating.
 
- (22) The following are examples of compliant floating point value
+ (23) The following are examples of compliant floating point value
       representations:
       (a) 12345        (b) -123.456
       (c) +123.456e+12 (d) 123.456E-12
       (e) +012.045e+07 (f) .1234
       (g) 123.456f     (h) -321.654E+3L
 
- (23) Expressions may contain any of the following comment styles:
+ (24) Expressions may contain any of the following comment styles:
       1. // .... \n
       2. #  .... \n
       3. /* .... */

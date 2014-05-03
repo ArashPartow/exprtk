@@ -1,32 +1,32 @@
 /*
- *******************************************************************
- *           C++ Mathematical Expression Toolkit Library           *
- *                                                                 *
- * Author: Arash Partow (1999-2014)                                *
- * URL: http://www.partow.net/programming/exprtk/index.html        *
- *                                                                 *
- * Copyright notice:                                               *
- * Free use of the C++ Mathematical Expression Toolkit Library is  *
- * permitted under the guidelines and in accordance with the most  *
- * current version of the Common Public License.                   *
- * http://www.opensource.org/licenses/cpl1.0.php                   *
- *                                                                 *
- * Example expressions:                                            *
- * (00) (y + x / y) * (x - y / x)                                  *
- * (01) (x^2 / sin(2 * pi / y)) - x / 2                            *
- * (02) sqrt(1 - (x^2))                                            *
- * (03) 1 - sin(2 * x) + cos(pi / y)                               *
- * (04) a * exp(2 * t) + c                                         *
- * (05) if(((x + 2) == 3) and ((y + 5) <= 9),1 + w, 2 / z)         *
- * (06) (avg(x,y) <= x + y ? x - y : x * y) + 2 * pi / x           *
- * (07) z := x + sin(2 * pi / y)                                   *
- * (08) u := 2 * (pi * z) / (w := x + cos(y / pi))                 *
- * (09) clamp(-1,sin(2 * pi * x) + cos(y / 2 * pi),+1)             *
- * (10) inrange(-2,m,+2) == if(({-2 <= m} and [m <= +2]),1,0)      *
- * (11) (2sin(x)cos(2y)7 + 1) == (2 * sin(x) * cos(2*y) * 7 + 1)   *
- * (12) (x ilike 's*ri?g') and [y < (3 z^7 + w)]                   *
- *                                                                 *
- *******************************************************************
+ ******************************************************************
+ *           C++ Mathematical Expression Toolkit Library          *
+ *                                                                *
+ * Author: Arash Partow (1999-2014)                               *
+ * URL: http://www.partow.net/programming/exprtk/index.html       *
+ *                                                                *
+ * Copyright notice:                                              *
+ * Free use of the C++ Mathematical Expression Toolkit Library is *
+ * permitted under the guidelines and in accordance with the most *
+ * current version of the Common Public License.                  *
+ * http://www.opensource.org/licenses/cpl1.0.php                  *
+ *                                                                *
+ * Example expressions:                                           *
+ * (00) (y + x / y) * (x - y / x)                                 *
+ * (01) (x^2 / sin(2 * pi / y)) - x / 2                           *
+ * (02) sqrt(1 - (x^2))                                           *
+ * (03) 1 - sin(2 * x) + cos(pi / y)                              *
+ * (04) a * exp(2 * t) + c                                        *
+ * (05) if(((x + 2) == 3) and ((y + 5) <= 9),1 + w, 2 / z)        *
+ * (06) (avg(x,y) <= x + y ? x - y : x * y) + 2 * pi / x          *
+ * (07) z := x + sin(2 * pi / y)                                  *
+ * (08) u := 2 * (pi * z) / (w := x + cos(y / pi))                *
+ * (09) clamp(-1,sin(2 * pi * x) + cos(y / 2 * pi),+1)            *
+ * (10) inrange(-2,m,+2) == if(({-2 <= m} and [m <= +2]),1,0)     *
+ * (11) (2sin(x)cos(2y)7 + 1) == (2 * sin(x) * cos(2*y) * 7 + 1)  *
+ * (12) (x ilike 's*ri?g') and [y < (3 z^7 + w)]                  *
+ *                                                                *
+ ******************************************************************
 */
 
 
@@ -288,8 +288,9 @@ namespace exprtk
                                      "for", "frac", "grad2deg", "hypot", "iclamp", "if", "else", "ilike", "in", "inrange",
                                      "like", "log", "log10", "log2", "logn", "log1p", "mand", "max", "min", "mod", "mor",
                                      "mul", "nand", "nor", "not", "not_equal", "null", "or", "pow", "rad2deg", "repeat",
-                                     "root", "round", "roundn", "sec", "sgn", "shl", "shr", "sin", "sinh", "sqrt", "sum",
-                                     "switch", "tan", "tanh", "true", "trunc", "until", "while", "xnor", "xor", "&", "|"
+                                     "root", "round", "roundn", "sec", "sgn", "shl", "shr", "sin", "sinc", "sinh", "sqrt",
+                                     "sum", "switch", "tan", "tanh", "true", "trunc", "until", "while", "xnor", "xor",
+                                     "&", "|"
                                   };
 
       static const std::size_t reserved_symbols_size = sizeof(reserved_symbols) / sizeof(std::string);
@@ -851,6 +852,21 @@ namespace exprtk
                return erfc_impl(static_cast<double>(v),real_type_tag());
             }
 
+            template <typename T>
+            inline T sinc_impl(T v, real_type_tag)
+            {
+               if(std::abs(v) >= std::numeric_limits<T>::epsilon())
+                   return(std::sin(v) / v);
+               else
+                  return T(1);
+            }
+
+            template <typename T>
+            inline T sinc_impl(T v, int_type_tag)
+            {
+               return erfc_impl(static_cast<double>(v),real_type_tag());
+            }
+
             template <typename T> inline T  acos_impl(const T v, real_type_tag) { return std::acos (v); }
             template <typename T> inline T acosh_impl(const T v, real_type_tag) { return std::log(v + std::sqrt((v * v) - T(1))); }
             template <typename T> inline T  asin_impl(const T v, real_type_tag) { return std::asin (v); }
@@ -1123,6 +1139,7 @@ namespace exprtk
          exprtk_define_unary_function(pos  )
          exprtk_define_unary_function(round)
          exprtk_define_unary_function(sin  )
+         exprtk_define_unary_function(sinc )
          exprtk_define_unary_function(sinh )
          exprtk_define_unary_function(sqrt )
          exprtk_define_unary_function(tan  )
@@ -3129,14 +3146,15 @@ namespace exprtk
          e_exp     , e_expm1   , e_floor   , e_log     ,
          e_log10   , e_log2    , e_log1p   , e_logn    ,
          e_neg     , e_pos     , e_round   , e_roundn  ,
-         e_root    , e_sqrt    , e_sin     , e_sinh    ,
-         e_sec     , e_csc     , e_tan     , e_tanh    ,
-         e_cot     , e_clamp   , e_iclamp  , e_inrange ,
-         e_sgn     , e_r2d     , e_d2r     , e_d2g     ,
-         e_g2d     , e_hypot   , e_notl    , e_erf     ,
-         e_erfc    , e_frac    , e_trunc   , e_assign  ,
-         e_addass  , e_subass  , e_mulass  , e_divass  ,
-         e_in      , e_like    , e_ilike   , e_multi   ,
+         e_root    , e_sqrt    , e_sin     , e_sinc    ,
+         e_sinh    , e_sec     , e_csc     , e_tan     ,
+         e_tanh    , e_cot     , e_clamp   , e_iclamp  ,
+         e_inrange , e_sgn     , e_r2d     , e_d2r     ,
+         e_d2g     , e_g2d     , e_hypot   , e_notl    ,
+         e_erf     , e_erfc    , e_frac    , e_trunc   ,
+         e_assign  , e_addass  , e_subass  , e_mulass  ,
+         e_divass  , e_in      , e_like    , e_ilike   ,
+         e_multi   ,
 
          // Do not add new functions/operators after this point.
          e_sf00 = 1000, e_sf01 = 1001, e_sf02 = 1002, e_sf03 = 1003,
@@ -3220,6 +3238,7 @@ namespace exprtk
                   case e_pos   : return numeric::pos  (arg);
                   case e_round : return numeric::round(arg);
                   case e_sin   : return numeric::sin  (arg);
+                  case e_sinc  : return numeric::sinc (arg);
                   case e_sinh  : return numeric::sinh (arg);
                   case e_sqrt  : return numeric::sqrt (arg);
                   case e_tan   : return numeric::tan  (arg);
@@ -3376,18 +3395,18 @@ namespace exprtk
             e_cos          , e_cosh         , e_exp          , e_expm1        ,
             e_floor        , e_log          , e_log10        , e_log2         ,
             e_log1p        , e_neg          , e_pos          , e_round        ,
-            e_sin          , e_sinh         , e_sqrt         , e_tan          ,
-            e_tanh         , e_cot          , e_sec          , e_csc          ,
-            e_r2d          , e_d2r          , e_d2g          , e_g2d          ,
-            e_notl         , e_sgn          , e_erf          , e_erfc         ,
-            e_frac         , e_trunc        , e_uvouv        , e_vov          ,
-            e_cov          , e_voc          , e_vob          , e_bov          ,
-            e_cob          , e_boc          , e_vovov        , e_vovoc        ,
-            e_vocov        , e_covov        , e_covoc        , e_vovovov      ,
-            e_vovovoc      , e_vovocov      , e_vocovov      , e_covovov      ,
-            e_covocov      , e_vocovoc      , e_covovoc      , e_vococov      ,
-            e_sf3ext       , e_sf4ext       , e_nulleq       , e_vecelem      ,
-            e_break        , e_continue
+            e_sin          , e_sinc         , e_sinh         , e_sqrt         ,
+            e_tan          , e_tanh         , e_cot          , e_sec          ,
+            e_csc          , e_r2d          , e_d2r          , e_d2g          ,
+            e_g2d          , e_notl         , e_sgn          , e_erf          ,
+            e_erfc         , e_frac         , e_trunc        , e_uvouv        ,
+            e_vov          , e_cov          , e_voc          , e_vob          ,
+            e_bov          , e_cob          , e_boc          , e_vovov        ,
+            e_vovoc        , e_vocov        , e_covov        , e_covoc        ,
+            e_vovovov      , e_vovovoc      , e_vovocov      , e_vocovov      ,
+            e_covovov      , e_covocov      , e_vocovoc      , e_covovoc      ,
+            e_vococov      , e_sf3ext       , e_sf4ext       , e_nulleq       ,
+            e_vecelem      , e_break        , e_continue
          };
 
          typedef T value_type;
@@ -6199,6 +6218,7 @@ namespace exprtk
       exprtk_define_unary_op(sec  )
       exprtk_define_unary_op(sgn  )
       exprtk_define_unary_op(sin  )
+      exprtk_define_unary_op(sinc )
       exprtk_define_unary_op(sinh )
       exprtk_define_unary_op(sqrt )
       exprtk_define_unary_op(tan  )
@@ -7398,7 +7418,9 @@ namespace exprtk
 
          struct mode0
          {
-            static inline T process(const T& t0, const T& t1, const T& t2, const T& t3, const bfunc_t bf0, const bfunc_t bf1, const bfunc_t bf2)
+            static inline T process(const T& t0, const T& t1,
+                                    const T& t2, const T& t3,
+                                    const bfunc_t bf0, const bfunc_t bf1, const bfunc_t bf2)
             {
                // (T0 o0 T1) o1 (T2 o2 T3)
                return bf1(bf0(t0,t1),bf2(t2,t3));
@@ -7417,7 +7439,9 @@ namespace exprtk
 
          struct mode1
          {
-            static inline T process(const T& t0, const T& t1, const T& t2, const T& t3, const bfunc_t bf0, const bfunc_t bf1, const bfunc_t bf2)
+            static inline T process(const T& t0, const T& t1,
+                                    const T& t2, const T& t3,
+                                    const bfunc_t bf0, const bfunc_t bf1, const bfunc_t bf2)
             {
                // (T0 o0 (T1 o1 (T2 o2 T3))
                return bf0(t0,bf1(t1,bf2(t2,t3)));
@@ -7435,7 +7459,9 @@ namespace exprtk
 
          struct mode2
          {
-            static inline T process(const T& t0, const T& t1, const T& t2, const T& t3, const bfunc_t bf0, const bfunc_t bf1, const bfunc_t bf2)
+            static inline T process(const T& t0, const T& t1,
+                                    const T& t2, const T& t3,
+                                    const bfunc_t bf0, const bfunc_t bf1, const bfunc_t bf2)
             {
                // (T0 o0 ((T1 o1 T2) o2 T3)
                return bf0(t0,bf2(bf1(t1,t2),t3));
@@ -7454,7 +7480,9 @@ namespace exprtk
 
          struct mode3
          {
-            static inline T process(const T& t0, const T& t1, const T& t2, const T& t3, const bfunc_t bf0, const bfunc_t bf1, const bfunc_t bf2)
+            static inline T process(const T& t0, const T& t1,
+                                    const T& t2, const T& t3,
+                                    const bfunc_t bf0, const bfunc_t bf1, const bfunc_t bf2)
             {
                // (((T0 o0 T1) o1 T2) o2 T3)
                return bf2(bf1(bf0(t0,t1),t2),t3);
@@ -7473,7 +7501,9 @@ namespace exprtk
 
          struct mode4
          {
-            static inline T process(const T& t0, const T& t1, const T& t2, const T& t3, const bfunc_t bf0, const bfunc_t bf1, const bfunc_t bf2)
+            static inline T process(const T& t0, const T& t1,
+                                    const T& t2, const T& t3,
+                                    const bfunc_t bf0, const bfunc_t bf1, const bfunc_t bf2)
             {
                // ((T0 o0 (T1 o1 T2)) o2 T3
                return bf2(bf0(t0,bf1(t1,t2)),t3);
@@ -9306,6 +9336,7 @@ namespace exprtk
          register_op(    "log1p",e_log1p   , 1)
          register_op(    "round",e_round   , 1)
          register_op(      "sin",e_sin     , 1)
+         register_op(     "sinc",e_sinc    , 1)
          register_op(     "sinh",e_sinh    , 1)
          register_op(      "sec",e_sec     , 1)
          register_op(      "csc",e_csc     , 1)
@@ -9347,14 +9378,16 @@ namespace exprtk
    {
    public:
 
-      explicit ifunction(const std::size_t& pc)
-      : param_count(pc)
+      explicit ifunction(const std::size_t& pc, const bool hse = true)
+      : param_count(pc),
+        has_side_effects(hse)
       {}
 
       virtual ~ifunction()
       {}
 
       std::size_t param_count;
+      bool has_side_effects;
 
       inline virtual T operator()()
       {
@@ -10855,7 +10888,7 @@ namespace exprtk
          }
       }
 
-      bool update_error(type& error, const std::string& expression)
+      inline bool update_error(type& error, const std::string& expression)
       {
          if (
               expression.empty()                                               ||
@@ -11930,7 +11963,10 @@ namespace exprtk
       {
          expression_node_ptr result = expression_generator_.function(function);
          next_token();
-         if (token_is(token_t::e_lbracket) && (!token_is(token_t::e_rbracket)))
+         if (
+               token_is(token_t::e_lbracket) &&
+              !token_is(token_t::e_rbracket)
+            )
          {
             set_error(
                make_error(parser_error::e_syntax,
@@ -13373,7 +13409,7 @@ namespace exprtk
          }
          else if (token_is(token_t::e_rsqrbracket))
          {
-            return expression_generator_(vec->size());
+            return expression_generator_(T(vec->size()));
          }
          else if (0 == (index_expr = parse_expression()))
          {
@@ -14161,15 +14197,16 @@ namespace exprtk
                    (details::e_log10 == operation) || (details::e_log2  == operation) ||
                    (details::e_log1p == operation) || (details::e_neg   == operation) ||
                    (details::e_pos   == operation) || (details::e_round == operation) ||
-                   (details::e_sin   == operation) || (details::e_sinh  == operation) ||
-                   (details::e_sqrt  == operation) || (details::e_tan   == operation) ||
-                   (details::e_tanh  == operation) || (details::e_cot   == operation) ||
-                   (details::e_sec   == operation) || (details::e_csc   == operation) ||
-                   (details::e_r2d   == operation) || (details::e_d2r   == operation) ||
-                   (details::e_d2g   == operation) || (details::e_g2d   == operation) ||
-                   (details::e_notl  == operation) || (details::e_sgn   == operation) ||
-                   (details::e_erf   == operation) || (details::e_erfc  == operation) ||
-                   (details::e_frac  == operation) || (details::e_trunc == operation);
+                   (details::e_sin   == operation) || (details::e_sinc  == operation) ||
+                   (details::e_sinh  == operation) || (details::e_sqrt  == operation) ||
+                   (details::e_tan   == operation) || (details::e_tanh  == operation) ||
+                   (details::e_cot   == operation) || (details::e_sec   == operation) ||
+                   (details::e_csc   == operation) || (details::e_r2d   == operation) ||
+                   (details::e_d2r   == operation) || (details::e_d2g   == operation) ||
+                   (details::e_g2d   == operation) || (details::e_notl  == operation) ||
+                   (details::e_sgn   == operation) || (details::e_erf   == operation) ||
+                   (details::e_erfc  == operation) || (details::e_frac  == operation) ||
+                   (details::e_trunc == operation);
          }
 
          inline bool sf3_optimizable(const std::string& sf3id, trinary_functor_t& tfunc)
@@ -14881,6 +14918,7 @@ namespace exprtk
          case_stmt(details::  e_pos,details::  pos_op) \
          case_stmt(details::e_round,details::round_op) \
          case_stmt(details::  e_sin,details::  sin_op) \
+         case_stmt(details:: e_sinc,details:: sinc_op) \
          case_stmt(details:: e_sinh,details:: sinh_op) \
          case_stmt(details:: e_sqrt,details:: sqrt_op) \
          case_stmt(details::  e_tan,details::  tan_op) \
@@ -19822,7 +19860,7 @@ namespace exprtk
             // Attempt simple constant folding optimization.
             expression_node_ptr expression_point = node_allocator_->allocate<NodeType>(f);
             dynamic_cast<function_N_node_t*>(expression_point)->init_branches(branch);
-            if (is_constant_foldable<N>(branch))
+            if (is_constant_foldable<N>(branch) && !f->has_side_effects)
             {
                Type v = expression_point->value();
                details::free_node(*node_allocator_,expression_point);
@@ -19924,6 +19962,7 @@ namespace exprtk
          register_unary_op(details::  e_pos,details::  pos_op)
          register_unary_op(details::e_round,details::round_op)
          register_unary_op(details::  e_sin,details::  sin_op)
+         register_unary_op(details:: e_sinc,details:: sinc_op)
          register_unary_op(details:: e_sinh,details:: sinh_op)
          register_unary_op(details:: e_sqrt,details:: sqrt_op)
          register_unary_op(details::  e_tan,details::  tan_op)
@@ -20496,7 +20535,9 @@ namespace exprtk
 
    public:
 
-      polynomial() : exprtk::ifunction<T>((N+2 <= 20) ? (N + 2) : std::numeric_limits<std::size_t>::max()) {}
+      polynomial()
+      : exprtk::ifunction<T>((N+2 <= 20) ? (N + 2) : std::numeric_limits<std::size_t>::max(),false)
+      {}
 
       inline virtual T operator()(const T& x, const T& c1, const T& c0)
       {
