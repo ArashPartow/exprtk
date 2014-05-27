@@ -18,11 +18,11 @@ arithmetic operations, functions and processes:
  (01) Functions:       abs, avg, ceil, clamp, equal, erf, erfc, exp,
                        expm1, floor, frac, log, log10, log1p, log2,
                        logn, max, min, mul, nequal, root, round,
-                       roundn, sgn, sqrt, sum, trunc
+                       roundn, sgn, sqrt, sum, swap, trunc
 
  (02) Trigonometry:    acos, acosh, asin, asinh, atan, atanh, atan2,
-                       cos, cosh, cot, csc, sec, sin, sinc, sinh, tan,
-                       tanh, hypot, rad2deg,  deg2grad, deg2rad,
+                       cos, cosh, cot, csc, sec, sin, sinc, sinh,
+                       tan, tanh, hypot, rad2deg,  deg2grad, deg2rad,
                        grad2deg
 
  (03) Equalities &
@@ -36,7 +36,7 @@ arithmetic operations, functions and processes:
 
  (06) Loop statements: while, for, repeat-until, break, continue
 
- (07) Assignment:      :=, +=, -=, *=, /=
+ (07) Assignment:      :=, +=, -=, *=, /=, %=
 
  (08) String
       processing:      in, like, ilike
@@ -108,6 +108,9 @@ include path (e.g: /usr/include/).
 
 
 [07 - COMPILER COMPATIBILITY]
+ExprTk has been built error and warning free using the following set
+of C++ compilers:
+
  (*) GNU Compiler Collection (3.3+)
  (*) Intel C++ Compiler (8.x+)
  (*) Clang/LLVM (1.1+)
@@ -150,12 +153,16 @@ include path (e.g: /usr/include/).
 +----------+---------------------------------------------------------+
 |  *=      | Assign the multiplication of x by the value of the      |
 |          | expression on the righthand side to x. Where x is either|
-|          | variable or vector type.                                |
+|          | a variable or vector type.                              |
 |          | (eg: x *= abs(y / z))                                   |
 +----------+---------------------------------------------------------+
 |  /=      | Assign the division of x by the value of the expression |
 |          | on the right-hand side to x. Where x is either a        |
 |          | variable or vector type.  (eg: x[i+j] /= abs(y * z))    |
++----------+---------------------------------------------------------+
+|  %=      | Assign x modulo the value of the expression on the right|
+|          | hand side to x. Where x is either a variable or vector  |
+|          | type.  (eg: x[2] %= y ^ 2)                              |
 +----------+---------------------------------------------------------+
 
 (1) Equalities & Inequalities
@@ -291,6 +298,9 @@ include path (e.g: /usr/include/).
 +----------+---------------------------------------------------------+
 | sum      | Sum of all the inputs.                                  |
 |          | (eg: sum(x,y,z,w,u,v,t) == (x + y + z + w + u + v + t)) |
++----------+---------------------------------------------------------+
+| swap     | Swap the values of the variables x and y and return the |
+| <=>      | current value of y.  (eg: swap(x,y) or x <=> y)         |
 +----------+---------------------------------------------------------+
 | trunc    | Integer portion of x.  (eg: trunc(x))                   |
 +----------+---------------------------------------------------------+
@@ -453,7 +463,7 @@ include path (e.g: /usr/include/).
 |          | The conditional is mandatory whereas the initializer    |
 |          | and incrementing expressions are optional.              |
 |          | eg:                                                     |
-|          | for (x := 0; x < n && (x != y); x += 1)                 |
+|          | for (x := 0; (x < n) and (x != y); x += 1)              |
 |          | {                                                       |
 |          |   y := y + x / 2 - z;                                   |
 |          |   w := u + y;                                           |
@@ -479,7 +489,7 @@ include path (e.g: /usr/include/).
 | continue | Continue results in the remaining portion of the nearest|
 |          | enclosing loop body to be skipped.                      |
 |          | eg:                                                     |
-|          | for (i := 0; i < 10; i+= 1)                             |
+|          | for (i := 0; i < 10; i += 1)                            |
 |          | {                                                       |
 |          |   if (i < 5)                                            |
 |          |     continue;                                           |
@@ -511,6 +521,12 @@ include path (e.g: /usr/include/).
 |          |   case (x + 3) = (y * 4)   : y := abs(z / 6) + 7y;      |
 |          | }                                                       |
 +----------+---------------------------------------------------------+
+| []       | The vector size operator returns the size of the vector |
+|          | being actioned.                                         |
+|          | eg:                                                     |
+|          | 1. v[]                                                  |
+|          | 2. max_size := max(v0[],v1[],v2[],v3[])                 |
++----------+---------------------------------------------------------+
 
 Note: In  the  above  tables, the  symbols x, y, z, w, u  and v  where
 appropriate may represent any of one the following:
@@ -518,7 +534,7 @@ appropriate may represent any of one the following:
    1. Literal numeric/string value
    2. A variable
    3. A vector element
-   3. An expression comprised of [1], [2] or [3] (eg: 2 + x / vec[3])
+   4. An expression comprised of [1], [2] or [3] (eg: 2 + x / vec[3])
 
 
 
@@ -582,11 +598,19 @@ current values assigned to the variables will be used.
 
    x = 1.0;
    y = 2.0;
-   parser.value(); // 1 * 2 + 3
+   expression.value(); // 1 * 2 + 3
+
    x = 3.7;
-   parser.value(); // 3.7 * 2 + 3
+   expression.value(); // 3.7 * 2 + 3
+
    y = -9.0;
-   parser.value(); // 3.7 * -9 + 3
+   expression.value(); // 3.7 * -9 + 3
+
+   // 'x * -9 + 3' for x in range of [0,100] in steps of 0.0001
+   for (x = 0; x < 100; x += 0.0001)
+   {
+      expression.value(); // x * -9 + 3
+   }
 
 
 (2) Expression
@@ -680,8 +704,7 @@ handle:
    (h) '-' '='  --->  '-=' (subtraction assignment)
    (i) '*' '='  --->  '*=' (multiplication assignment)
    (j) '/' '='  --->  '/=' (division assignment)
-
-
+   (j) '%' '='  --->  '%=' (modulo assignment)
 
 An example of the transformation that takes place is as follows:
 
@@ -825,108 +848,295 @@ correctly optimize such expressions for a given architecture.
 
 
 
-[12 - EXPRTK NOTES]
+[12 - VARIABLE & VECTOR DEFINITION]
+ExprTk  supports  the  definition of  expression  local  variables and
+vectors. The definitions  must be unique  as shadowing is  not allowed
+and  object  life-times  are  based  on  scope.  Definitions  use  the
+following general form:
+
+   var <name> := <initializer>;
+
+(1) Variable Definition
+Variables are  of numeric  type denoting  a single  value. They can be
+explicitly initialised to a value, otherwise they will be defaulted to
+zero. The following are examples of variable definitions:
+
+   (a) Initialise x to zero
+       var x;
+
+   (b) Initialise y to three
+       var y := 3;
+
+   (c) Initialise z to the expression
+       var z := if(max(1,x + y) > 2,w,v);
+
+
+(2) Vector Definition
+Vectors are arrays of a common numeric type. The elements in a  vector
+can be explicitly initialised, otherwise they will all be defaulted to
+zero. The following are examples of vector definitions:
+
+   (a) Initialise all values to zero
+       var x[3];
+
+   (b) Initialise all values to zero
+       var x[3] := {};
+
+   (c) Initialise all values to given expression
+       var x[3] := [123 + 3y + sin(w/z)];
+
+   (d) Initialise the first two values, other elements to zero
+       var x[3] := {1 + x[2], sin(y[0] / x[]) + 3};
+
+   (e) Initialise the first three (all) values
+       var x[3] := {1,2,3};
+
+   (f) Error as there are too many initializers
+       var x[3] := {1,2,3,4};
+
+   (g) Error as a vector of size zero is not allowed.
+       var x[0];
+
+
+(3) Return Value
+Variable and vector  definitions have a  return value. In  the case of
+variable definitions, the value  to which the variable  is initialized
+will be returned. Where as for vectors, the value of the first element
+(eg: v[0]) will be returned.
+
+
+
+[13 - USER DEFINED FUNCTIONS]
+ExprTk provides a means  whereby custom functions can  be defined  and
+utilized within  expressions.  The   concept  requires  the  user   to
+provide a reference  to the function  coupled with an  associated name
+that will be invoked within expressions. Function can take in numerous
+inputs but will always return one value.
+
+During  expression  compilation  when required  the  reference  to the
+function  will be  obtained from  the associated  symbol_table and  be
+embedded into the expression.
+
+There are two types of function interface:
+
+   (1) ifunction
+   (2) ivararg_function
+
+
+(1) ifunction
+This  interface  supports  zero  to  20  input  parameters.  The usage
+requires a custom function be  derived from ifunction and to  override
+one  of the  21 function  operators. As  part of  the constructor  the
+custom function will define how many parameters it expects to  handle.
+The following example defines a 3 parameter function called 'foo':
+
+   template <typename T>
+   struct foo : public exprtk::ifunction<T>
+   {
+      foo() : exprtk::ifunction<T>(3)
+      {}
+
+      T operator()(const T& v1, const T& v2, const T& v3)
+      {
+         return T(1) + (v1 * v2) / T(v3);
+      }
+   };
+
+
+(2) ivararg_function
+This interface supports a variable  number of arguments as input  into
+the  function.  The  function operator  interface  uses  a std::vector
+specialized upon type T to facilitate parameter passing. The following
+example defines a vararg function called 'boo':
+
+   template <typename T>
+   struct boo : public exprtk::ivararg_function<T>
+   {
+      inline T operator()(const std::vector<T>& arglist)
+      {
+         T result = T(0);
+         for (std::size_t i = 0; i < arglist.size(); ++i)
+         {
+            result += arglist[i] / arglist[i > 0 ? (i - 1) : 0];
+         }
+         return result;
+      }
+   };
+
+
+(3) Using Functions In Expressions
+For the above denoted custom functions to be used in an expression, an
+instance of each function needs  to be registered with a  symbol_table
+that  has been associated with the expression  instance. The following
+demonstrations how all the pieces are put together:
+
+   typedef exprtk::symbol_table<double> symbol_table_t;
+   typedef exprtk::expression<double>     expression_t;
+   typedef exprtk::parser<double>             parser_t;
+
+   foo<double> f;
+   boo<double> b;
+
+   symbol_table_t symbol_table;
+   symbol_table.add_function("foo",f);
+   symbol_table.add_function("boo",b);
+
+   expression_t expression;
+   expression.register_symbol_table(symbol_table);
+
+   std::string expression_str =
+                  "foo(1,2,3) + boo(1) / boo(1/2,2/3,3/4,4/5,5/6)";
+
+   parser_t parser;
+   parser.compile(expression_str,expression);
+
+   expression.value();
+
+
+(4) Function Side-Effects
+All function calls are assumed  to have side-effects by default.  What
+that means is that a certain type of optimisation will not be  carried
+out when the  function is being  called. The optimisation  in question
+is: constant  folding. Normally  during compilation  this optimisation
+would  be  invoked  when  all the  parameters  being  passed  into the
+function are literals,  the function will  be evaluated at  that point
+and a new literal will replace the function call node in the AST.
+
+If it is certain that the function being registered does not have  any
+side effects and can  be correctly constant folded  where appropriate,
+then  during the construction of the function a 'false' can be  passed
+to the constructor to denote the lack of side-effects.
+
+   template <typename T>
+   struct foo : public exprtk::ifunction<T>
+   {
+      foo() : exprtk::ifunction<T>(3,false)
+      {}
+
+      T operator()(const T& v1, const T& v2, const T& v3)
+      { ... }
+   };
+
+
+(5) Zero Parameter Functions
+When  an  ifunction  derived  type  is  defined  with  zero  number of
+parameters, there are two calling conventions within expressions  that
+are allowed. For a function named 'foo' with zero input parameters the
+calling styles are as follows:
+
+   (1)  x + sin(foo()- 2) / y
+   (2)  x + sin(foo  - 2) / y
+
+
+
+[14 - EXPRTK NOTES]
+The following is a list of facts and suggestions one may want to take
+into account when using Exprtk:
+
  (00) Precision and performance of expression evaluations are the
       dominant principles of the ExprTk library.
 
- (01) Supported types are float, double and long double.
+ (01) ExprTk uses a rudimentary imperative programming model with
+      syntax based on languages such as Pascal and C.
 
- (02) Standard mathematical operator precedence is applied (BEDMAS).
+ (02) Supported types are float, double and long double.
 
- (03) Results of expressions that are deemed as being 'valid' are to
+ (03) Standard mathematical operator precedence is applied (BEDMAS).
+
+ (04) Results of expressions that are deemed as being 'valid' are to
       exist within the set of Real numbers. All other results will be
       of the value: Not-A-Number (NaN).
 
- (04) Supported user defined types are numeric and string variables
+ (05) Supported user defined types are numeric and string variables
       and functions.
 
- (05) All variable and function names are case-insensitive.
+ (06) All variable and function names are case-insensitive.
 
- (06) Variable and function names must begin with a letter
+ (07) Variable and function names must begin with a letter
       (A-Z or a-z), then can be comprised of any combination of
       letters, digits and underscores. (eg: x, var1 or power_func99)
 
- (07) Expression lengths and sub-expression lists are limited only by
+ (08) Expression lengths and sub-expression lists are limited only by
       storage capacity.
 
- (08) The life-time of objects registered with or created from a
+ (09) The life-time of objects registered with or created from a
       specific symbol-table must span at least the life-time of the
       compiled expressions which utilize objects, such as variables,
       of that symbol-table, otherwise the result will be undefined
       behavior.
 
- (09) Equal/Nequal are normalized equality routines, which use
+ (10) Equal/Nequal are normalized equality routines, which use
       epsilons of 0.0000000001 and 0.000001 for double and float
       types respectively.
 
- (10) All trigonometric functions assume radian input unless
+ (11) All trigonometric functions assume radian input unless
       stated otherwise.
 
- (11) Expressions may contain white-space characters such as
+ (12) Expressions may contain white-space characters such as
       space,  tabs, new-lines, control-feed et al.
       ('\n', '\r', '\t', '\b', '\v', '\f')
 
- (12) Strings may be constructed from any letters, digits or special
+ (13) Strings may be constructed from any letters, digits or special
       characters such as (~!@#$%^&*()[]|=+ ,./?<>;:"`~_), and must
       be enclosed with single-quotes.
       eg: 'Frankly my dear, I do not give a damn!'
 
- (13) User defined normal functions can have up to 20 parameters,
+ (14) User defined normal functions can have up to 20 parameters,
       where as user defined vararg-functions can have an unlimited
       number of parameters.
 
- (14) The inbuilt polynomial functions can be at most of degree 12.
+ (15) The inbuilt polynomial functions can be at most of degree 12.
 
- (15) Where appropriate constant folding optimisations may be
+ (16) Where appropriate constant folding optimisations may be
       applied. (eg: The expression '2+(3-(x/y))' becomes '5-(x/y)')
 
- (16) If the strength reduction compilation option has been enabled,
+ (17) If the strength reduction compilation option has been enabled,
       then where applicable strength reduction optimisations may be
       applied.
 
- (17) String processing capabilities are available by default.
+ (18) String processing capabilities are available by default.
       To turn them off, the following needs to be defined at
       compile time: exprtk_disable_string_capabilities
 
- (18) Composited functions can call themselves or any other functions
+ (19) Composited functions can call themselves or any other functions
       that have been defined prior to their own definition.
 
- (19) Recursive calls made from within composited functions will have
+ (20) Recursive calls made from within composited functions will have
       a stack size bound by the stack of the executing architecture.
 
- (20) User defined functions by default are assumed to have side
+ (21) User defined functions by default are assumed to have side
       effects. As such an "all constant parameter" invocation of such
       functions wont result in constant folding. If the function has
       no side effects then that can be noted during the constructor
       of the ifunction allowing it to be constant folded where
       appropriate.
 
- (21) The entity relationship between symbol_table and an expression
+ (22) The entity relationship between symbol_table and an expression
       is one-to-many. Hence the intended use case is to have a single
       symbol table manage the variable and function requirements of
       multiple expressions.
 
- (22) The common use-case for an expression is to have it compiled
+ (23) The common use-case for an expression is to have it compiled
       only ONCE and then subsequently have it evaluated multiple
       times. An extremely inefficient and suboptimal approach would
       be to recompile an expression from its string form every time
       it requires evaluating.
 
- (23) The following are examples of compliant floating point value
+ (24) The following are examples of compliant floating point value
       representations:
-      (a) 12345        (b) -123.456
-      (c) +123.456e+12 (d) 123.456E-12
-      (e) +012.045e+07 (f) .1234
-      (g) 123.456f     (h) -321.654E+3L
+      (a) 12345        (e) -123.456
+      (b) +123.456e+12 (f) 123.456E-12
+      (c) +012.045e+07 (g) .1234
+      (d) 123.456f     (h) -321.654E+3L
 
- (24) Expressions may contain any of the following comment styles:
+ (25) Expressions may contain any of the following comment styles:
       1. // .... \n
       2. #  .... \n
       3. /* .... */
 
 
 
-[13 - SIMPLE EXPRTK EXAMPLE]
+[15 - SIMPLE EXPRTK EXAMPLE]
 --- snip ---
 #include <cstdio>
 #include <string>
@@ -974,8 +1184,8 @@ int main()
 
    if (!parser.compile(expression_str,expression))
    {
-      // A compilation error has occured. Attempt to
-      // print all errors to the stdout.
+      // A compilation error has occurred. Attempt to
+      // print all errors to stdout.
 
       printf("Error: %s\tExpression: %s\n",
              parser.error().c_str(),
@@ -1014,7 +1224,7 @@ int main()
 
 
 
-[14 - FILES]
+[16 - FILES]
 (00) Makefile
 (01) readme.txt
 (02) exprtk.hpp
@@ -1032,3 +1242,149 @@ int main()
 (14) exprtk_simple_example_10.cpp
 (15) exprtk_simple_example_11.cpp
 (16) exprtk_simple_example_12.cpp
+
+
+
+[17 - LANGUAGE STRUCTURE]
++-------------------------------------------------------------+
+|00 - If Statement                                            |
+|                                                             |
+|   [if] ---> [(] ---> [condition] -+-> [,] -+                |
+|                                   |        |                |
+|   +---------------<---------------+        |                |
+|   |                                        |                |
+|   |  +------------------<------------------+                |
+|   |  |                                                      |
+|   |  +--> [consequent] ---> [,] ---> [alternative] ---> [)] |
+|   |                                                         |
+|   +--> [)] --+-> [{] ---> [expression*] ---> [}] --+        |
+|              |                                     |        |
+|              |                +---------<----------+        |
+|   +----<-----+                |                             |
+|   |                           v                             |
+|   +--> [consequent] --> [;] -{*}-> [else-statement]         |
+|                                                             |
++-------------------------------------------------------------+
+|01 - Else Statement                                          |
+|                                                             |
+|   [else] -+-> [alternative] ---> [;]                        |
+|           |                                                 |
+|           +--> [{] ---> [expression*] ---> [}]              |
+|           |                                                 |
+|           +--> [if-statement]                               |
+|                                                             |
++-------------------------------------------------------------+
+|02 - Ternary Statement                                       |
+|                                                             |
+|   [condition] ---> [?] ---> [consequent] ---> [:] --+       |
+|                                                     |       |
+|   +------------------------<------------------------+       |
+|   |                                                         |
+|   +--> [alternative] --> [;]                                |
+|                                                             |
++-------------------------------------------------------------+
+|03 - While Loop                                              |
+|                                                             |
+|   [while] ---> [(] ---> [condition] ---> [)] ---+           |
+|                                                 |           |
+|   +----------------------<----------------------+           |
+|   |                                                         |
+|   +--> [{] ---> [expression*] ---> [}]                      |
+|                                                             |
++-------------------------------------------------------------+
+|04 - Repeat Until Loop                                       |
+|                                                             |
+|   [repeat] ---> [expression*] ---+                          |
+|                                  |                          |
+|   +--------------<---------------+                          |
+|   |                                                         |
+|   +--> [until] ---> [(] ---> [condition] --->[)]            |
+|                                                             |
++-------------------------------------------------------------+
+|05 - For Loop                                                |
+|                                                             |
+|   [for] ---> [(] -+-> [initialise expression] --+--+        |
+|                   |                             |  |        |
+|                   +------------->---------------+  v        |
+|                                                    |        |
+|   +-----------------------<------------------------+        |
+|   |                                                         |
+|   +--> [,] -+-> [condition] -+-> [,] ---+                   |
+|             |                |          |                   |
+|             +------->--------+          v                   |
+|                                         |                   |
+|   +------------------<---------+--------+                   |
+|   |                            |                            |
+|   +--> [increment expression] -+-> [)] --+                  |
+|                                          |                  |
+|   +------------------<-------------------+                  |
+|   |                                                         |
+|   +--> [{] ---> [expression*] ---> [}]                      |
+|                                                             |
++-------------------------------------------------------------+
+|06 - Switch Statement                                        |
+|                                                             |
+|   [switch] ---> [{] ---+                                    |
+|                        |                                    |
+|   +---------<----------+-----------<-----------+            |
+|   |                                            |            |
+|   +--> [case] ---> [condition] ---> [:] ---+   |            |
+|                                            |   |            |
+|   +-------------------<--------------------+   |            |
+|   |                                            |            |
+|   +--> [consequent] ---> [;] --------->--------+            |
+|   |                                            |            |
+|   |                                            |            |
+|   +--> [default] ---> [consequent] ---> [;] ---+            |
+|   |                                            |            |
+|   +---------------------<----------------------+            |
+|   |                                                         |
+|   +--> [}]                                                  |
+|                                                             |
++-------------------------------------------------------------+
+|07 - Multi Subexpression Statement                           |
+|                                                             |
+|                   +--------------<---------------+          |
+|                   |                              |          |
+|   [~] ---> [{\(] -+-> [expression] -+-> [;\,] ---+          |
+|                                     |                       |
+|   +----------------<----------------+                       |
+|   |                                                         |
+|   +--> [}\)]                                                |
+|                                                             |
++-------------------------------------------------------------+
+|08 - Multi Case-Consequent Statement                         |
+|                                                             |
+|   [[*]] ---> [{] ---+                                       |
+|                     |                                       |
+|   +--------<--------+--------------<----------+             |
+|   |                                           |             |
+|   +--> [case] ---> [condition] ---> [:] ---+  |             |
+|                                            |  |             |
+|   +-------------------<--------------------+  |             |
+|   |                                           |             |
+|   +--> [consequent] ---> [;] ---+------>------+             |
+|                                 |                           |
+|                                 +--> [}]                    |
+|                                                             |
++-------------------------------------------------------------+
+|09 - Variable Definition Statement                           |
+|                                                             |
+|   [var] ---> [symbol] -+-> [:=] ---> [expression] -+-> [;]  |
+|                        |                           |        |
+|                        +------------->-------------+        |
+|                                                             |
++-------------------------------------------------------------+
+|10 - Vector Definition Statement                             |
+|                                                             |
+|   [var] ---> [symbol] ---> [[] ---> [constant] ---> []] --+ |
+|                                                           | |
+|   +---------------------------<---------------------------+ |
+|   |                                                         |
+|   |                   +--------->---------+                 |
+|   |                   |                   |                 |
+|   +--> [:=] ---> [{] -+-+-> [expression] -+-> [}] -+-> [;]  |
+|                         |                 |                 |
+|                         +--<--- [,] <-----+                 |
+|                                                             |
++-------------------------------------------------------------+

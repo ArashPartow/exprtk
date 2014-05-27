@@ -103,20 +103,20 @@ strip_bin:
 	strip -s exprtk_simple_example_12
 
 valgrind_check:
-	valgrind --leak-check=full --show-reachable=yes --track-origins=yes -v ./exprtk_test
-	valgrind --leak-check=full --show-reachable=yes --track-origins=yes -v ./exprtk_benchmark
-	valgrind --leak-check=full --show-reachable=yes --track-origins=yes -v ./exprtk_simple_example_01
-	valgrind --leak-check=full --show-reachable=yes --track-origins=yes -v ./exprtk_simple_example_02
-	valgrind --leak-check=full --show-reachable=yes --track-origins=yes -v ./exprtk_simple_example_03
-	valgrind --leak-check=full --show-reachable=yes --track-origins=yes -v ./exprtk_simple_example_04
-	valgrind --leak-check=full --show-reachable=yes --track-origins=yes -v ./exprtk_simple_example_05
-	valgrind --leak-check=full --show-reachable=yes --track-origins=yes -v ./exprtk_simple_example_06
-	valgrind --leak-check=full --show-reachable=yes --track-origins=yes -v ./exprtk_simple_example_07
-	valgrind --leak-check=full --show-reachable=yes --track-origins=yes -v ./exprtk_simple_example_08
-	valgrind --leak-check=full --show-reachable=yes --track-origins=yes -v ./exprtk_simple_example_09
-	valgrind --leak-check=full --show-reachable=yes --track-origins=yes -v ./exprtk_simple_example_10
-	valgrind --leak-check=full --show-reachable=yes --track-origins=yes -v ./exprtk_simple_example_11
-	valgrind --leak-check=full --show-reachable=yes --track-origins=yes -v ./exprtk_simple_example_12
+	valgrind --leak-check=full --show-reachable=yes --track-origins=yes --log-file=exprtk_test_valgrind.log -v ./exprtk_test
+	valgrind --leak-check=full --show-reachable=yes --track-origins=yes --log-file=exprtk_benchmark_valgrind.log -v ./exprtk_benchmark
+	valgrind --leak-check=full --show-reachable=yes --track-origins=yes --log-file=exprtk_simple_example_01_valgrind.log -v ./exprtk_simple_example_01
+	valgrind --leak-check=full --show-reachable=yes --track-origins=yes --log-file=exprtk_simple_example_02_valgrind.log -v ./exprtk_simple_example_02
+	valgrind --leak-check=full --show-reachable=yes --track-origins=yes --log-file=exprtk_simple_example_03_valgrind.log -v ./exprtk_simple_example_03
+	valgrind --leak-check=full --show-reachable=yes --track-origins=yes --log-file=exprtk_simple_example_04_valgrind.log -v ./exprtk_simple_example_04
+	valgrind --leak-check=full --show-reachable=yes --track-origins=yes --log-file=exprtk_simple_example_05_valgrind.log -v ./exprtk_simple_example_05
+	valgrind --leak-check=full --show-reachable=yes --track-origins=yes --log-file=exprtk_simple_example_06_valgrind.log -v ./exprtk_simple_example_06
+	valgrind --leak-check=full --show-reachable=yes --track-origins=yes --log-file=exprtk_simple_example_07_valgrind.log -v ./exprtk_simple_example_07
+	valgrind --leak-check=full --show-reachable=yes --track-origins=yes --log-file=exprtk_simple_example_08_valgrind.log -v ./exprtk_simple_example_08
+	valgrind --leak-check=full --show-reachable=yes --track-origins=yes --log-file=exprtk_simple_example_09_valgrind.log -v ./exprtk_simple_example_09
+	valgrind --leak-check=full --show-reachable=yes --track-origins=yes --log-file=exprtk_simple_example_10_valgrind.log -v ./exprtk_simple_example_10
+	valgrind --leak-check=full --show-reachable=yes --track-origins=yes --log-file=exprtk_simple_example_11_valgrind.log -v ./exprtk_simple_example_11
+	valgrind --leak-check=full --show-reachable=yes --track-origins=yes --log-file=exprtk_simple_example_12_valgrind.log -v ./exprtk_simple_example_12
 
 clean:
 	rm -f core.* *~ *.o *.bak *stackdump gmon.out *.gcda *.gcno *.gcnor *.gch

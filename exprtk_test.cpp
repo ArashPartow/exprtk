@@ -27,6 +27,7 @@
 
 #include "exprtk.hpp"
 
+
 typedef double numeric_type;
 typedef std::pair<std::string,numeric_type> test_t;
 
@@ -1128,7 +1129,7 @@ inline bool test_expression(const std::string& expression_string, const T& expec
       }
    }
 
-   if (!exprtk::expression_helper<T>::is_head_constant(expression))
+   if (!exprtk::expression_helper<T>::is_constant(expression))
    {
       printf("test_expression() - Error: Expression did not compile to a constant!   Expression: %s\n",
              expression_string.c_str());
@@ -2736,6 +2737,8 @@ inline bool run_test09()
 template <typename T>
 inline bool run_test10()
 {
+   typedef exprtk::expression<T> expression_t;
+
    T  x = T(1.1);
    T  y = T(2.2);
    T xx = T(3.3);
@@ -2747,8 +2750,6 @@ inline bool run_test10()
    std::string jj = "Another String";
 
    exprtk::symbol_table<T> symbol_table;
-
-   typedef exprtk::expression<T> expression_t;
 
    struct test
    {
@@ -3239,6 +3240,96 @@ inline bool run_test10()
          printf("run_test10() - Failed variable list comparison.(5)\n");
          return false;
       }
+   }
+
+   {
+      exprtk::symbol_table<T> symbol_table0;
+      exprtk::symbol_table<T> symbol_table1;
+
+      if (symbol_table0 == symbol_table1)
+      {
+         printf("run_test10() - Error symbol_table0 and symbol_table1 are equal\n");
+         return false;
+      }
+
+      symbol_table0 = symbol_table1;
+      symbol_table1 = symbol_table0;
+
+      if (!(symbol_table0 == symbol_table1))
+      {
+         printf("run_test10() - Error symbol_table0 and symbol_table1 are not equal\n");
+         return false;
+      }
+   }
+
+   {
+      std::string expression_list[] =
+      {
+         "var x := 1; var y := 2; swap(x,y); (x == 2) and (y == 1)",
+         "var x := 1; var y := 2; x <=> y     ; (x    == 2) and (y    == 1)",
+         "var v[2] := {1,2}; swap(v[0],v[1]); (v[0] == 2) and (v[1] == 1)",
+         "var v[2] := {1,2}; v[0] <=> v[1]  ; (v[0] == 2) and (v[1] == 1)",
+         "var x := 1; var y := 2; ~(swap(x,y),(x == 2) and (y == 1))",
+         "var x := 1; var y := 2; ~(x <=> y     , (x    == 2) and (y    == 1))",
+         "var v[2] := {1,2}; ~(swap(v[0],v[1]), (v[0] == 2) and (v[1] == 1))",
+         "var v[2] := {1,2}; ~(v[0] <=> v[1]  , (v[0] == 2) and (v[1] == 1))",
+         "var v[2] := {1,2}; swap(v[zero],v[one]); (v[zero] == 2) and (v[one] == 1)",
+         "var v[2] := {1,2}; v[zero] <=> v[one]  ; (v[zero] == 2) and (v[one] == 1)",
+         "var v[2] := {1,2}; ~(swap(v[zero],v[one]), (v[zero] == 2) and (v[one] == 1))",
+         "var v[2] := {1,2}; ~(v[zero] <=> v[one]  , (v[zero] == 2) and (v[one] == 1))",
+         "var v[2] := {1,2}; swap(v[2 * zero],v[(2 * one) / (1 + 1)]); (v[2 * zero] == 2) and (v[(2 * one) / (1 + 1)] == 1)",
+         "var v[2] := {1,2}; v[2 * zero] <=> v[(2*one)/(1+1)]  ; (v[2 * zero] == 2) and (v[(2 * one) / (1 + 1)] == 1)",
+         "var v[2] := {1,2}; ~(swap(v[2 * zero],v[(2 * one) / (1 + 1)]), (v[2 * zero] == 2) and (v[(2 * one) / (1 + 1)] == 1))",
+         "var v[2] := {1,2}; ~(v[2 * zero] <=> v[(2 * one) / (1 + 1)]  , (v[2 * zero] == 2) and (v[(2 * one) / (1 + 1)] == 1))",
+         "var x := 1; var y := 2; var v[2] := {3,4}; swap(x,v[0]); swap(v[1],y); (x == 3) and (y == 4)",
+         "var x := 1; var y := 2; var v[2] := {3,4}; x <=> v[0]; v[1] <=> y; (x == 3) and (y == 4)",
+         "var x := 1; var y := 2; var v[2] := {3,4}; swap(x,v[zero]); swap(v[one],y); (x == 3) and (y == 4)",
+         "var x := 1; var y := 2; var v[2] := {3,4}; x <=> v[zero]; v[one] <=> y; (x == 3) and (y == 4)",
+         "var x := 1; var y := 2; var v[2] := {3,4}; swap(x,v[2 * zero]); swap(v[(2 * one) / (1 + 1)],y); (x == 3) and (y == 4)",
+         "var x := 1; var y := 2; var v[2] := {3,4}; x <=> v[zero / 3]; v[(2 * one)/(1 + 1)] <=> y; (x == 3) and (y == 4)"
+      };
+
+      const std::size_t expression_list_size = sizeof(expression_list) / sizeof(std::string);
+
+      exprtk::symbol_table<T> symbol_table;
+
+      T zero = T(0);
+      T one  = T(1);
+
+      symbol_table.add_variable("zero",zero);
+      symbol_table.add_variable("one" , one);
+
+      bool failed = false;
+
+      for (std::size_t i = 0; i < expression_list_size; ++i)
+      {
+         expression_t expression;
+         expression.register_symbol_table(symbol_table);
+
+         {
+            exprtk::parser<T> parser;
+            if (!parser.compile(expression_list[i],expression))
+            {
+               printf("run_test10() -  swaps  Error: %s   Expression: %s\n",
+                      parser.error().c_str(),
+                      expression_list[i].c_str());
+               return false;
+            }
+         }
+
+         T result = expression.value();
+
+         if (T(1) != result)
+         {
+            printf("run_test10() -  swaps evaluation error Expression: %s\n",
+                   expression_list[i].c_str());
+
+            failed = true;
+         }
+      }
+
+      if (failed)
+         return false;
    }
 
    return true;
@@ -4035,6 +4126,8 @@ inline bool run_test18()
 
    static const std::string expr_str_list[] =
                                {
+                                  "equal(va_func,(0))",
+                                  "equal(va_func(),(0))",
                                   "equal(va_func(1,2,3,4,5,6,7,8,9),(1+2+3+4+5+6+7+8+9))",
                                   "equal(va_func(1,x,3,y,5,z,7,w,9),(1+x+3+y+5+z+7+w+9))",
                                   "equal(va_func(x,2,y,4,z,6,w,8,u),(x+2+y+4+z+6+w+8+u))",
@@ -4201,7 +4294,7 @@ inline bool run_test19()
       compositor
          .add("f2","7 * (f1(x) + f1(y))","x","y");
 
-      // f3(x,y,z) = 9 * (2(x,y) + f2(y,z) + f2(x,z))
+      // f3(x,y,z) = 9 * (f2(x,y) + f2(y,z) + f2(x,z))
       compositor
          .add("f3","9 * (f2(x,y) + f2(y,z) + f2(x,z))","x","y","z");
 
@@ -4709,6 +4802,70 @@ inline bool run_test19()
 
       if (failure)
          return false;
+   }
+
+   {
+      symbol_table_t symbol_table;
+
+      symbol_table.add_constants();
+
+      compositor_t compositor(symbol_table);
+
+      compositor
+         .add("mandelbrot",
+              " var width    := 118;                            "
+              " var height   := 41;                             "
+              " var imag_max := +1;                             "
+              " var imag_min := -1;                             "
+              " var real_max := +1;                             "
+              " var real_min := -2.5;                           "
+              " var x_step   := (real_max - real_min) / width;  "
+              " var y_step   := (imag_max - imag_min) / height; "
+              " for (y := 0; y < height; y += 1)                "
+              " {                                               "
+              "   var imag := imag_min + (y_step * y);          "
+              "   for (x := 0; x < width; x += 1)               "
+              "   {                                             "
+              "     var real   := real_min + x_step * x;        "
+              "     var z_real := real;                         "
+              "     var z_imag := imag;                         "
+              "     var plot_value;                             "
+              "     for (n := 0; n < 30; n += 1)                "
+              "     {                                           "
+              "       var a := z_real^2;                        "
+              "       var b := z_imag^2;                        "
+              "       plot_value := n;                          "
+              "       if ((a + b) < 4)                          "
+              "       {                                         "
+              "         z_imag := 2 * z_real * z_imag + imag;   "
+              "         z_real := a - b + real;                 "
+              "       }                                         "
+              "       else                                      "
+              "         break;                                  "
+              "     };                                          "
+              "   };                                            "
+              " }                                               ");
+
+      std::string expression_str = "mandelbrot()";
+
+      expression_t expression;
+
+      expression.register_symbol_table(symbol_table);
+
+      parser_t parser;
+
+      if (!parser.compile(expression_str,expression))
+      {
+         printf("run_test19() - Error: %s   Expression: %s\n",
+                parser.error().c_str(),
+                expression_str.c_str());
+         return false;
+      }
+
+      for (std::size_t i = 0; i < 100; ++i)
+      {
+         expression.value();
+      }
    }
 
    return true;

@@ -28,12 +28,13 @@ void square_wave2()
    typedef exprtk::expression<T>     expression_t;
    typedef exprtk::parser<T>             parser_t;
 
-   std::string expr_string = " r := 0;                               "
-                             " for(i := 0; i < 1000; i += 1)         "
-                             " {                                     "
-                             "   r += (1/(2i+1))*sin((4i+2)*pi*f*t); "
-                             " };                                    "
-                             " r *= a*(4 / pi);                      ";
+   std::string wave_program =
+                  " r := 0;                                             "
+                  " for(i := 0; i < 1000; i += 1)                       "
+                  " {                                                   "
+                  "   r += (1 / (2i + 1)) * sin((4i + 2) * pi * f * t); "
+                  " };                                                  "
+                  " r *= a * (4 / pi);                                  ";
 
    static const T pi = T(3.14159265358979323846);
 
@@ -53,7 +54,7 @@ void square_wave2()
    parser_t parser;
    parser.enable_unknown_symbol_resolver();
 
-   parser.compile(expr_string,expression);
+   parser.compile(wave_program,expression);
 
    const T delta = (T(4) * pi) / T(1000);
 
