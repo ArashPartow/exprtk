@@ -11436,13 +11436,14 @@ namespace exprtk
          {
             for (std::size_t i = 0; i < element_.size(); ++i)
             {
-               if (element_[i].depth > parser_.scope_depth_)
+               scope_element& se = element_[i];
+               if (se.depth > parser_.scope_depth_)
                   return null_element_;
                else if (
-                         (element_[i].name == var_name) &&
-                         (element_[i].index == index)
+                         (se.name  == var_name) &&
+                         (se.index == index)
                        )
-                  return element_[i];
+                  return se;
             }
 
             return null_element_;
@@ -11455,7 +11456,8 @@ namespace exprtk
                if (
                     (element_[j].name ==  se.name ) &&
                     (element_[j].depth <= se.depth) &&
-                    (element_[j].index == se.index)
+                    (element_[j].index == se.index) &&
+                    (element_[j].size  == se.size )
                   )
                   return false;
             }
@@ -11465,7 +11467,7 @@ namespace exprtk
             return true;
          }
 
-         inline void deactivate(const std::size_t scope_depth)
+         inline void deactivate(const std::size_t& scope_depth)
          {
             for (std::size_t j = 0; j < element_.size(); ++j)
             {
@@ -11476,34 +11478,31 @@ namespace exprtk
             }
          }
 
-         void cleanup(const bool purge = false)
+         void cleanup()
          {
-           std::vector<scope_element> tmp_element_(element_.size());
-           for (std::size_t i = 0; i < element_.size(); ++i)
-           {
-              if (purge)
-                 element_[i].ref_count = 0;
+            for (std::size_t i = 0; i < element_.size(); ++i)
+            {
+               if (element_[i].var_node)
+               {
+                  delete element_[i].var_node;
+               }
 
-              if (element_[i].ref_count)
-                 tmp_element_.push_back(element_[i]);
-              else
-              {
-                 delete element_[i].var_node;
-                 T* data = (T*)(element_[i].data);
-                 switch(element_[i].type)
-                 {
-                    case scope_element::e_variable : delete    data;
-                                                     break;
+               if (element_[i].vec_node)
+               {
+                  delete element_[i].vec_node;
+               }
 
-                    case scope_element::e_vector   : delete [] data;
-                                                     break;
+               T* data = (T*)(element_[i].data);
 
-                    default                        : break;
-                 }
-              }
-           }
+               switch(element_[i].type)
+               {
+                  case scope_element::e_variable : delete    data; break;
+                  case scope_element::e_vector   : delete [] data; break;
+                  default                        : break;
+               }
+            }
 
-           element_ = tmp_element_;
+            element_.clear();
          }
 
       private:
@@ -11531,8 +11530,8 @@ namespace exprtk
 
         ~scope_handler()
          {
-            parser_.sem_.deactivate(parser_.scope_depth_);
             parser_.scope_depth_--;
+            parser_.sem_.deactivate(parser_.scope_depth_);
             #ifdef exprtk_enable_debugging
             std::string depth(2 * parser_.scope_depth_,'-');
             printf("<%s Scope Depth: %02d\n",depth.c_str(),static_cast<int>(parser_.scope_depth_));
@@ -11685,7 +11684,7 @@ namespace exprtk
          error_list_     .clear();
          brkcnt_list_    .clear();
          synthesis_error_.clear();
-         sem_            .cleanup(true);
+         sem_            .cleanup();
          expression_generator_.set_allocator(node_allocator_);
          scope_depth_ = 0;
 
@@ -11741,7 +11740,7 @@ namespace exprtk
             }
 
             symbol_name_cache_.clear();
-            sem_.cleanup(true);
+            sem_.cleanup();
 
             if (0 != e)
             {
@@ -14113,8 +14112,8 @@ namespace exprtk
             {
                set_error(
                   make_error(parser_error::e_syntax,
-                              current_token_,
-                              "ERR92 - Symbol '" + symbol+ " not a vector"));
+                             current_token_,
+                             "ERR92 - Symbol '" + symbol+ " not a vector"));
 
                return error_node();
             }
@@ -14562,16 +14561,28 @@ namespace exprtk
 
          std::size_t vec_size = static_cast<std::size_t>(vector_size);
 
-         scope_element& se = sem_.get_element(vec_name,vec_size);
+         scope_element& se = sem_.get_element(vec_name);
 
-         if ((se.name == vec_name) && se.active)
+         if (se.name == vec_name)
          {
-            set_error(
-               make_error(parser_error::e_syntax,
-                          current_token_,
-                          "ERR118 - Illegal redefinition of local vector: '" + vec_name + "'"));
+            if (se.active)
+            {
+               set_error(
+                  make_error(parser_error::e_syntax,
+                             current_token_,
+                             "ERR118 - Illegal redefinition of local vector: '" + vec_name + "'"));
 
-            return error_node();
+               return error_node();
+            }
+            else if (
+                      (se.size == vec_size) &&
+                      (scope_element::e_vector == se.type)
+                    )
+            {
+               vec_holder = se.vec_node;
+               se.active  = true;
+               se.ref_count++;
+            }
          }
 
          if (0 == vec_holder)
@@ -14588,8 +14599,8 @@ namespace exprtk
             {
                set_error(
                   make_error(parser_error::e_syntax,
-                              current_token_,
-                              "ERR119 - Failed to add new local variable to SEM"));
+                             current_token_,
+                             "ERR119 - Failed to add new local vector '" + vec_name + "' to SEM"));
 
                return error_node();
             }
@@ -14597,7 +14608,9 @@ namespace exprtk
             vec_holder = nse.vec_node;
 
             #ifdef exprtk_enable_debugging
-            printf("parse_define_vector_statement() - INFO - Added new local vector: %s\n",nse.name.c_str());
+            printf("parse_define_vector_statement() - INFO - Added new local vector: %s[%d]\n",
+                   nse.name.c_str(),
+                   static_cast<unsigned int>(nse.size));
             #endif
          }
 
@@ -14617,7 +14630,7 @@ namespace exprtk
       inline bool local_variable_is_shadowed(const std::string& symbol)
       {
          const scope_element& se = sem_.get_element(symbol);
-         return (se.name == symbol);
+         return (se.name == symbol) && se.active;
       }
 
       inline expression_node_ptr parse_define_var_statement()
@@ -14732,18 +14745,23 @@ namespace exprtk
                return error_node();
             }
             else if (scope_element::e_variable == se.type)
-               var_node = se.var_node;
+            {
+               var_node  = se.var_node;
+               se.active = true;
+               se.ref_count++;
+            }
          }
 
          if (0 == var_node)
          {
             scope_element nse;
-            nse.name     = var_name;
-            nse.active   = true;
-            nse.type     = scope_element::e_variable;
-            nse.depth    = scope_depth_;
-            nse.data     = new T(T(0));
-            nse.var_node = new variable_node_t(*(T*)(nse.data));
+            nse.name      = var_name;
+            nse.active    = true;
+            nse.ref_count = 1;
+            nse.type      = scope_element::e_variable;
+            nse.depth     = scope_depth_;
+            nse.data      = new T(T(0));
+            nse.var_node  = new variable_node_t(*(T*)(nse.data));
 
             if (!sem_.add_element(nse))
             {
@@ -14783,8 +14801,8 @@ namespace exprtk
          {
             set_error(
                make_error(parser_error::e_syntax,
-                           current_token_,
-                           "ERR129 - Expected '(' at start of swap statement"));
+                          current_token_,
+                          "ERR129 - Expected '(' at start of swap statement"));
 
             return error_node();
          }
@@ -14914,8 +14932,8 @@ namespace exprtk
          {
             set_error(
                make_error(parser_error::e_syntax,
-                           current_token_,
-                           "ERR137 - Expected ')' at end of swap statement"));
+                          current_token_,
+                          "ERR137 - Expected ')' at end of swap statement"));
 
             return error_node();
          }

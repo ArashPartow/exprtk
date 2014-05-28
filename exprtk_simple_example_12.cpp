@@ -29,7 +29,8 @@ void bubble_sort()
    typedef exprtk::parser<T>             parser_t;
 
    std::string bubblesort_program =
-                  " upper_bound := v[];                          "
+                  " var upper_bound := v[];                      "
+                  " var swapped := false;                        "
                   " repeat                                       "
                   "   swapped := false;                          "
                   "   for(i := 0; i < upper_bound; i += 1)       "
@@ -55,7 +56,6 @@ void bubble_sort()
    expression.register_symbol_table(symbol_table);
 
    parser_t parser;
-   parser.enable_unknown_symbol_resolver();
 
    parser.compile(bubblesort_program,expression);
 

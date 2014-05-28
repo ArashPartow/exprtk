@@ -3286,7 +3286,28 @@ inline bool run_test10()
          "var x := 1; var y := 2; var v[2] := {3,4}; swap(x,v[zero]); swap(v[one],y); (x == 3) and (y == 4)",
          "var x := 1; var y := 2; var v[2] := {3,4}; x <=> v[zero]; v[one] <=> y; (x == 3) and (y == 4)",
          "var x := 1; var y := 2; var v[2] := {3,4}; swap(x,v[2 * zero]); swap(v[(2 * one) / (1 + 1)],y); (x == 3) and (y == 4)",
-         "var x := 1; var y := 2; var v[2] := {3,4}; x <=> v[zero / 3]; v[(2 * one)/(1 + 1)] <=> y; (x == 3) and (y == 4)"
+         "var x := 1; var y := 2; var v[2] := {3,4}; x <=> v[zero / 3]; v[(2 * one)/(1 + 1)] <=> y; (x == 3) and (y == 4)",
+         "~{ var x := 1 } + ~{ var x := 2 } == 3",
+         "(~{ var x := 1 } + ~{ var x := 2 }) == (~{ var x := 2 } + ~{ var x := 1 })",
+         "(~{ var x := 1 } + ~{ var x := 2 } + ~{~{ var x := 1 } + ~{ var x := 2 }}) == 6",
+         "(~{ var x[3] := [1] } + ~{ var x[6] := {6,5,4,3,2,1}}) == 7",
+         "(~{ var x[6] := {6,5,4,3,2,1} } + ~{ var x := 1 }) == 7",
+         "(~{ var x := 1 } + ~{ var x[6] := {6,5,4,3,2,1} }) == 7",
+
+         "var x := 2; (~{ for (i := 0; i < 10; i += 1) { for (j := 0; j <= i;"
+         "j += 1) { var y := 3; if ((i + j + y + x) < 6) { y += x; continue; "
+         "} else break[i + j]; } } } + ~{ for (i := 0; i < 10; i += 1) { for "
+         "(j := 0; j <= i; j += 1) { var y := 3; if ((i + j + y + x) < 6) {  "
+         "y += x; continue; } else break[i + j]; } } }) == 18                ",
+
+         "var x := 2; var v0[3] := {1,2,3}; ( ~{ for (i := 0; i < 10; i += 1) { "
+         "for (j := 0; j <= i; j += 1) { var y := 3; var v2[3] := {1,2,3}; if ( "
+         "(i + j + y + x + abs(v0[i % v0[]] - v2[j % v2[]])) < 6) { var v3[3] :="
+         "{1,2,3}; y += x / v3[j % v3[]]; continue; } else break[i + j]; } } }  "
+         "+ ~{ for (i := 0; i < 10; i += 1) { for (j := 0; j <= i; j += 1) { var"
+         " y := 3; var v2[3] := {1,2,3}; if ((i + j + y + x + abs(v0[i % v0[]] -"
+         "v2[j % v2[]])) < 6) { var v3[3] := {1,2,3}; y += x / v3[j % v3[]];    "
+         "continue; } else break[i + j]; } } } ) == 18                          "
       };
 
       const std::size_t expression_list_size = sizeof(expression_list) / sizeof(std::string);
@@ -3301,35 +3322,38 @@ inline bool run_test10()
 
       bool failed = false;
 
-      for (std::size_t i = 0; i < expression_list_size; ++i)
+      for (std::size_t r = 0; r < 100; ++r)
       {
-         expression_t expression;
-         expression.register_symbol_table(symbol_table);
-
+         for (std::size_t i = 0; i < expression_list_size; ++i)
          {
-            exprtk::parser<T> parser;
-            if (!parser.compile(expression_list[i],expression))
+            expression_t expression;
+            expression.register_symbol_table(symbol_table);
+
             {
-               printf("run_test10() -  swaps  Error: %s   Expression: %s\n",
-                      parser.error().c_str(),
+               exprtk::parser<T> parser;
+               if (!parser.compile(expression_list[i],expression))
+               {
+                  printf("run_test10() -  swaps  Error: %s   Expression: %s\n",
+                         parser.error().c_str(),
+                         expression_list[i].c_str());
+                  return false;
+               }
+            }
+
+            T result = expression.value();
+
+            if (T(1) != result)
+            {
+               printf("run_test10() -  swaps evaluation error Expression: %s\n",
                       expression_list[i].c_str());
-               return false;
+
+               failed = true;
             }
          }
 
-         T result = expression.value();
-
-         if (T(1) != result)
-         {
-            printf("run_test10() -  swaps evaluation error Expression: %s\n",
-                   expression_list[i].c_str());
-
-            failed = true;
-         }
+         if (failed)
+            return false;
       }
-
-      if (failed)
-         return false;
    }
 
    return true;
