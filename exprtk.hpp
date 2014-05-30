@@ -13030,7 +13030,11 @@ namespace exprtk
                   next_token();
                   break;
                }
-               else if (!token_is(seperator))
+
+               bool is_next_until = peek_token_is(token_t::e_symbol) &&
+                                    peek_token_is("until");
+
+               if (!token_is(seperator) && is_next_until)
                {
                   set_error(
                      make_error(parser_error::e_syntax,
@@ -15322,6 +15326,11 @@ namespace exprtk
       inline bool peek_token_is(const typename token_t::token_type& ttype)
       {
          return (lexer_.peek_next_token().type == ttype);
+      }
+
+      inline bool peek_token_is(const std::string& s)
+      {
+         return (details::imatch(lexer_.peek_next_token().value,s));
       }
 
       template <typename Type>

@@ -36,6 +36,7 @@ BUILD_LIST+=exprtk_simple_example_09
 BUILD_LIST+=exprtk_simple_example_10
 BUILD_LIST+=exprtk_simple_example_11
 BUILD_LIST+=exprtk_simple_example_12
+BUILD_LIST+=exprtk_simple_example_13
 
 all: $(BUILD_LIST)
 
@@ -81,6 +82,9 @@ exprtk_simple_example_11: exprtk_simple_example_11.cpp exprtk.hpp
 exprtk_simple_example_12: exprtk_simple_example_12.cpp exprtk.hpp
 	$(COMPILER) $(OPTIONS) exprtk_simple_example_12 exprtk_simple_example_12.cpp $(LINKER_OPT)
 
+exprtk_simple_example_13: exprtk_simple_example_13.cpp exprtk.hpp
+	$(COMPILER) $(OPTIONS) exprtk_simple_example_13 exprtk_simple_example_13.cpp $(LINKER_OPT)
+
 pgo: exprtk_test.cpp exprtk_benchmark.cpp exprtk.hpp
 	$(COMPILER) $(BASE_OPTIONS) -O3 -march=native -fprofile-generate -o exprtk_benchmark exprtk_benchmark.cpp $(LINKER_OPT)
 	./exprtk_benchmark
@@ -101,6 +105,7 @@ strip_bin:
 	strip -s exprtk_simple_example_10
 	strip -s exprtk_simple_example_11
 	strip -s exprtk_simple_example_12
+	strip -s exprtk_simple_example_13
 
 valgrind_check:
 	valgrind --leak-check=full --show-reachable=yes --track-origins=yes --log-file=exprtk_test_valgrind.log -v ./exprtk_test
@@ -117,6 +122,7 @@ valgrind_check:
 	valgrind --leak-check=full --show-reachable=yes --track-origins=yes --log-file=exprtk_simple_example_10_valgrind.log -v ./exprtk_simple_example_10
 	valgrind --leak-check=full --show-reachable=yes --track-origins=yes --log-file=exprtk_simple_example_11_valgrind.log -v ./exprtk_simple_example_11
 	valgrind --leak-check=full --show-reachable=yes --track-origins=yes --log-file=exprtk_simple_example_12_valgrind.log -v ./exprtk_simple_example_12
+	valgrind --leak-check=full --show-reachable=yes --track-origins=yes --log-file=exprtk_simple_example_13_valgrind.log -v ./exprtk_simple_example_13
 
 clean:
 	rm -f core.* *~ *.o *.bak *stackdump gmon.out *.gcda *.gcno *.gcnor *.gch

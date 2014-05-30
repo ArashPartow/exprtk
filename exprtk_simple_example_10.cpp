@@ -40,28 +40,24 @@ void newton_sqrt()
    compositor_t compositor(symbol_table);
 
    compositor
-      .add("newton_sqrt_impl",
-           "switch                               "
-           "{                                    "
-           "  case x < 0  : -inf;                "
-           "  case x == 0 : 0;                   "
-           "  case x == 1 : 1;                   "
-           "  default:                           "
-           "  ~{                                 "
-           "     z := 100;                       "
-           "     y := x / 2;                     "
-           "     repeat                          "
-           "       y := (1 / 2) * (y + (x / y)); "
-           "       if (equal(y * y,x))           "
-           "         break[y];                   "
-           "     until ((z -= 1) <= 0);          "
-           "   };                                "
-           "}                                    ",
-           "x","y","z");
-
-   compositor
       .add("newton_sqrt",
-           "newton_sqrt_impl(x,0,0)","x");
+           " switch                               "
+           " {                                    "
+           "   case x < 0  : -inf;                "
+           "   case x == 0 : 0;                   "
+           "   case x == 1 : 1;                   "
+           "   default:                           "
+           "   ~{                                 "
+           "      var z := 100;                   "
+           "      var y := x / 2;                 "
+           "      repeat                          "
+           "        y := (1 / 2) * (y + (x / y)); "
+           "        if (equal(y * y,x))           "
+           "          break[y];                   "
+           "      until ((z -= 1) <= 0);          "
+           "    };                                "
+           " }                                    ",
+           "x");
 
    std::string expression_str = "newton_sqrt(x)";
 

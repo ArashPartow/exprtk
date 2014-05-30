@@ -968,7 +968,7 @@ example defines a vararg function called 'boo':
 For the above denoted custom functions to be used in an expression, an
 instance of each function needs  to be registered with a  symbol_table
 that  has been associated with the expression  instance. The following
-demonstrations how all the pieces are put together:
+demonstrates how all the pieces are put together:
 
    typedef exprtk::symbol_table<double> symbol_table_t;
    typedef exprtk::expression<double>     expression_t;
@@ -1242,6 +1242,7 @@ int main()
 (14) exprtk_simple_example_10.cpp
 (15) exprtk_simple_example_11.cpp
 (16) exprtk_simple_example_12.cpp
+(17) exprtk_simple_example_13.cpp
 
 
 

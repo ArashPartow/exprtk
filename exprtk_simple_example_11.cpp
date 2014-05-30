@@ -29,7 +29,7 @@ void square_wave2()
    typedef exprtk::parser<T>             parser_t;
 
    std::string wave_program =
-                  " r := 0;                                             "
+                  " var r := 0;                                         "
                   " for(i := 0; i < 1000; i += 1)                       "
                   " {                                                   "
                   "   r += (1 / (2i + 1)) * sin((4i + 2) * pi * f * t); "
@@ -52,7 +52,6 @@ void square_wave2()
    expression.register_symbol_table(symbol_table);
 
    parser_t parser;
-   parser.enable_unknown_symbol_resolver();
 
    parser.compile(wave_program,expression);
 

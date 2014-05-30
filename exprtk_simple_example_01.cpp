@@ -36,7 +36,7 @@ void trig_function()
    exprtk::parser<T> parser;
    parser.compile(expression_string,expression);
 
-   for (x = T(-5.0); x <= T(+5.0); x += 0.001)
+   for (x = T(-5); x <= T(+5); x += T(0.001))
    {
       T y = expression.value();
       printf("%19.15f\t%19.15f\n",x,y);

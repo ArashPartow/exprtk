@@ -32,12 +32,15 @@ void fibonacci()
    compositor_t compositor;
 
    compositor
-      .add("fibonacci_impl",
-           "switch                   "
-           "{                        "
-           "  case x == 0 : 0;       "
-           "  case x == 1 : 1;       "
-           "  default     :          "
+      .add("fibonacci",
+           " var w := 0;             "
+           " var y := 0;             "
+           " var z := 1;             "
+           " switch                  "
+           " {                       "
+           "   case x == 0 : 0;      "
+           "   case x == 1 : 1;      "
+           "   default     :         "
            "    while ((x -= 1) > 0) "
            "    {                    "
            "      w := z;            "
@@ -45,12 +48,7 @@ void fibonacci()
            "      y := w;            "
            "      z                  "
            "    };                   "
-           "}                        ",
-           "x","y","z","w");
-
-   compositor
-      .add("fibonacci",
-           "fibonacci_impl(x,0,1,0)",
+           " }                       ",
            "x");
 
    T x = T(0);
