@@ -261,6 +261,9 @@ of C++ compilers:
 |          | r0 < r1. If x is within the range it will snap to the   |
 |          | closest bound. (eg: iclamp(r0,x,r1)                     |
 +----------+---------------------------------------------------------+
+| inrange  | In-range returns 'true' when x is within the range r0   |
+|          | and r1. Where r0 < r1.  (eg: inrange(r0,x,r1)           |
++----------+---------------------------------------------------------+
 | log      | Natural logarithm of x.  (eg: log(x))                   |
 +----------+---------------------------------------------------------+
 | log10    | Base 10 logarithm of x.  (eg: log10(x))                 |

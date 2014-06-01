@@ -30,7 +30,7 @@ void savitzky_golay_filter()
    typedef exprtk::expression<T>     expression_t;
    typedef exprtk::parser<T>             parser_t;
 
-   std::string gsfilter_program =
+   std::string sgfilter_program =
                   " var weight[9] :=                                  "
                   "       {                                           "
                   "         -21, 14,  39,                             "
@@ -38,19 +38,26 @@ void savitzky_golay_filter()
                   "          39, 14, -21                              "
                   "       };                                          "
                   "                                                   "
-                  " var lower_bound := trunc(weight[] / 2);           "
-                  " var upper_bound := v_in[] - lower_bound;          "
-                  "                                                   "
                   " if (v_in[] >= weight[])                           "
                   " {                                                 "
+                  "   var lower_bound := trunc(weight[] / 2);         "
+                  "   var upper_bound := v_in[] - lower_bound;        "
+                  "                                                   "
                   "   for (i := lower_bound; i < upper_bound; i += 1) "
                   "   {                                               "
                   "     v_out[i] := 0;                                "
                   "     for (j := 0; j < weight[]; j += 1)            "
                   "     {                                             "
-                  "       v_out[i] += weight[j] * v_in[i + j];        "
+                  "       var index := i + j - lower_bound;           "
+                  "       v_out[i] += weight[j] * v_in[index];        "
                   "     };                                            "
                   "     v_out[i] /= 231;                              "
+                  "   };                                              "
+                  "                                                   "
+                  "   for (i := 0; i < lower_bound; i += 1)           "
+                  "   {                                               "
+                  "     v_out[i] := 0;                                "
+                  "     v_out[v_out[] - i - 1] := 0;                  "
                   "   };                                              "
                   " }                                                 ";
 
@@ -81,7 +88,7 @@ void savitzky_golay_filter()
 
    parser_t parser;
 
-   parser.compile(gsfilter_program,expression);
+   parser.compile(sgfilter_program,expression);
 
    expression.value();
 
