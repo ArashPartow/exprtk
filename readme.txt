@@ -398,6 +398,12 @@ of C++ compilers:
 |          | in the event they have fractional components truncation |
 |          | will be performed. (eg: 1.67 --> 1)                     |
 +----------+---------------------------------------------------------+
+| []       | The string size operator returns the size of the string |
+|          | being actioned.                                         |
+|          | eg:                                                     |
+|          | 1. 'abc'[] == 3                                         |
+|          | 2. var max_str_length := max(s0[],s1[],s2[],s3[])       |
++----------+---------------------------------------------------------+
 
 (6) Control Structures
 +----------+---------------------------------------------------------+
@@ -537,7 +543,8 @@ appropriate may represent any of one the following:
    1. Literal numeric/string value
    2. A variable
    3. A vector element
-   4. An expression comprised of [1], [2] or [3] (eg: 2 + x / vec[3])
+   4. A vector
+   5. An expression comprised of [1], [2] or [3] (eg: 2 + x / vec[3])
 
 
 
@@ -909,7 +916,58 @@ will be returned. Where as for vectors, the value of the first element
 
 
 
-[13 - USER DEFINED FUNCTIONS]
+[13 - VECTOR PROCESSING]
+ExprTk  provides  support  for   various  forms  of  vector   oriented
+arithmetic, inequalities and  processing. The various  supported pairs
+are as follows:
+
+   (a) vector and vector (eg: v0 + v1)
+   (b) vector and scalar (eg: v  + 33)
+   (c) scalar and vector (eg: 22 *  v)
+
+The following is a list of operations that can be used in  conjunction
+with vectors:
+
+   (a) Arithmetic:       +, -, *, /, %
+   (b) Exponentiation:   vector ^ scalar
+   (c) Assignment:       :=, +=, -=, *=, /=, %=
+   (d) Inequalities:     <, <=, >, >=, ==, =
+   (e) Unary operations:
+       abs, acos, acosh, asin, asinh, atan, atanh, avg, ceil,
+       cos, cosh, cot, csc, deg2grad, deg2rad, erf, erfc, exp,
+       expm1, floor, frac, grad2deg, log, log10, log1p, log2,
+       max, min, mul, rad2deg, round, sec, sgn, sin, sinc, sinh,
+       sqrt, sum, tan, tanh, trunc
+
+Note: When one of  the above  described operations  is being performed
+between two  vectors, the  operation will  only span  the size  of the
+smallest vector.  The elements  of the  larger vector  outside of  the
+range will not be included.
+
+The  following  simple  example  demonstrates  the  vector  processing
+capabilities by computing the dot-product of the vectors v0 and v1 and
+then assigning it to the variable v0dotv1:
+
+   var v0[3] := {1,2,3};
+   var v1[3] := {4,5,6};
+   var v0dotv1 := sum(v0 * v1);
+
+
+The following is a for-loop based implementation that is equivalent to
+the previously mentioned dot-product computation expression:
+
+   var v0[3] := {1,2,3};
+   var v1[3] := {4,5,6};
+   var v0dotv1;
+
+   for (i := 0; i < min(v0[],v1[]); i += 1)
+   {
+     v0dotv1 += (v0[i] * v1[i]);
+   }
+
+
+
+[14 - USER DEFINED FUNCTIONS]
 ExprTk provides a means  whereby custom functions can  be defined  and
 utilized within  expressions.  The   concept  requires  the  user   to
 provide a reference  to the function  coupled with an  associated name
@@ -1032,7 +1090,7 @@ calling styles are as follows:
 
 
 
-[14 - EXPRTK NOTES]
+[15 - EXPRTK NOTES]
 The following is a list of facts and suggestions one may want to take
 into account when using Exprtk:
 
@@ -1139,7 +1197,7 @@ into account when using Exprtk:
 
 
 
-[15 - SIMPLE EXPRTK EXAMPLE]
+[16 - SIMPLE EXPRTK EXAMPLE]
 --- snip ---
 #include <cstdio>
 #include <string>
@@ -1227,7 +1285,45 @@ int main()
 
 
 
-[16 - FILES]
+[17 - BUILD OPTIONS]
+When building ExprTk there are a number of defines that will enable or
+disable certain features and  capabilities. The defines can  either be
+part of a compiler command line switch or scoped around the include to
+the ExprTk header.
+
+(1) exprtk_enable_debugging
+This  define  will enable  printing  of debug  information  during the
+compilation process.
+
+(2) exprtk_disable_comments
+This define will disable the ability for expressions to have comments.
+Expressions that have comments when parsed with a build that has  this
+option, will result in a compilation failure.
+
+(3) exprtk_disable_break_continue
+This  define  will  disable  the  loop-wise  'break'  and   'continue'
+capabilities. Any expression that contains those keywords will  result
+in a compilation failure.
+
+(4) exprtk_disable_sc_andor
+This define  will disable  the short-circuit  '&' (and)  and '|'  (or)
+operators
+
+(5) exprtk_disable_enhanced_features
+This  define  will  disable all  enhanced  features  such as  strength
+reduction and special  function optimisations and  expression specific
+type instantiations.  This feature  will reduce  compilation times and
+binary sizes but will  also result in massive  performance degradation
+of expression evaluations.
+
+(6) exprtk_disable_string_capabilities
+This  define  will  disable all  string  processing  capabilities. Any
+expression that contains a string or string related syntax will result
+in a compilation failure.
+
+
+
+[18 - FILES]
 (00) Makefile
 (01) readme.txt
 (02) exprtk.hpp
@@ -1246,10 +1342,11 @@ int main()
 (15) exprtk_simple_example_11.cpp
 (16) exprtk_simple_example_12.cpp
 (17) exprtk_simple_example_13.cpp
+(18) exprtk_simple_example_14.cpp
 
 
 
-[17 - LANGUAGE STRUCTURE]
+[19 - LANGUAGE STRUCTURE]
 +-------------------------------------------------------------+
 |00 - If Statement                                            |
 |                                                             |

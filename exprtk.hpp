@@ -448,6 +448,7 @@ namespace exprtk
             exprtk_register_real_type_tag(double)
             exprtk_register_real_type_tag(long double)
             exprtk_register_real_type_tag(float)
+
             exprtk_register_int_type_tag(short)
             exprtk_register_int_type_tag(int)
             exprtk_register_int_type_tag(long long int)
@@ -854,7 +855,7 @@ namespace exprtk
             template <typename T>
             inline T sinc_impl(T v, real_type_tag)
             {
-               if(std::abs(v) >= std::numeric_limits<T>::epsilon())
+               if (std::abs(v) >= std::numeric_limits<T>::epsilon())
                    return(std::sin(v) / v);
                else
                   return T(1);
@@ -2796,6 +2797,11 @@ namespace exprtk
                   return std::numeric_limits<std::size_t>::max();
             }
 
+            void clear_errors()
+            {
+               error_list_.clear();
+            }
+
          private:
 
             std::size_t current_index_;
@@ -3443,31 +3449,34 @@ namespace exprtk
             e_quinary      , e_senary       , e_vararg       , e_conditional  ,
             e_while        , e_repeat       , e_for          , e_switch       ,
             e_mswitch      , e_variable     , e_stringvar    , e_stringconst  ,
-            e_stringvarrng , e_cstringvarrng, e_function     , e_vafunction   ,
-            e_add          , e_sub          , e_mul          , e_div          ,
-            e_mod          , e_pow          , e_lt           , e_lte          ,
-            e_gt           , e_gte          , e_eq           , e_ne           ,
-            e_and          , e_nand         , e_or           , e_nor          ,
-            e_xor          , e_xnor         , e_in           , e_like         ,
-            e_ilike        , e_inranges     , e_ipow         , e_ipowinv      ,
-            e_abs          , e_acos         , e_acosh        , e_asin         ,
-            e_asinh        , e_atan         , e_atanh        , e_ceil         ,
-            e_cos          , e_cosh         , e_exp          , e_expm1        ,
-            e_floor        , e_log          , e_log10        , e_log2         ,
-            e_log1p        , e_neg          , e_pos          , e_round        ,
-            e_sin          , e_sinc         , e_sinh         , e_sqrt         ,
-            e_tan          , e_tanh         , e_cot          , e_sec          ,
-            e_csc          , e_r2d          , e_d2r          , e_d2g          ,
-            e_g2d          , e_notl         , e_sgn          , e_erf          ,
-            e_erfc         , e_frac         , e_trunc        , e_uvouv        ,
-            e_vov          , e_cov          , e_voc          , e_vob          ,
-            e_bov          , e_cob          , e_boc          , e_vovov        ,
-            e_vovoc        , e_vocov        , e_covov        , e_covoc        ,
-            e_vovovov      , e_vovovoc      , e_vovocov      , e_vocovov      ,
-            e_covovov      , e_covocov      , e_vocovoc      , e_covovoc      ,
-            e_vococov      , e_sf3ext       , e_sf4ext       , e_nulleq       ,
-            e_vecelem      , e_vecass       , e_break        , e_continue     ,
-            e_swap
+            e_stringvarrng , e_cstringvarrng, e_stringsize   , e_function     ,
+            e_vafunction   , e_add          , e_sub          , e_mul          ,
+            e_div          , e_mod          , e_pow          , e_lt           ,
+            e_lte          , e_gt           , e_gte          , e_eq           ,
+            e_ne           , e_and          , e_nand         , e_or           ,
+            e_nor          , e_xor          , e_xnor         , e_in           ,
+            e_like         , e_ilike        , e_inranges     , e_ipow         ,
+            e_ipowinv      , e_abs          , e_acos         , e_acosh        ,
+            e_asin         , e_asinh        , e_atan         , e_atanh        ,
+            e_ceil         , e_cos          , e_cosh         , e_exp          ,
+            e_expm1        , e_floor        , e_log          , e_log10        ,
+            e_log2         , e_log1p        , e_neg          , e_pos          ,
+            e_round        , e_sin          , e_sinc         , e_sinh         ,
+            e_sqrt         , e_tan          , e_tanh         , e_cot          ,
+            e_sec          , e_csc          , e_r2d          , e_d2r          ,
+            e_d2g          , e_g2d          , e_notl         , e_sgn          ,
+            e_erf          , e_erfc         , e_frac         , e_trunc        ,
+            e_uvouv        , e_vov          , e_cov          , e_voc          ,
+            e_vob          , e_bov          , e_cob          , e_boc          ,
+            e_vovov        , e_vovoc        , e_vocov        , e_covov        ,
+            e_covoc        , e_vovovov      , e_vovovoc      , e_vovocov      ,
+            e_vocovov      , e_covovov      , e_covocov      , e_vocovoc      ,
+            e_covovoc      , e_vococov      , e_sf3ext       , e_sf4ext       ,
+            e_nulleq       , e_vector       , e_vecelem      , e_vecdefass    ,
+            e_vecvalass    , e_vecvecass    , e_vecopvalass  , e_vecopvecass  ,
+            e_vecfunc      , e_vecvecswap   , e_vecvecineq   , e_vecvalineq   ,
+            e_valvecineq   , e_vecvecarith  , e_vecvalarith  , e_valvecarith  ,
+            e_vecunaryop   , e_break        , e_continue     , e_swap
          };
 
          typedef T value_type;
@@ -3553,9 +3562,39 @@ namespace exprtk
       }
 
       template <typename T>
-      inline bool is_vector_node(const expression_node<T>* node)
+      inline bool is_vector_elem_node(const expression_node<T>* node)
       {
          return node && (details::expression_node<T>::e_vecelem == node->type());
+      }
+
+      template <typename T>
+      inline bool is_vector_node(const expression_node<T>* node)
+      {
+         return node && (details::expression_node<T>::e_vector == node->type());
+      }
+
+      template <typename T>
+      inline bool is_ivector_node(const expression_node<T>* node)
+      {
+         if (node)
+         {
+            switch (node->type())
+            {
+               case details::expression_node<T>::e_vector      :
+               case details::expression_node<T>::e_vecvalass   :
+               case details::expression_node<T>::e_vecvecass   :
+               case details::expression_node<T>::e_vecopvalass :
+               case details::expression_node<T>::e_vecopvecass :
+               case details::expression_node<T>::e_vecvecswap  :
+               case details::expression_node<T>::e_vecvecarith :
+               case details::expression_node<T>::e_vecvalarith :
+               case details::expression_node<T>::e_valvecarith :
+               case details::expression_node<T>::e_vecunaryop  : return true;
+               default                                         : return false;
+            }
+         }
+         else
+            return false;
       }
 
       template <typename T>
@@ -3683,6 +3722,132 @@ namespace exprtk
             node = 0;
          }
       }
+
+      template <typename Type>
+      class vector_holder
+      {
+      private:
+
+         typedef Type value_type;
+         typedef value_type* value_ptr;
+         typedef const value_ptr const_value_ptr;
+
+         class vector_holder_base
+         {
+         public:
+
+            virtual ~vector_holder_base(){}
+
+            inline value_ptr operator[](const std::size_t& index) const
+            {
+               return value_at(index);
+            }
+
+            inline std::size_t size() const
+            {
+               return vector_size();
+            }
+
+         protected:
+
+            virtual value_ptr value_at(const std::size_t&) const = 0;
+            virtual std::size_t vector_size()              const = 0;
+         };
+
+         class array_vector_impl : public vector_holder_base
+         {
+         public:
+
+            array_vector_impl(const Type* vec, const std::size_t& vec_size)
+            : vec_(vec),
+              size_(vec_size)
+            {}
+
+         protected:
+
+            value_ptr value_at(const std::size_t& index) const
+            {
+               if (index < size_)
+                  return const_cast<const_value_ptr>(vec_ + index);
+               else
+                  return const_value_ptr(0);
+            }
+
+            std::size_t vector_size() const
+            {
+               return size_;
+            }
+
+         private:
+
+            array_vector_impl operator=(const array_vector_impl&);
+
+            const Type* vec_;
+            const std::size_t size_;
+         };
+
+         template <typename Allocator,
+                   template <typename,typename> class Sequence>
+         class sequence_vector_impl : public vector_holder_base
+         {
+         public:
+
+            typedef Sequence<Type,Allocator> sequence_t;
+
+            sequence_vector_impl(sequence_t& seq)
+            : sequence_(seq)
+            {}
+
+         protected:
+
+            value_ptr value_at(const std::size_t& index) const
+            {
+               return (index < sequence_.size()) ? (&sequence_[index]) : const_value_ptr(0);
+            }
+
+            std::size_t vector_size() const
+            {
+               return sequence_.size();
+            }
+
+         private:
+
+            sequence_vector_impl operator=(const sequence_vector_impl&);
+
+            sequence_t& sequence_;
+         };
+
+      public:
+
+         vector_holder(Type* vec, const std::size_t& vec_size)
+         : vector_holder_base_(new(buffer)array_vector_impl(vec,vec_size))
+         {}
+
+         template <typename Allocator>
+         vector_holder(std::vector<Type,Allocator>& vec)
+         : vector_holder_base_(new(buffer)sequence_vector_impl<Allocator,std::vector>(vec))
+         {}
+
+         template <typename Allocator>
+         vector_holder(std::deque<Type,Allocator>& deq)
+         : vector_holder_base_(new(buffer)sequence_vector_impl<Allocator,std::deque>(deq))
+         {}
+
+         inline value_ptr operator[](const std::size_t& index) const
+         {
+            return (*vector_holder_base_)[index];
+         }
+
+         inline std::size_t size() const
+         {
+            return vector_holder_base_->size();
+         }
+
+      private:
+
+         mutable vector_holder_base* vector_holder_base_;
+         unsigned char buffer[64];
+      };
 
       template <typename T>
       class null_node : public expression_node<T>
@@ -3874,7 +4039,7 @@ namespace exprtk
             return branch_;
          }
 
-      private:
+      protected:
 
          operator_type operation_;
          expression_ptr branch_;
@@ -5059,21 +5224,87 @@ namespace exprtk
       template <typename T>
       T variable_node<T>::null_value = T(std::numeric_limits<T>::quiet_NaN());
 
+      template <typename T> class vector_node;
+
+      template <typename T>
+      class vector_interface
+      {
+      public:
+
+         typedef vector_node<T>* vector_node_ptr;
+
+         virtual ~vector_interface()
+         {}
+
+         virtual vector_node_ptr vec() const = 0;
+
+         virtual vector_node_ptr vec() = 0;
+      };
+
       template <typename T>
       class vector_node : public expression_node<T>,
-                          public ivariable<T>
+                          public vector_interface<T>
+      {
+      public:
+
+         typedef expression_node<T>*  expression_ptr;
+         typedef vector_holder<T>    vector_holder_t;
+         typedef vector_node<T>*     vector_node_ptr;
+
+         vector_node(vector_holder_t* vh)
+         : vector_holder_(vh)
+         {}
+
+         inline T value() const
+         {
+            return *(ref()[0]);
+         }
+
+         inline const vector_holder_t& ref() const
+         {
+            return (*vector_holder_);
+         }
+
+         inline vector_holder_t& ref()
+         {
+            return (*vector_holder_);
+         }
+
+         vector_node_ptr vec() const
+         {
+            return const_cast<vector_node_ptr>(this);
+         }
+
+         vector_node_ptr vec()
+         {
+            return this;
+         }
+
+         inline typename expression_node<T>::node_type type() const
+         {
+            return expression_node<T>::e_vector;
+         }
+
+      private:
+
+         vector_holder_t* vector_holder_;
+      };
+
+      template <typename T>
+      class vector_elem_node : public expression_node<T>,
+                               public ivariable<T>
       {
       public:
 
          typedef expression_node<T>* expression_ptr;
 
-         vector_node(expression_ptr index, T* vector_base)
+         vector_elem_node(expression_ptr index, T* vector_base)
          : index_(index),
            vector_base_(vector_base),
            index_deletable_(branch_deletable(index_))
          {}
 
-        ~vector_node()
+        ~vector_elem_node()
          {
             if (index_ && index_deletable_)
             {
@@ -5147,14 +5378,15 @@ namespace exprtk
             }
             else
             {
-               for (std::size_t i = 0; i < initialiser_list_.size(); ++i)
+               std::size_t il_size = initialiser_list_.size();
+               for (std::size_t i = 0; i < il_size; ++i)
                {
                   *(vector_base_ + i) = initialiser_list_[i]->value();
                }
 
-               if (initialiser_list_.size() < size_)
+               if (il_size < size_)
                {
-                  for (std::size_t i = initialiser_list_.size() - 1; i < size_; ++i)
+                  for (std::size_t i = il_size; i < size_; ++i)
                   {
                      *(vector_base_ + i) = T(0);
                   }
@@ -5166,7 +5398,7 @@ namespace exprtk
 
          inline typename expression_node<T>::node_type type() const
          {
-            return expression_node<T>::e_vecass;
+            return expression_node<T>::e_vecdefass;
          }
 
       private:
@@ -5208,7 +5440,7 @@ namespace exprtk
       };
 
       template <typename T>
-      class swap_generic_node : public expression_node<T>
+      class swap_generic_node : public binary_node<T>
       {
       public:
 
@@ -5216,26 +5448,10 @@ namespace exprtk
          typedef ivariable<T>* ivariable_ptr;
 
          swap_generic_node(expression_ptr var0, expression_ptr var1)
-         : var0_(dynamic_cast<ivariable_ptr>(var0)),
-           var1_(dynamic_cast<ivariable_ptr>(var1)),
-           v0_  (var0),
-           v1_  (var1),
-           var0_deletable_(branch_deletable(v0_)),
-           var1_deletable_(branch_deletable(v1_))
+         : binary_node<T>(details::e_swap,var0,var1),
+           var0_(dynamic_cast<ivariable_ptr>(var0)),
+           var1_(dynamic_cast<ivariable_ptr>(var1))
          {}
-
-        ~swap_generic_node()
-         {
-            if (var0_deletable_)
-            {
-               delete v0_;
-            }
-
-            if (var1_deletable_)
-            {
-               delete v1_;
-            }
-         }
 
          inline T value() const
          {
@@ -5252,10 +5468,78 @@ namespace exprtk
 
          ivariable_ptr  var0_;
          ivariable_ptr  var1_;
-         expression_ptr v0_;
-         expression_ptr v1_;
-         bool var0_deletable_;
-         bool var1_deletable_;
+      };
+
+      template <typename T>
+      class swap_vecvec_node : public binary_node<T>,
+                               public vector_interface<T>
+      {
+      public:
+
+         typedef expression_node<T>* expression_ptr;
+         typedef vector_node<T>*     vector_node_ptr;
+
+         swap_vecvec_node(expression_ptr branch0,
+                          expression_ptr branch1)
+         : binary_node<T>(details::e_swap,branch0,branch1),
+           vec0_node_ptr_(0),
+           vec1_node_ptr_(0)
+         {
+            if (is_ivector_node(binary_node<T>::branch_[0].first))
+            {
+               vector_interface<T>* vi = dynamic_cast<vector_interface<T>*>(binary_node<T>::branch_[0].first);
+               vec0_node_ptr_ = vi->vec();
+            }
+
+            if (is_ivector_node(binary_node<T>::branch_[1].first))
+            {
+               vector_interface<T>* vi = dynamic_cast<vector_interface<T>*>(binary_node<T>::branch_[1].first);
+               vec1_node_ptr_ = vi->vec();
+            }
+         }
+
+         inline T value() const
+         {
+            binary_node<T>::branch_[0].first->value();
+            binary_node<T>::branch_[1].first->value();
+
+            if (vec0_node_ptr_ && vec1_node_ptr_)
+            {
+               vector_holder<T>& vec0 = vec0_node_ptr_->ref();
+               vector_holder<T>& vec1 = vec1_node_ptr_->ref();
+
+               std::size_t vec_size = std::min(vec0.size(),vec1.size());
+
+               for (std::size_t i = 0; i < vec_size; ++i)
+               {
+                  std::swap((*vec0[i]),(*vec1[i]));
+               }
+
+               return vec1_node_ptr_->value();
+            }
+            else
+               return std::numeric_limits<T>::quiet_NaN();
+         }
+
+         vector_node_ptr vec() const
+         {
+            return vec0_node_ptr_;
+         }
+
+         vector_node_ptr vec()
+         {
+            return vec0_node_ptr_;
+         }
+
+         inline typename expression_node<T>::node_type type() const
+         {
+            return expression_node<T>::e_vecvecswap;
+         }
+
+      private:
+
+         vector_node<T>* vec0_node_ptr_;
+         vector_node<T>* vec1_node_ptr_;
       };
 
       #ifndef exprtk_disable_string_capabilities
@@ -5435,6 +5719,39 @@ namespace exprtk
          const std::string value_;
          RangePack    rp_;
       };
+
+      template <typename T>
+      class stringsize_node : public expression_node<T>
+      {
+      public:
+
+         static std::string null_value;
+
+         explicit stringsize_node()
+         : value_(&null_value)
+         {}
+
+         explicit stringsize_node(std::string& value)
+         : value_(&value)
+         {}
+
+         inline T value() const
+         {
+            return T((*value_).size());
+         }
+
+         inline typename expression_node<T>::node_type type() const
+         {
+            return expression_node<T>::e_stringsize;
+         }
+
+      private:
+
+         std::string* value_;
+      };
+
+      template <typename T>
+      std::string stringsize_node<T>::null_value = std::string("");
       #endif
 
       template <typename T, std::size_t N> inline T axn(T a, T x)       { return a * exprtk::details::numeric::fast_exp<T,N>::result(x); } // a*x^n
@@ -5820,6 +6137,57 @@ namespace exprtk
          std::vector<const T*> arg_list_;
       };
 
+      template <typename T, typename VecFunction>
+      class vectorize_node : public expression_node<T>
+      {
+      public:
+
+         typedef expression_node<T>* expression_ptr;
+
+         vectorize_node(const expression_ptr v)
+         : ivec_ptr_(0),
+           v_(v),
+           v_deletable_(branch_deletable(v_))
+         {
+            if (is_ivector_node(v))
+            {
+               ivec_ptr_ = dynamic_cast<vector_interface<T>*>(v);
+            }
+            else
+               ivec_ptr_ = 0;
+         }
+
+        ~vectorize_node()
+         {
+            if (v_ && v_deletable_)
+            {
+               delete v_;
+            }
+         }
+
+         inline T value() const
+         {
+            if (ivec_ptr_)
+            {
+               v_->value();
+               return VecFunction::process(ivec_ptr_);
+            }
+            else
+               return std::numeric_limits<T>::quiet_NaN();
+         }
+
+         inline typename expression_node<T>::node_type type() const
+         {
+            return expression_node<T>::e_vecfunc;
+         }
+
+      private:
+
+         vector_interface<T>* ivec_ptr_;
+         expression_ptr v_;
+         bool v_deletable_;
+      };
+
       template <typename T>
       class assignment_node : public binary_node<T>
       {
@@ -5857,21 +6225,21 @@ namespace exprtk
       };
 
       template <typename T>
-      class assignment_vec_node : public binary_node<T>
+      class assignment_vec_elem_node : public binary_node<T>
       {
       public:
 
          typedef expression_node<T>* expression_ptr;
 
-         assignment_vec_node(const operator_type& operation,
-                             expression_ptr branch0,
-                             expression_ptr branch1)
+         assignment_vec_elem_node(const operator_type& operation,
+                                  expression_ptr branch0,
+                                  expression_ptr branch1)
          : binary_node<T>(operation,branch0,branch1),
            vec_node_ptr_(0)
          {
-            if (is_vector_node(binary_node<T>::branch_[0].first))
+            if (is_vector_elem_node(binary_node<T>::branch_[0].first))
             {
-               vec_node_ptr_ = dynamic_cast<vector_node<T>*>(binary_node<T>::branch_[0].first);
+               vec_node_ptr_ = dynamic_cast<vector_elem_node<T>*>(binary_node<T>::branch_[0].first);
             }
          }
 
@@ -5889,7 +6257,138 @@ namespace exprtk
 
       private:
 
+         vector_elem_node<T>* vec_node_ptr_;
+      };
+
+      template <typename T>
+      class assignment_vec_node : public binary_node<T>,
+                                  public vector_interface<T>
+      {
+      public:
+
+         typedef expression_node<T>* expression_ptr;
+         typedef vector_node<T>*    vector_node_ptr;
+
+         assignment_vec_node(const operator_type& operation,
+                             expression_ptr branch0,
+                             expression_ptr branch1)
+         : binary_node<T>(operation,branch0,branch1),
+           vec_node_ptr_(0)
+         {
+            if (is_vector_node(binary_node<T>::branch_[0].first))
+            {
+               vec_node_ptr_ = dynamic_cast<vector_node<T>*>(binary_node<T>::branch_[0].first);
+            }
+         }
+
+         inline T value() const
+         {
+            if (vec_node_ptr_)
+            {
+               vector_holder<T>& vec = vec_node_ptr_->ref();
+               const T v = binary_node<T>::branch_[1].first->value();
+               for (std::size_t i = 0; i < vec.size(); ++i)
+               {
+                  (*vec[i]) = v;
+               }
+               return vec_node_ptr_->value();
+            }
+            else
+               return std::numeric_limits<T>::quiet_NaN();
+         }
+
+         vector_node_ptr vec() const
+         {
+            return vec_node_ptr_;
+         }
+
+         vector_node_ptr vec()
+         {
+            return vec_node_ptr_;
+         }
+
+         inline typename expression_node<T>::node_type type() const
+         {
+            return expression_node<T>::e_vecvalass;
+         }
+
+      private:
+
          vector_node<T>* vec_node_ptr_;
+      };
+
+      template <typename T>
+      class assignment_vecvec_node : public binary_node<T>,
+                                     public vector_interface<T>
+      {
+      public:
+
+         typedef expression_node<T>* expression_ptr;
+         typedef vector_node<T>*     vector_node_ptr;
+
+         assignment_vecvec_node(const operator_type& operation,
+                                expression_ptr branch0,
+                                expression_ptr branch1)
+         : binary_node<T>(operation,branch0,branch1),
+           vec0_node_ptr_(0),
+           vec1_node_ptr_(0)
+         {
+            if (is_vector_node(binary_node<T>::branch_[0].first))
+            {
+               vec0_node_ptr_ = dynamic_cast<vector_node<T>*>(binary_node<T>::branch_[0].first);
+            }
+
+            if (is_vector_node(binary_node<T>::branch_[1].first))
+            {
+               vec1_node_ptr_ = dynamic_cast<vector_node<T>*>(binary_node<T>::branch_[1].first);
+            }
+            else if (is_ivector_node(binary_node<T>::branch_[1].first))
+            {
+               vector_interface<T>* vi = dynamic_cast<vector_interface<T>*>(binary_node<T>::branch_[1].first);
+               vec1_node_ptr_ = vi->vec();
+            }
+         }
+
+         inline T value() const
+         {
+            binary_node<T>::branch_[1].first->value();
+            if (vec0_node_ptr_ && vec1_node_ptr_)
+            {
+               vector_holder<T>& vec0 = vec0_node_ptr_->ref();
+               vector_holder<T>& vec1 = vec1_node_ptr_->ref();
+
+               std::size_t vec_size = std::min(vec0.size(),vec1.size());
+
+               for (std::size_t i = 0; i < vec_size; ++i)
+               {
+                  (*vec0[i]) = (*vec1[i]);
+               }
+
+               return vec0_node_ptr_->value();
+            }
+            else
+               return std::numeric_limits<T>::quiet_NaN();
+         }
+
+         vector_node_ptr vec() const
+         {
+            return vec0_node_ptr_;
+         }
+
+         vector_node_ptr vec()
+         {
+            return vec0_node_ptr_;
+         }
+
+         inline typename expression_node<T>::node_type type() const
+         {
+            return expression_node<T>::e_vecvecass;
+         }
+
+      private:
+
+         vector_node<T>* vec0_node_ptr_;
+         vector_node<T>* vec1_node_ptr_;
       };
 
       template <typename T, typename Operation>
@@ -5929,21 +6428,21 @@ namespace exprtk
       };
 
       template <typename T, typename Operation>
-      class assignment_vec_op_node : public binary_node<T>
+      class assignment_vec_elem_op_node : public binary_node<T>
       {
       public:
 
          typedef expression_node<T>* expression_ptr;
 
-         assignment_vec_op_node(const operator_type& operation,
-                                expression_ptr branch0,
-                                expression_ptr branch1)
+         assignment_vec_elem_op_node(const operator_type& operation,
+                                     expression_ptr branch0,
+                                     expression_ptr branch1)
          : binary_node<T>(operation,branch0,branch1),
            vec_node_ptr_(0)
          {
-            if (is_vector_node(binary_node<T>::branch_[0].first))
+            if (is_vector_elem_node(binary_node<T>::branch_[0].first))
             {
-               vec_node_ptr_ = dynamic_cast<vector_node<T>*>(binary_node<T>::branch_[0].first);
+               vec_node_ptr_ = dynamic_cast<vector_elem_node<T>*>(binary_node<T>::branch_[0].first);
             }
          }
 
@@ -5961,7 +6460,765 @@ namespace exprtk
 
       private:
 
+         vector_elem_node<T>* vec_node_ptr_;
+      };
+
+      template <typename T, typename Operation>
+      class assignment_vec_op_node : public binary_node<T>,
+                                     public vector_interface<T>
+      {
+      public:
+
+         typedef expression_node<T>* expression_ptr;
+         typedef vector_node<T>*     vector_node_ptr;
+
+         assignment_vec_op_node(const operator_type& operation,
+                                expression_ptr branch0,
+                                expression_ptr branch1)
+         : binary_node<T>(operation,branch0,branch1),
+           vec_node_ptr_(0)
+         {
+            if (is_vector_node(binary_node<T>::branch_[0].first))
+            {
+               vec_node_ptr_ = dynamic_cast<vector_node<T>*>(binary_node<T>::branch_[0].first);
+            }
+         }
+
+         inline T value() const
+         {
+            if (vec_node_ptr_)
+            {
+               vector_holder<T>& vec = vec_node_ptr_->ref();
+               const T v = binary_node<T>::branch_[1].first->value();
+               for (std::size_t i = 0; i < vec.size(); ++i)
+               {
+                  T& vec_i = *vec[i];
+                  vec_i = Operation::process(vec_i,v);
+               }
+               return vec_node_ptr_->value();
+            }
+            else
+               return std::numeric_limits<T>::quiet_NaN();
+         }
+
+         vector_node_ptr vec() const
+         {
+            return vec_node_ptr_;
+         }
+
+         vector_node_ptr vec()
+         {
+            return vec_node_ptr_;
+         }
+
+         inline typename expression_node<T>::node_type type() const
+         {
+            return expression_node<T>::e_vecopvalass;
+         }
+
+      private:
+
          vector_node<T>* vec_node_ptr_;
+      };
+
+      template <typename T, typename Operation>
+      class assignment_vecvec_op_node : public binary_node<T>,
+                                        public vector_interface<T>
+      {
+      public:
+
+         typedef expression_node<T>* expression_ptr;
+         typedef vector_node<T>*     vector_node_ptr;
+
+         assignment_vecvec_op_node(const operator_type& operation,
+                                expression_ptr branch0,
+                                expression_ptr branch1)
+         : binary_node<T>(operation,branch0,branch1),
+           vec0_node_ptr_(0),
+           vec1_node_ptr_(0)
+         {
+            if (is_vector_node(binary_node<T>::branch_[0].first))
+            {
+               vec0_node_ptr_ = dynamic_cast<vector_node<T>*>(binary_node<T>::branch_[0].first);
+            }
+
+            if (is_vector_node(binary_node<T>::branch_[1].first))
+            {
+               vec1_node_ptr_ = dynamic_cast<vector_node<T>*>(binary_node<T>::branch_[1].first);
+            }
+            else if (is_ivector_node(binary_node<T>::branch_[1].first))
+            {
+               vector_interface<T>* vi = dynamic_cast<vector_interface<T>*>(binary_node<T>::branch_[1].first);
+               vec1_node_ptr_ = vi->vec();
+            }
+         }
+
+         inline T value() const
+         {
+            binary_node<T>::branch_[0].first->value();
+            binary_node<T>::branch_[1].first->value();
+
+            if (vec0_node_ptr_ && vec1_node_ptr_)
+            {
+               vector_holder<T>& vec0 = vec0_node_ptr_->ref();
+               vector_holder<T>& vec1 = vec1_node_ptr_->ref();
+
+               std::size_t vec_size = std::min(vec0.size(),vec1.size());
+
+               for (std::size_t i = 0; i < vec_size; ++i)
+               {
+                  T& vec0_i = *vec0[i];
+                  T& vec1_i = *vec1[i];
+                  vec0_i = Operation::process(vec0_i,vec1_i);
+               }
+
+               return vec0_node_ptr_->value();
+            }
+            else
+               return std::numeric_limits<T>::quiet_NaN();
+         }
+
+         vector_node_ptr vec() const
+         {
+            return vec0_node_ptr_;
+         }
+
+         vector_node_ptr vec()
+         {
+            return vec0_node_ptr_;
+         }
+
+         inline typename expression_node<T>::node_type type() const
+         {
+            return expression_node<T>::e_vecopvecass;
+         }
+
+      private:
+
+         vector_node<T>* vec0_node_ptr_;
+         vector_node<T>* vec1_node_ptr_;
+      };
+
+      template <typename T, typename Operation>
+      class eqineq_vecvec_node : public binary_node<T>,
+                                 public vector_interface<T>
+      {
+      public:
+
+         typedef expression_node<T>*  expression_ptr;
+         typedef vector_node<T>*     vector_node_ptr;
+
+         eqineq_vecvec_node(const operator_type& operation,
+                            expression_ptr branch0,
+                            expression_ptr branch1)
+         : binary_node<T>(operation,branch0,branch1),
+           vec0_node_ptr_(0),
+           vec1_node_ptr_(0)
+         {
+
+            if (is_vector_node(binary_node<T>::branch_[0].first))
+            {
+               vec0_node_ptr_ = dynamic_cast<vector_node<T>*>(binary_node<T>::branch_[0].first);
+            }
+            else if (is_ivector_node(binary_node<T>::branch_[0].first))
+            {
+               vector_interface<T>* vi = dynamic_cast<vector_interface<T>*>(binary_node<T>::branch_[0].first);
+               vec0_node_ptr_ = vi->vec();
+            }
+
+            if (is_vector_node(binary_node<T>::branch_[1].first))
+            {
+               vec1_node_ptr_ = dynamic_cast<vector_node<T>*>(binary_node<T>::branch_[1].first);
+            }
+            else if (is_ivector_node(binary_node<T>::branch_[1].first))
+            {
+               vector_interface<T>* vi = dynamic_cast<vector_interface<T>*>(binary_node<T>::branch_[1].first);
+               vec1_node_ptr_ = vi->vec();
+            }
+         }
+
+         inline T value() const
+         {
+            binary_node<T>::branch_[0].first->value();
+            binary_node<T>::branch_[1].first->value();
+
+            if (vec0_node_ptr_ && vec1_node_ptr_)
+            {
+               vector_holder<T>& vec0 = vec0_node_ptr_->ref();
+               vector_holder<T>& vec1 = vec1_node_ptr_->ref();
+
+               std::size_t vec_size = std::min(vec0.size(),vec1.size());
+
+               for (std::size_t i = 0; i < vec_size; ++i)
+               {
+                  T& vec0_i = *vec0[i];
+                  T& vec1_i = *vec1[i];
+                  if (T(0) == Operation::process(vec0_i,vec1_i))
+                     return T(0);
+               }
+
+               return T(1);
+            }
+            else
+               return std::numeric_limits<T>::quiet_NaN();
+         }
+
+         vector_node_ptr vec() const
+         {
+            return vec0_node_ptr_;
+         }
+
+         vector_node_ptr vec()
+         {
+            return vec0_node_ptr_;
+         }
+
+         inline typename expression_node<T>::node_type type() const
+         {
+            return expression_node<T>::e_vecvecineq;
+         }
+
+      private:
+
+         vector_node<T>* vec0_node_ptr_;
+         vector_node<T>* vec1_node_ptr_;
+      };
+
+      template <typename T, typename Operation>
+      class eqineq_vecval_node : public binary_node<T>,
+                                 public vector_interface<T>
+      {
+      public:
+
+         typedef expression_node<T>*  expression_ptr;
+         typedef vector_node<T>*     vector_node_ptr;
+
+         eqineq_vecval_node(const operator_type& operation,
+                            expression_ptr branch0,
+                            expression_ptr branch1)
+         : binary_node<T>(operation,branch0,branch1),
+           vec_node_ptr_(0)
+         {
+
+            if (is_vector_node(binary_node<T>::branch_[0].first))
+            {
+               vec_node_ptr_ = dynamic_cast<vector_node<T>*>(binary_node<T>::branch_[0].first);
+            }
+            else if (is_ivector_node(binary_node<T>::branch_[0].first))
+            {
+               vector_interface<T>* vi = dynamic_cast<vector_interface<T>*>(binary_node<T>::branch_[0].first);
+               vec_node_ptr_ = vi->vec();
+            }
+         }
+
+         inline T value() const
+         {
+                  binary_node<T>::branch_[0].first->value();
+            T v = binary_node<T>::branch_[1].first->value();
+
+            if (vec_node_ptr_)
+            {
+               vector_holder<T>& vec = vec_node_ptr_->ref();
+
+               std::size_t vec_size = vec.size();
+
+               for (std::size_t i = 0; i < vec_size; ++i)
+               {
+                  T& vec_i = *vec[i];
+                  if (T(0) == Operation::process(vec_i,v))
+                     return T(0);
+               }
+
+               return T(1);
+            }
+            else
+               return std::numeric_limits<T>::quiet_NaN();
+         }
+
+         vector_node_ptr vec() const
+         {
+            return vec_node_ptr_;
+         }
+
+         vector_node_ptr vec()
+         {
+            return vec_node_ptr_;
+         }
+
+         inline typename expression_node<T>::node_type type() const
+         {
+            return expression_node<T>::e_vecvalineq;
+         }
+
+      private:
+
+         vector_node<T>* vec_node_ptr_;
+         vector_node<T>* vec1_node_ptr_;
+      };
+
+      template <typename T, typename Operation>
+      class eqineq_valvec_node : public binary_node<T>,
+                                 public vector_interface<T>
+      {
+      public:
+
+         typedef expression_node<T>*  expression_ptr;
+         typedef vector_node<T>*     vector_node_ptr;
+
+         eqineq_valvec_node(const operator_type& operation,
+                            expression_ptr branch0,
+                            expression_ptr branch1)
+         : binary_node<T>(operation,branch0,branch1),
+           vec_node_ptr_(0)
+         {
+
+            if (is_vector_node(binary_node<T>::branch_[1].first))
+            {
+               vec_node_ptr_ = dynamic_cast<vector_node<T>*>(binary_node<T>::branch_[1].first);
+            }
+            else if (is_ivector_node(binary_node<T>::branch_[1].first))
+            {
+               vector_interface<T>* vi = dynamic_cast<vector_interface<T>*>(binary_node<T>::branch_[1].first);
+               vec_node_ptr_ = vi->vec();
+            }
+         }
+
+         inline T value() const
+         {
+            T v = binary_node<T>::branch_[0].first->value();
+                  binary_node<T>::branch_[1].first->value();
+
+            if (vec_node_ptr_)
+            {
+               vector_holder<T>& vec = vec_node_ptr_->ref();
+
+               std::size_t vec_size = vec.size();
+
+               for (std::size_t i = 0; i < vec_size; ++i)
+               {
+                  T& vec_i = *vec[i];
+                  if (T(0) == Operation::process(v,vec_i))
+                     return T(0);
+               }
+
+               return T(1);
+            }
+            else
+               return std::numeric_limits<T>::quiet_NaN();
+         }
+
+         vector_node_ptr vec() const
+         {
+            return vec_node_ptr_;
+         }
+
+         vector_node_ptr vec()
+         {
+            return vec_node_ptr_;
+         }
+
+         inline typename expression_node<T>::node_type type() const
+         {
+            return expression_node<T>::e_valvecineq;
+         }
+
+      private:
+
+         vector_node<T>* vec_node_ptr_;
+         vector_node<T>* vec1_node_ptr_;
+      };
+
+      template <typename T, typename Operation>
+      class vecarith_vecvec_node : public binary_node<T>,
+                                   public vector_interface<T>
+      {
+      public:
+
+         typedef expression_node<T>*    expression_ptr;
+         typedef vector_node<T>*       vector_node_ptr;
+         typedef vector_holder<T>*   vector_holder_ptr;
+
+         vecarith_vecvec_node(const operator_type& operation,
+                              expression_ptr branch0,
+                              expression_ptr branch1)
+         : binary_node<T>(operation,branch0,branch1),
+           vec0_node_ptr_(0),
+           vec1_node_ptr_(0),
+           vec_size_     (0),
+           data_         (0),
+           temp_         (0),
+           temp_vec_node_(0)
+         {
+            if (is_vector_node(binary_node<T>::branch_[0].first))
+            {
+               vec0_node_ptr_ = dynamic_cast<vector_node<T>*>(binary_node<T>::branch_[0].first);
+            }
+            else if (is_ivector_node(binary_node<T>::branch_[0].first))
+            {
+               vector_interface<T>* vi = dynamic_cast<vector_interface<T>*>(binary_node<T>::branch_[0].first);
+               vec0_node_ptr_ = vi->vec();
+            }
+
+            if (is_vector_node(binary_node<T>::branch_[1].first))
+            {
+               vec1_node_ptr_ = dynamic_cast<vector_node<T>*>(binary_node<T>::branch_[1].first);
+            }
+            else if (is_ivector_node(binary_node<T>::branch_[1].first))
+            {
+               vector_interface<T>* vi = dynamic_cast<vector_interface<T>*>(binary_node<T>::branch_[1].first);
+               vec1_node_ptr_ = vi->vec();
+            }
+
+            if (vec0_node_ptr_ && vec1_node_ptr_)
+            {
+               vector_holder<T>& vec0 = vec0_node_ptr_->ref();
+               vector_holder<T>& vec1 = vec1_node_ptr_->ref();
+
+               vec_size_      = std::min(vec0.size(),vec1.size());
+               data_          = new T[vec_size_];
+               temp_          = new vector_holder<T>(data_,vec_size_);
+               temp_vec_node_ = new vector_node<T>  (temp_);
+            }
+         }
+
+        ~vecarith_vecvec_node()
+         {
+            delete[] data_;
+            delete   temp_;
+            delete   temp_vec_node_;
+         }
+
+         inline T value() const
+         {
+            binary_node<T>::branch_[0].first->value();
+            binary_node<T>::branch_[1].first->value();
+
+            if (vec0_node_ptr_ && vec1_node_ptr_)
+            {
+               vector_holder<T>& vec0 = vec0_node_ptr_->ref();
+               vector_holder<T>& vec1 = vec1_node_ptr_->ref();
+               vector_holder<T>& vec2 = *temp_;
+
+               for (std::size_t i = 0; i < vec_size_; ++i)
+               {
+
+                  T& vec0_i = *vec0[i];
+                  T& vec1_i = *vec1[i];
+                  T& vec2_i = *vec2[i];
+                  vec2_i = Operation::process(vec0_i,vec1_i);
+               }
+
+               return *vec2[0];
+            }
+            else
+               return std::numeric_limits<T>::quiet_NaN();
+         }
+
+         vector_node_ptr vec() const
+         {
+            return temp_vec_node_;
+         }
+
+         vector_node_ptr vec()
+         {
+            return temp_vec_node_;
+         }
+
+         inline typename expression_node<T>::node_type type() const
+         {
+            return expression_node<T>::e_vecvecarith;
+         }
+
+      private:
+
+         vector_node_ptr   vec0_node_ptr_;
+         vector_node_ptr   vec1_node_ptr_;
+         std::size_t       vec_size_;
+         T*                data_;
+         vector_holder_ptr temp_;
+         vector_node_ptr   temp_vec_node_;
+      };
+
+      template <typename T, typename Operation>
+      class vecarith_vecval_node : public binary_node<T>,
+                                   public vector_interface<T>
+      {
+      public:
+
+         typedef expression_node<T>*    expression_ptr;
+         typedef vector_node<T>*       vector_node_ptr;
+         typedef vector_holder<T>*   vector_holder_ptr;
+
+         vecarith_vecval_node(const operator_type& operation,
+                              expression_ptr branch0,
+                              expression_ptr branch1)
+         : binary_node<T>(operation,branch0,branch1),
+           vec0_node_ptr_(0),
+           vec_size_     (0),
+           data_         (0),
+           temp_         (0),
+           temp_vec_node_(0)
+         {
+            if (is_vector_node(binary_node<T>::branch_[0].first))
+            {
+               vec0_node_ptr_ = dynamic_cast<vector_node<T>*>(binary_node<T>::branch_[0].first);
+            }
+            else if (is_ivector_node(binary_node<T>::branch_[0].first))
+            {
+               vector_interface<T>* vi = dynamic_cast<vector_interface<T>*>(binary_node<T>::branch_[0].first);
+               vec0_node_ptr_ = vi->vec();
+            }
+
+            if (vec0_node_ptr_)
+            {
+               vector_holder<T>& vec0 = vec0_node_ptr_->ref();
+
+               vec_size_      = vec0.size();
+               data_          = new T[vec_size_];
+               temp_          = new vector_holder<T>(data_,vec_size_);
+               temp_vec_node_ = new vector_node<T>  (temp_);
+            }
+         }
+
+        ~vecarith_vecval_node()
+         {
+            delete[] data_;
+            delete   temp_;
+            delete   temp_vec_node_;
+         }
+
+         inline T value() const
+         {
+                        binary_node<T>::branch_[0].first->value();
+            const T v = binary_node<T>::branch_[1].first->value();
+
+            if (vec0_node_ptr_)
+            {
+               vector_holder<T>& vec0 = vec0_node_ptr_->ref();
+               vector_holder<T>& vec1 = *temp_;
+
+               for (std::size_t i = 0; i < vec_size_; ++i)
+               {
+                  T& vec0_i = *vec0[i];
+                  T& vec1_i = *vec1[i];
+                  vec1_i = Operation::process(vec0_i,v);
+               }
+
+               return *vec1[0];
+            }
+            else
+               return std::numeric_limits<T>::quiet_NaN();
+         }
+
+         vector_node_ptr vec() const
+         {
+            return temp_vec_node_;
+         }
+
+         vector_node_ptr vec()
+         {
+            return temp_vec_node_;
+         }
+
+         inline typename expression_node<T>::node_type type() const
+         {
+            return expression_node<T>::e_vecvalarith;
+         }
+
+      private:
+
+         vector_node_ptr   vec0_node_ptr_;
+         std::size_t       vec_size_;
+         T*                data_;
+         vector_holder_ptr temp_;
+         vector_node_ptr   temp_vec_node_;
+      };
+
+      template <typename T, typename Operation>
+      class vecarith_valvec_node : public binary_node<T>,
+                                   public vector_interface<T>
+      {
+      public:
+
+         typedef expression_node<T>*    expression_ptr;
+         typedef vector_node<T>*       vector_node_ptr;
+         typedef vector_holder<T>*   vector_holder_ptr;
+
+         vecarith_valvec_node(const operator_type& operation,
+                              expression_ptr branch0,
+                              expression_ptr branch1)
+         : binary_node<T>(operation,branch0,branch1),
+           vec1_node_ptr_(0),
+           vec_size_     (0),
+           data_         (0),
+           temp_         (0),
+           temp_vec_node_(0)
+         {
+            if (is_vector_node(binary_node<T>::branch_[1].first))
+            {
+               vec1_node_ptr_ = dynamic_cast<vector_node<T>*>(binary_node<T>::branch_[1].first);
+            }
+            else if (is_ivector_node(binary_node<T>::branch_[1].first))
+            {
+               vector_interface<T>* vi = dynamic_cast<vector_interface<T>*>(binary_node<T>::branch_[1].first);
+               vec1_node_ptr_ = vi->vec();
+            }
+
+            if (vec1_node_ptr_)
+            {
+               vector_holder<T>& vec0 = vec1_node_ptr_->ref();
+
+               vec_size_      = vec0.size();
+               data_          = new T[vec_size_];
+               temp_          = new vector_holder<T>(data_,vec_size_);
+               temp_vec_node_ = new vector_node<T>  (temp_);
+            }
+         }
+
+        ~vecarith_valvec_node()
+         {
+            delete[] data_;
+            delete   temp_;
+            delete   temp_vec_node_;
+         }
+
+         inline T value() const
+         {
+            const T v = binary_node<T>::branch_[0].first->value();
+                        binary_node<T>::branch_[1].first->value();
+
+            if (vec1_node_ptr_)
+            {
+               vector_holder<T>& vec1 = vec1_node_ptr_->ref();
+               vector_holder<T>& vec2 = *temp_;
+
+               for (std::size_t i = 0; i < vec_size_; ++i)
+               {
+                  T& vec1_i = *vec1[i];
+                  T& vec2_i = *vec2[i];
+                  vec2_i = Operation::process(v,vec1_i);
+               }
+
+               return *vec2[0];
+            }
+            else
+               return std::numeric_limits<T>::quiet_NaN();
+         }
+
+         vector_node_ptr vec() const
+         {
+            return temp_vec_node_;
+         }
+
+         vector_node_ptr vec()
+         {
+            return temp_vec_node_;
+         }
+
+         inline typename expression_node<T>::node_type type() const
+         {
+            return expression_node<T>::e_vecvalarith;
+         }
+
+      private:
+
+         vector_node_ptr   vec1_node_ptr_;
+         std::size_t       vec_size_;
+         T*                data_;
+         vector_holder_ptr temp_;
+         vector_node_ptr   temp_vec_node_;
+      };
+
+      template <typename T, typename Operation>
+      class unary_vector_node : public unary_node<T>,
+                                public vector_interface<T>
+      {
+      public:
+
+         typedef expression_node<T>*    expression_ptr;
+         typedef vector_node<T>*       vector_node_ptr;
+         typedef vector_holder<T>*   vector_holder_ptr;
+
+         unary_vector_node(const operator_type& operation, expression_ptr branch0)
+         : unary_node<T>(operation,branch0),
+           vec0_node_ptr_(0),
+           vec_size_     (0),
+           data_         (0),
+           temp_         (0),
+           temp_vec_node_(0)
+         {
+            if (is_vector_node(unary_node<T>::branch_))
+            {
+               vec0_node_ptr_ = dynamic_cast<vector_node<T>*>(unary_node<T>::branch_);
+            }
+            else if (is_ivector_node(unary_node<T>::branch_))
+            {
+               vector_interface<T>* vi = dynamic_cast<vector_interface<T>*>(unary_node<T>::branch_);
+               vec0_node_ptr_ = vi->vec();
+            }
+
+            if (vec0_node_ptr_)
+            {
+               vector_holder<T>& vec0 = vec0_node_ptr_->ref();
+
+               vec_size_      = vec0.size();
+               data_          = new T[vec_size_];
+               temp_          = new vector_holder<T>(data_,vec_size_);
+               temp_vec_node_ = new vector_node<T>  (temp_);
+            }
+         }
+
+        ~unary_vector_node()
+         {
+            delete[] data_;
+            delete   temp_;
+            delete   temp_vec_node_;
+         }
+
+         inline T value() const
+         {
+            unary_node<T>::branch_->value();
+
+            if (vec0_node_ptr_)
+            {
+               vector_holder<T>& vec0 = vec0_node_ptr_->ref();
+               vector_holder<T>& vec1 = *temp_;
+
+               for (std::size_t i = 0; i < vec_size_; ++i)
+               {
+                  T& vec0_i = *vec0[i];
+                  T& vec1_i = *vec1[i];
+                  vec1_i = Operation::process(vec0_i);
+               }
+
+               return *vec1[0];
+            }
+            else
+               return std::numeric_limits<T>::quiet_NaN();
+         }
+
+         vector_node_ptr vec() const
+         {
+            return temp_vec_node_;
+         }
+
+         vector_node_ptr vec()
+         {
+            return temp_vec_node_;
+         }
+
+         inline typename expression_node<T>::node_type type() const
+         {
+            return expression_node<T>::e_vecunaryop;
+         }
+
+      private:
+
+         vector_node_ptr   vec0_node_ptr_;
+         std::size_t       vec_size_;
+         T*                data_;
+         vector_holder_ptr temp_;
+         vector_node_ptr   temp_vec_node_;
       };
 
       template <typename T>
@@ -7273,6 +8530,105 @@ namespace exprtk
                    value(arg_list[5]);
                    value(arg_list[6]);
             return value(arg_list[7]);
+         }
+      };
+
+      template <typename T>
+      struct vec_add_op
+      {
+         typedef vector_interface<T>* ivector_ptr;
+
+         static inline T process(const ivector_ptr v)
+         {
+            vector_holder<T>& vec = v->vec()->ref();
+            T result = T(0);
+
+            for (std::size_t i = 0; i < vec.size(); ++i)
+            {
+              result += (*vec[i]);
+            }
+
+            return result;
+         }
+      };
+
+      template <typename T>
+      struct vec_mul_op
+      {
+         typedef vector_interface<T>* ivector_ptr;
+
+         static inline T process(const ivector_ptr v)
+         {
+            vector_holder<T>& vec = v->vec()->ref();
+            T result = (*vec[0]);
+
+            for (std::size_t i = 1; i < vec.size(); ++i)
+            {
+              result *= (*vec[i]);
+            }
+
+            return result;
+         }
+      };
+
+      template <typename T>
+      struct vec_avg_op
+      {
+         typedef vector_interface<T>* ivector_ptr;
+
+         static inline T process(const ivector_ptr v)
+         {
+            vector_holder<T>& vec = v->vec()->ref();
+            T result = T(0);
+
+            for (std::size_t i = 0; i < vec.size(); ++i)
+            {
+              result += (*vec[i]);
+            }
+
+            return result / vec.size();
+         }
+      };
+
+      template <typename T>
+      struct vec_min_op
+      {
+         typedef vector_interface<T>* ivector_ptr;
+
+         static inline T process(const ivector_ptr v)
+         {
+            vector_holder<T>& vec = v->vec()->ref();
+            T result = (*vec[0]);
+
+            for (std::size_t i = 1; i < vec.size(); ++i)
+            {
+              T v_i = (*vec[i]);
+              if (v_i < result)
+                result = v_i;
+            }
+
+            return result;
+         }
+      };
+
+      template <typename T>
+      struct vec_max_op
+      {
+         typedef vector_interface<T>* ivector_ptr;
+
+         static inline T process(const ivector_ptr v)
+         {
+            vector_holder<T>& vec = v->vec()->ref();
+            T result = (*vec[0]);
+
+            for (std::size_t i = 1; i < vec.size(); ++i)
+            {
+              T v_i = (*vec[i]);
+              if (v_i > result)
+                result = v_i;
+            }
+
+            return result;
          }
       };
 
@@ -9767,132 +11123,6 @@ namespace exprtk
 
       template <typename Type> class parser;
 
-      template <typename Type>
-      class vector_holder
-      {
-      private:
-
-         typedef Type value_type;
-         typedef value_type* value_ptr;
-         typedef const value_ptr const_value_ptr;
-
-         class vector_holder_base
-         {
-         public:
-
-            virtual ~vector_holder_base(){}
-
-            inline value_ptr operator[](const std::size_t& index) const
-            {
-               return value_at(index);
-            }
-
-            inline std::size_t size() const
-            {
-               return vector_size();
-            }
-
-         protected:
-
-            virtual value_ptr value_at(const std::size_t&) const = 0;
-            virtual std::size_t vector_size()              const = 0;
-         };
-
-         class array_vector_impl : public vector_holder_base
-         {
-         public:
-
-            array_vector_impl(const T* vec, const std::size_t& vec_size)
-            : vec_(vec),
-              size_(vec_size)
-            {}
-
-         protected:
-
-            value_ptr value_at(const std::size_t& index) const
-            {
-               if (index < size_)
-                  return const_cast<const_value_ptr>(vec_ + index);
-               else
-                  return const_value_ptr(0);
-            }
-
-            std::size_t vector_size() const
-            {
-               return size_;
-            }
-
-         private:
-
-            array_vector_impl operator=(const array_vector_impl&);
-
-            const T* vec_;
-            const std::size_t size_;
-         };
-
-         template <typename Allocator,
-                   template <typename,typename> class Sequence>
-         class sequence_vector_impl : public vector_holder_base
-         {
-         public:
-
-            typedef Sequence<Type,Allocator> sequence_t;
-
-            sequence_vector_impl(sequence_t& seq)
-            : sequence_(seq)
-            {}
-
-         protected:
-
-            value_ptr value_at(const std::size_t& index) const
-            {
-               return (index < sequence_.size()) ? (&sequence_[index]) : const_value_ptr(0);
-            }
-
-            std::size_t vector_size() const
-            {
-               return sequence_.size();
-            }
-
-         private:
-
-            sequence_vector_impl operator=(const sequence_vector_impl&);
-
-            sequence_t& sequence_;
-         };
-
-      public:
-
-         vector_holder(Type* vec, const std::size_t& vec_size)
-         : vector_holder_base_(new(buffer)array_vector_impl(vec,vec_size))
-         {}
-
-         template <typename Allocator>
-         vector_holder(std::vector<Type,Allocator>& vec)
-         : vector_holder_base_(new(buffer)sequence_vector_impl<Allocator,std::vector>(vec))
-         {}
-
-         template <typename Allocator>
-         vector_holder(std::deque<Type,Allocator>& deq)
-         : vector_holder_base_(new(buffer)sequence_vector_impl<Allocator,std::deque>(deq))
-         {}
-
-         inline value_ptr operator[](const std::size_t& index) const
-         {
-            return (*vector_holder_base_)[index];
-         }
-
-         inline std::size_t size() const
-         {
-            return vector_holder_base_->size();
-         }
-
-      private:
-
-         mutable vector_holder_base* vector_holder_base_;
-         unsigned char buffer[64];
-      };
-
    protected:
 
       template <typename Type, typename RawType>
@@ -9901,7 +11131,7 @@ namespace exprtk
          typedef typename details::variable_node<T>  variable_node_t;
          typedef ifunction<T>                        ifunction_t;
          typedef ivararg_function<T>                 ivararg_function_t;
-         typedef vector_holder<T>                    vector_t;
+         typedef details::vector_holder<T>           vector_t;
          #ifndef exprtk_disable_string_capabilities
          typedef typename details::stringvar_node<T> stringvar_node_t;
          #endif
@@ -10195,6 +11425,7 @@ namespace exprtk
       };
 
       typedef typename details::variable_node<T> variable_t;
+      typedef typename details::vector_holder<T> vector_holder_t;
       typedef variable_t* variable_ptr;
       #ifndef exprtk_disable_string_capabilities
       typedef typename details::stringvar_node<T> stringvar_t;
@@ -10218,7 +11449,7 @@ namespace exprtk
             #endif
             type_store<ifunction<T>,ifunction<T> > function_store;
             type_store<ivararg_function<T>,ivararg_function<T> > vararg_function_store;
-            type_store<vector_holder<T>,vector_holder<T> > vector_store;
+            type_store<vector_holder_t,vector_holder_t> vector_store;
 
             st_data()
             {
@@ -10421,15 +11652,14 @@ namespace exprtk
             return local_data().vararg_function_store.get(vararg_function_name);
       }
 
-      typedef vector_holder<T> vector_holder_t;
-      typedef vector_holder_t* vector_ptr;
+      typedef vector_holder_t* vector_holder_ptr;
 
-      inline vector_ptr get_vector(const std::string& vector_name)
+      inline vector_holder_ptr get_vector(const std::string& vector_name)
       {
          if (!valid())
-            return reinterpret_cast<vector_ptr>(0);
+            return reinterpret_cast<vector_holder_ptr>(0);
          else if (!valid_symbol(vector_name))
-            return reinterpret_cast<vector_ptr>(0);
+            return reinterpret_cast<vector_holder_ptr>(0);
          else
             return local_data().vector_store.get(vector_name);
       }
@@ -10463,8 +11693,6 @@ namespace exprtk
          if (!valid())
             return false;
          else if (!valid_symbol(symbol_name))
-            return false;
-         else if (!local_data().variable_store.symbol_exists(symbol_name))
             return false;
          else
             return local_data().variable_store.is_constant(symbol_name);
@@ -10876,7 +12104,7 @@ namespace exprtk
    private:
 
       typedef details::expression_node<T>* expression_ptr;
-      typedef typename symbol_table<T>::vector_ptr vector_ptr;
+      typedef details::vector_holder<T>* vector_holder_ptr;
 
       struct expression_holder
       {
@@ -10915,7 +12143,7 @@ namespace exprtk
                      case e_expr      : delete reinterpret_cast<expression_ptr>(local_data_list[i].first);
                                         break;
 
-                     case e_vecholder : delete reinterpret_cast<vector_ptr>(local_data_list[i].first);
+                     case e_vecholder : delete reinterpret_cast<vector_holder_ptr>(local_data_list[i].first);
                                         break;
 
                      case e_data      : delete (T*)(local_data_list[i].first);
@@ -11072,7 +12300,7 @@ namespace exprtk
          }
       }
 
-      inline void register_local_var(vector_ptr vec_holder)
+      inline void register_local_var(vector_holder_ptr vec_holder)
       {
          if (vec_holder)
          {
@@ -11298,6 +12526,7 @@ namespace exprtk
       #endif
       typedef details::switch_node<T>                         switch_node_t;
       typedef details::variable_node<T>                     variable_node_t;
+      typedef details::vector_elem_node<T>               vector_elem_node_t;
       typedef details::vector_node<T>                         vector_node_t;
       #ifndef exprtk_disable_string_capabilities
       typedef details::stringvar_node  <T>                 stringvar_node_t;
@@ -11306,12 +12535,15 @@ namespace exprtk
       typedef details::const_string_range_node<T,range_pack>  const_string_range_node_t;
       #endif
       typedef details::assignment_node<T>                 assignment_node_t;
+      typedef details::assignment_vec_elem_node<T>  assignment_vec_elem_node_t;
       typedef details::assignment_vec_node<T>         assignment_vec_node_t;
+      typedef details::assignment_vecvec_node<T>   assignment_vecvec_node_t;
       typedef details::scand_node<T>                           scand_node_t;
       typedef details::scor_node<T>                             scor_node_t;
       typedef lexer::token                                          token_t;
       typedef expression_node_t*                        expression_node_ptr;
       typedef symbol_table<T>                                symbol_table_t;
+      typedef details::vector_holder<T>*                  vector_holder_ptr;
 
       typedef typename details::functor_t<T> functor_t;
       typedef typename functor_t::qfunc_t quaternary_functor_t;
@@ -11360,8 +12592,8 @@ namespace exprtk
          };
 
          typedef variable_node_t* variable_node_ptr;
-         typedef typename symbol_table_t::vector_ptr vector_ptr;
-         typedef typename symbol_table_t::vector_holder_t vector_holder_t;
+         typedef details::vector_holder<T> vector_holder_t;
+         typedef vector_holder_t* vector_holder_ptr;
 
          scope_element()
          : name("???"),
@@ -11399,7 +12631,7 @@ namespace exprtk
          bool         active;
          void*        data;
          variable_node_ptr var_node;
-         vector_ptr        vec_node;
+         vector_holder_ptr vec_node;
       };
 
       class scope_element_manager
@@ -11542,7 +12774,6 @@ namespace exprtk
 
          parser_t& parser_;
       };
-
 
    public:
 
@@ -11869,6 +13100,11 @@ namespace exprtk
                                       error_token,
                                       "ERR05 - Invalid numeric token: '" + error_token.value + "'"));
                      }
+
+                     if (numeric_checker_ptr->error_count())
+                     {
+                        numeric_checker_ptr->clear_errors();
+                     }
                   }
                   else if (0 != (sequence_validator_ptr = dynamic_cast<lexer::helper::sequence_validator*>(helper_assembly_.error_token_scanner)))
                   {
@@ -11881,6 +13117,11 @@ namespace exprtk
                                       "ERR06 - Invalid token sequence: '" +
                                       error_token.first.value  + "' and '" +
                                       error_token.second.value + "'"));
+                     }
+
+                     if (sequence_validator_ptr->error_count())
+                     {
+                        sequence_validator_ptr->clear_errors();
                      }
                   }
                }
@@ -14019,9 +15260,13 @@ namespace exprtk
 
          expression_node_ptr result = symbol_table_.get_stringvar(symbol);
 
-         if (symbol_table_.is_constant_node(symbol))
+         typedef details::stringvar_node<T>* strvar_node_t;
+         strvar_node_t const_str_node = static_cast<strvar_node_t>(0);
+
+         if (symbol_table_.is_constant_string(symbol))
          {
-            result = expression_generator_(dynamic_cast<details::string_literal_node<T>*>(result)->str());
+            const_str_node = dynamic_cast<strvar_node_t>(result);
+            result = expression_generator_(const_str_node->str());
          }
 
          cache_symbol(symbol);
@@ -14030,6 +15275,18 @@ namespace exprtk
          {
             next_token();
 
+            if (peek_token_is(token_t::e_rsqrbracket))
+            {
+               next_token();
+               next_token();
+
+               if (const_str_node)
+                  return expression_generator_(T(const_str_node->str().size()));
+               else
+                  return node_allocator_.allocate<details::stringsize_node<T> >
+                            (dynamic_cast<details::stringvar_node<T>*>(result)->ref());
+            }
+
             range_pack rp;
 
             if (!parse_range(rp))
@@ -14037,8 +15294,10 @@ namespace exprtk
                free_node(node_allocator_,result);
                return error_node();
             }
-
-            result = expression_generator_(dynamic_cast<details::stringvar_node<T>*>(result)->ref(),rp);
+            else if (const_str_node)
+               result = expression_generator_(const_str_node->ref(),rp);
+            else
+               result = expression_generator_(dynamic_cast<details::stringvar_node<T>*>(result)->ref(),rp);
 
             if (result)
                rp.clear();
@@ -14057,6 +15316,15 @@ namespace exprtk
          if (peek_token_is(token_t::e_lsqrbracket))
          {
             next_token();
+
+            if (peek_token_is(token_t::e_rsqrbracket))
+            {
+               next_token();
+               next_token();
+               free_node(node_allocator_,result);
+               return expression_generator_(T(const_str.size()));
+            }
+
             range_pack rp;
 
             if (!parse_range(rp))
@@ -14102,7 +15370,7 @@ namespace exprtk
       {
          const std::string symbol = current_token_.value;
 
-         typename symbol_table_t::vector_ptr vec = typename symbol_table_t::vector_ptr(0);
+         vector_holder_ptr vec = vector_holder_ptr(0);
 
          const scope_element& se = sem_.get_element(symbol);
 
@@ -14131,12 +15399,7 @@ namespace exprtk
 
          if (!token_is(token_t::e_lsqrbracket))
          {
-            set_error(
-               make_error(parser_error::e_syntax,
-                          current_token_,
-                          "ERR93 - Expected '[' for index of vector: '" + symbol + "'"));
-
-            return error_node();
+            return node_allocator_.allocate<vector_node_t>(vec);
          }
          else if (token_is(token_t::e_rsqrbracket))
          {
@@ -14147,7 +15410,7 @@ namespace exprtk
             set_error(
                make_error(parser_error::e_syntax,
                           current_token_,
-                          "ERR94 - Failed to parse index for vector: '" + symbol + "'"));
+                          "ERR93 - Failed to parse index for vector: '" + symbol + "'"));
 
             return error_node();
          }
@@ -14156,7 +15419,7 @@ namespace exprtk
             set_error(
                make_error(parser_error::e_syntax,
                           current_token_,
-                          "ERR95 - Expected ']' for index of vector: '" + symbol + "'"));
+                          "ERR94 - Expected ']' for index of vector: '" + symbol + "'"));
 
             free_node(node_allocator_,index_expr);
 
@@ -14197,7 +15460,7 @@ namespace exprtk
                      set_error(
                         make_error(parser_error::e_syntax,
                                    current_token_,
-                                   "ERR96 - Expected ',' for call to vararg function: " + vararg_function_name));
+                                   "ERR95 - Expected ',' for call to vararg function: " + vararg_function_name));
 
                      return error_node();
                   }
@@ -14229,7 +15492,7 @@ namespace exprtk
                p.set_error(
                     make_error(parser_error::e_syntax,
                                p.current_token(),
-                               "ERR97 - Expected '(' for special function"));
+                               "ERR96 - Expected '(' for special function"));
 
                return error_node();
             }
@@ -14248,7 +15511,7 @@ namespace exprtk
                      p.set_error(
                           make_error(parser_error::e_syntax,
                                      p.current_token(),
-                                     "ERR98 - Expected ',' before next parameter of special function"));
+                                     "ERR97 - Expected ',' before next parameter of special function"));
 
                      return p.error_node();
                   }
@@ -14277,7 +15540,7 @@ namespace exprtk
             set_error(
                make_error(parser_error::e_token,
                           current_token_,
-                          "ERR99 - Invalid special function[1]: " + current_token_.value));
+                          "ERR98 - Invalid special function[1]: " + current_token_.value));
 
             return error_node();
          }
@@ -14289,7 +15552,7 @@ namespace exprtk
             set_error(
                make_error(parser_error::e_token,
                           current_token_,
-                          "ERR100 - Invalid special function[2]: " + current_token_.value));
+                          "ERR99 - Invalid special function[2]: " + current_token_.value));
 
             return error_node();
          }
@@ -14330,7 +15593,7 @@ namespace exprtk
                   set_error(
                      make_error(parser_error::e_syntax,
                                 current_token_,
-                                "ERR101 - Failed to parse return expression for 'break' statement"));
+                                "ERR100 - Failed to parse return expression for 'break' statement"));
 
                   return error_node();
                }
@@ -14339,7 +15602,7 @@ namespace exprtk
                   set_error(
                      make_error(parser_error::e_syntax,
                                 current_token_,
-                                "ERR102 - Expected ']' at the completed of break's return expression"));
+                                "ERR101 - Expected ']' at the completed of break's return expression"));
 
                   free_node(node_allocator_,return_expr);
 
@@ -14354,7 +15617,7 @@ namespace exprtk
             set_error(
                make_error(parser_error::e_syntax,
                           current_token_,
-                          "ERR103 - Invalid use of 'break', allowed only in the scope of a loop"));
+                          "ERR102 - Invalid use of 'break', allowed only in the scope of a loop"));
          }
 
          return error_node();
@@ -14373,7 +15636,7 @@ namespace exprtk
             set_error(
                make_error(parser_error::e_syntax,
                           current_token_,
-                          "ERR104 - Invalid use of 'continue', allowed only in the scope of a loop"));
+                          "ERR103 - Invalid use of 'continue', allowed only in the scope of a loop"));
 
             return error_node();
          }
@@ -14389,7 +15652,7 @@ namespace exprtk
             set_error(
                make_error(parser_error::e_syntax,
                           current_token_,
-                          "ERR105 - Expected '[' as part of vector size definition"));
+                          "ERR104 - Expected '[' as part of vector size definition"));
 
             return error_node();
          }
@@ -14398,7 +15661,7 @@ namespace exprtk
             set_error(
                make_error(parser_error::e_syntax,
                           current_token_,
-                          "ERR106 - Failed to determine size of vector '" + vec_name + "'"));
+                          "ERR105 - Failed to determine size of vector '" + vec_name + "'"));
 
             return error_node();
          }
@@ -14409,7 +15672,7 @@ namespace exprtk
             set_error(
                make_error(parser_error::e_syntax,
                           current_token_,
-                          "ERR107 - Expected a literal number as size of vector '" + vec_name + "'"));
+                          "ERR106 - Expected a literal number as size of vector '" + vec_name + "'"));
 
             return error_node();
          }
@@ -14426,7 +15689,7 @@ namespace exprtk
             set_error(
                make_error(parser_error::e_syntax,
                           current_token_,
-                          "ERR108 - Invalid vector size. Must be an integer greater than zero, size: " +
+                          "ERR107 - Invalid vector size. Must be an integer greater than zero, size: " +
                           details::to_str((int)vector_size)));
 
             return error_node();
@@ -14443,22 +15706,22 @@ namespace exprtk
             set_error(
                make_error(parser_error::e_syntax,
                           current_token_,
-                          "ERR109 - Expected ']' as part of vector size definition"));
-
-            return error_node();
-         }
-         else if (!token_is(token_t::e_assign))
-         {
-            set_error(
-               make_error(parser_error::e_syntax,
-                          current_token_,
-                          "ERR110 - Expected ':=' as part of vector definition"));
+                          "ERR108 - Expected ']' as part of vector size definition"));
 
             return error_node();
          }
          else if (!token_is(token_t::e_eof))
          {
-            if (token_is(token_t::e_lsqrbracket))
+            if (!token_is(token_t::e_assign))
+            {
+               set_error(
+                  make_error(parser_error::e_syntax,
+                             current_token_,
+                             "ERR109 - Expected ':=' as part of vector definition"));
+
+               return error_node();
+            }
+            else if (token_is(token_t::e_lsqrbracket))
             {
                expression_node_ptr initialiser = parse_expression();
 
@@ -14467,7 +15730,7 @@ namespace exprtk
                   set_error(
                      make_error(parser_error::e_syntax,
                                 current_token_,
-                                "ERR111 - Failed to parse single vector initialiser"));
+                                "ERR110 - Failed to parse single vector initialiser"));
 
                   return error_node();
                }
@@ -14479,7 +15742,7 @@ namespace exprtk
                   set_error(
                      make_error(parser_error::e_syntax,
                                 current_token_,
-                                "ERR112 - Expected ']' to close single value vector initialiszer"));
+                                "ERR111 - Expected ']' to close single value vector initialiszer"));
 
                   return error_node();
                }
@@ -14491,7 +15754,7 @@ namespace exprtk
                set_error(
                   make_error(parser_error::e_syntax,
                              current_token_,
-                             "ERR113 - Expected '{' as part of vector initialiser list"));
+                             "ERR112 - Expected '{' as part of vector initialiser list"));
 
                return error_node();
             }
@@ -14506,7 +15769,7 @@ namespace exprtk
                      set_error(
                         make_error(parser_error::e_syntax,
                                    current_token_,
-                                   "ERR114 - Expected '{' as part of vector initialiser list"));
+                                   "ERR113 - Expected '{' as part of vector initialiser list"));
 
                      return error_node();
                   }
@@ -14523,7 +15786,7 @@ namespace exprtk
                      set_error(
                         make_error(parser_error::e_syntax,
                                    current_token_,
-                                   "ERR115 - Expected ',' between vector initialisers"));
+                                   "ERR114 - Expected ',' between vector initialisers"));
 
                      return error_node();
                   }
@@ -14544,7 +15807,7 @@ namespace exprtk
                   set_error(
                      make_error(parser_error::e_syntax,
                                 current_token_,
-                                "ERR116 - Expected ';' at end of vector definition"));
+                                "ERR115 - Expected ';' at end of vector definition"));
 
                   return error_node();
                }
@@ -14555,13 +15818,13 @@ namespace exprtk
                set_error(
                   make_error(parser_error::e_syntax,
                              current_token_,
-                             "ERR117 - Initialiser list larger than the number of elements in the vector: '" + vec_name + "'"));
+                             "ERR116 - Initialiser list larger than the number of elements in the vector: '" + vec_name + "'"));
 
                return error_node();
             }
          }
 
-         typename symbol_table_t::vector_ptr vec_holder = typename symbol_table_t::vector_ptr(0);
+         typename symbol_table_t::vector_holder_ptr vec_holder = typename symbol_table_t::vector_holder_ptr(0);
 
          std::size_t vec_size = static_cast<std::size_t>(vector_size);
 
@@ -14574,7 +15837,7 @@ namespace exprtk
                set_error(
                   make_error(parser_error::e_syntax,
                              current_token_,
-                             "ERR118 - Illegal redefinition of local vector: '" + vec_name + "'"));
+                             "ERR117 - Illegal redefinition of local vector: '" + vec_name + "'"));
 
                return error_node();
             }
@@ -14604,7 +15867,7 @@ namespace exprtk
                set_error(
                   make_error(parser_error::e_syntax,
                              current_token_,
-                             "ERR119 - Failed to add new local vector '" + vec_name + "' to SEM"));
+                             "ERR118 - Failed to add new local vector '" + vec_name + "' to SEM"));
 
                return error_node();
             }
@@ -14644,7 +15907,7 @@ namespace exprtk
             set_error(
                make_error(parser_error::e_syntax,
                           current_token_,
-                          "ERR120 - Illegal variable definition"));
+                          "ERR119 - Illegal variable definition"));
 
             return error_node();
          }
@@ -14664,7 +15927,7 @@ namespace exprtk
             set_error(
                make_error(parser_error::e_syntax,
                           current_token_,
-                          "ERR121 - Expected a symbol for variable definition"));
+                          "ERR120 - Expected a symbol for variable definition"));
 
             return error_node();
          }
@@ -14673,7 +15936,7 @@ namespace exprtk
             set_error(
                make_error(parser_error::e_syntax,
                           current_token_,
-                          "ERR122 - Illegal redefinition of reserved keyword: '" + var_name + "'"));
+                          "ERR121 - Illegal redefinition of reserved keyword: '" + var_name + "'"));
 
             return error_node();
          }
@@ -14682,7 +15945,7 @@ namespace exprtk
             set_error(
                make_error(parser_error::e_syntax,
                           current_token_,
-                          "ERR123 - Illegal redefinition of variable '" + var_name + "'"));
+                          "ERR122 - Illegal redefinition of variable '" + var_name + "'"));
 
             return error_node();
          }
@@ -14691,7 +15954,7 @@ namespace exprtk
             set_error(
                make_error(parser_error::e_syntax,
                           current_token_,
-                          "ERR124 - Illegal redefinition of local variable: '" + var_name + "'"));
+                          "ERR123 - Illegal redefinition of local variable: '" + var_name + "'"));
 
             return error_node();
          }
@@ -14706,7 +15969,7 @@ namespace exprtk
                set_error(
                   make_error(parser_error::e_syntax,
                              current_token_,
-                             "ERR125 - Failed to parse initialisation expression"));
+                             "ERR124 - Failed to parse initialisation expression"));
 
                return error_node();
             }
@@ -14723,7 +15986,7 @@ namespace exprtk
                set_error(
                   make_error(parser_error::e_syntax,
                              current_token_,
-                             "ERR126 - Expected ';' after variable definition"));
+                             "ERR125 - Expected ';' after variable definition"));
 
                free_node(node_allocator_,initialisation_expression);
 
@@ -14742,7 +16005,7 @@ namespace exprtk
                set_error(
                   make_error(parser_error::e_syntax,
                              current_token_,
-                             "ERR127 - Illegal redefinition of local variable: '" + var_name + "'"));
+                             "ERR126 - Illegal redefinition of local variable: '" + var_name + "'"));
 
                free_node(node_allocator_,initialisation_expression);
 
@@ -14772,7 +16035,7 @@ namespace exprtk
                set_error(
                   make_error(parser_error::e_syntax,
                              current_token_,
-                             "ERR128 - Failed to add new local variable '" + var_name + "' to SEM"));
+                             "ERR127 - Failed to add new local variable '" + var_name + "' to SEM"));
 
                free_node(node_allocator_,initialisation_expression);
 
@@ -14806,7 +16069,7 @@ namespace exprtk
             set_error(
                make_error(parser_error::e_syntax,
                           current_token_,
-                          "ERR129 - Expected '(' at start of swap statement"));
+                          "ERR128 - Expected '(' at start of swap statement"));
 
             return error_node();
          }
@@ -14821,7 +16084,7 @@ namespace exprtk
             set_error(
                make_error(parser_error::e_syntax,
                           current_token_,
-                          "ERR130 - Expected a symbol for variable or vector element definition"));
+                          "ERR129 - Expected a symbol for variable or vector element definition"));
 
             return error_node();
          }
@@ -14832,7 +16095,7 @@ namespace exprtk
                set_error(
                   make_error(parser_error::e_syntax,
                              current_token_,
-                             "ERR131 - First parameter to swap is an invalid vector element: '" + var0_name + "'"));
+                             "ERR130 - First parameter to swap is an invalid vector element: '" + var0_name + "'"));
 
                return error_node();
             }
@@ -14860,7 +16123,7 @@ namespace exprtk
                set_error(
                   make_error(parser_error::e_syntax,
                              current_token_,
-                             "ERR132 - First parameter to swap is an invalid variable: '" + var0_name + "'"));
+                             "ERR131 - First parameter to swap is an invalid variable: '" + var0_name + "'"));
 
                return error_node();
             }
@@ -14873,7 +16136,7 @@ namespace exprtk
             set_error(
                 make_error(parser_error::e_syntax,
                            current_token(),
-                           "ERR133 - Expected ',' between parameters to swap"));
+                           "ERR132 - Expected ',' between parameters to swap"));
 
             return error_node();
          }
@@ -14885,7 +16148,7 @@ namespace exprtk
             set_error(
                make_error(parser_error::e_syntax,
                           current_token_,
-                          "ERR134 - Expected a symbol for variable or vector element definition"));
+                          "ERR133 - Expected a symbol for variable or vector element definition"));
 
             return error_node();
          }
@@ -14896,7 +16159,7 @@ namespace exprtk
                set_error(
                   make_error(parser_error::e_syntax,
                              current_token_,
-                             "ERR135 - Second parameter to swap is an invalid vector element: '" + var1_name + "'"));
+                             "ERR134 - Second parameter to swap is an invalid vector element: '" + var1_name + "'"));
 
                return error_node();
             }
@@ -14924,7 +16187,7 @@ namespace exprtk
                set_error(
                   make_error(parser_error::e_syntax,
                              current_token_,
-                             "ERR136 - Second parameter to swap is an invalid variable: '" + var1_name + "'"));
+                             "ERR135 - Second parameter to swap is an invalid variable: '" + var1_name + "'"));
 
                return error_node();
             }
@@ -14937,7 +16200,7 @@ namespace exprtk
             set_error(
                make_error(parser_error::e_syntax,
                           current_token_,
-                          "ERR137 - Expected ')' at end of swap statement"));
+                          "ERR136 - Expected ')' at end of swap statement"));
 
             return error_node();
          }
@@ -15024,7 +16287,7 @@ namespace exprtk
                set_error(
                   make_error(parser_error::e_syntax,
                              current_token_,
-                             "ERR138 - Failed to generate node for vararg function: '" + symbol + "'"));
+                             "ERR137 - Failed to generate node for vararg function: '" + symbol + "'"));
 
                return error_node();
             }
@@ -15041,7 +16304,7 @@ namespace exprtk
                set_error(
                   make_error(parser_error::e_syntax,
                              current_token_,
-                             "ERR139 - Invalid use of reserved symbol '" + symbol + "'"));
+                             "ERR138 - Invalid use of reserved symbol '" + symbol + "'"));
 
                return error_node();
          }
@@ -15088,7 +16351,7 @@ namespace exprtk
                set_error(
                   make_error(parser_error::e_symtab,
                              current_token_,
-                             "ERR140 - Failed to create variable: '" + symbol + "'"));
+                             "ERR139 - Failed to create variable: '" + symbol + "'"));
 
                return error_node();
             }
@@ -15097,7 +16360,7 @@ namespace exprtk
          set_error(
             make_error(parser_error::e_syntax,
                        current_token_,
-                       "ERR141 - Undefined variable or function: '" + symbol + "'"));
+                       "ERR140 - Undefined variable or function: '" + symbol + "'"));
 
          return error_node();
       }
@@ -15178,7 +16441,7 @@ namespace exprtk
             set_error(
                make_error(parser_error::e_symtab,
                           current_token_,
-                          "ERR142 - Variable or function detected, yet symbol-table is invalid, Symbol: " + current_token_.value));
+                          "ERR141 - Variable or function detected, yet symbol-table is invalid, Symbol: " + current_token_.value));
 
             return error_node();
          }
@@ -15203,7 +16466,7 @@ namespace exprtk
                set_error(
                   make_error(parser_error::e_numeric,
                              current_token_,
-                             "ERR143 - Failed to convert '" + current_token_.value + "' to a number"));
+                             "ERR142 - Failed to convert '" + current_token_.value + "' to a number"));
 
                return error_node();
             }
@@ -15228,7 +16491,7 @@ namespace exprtk
                set_error(
                   make_error(parser_error::e_syntax,
                              current_token_,
-                             "ERR144 - Expected ')' instead of: '" + current_token_.value + "'"));
+                             "ERR143 - Expected ')' instead of: '" + current_token_.value + "'"));
 
                return error_node();
             }
@@ -15243,7 +16506,7 @@ namespace exprtk
                set_error(
                   make_error(parser_error::e_syntax,
                              current_token_,
-                             "ERR145 - Expected ']' instead of: '" + current_token_.value + "'"));
+                             "ERR144 - Expected ']' instead of: '" + current_token_.value + "'"));
 
                return error_node();
             }
@@ -15258,7 +16521,7 @@ namespace exprtk
                set_error(
                   make_error(parser_error::e_syntax,
                              current_token_,
-                             "ERR146 - Expected '}' instead of: '" + current_token_.value + "'"));
+                             "ERR145 - Expected '}' instead of: '" + current_token_.value + "'"));
 
                return error_node();
             }
@@ -15282,7 +16545,7 @@ namespace exprtk
             set_error(
                make_error(parser_error::e_syntax,
                           current_token_,
-                          "ERR147 - Premature end of expression[1]"));
+                          "ERR146 - Premature end of expression[1]"));
 
             return error_node();
          }
@@ -15291,7 +16554,7 @@ namespace exprtk
             set_error(
                make_error(parser_error::e_syntax,
                           current_token_,
-                          "ERR148 - Premature end of expression[2]"));
+                          "ERR147 - Premature end of expression[2]"));
 
             return error_node();
          }
@@ -15347,6 +16610,7 @@ namespace exprtk
 
          inline void init_synthesize_map()
          {
+            #ifndef exprtk_disable_enhanced_features
             synthesize_map_["(v)o(v)"] = synthesize_vov_expression::process;
             synthesize_map_["(c)o(v)"] = synthesize_cov_expression::process;
             synthesize_map_["(v)o(c)"] = synthesize_voc_expression::process;
@@ -15414,6 +16678,7 @@ namespace exprtk
             register_synthezier(synthesize_covocov_expression4)
             register_synthezier(synthesize_vocovoc_expression4)
             register_synthezier(synthesize_covovoc_expression4)
+            #endif
          }
 
          inline void set_parser(parser_t& p)
@@ -15582,6 +16847,8 @@ namespace exprtk
                return synthesize_expression<unary_node_t,1>(operation,branch);
             else if (unary_optimizable(operation) && details::is_variable_node(branch[0]))
                return synthesize_uv_expression(operation,branch);
+            else if (unary_optimizable(operation) && details::is_ivector_node(branch[0]))
+               return synthesize_uvec_expression(operation,branch);
             else
                return synthesize_unary_expression(operation,branch);
          }
@@ -15788,8 +17055,9 @@ namespace exprtk
             return is_assignment_operation(operation) &&
                    (
                      (
-                       !details::is_variable_node(branch[0]) &&
-                       !details::is_vector_node  (branch[0])
+                       !details::is_variable_node   (branch[0]) &&
+                       !details::is_vector_elem_node(branch[0]) &&
+                       !details::is_vector_node     (branch[0])
                      ) ||
                      is_generally_string_node(branch[1])
                    );
@@ -15871,6 +17139,33 @@ namespace exprtk
                    details::is_null_node(branch[1]);
          }
 
+         inline bool is_vector_eqineq_operation(const details::operator_type& operation, expression_node_ptr (&branch)[2])
+         {
+            if (!is_ivector_node(branch[0]) && !is_ivector_node(branch[1]))
+               return false;
+            else
+               return (details::e_lt  == operation) ||
+                      (details::e_lte == operation) ||
+                      (details::e_gt  == operation) ||
+                      (details::e_gte == operation) ||
+                      (details::e_eq  == operation) ||
+                      (details::e_ne  == operation) ||
+                      false;
+         }
+
+         inline bool is_vector_arithmetic_operation(const details::operator_type& operation, expression_node_ptr (&branch)[2])
+         {
+            if (!is_ivector_node(branch[0]) && !is_ivector_node(branch[1]))
+               return false;
+            else
+               return (details::e_add == operation) ||
+                      (details::e_sub == operation) ||
+                      (details::e_mul == operation) ||
+                      (details::e_div == operation) ||
+                      (details::e_pow == operation) ||
+                      false;
+         }
+
          inline expression_node_ptr operator()(const details::operator_type& operation, expression_node_ptr (&branch)[2])
          {
             if ((0 == branch[0]) || (0 == branch[1]))
@@ -15887,6 +17182,10 @@ namespace exprtk
                return synthesize_swap_expression(branch);
             else if (is_assignment_operation(operation))
                return synthesize_assignment_operation_expression(operation,branch);
+            else if (is_vector_eqineq_operation(operation,branch))
+               return synthesize_veceqineq_operation_expression(operation,branch);
+            else if (is_vector_arithmetic_operation(operation,branch))
+               return synthesize_vecarithmetic_operation_expression(operation,branch);
             else if (is_shortcircuit_expression(operation))
                return synthesize_shortcircuit_expression(operation,branch);
             else if (is_string_operation(operation,branch))
@@ -15895,10 +17194,12 @@ namespace exprtk
                return synthesize_null_expression(operation,branch);
 
             expression_node_ptr result = error_node();
-
+            #ifndef exprtk_disable_enhanced_features
             if (synthesize_expression(operation,branch,result))
                return result;
-            else if (uvouv_optimizable(operation,branch))
+            else
+            #endif
+            if (uvouv_optimizable(operation,branch))
                return synthesize_uvouv_expression(operation,branch);
             else if (vob_optimizable(operation,branch))
                return synthesize_vob_expression::process(*this,operation,branch);
@@ -15908,8 +17209,10 @@ namespace exprtk
                return synthesize_cob_expression::process(*this,operation,branch);
             else if (boc_optimizable(operation,branch))
                return synthesize_boc_expression::process(*this,operation,branch);
+            #ifndef exprtk_disable_enhanced_features
             else if (cov_optimizable(operation,branch))
                return synthesize_cov_expression::process(*this,operation,branch);
+            #endif
             else if (binext_optimizable(operation,branch))
                return synthesize_binary_ext_expression::process(*this,operation,branch);
             else
@@ -16258,7 +17561,8 @@ namespace exprtk
          case_stmt(details:: e_frac,details:: frac_op) \
          case_stmt(details::e_trunc,details::trunc_op) \
 
-         inline expression_node_ptr synthesize_uv_expression(const details::operator_type& operation, expression_node_ptr (&branch)[1])
+         inline expression_node_ptr synthesize_uv_expression(const details::operator_type& operation,
+                                                             expression_node_ptr (&branch)[1])
          {
             T& v = dynamic_cast<details::variable_node<T>*>(branch[0])->ref();
             switch (operation)
@@ -16273,7 +17577,24 @@ namespace exprtk
             }
          }
 
-         inline expression_node_ptr synthesize_unary_expression(const details::operator_type& operation, expression_node_ptr (&branch)[1])
+         inline expression_node_ptr synthesize_uvec_expression(const details::operator_type& operation,
+                                                               expression_node_ptr (&branch)[1])
+         {
+            switch (operation)
+            {
+               #define case_stmt(op0,op1)                                                    \
+               case op0 : return node_allocator_->                                           \
+                             allocate<typename details::unary_vector_node<Type,op1<Type> > > \
+                                (operation,branch[0]);                                       \
+
+               unary_opr_switch_statements
+               #undef case_stmt
+               default : return error_node();
+            }
+         }
+
+         inline expression_node_ptr synthesize_unary_expression(const details::operator_type& operation,
+                                                                expression_node_ptr (&branch)[1])
          {
             switch (operation)
             {
@@ -16287,7 +17608,8 @@ namespace exprtk
             }
          }
 
-         inline expression_node_ptr const_optimize_sf3(const details::operator_type& operation, expression_node_ptr (&branch)[3])
+         inline expression_node_ptr const_optimize_sf3(const details::operator_type& operation,
+                                                       expression_node_ptr (&branch)[3])
          {
             expression_node_ptr temp_node = error_node();
             switch (operation)
@@ -16619,6 +17941,31 @@ namespace exprtk
 
          template <typename Allocator,
                    template <typename,typename> class Sequence>
+         inline expression_node_ptr vectorize_func(const details::operator_type& operation, Sequence<expression_node_ptr,Allocator>& arg_list)
+         {
+            if (1 == arg_list.size())
+            {
+               switch (operation)
+               {
+                  #define case_stmt(op0,op1)                                                      \
+                  case op0 : return node_allocator_->                                             \
+                                allocate<details::vectorize_node<Type,op1<Type> > >(arg_list[0]); \
+
+                  case_stmt(details::e_sum,  details::vec_add_op  )
+                  case_stmt(details::e_prod, details::vec_mul_op  )
+                  case_stmt(details::e_avg,  details::vec_avg_op  )
+                  case_stmt(details::e_min,  details::vec_min_op  )
+                  case_stmt(details::e_max,  details::vec_max_op  )
+                  #undef case_stmt
+                  default : return error_node();
+               }
+            }
+            else
+               return error_node();
+         }
+
+         template <typename Allocator,
+                   template <typename,typename> class Sequence>
          inline expression_node_ptr vararg_function(const details::operator_type& operation, Sequence<expression_node_ptr,Allocator>& arg_list)
          {
             if (!all_nodes_valid(arg_list))
@@ -16628,6 +17975,8 @@ namespace exprtk
             }
             else if (is_constant_foldable(arg_list))
                return const_optimize_varargfunc(operation,arg_list);
+            else if ((arg_list.size() == 1) && details::is_ivector_node(arg_list[0]))
+               return vectorize_func(operation,arg_list);
             else if ((arg_list.size() == 1) && special_one_parameter_vararg(operation))
                return arg_list[0];
             else if (all_nodes_variables(arg_list))
@@ -16726,7 +18075,7 @@ namespace exprtk
          }
 
          inline expression_node_ptr vector_element(const std::string& symbol,
-                                                   typename symbol_table_t::vector_ptr vector_base,
+                                                   vector_holder_ptr vector_base,
                                                    expression_node_ptr index)
          {
             expression_node_ptr result = error_node();
@@ -16765,7 +18114,7 @@ namespace exprtk
                }
             }
             else
-               result = node_allocator_->allocate<details::vector_node<Type> >(index,(*vector_base)[0]);
+               result = node_allocator_->allocate<details::vector_elem_node<Type> >(index,(*vector_base)[0]);
 
             return result;
          }
@@ -16806,8 +18155,15 @@ namespace exprtk
          {
             if (details::is_variable_node(branch[0]))
                return synthesize_expression<assignment_node_t,2>(operation,branch);
+            else if (details::is_vector_elem_node(branch[0]))
+               return synthesize_expression<assignment_vec_elem_node_t,2>(operation,branch);
             else if (details::is_vector_node(branch[0]))
-               return synthesize_expression<assignment_vec_node_t,2>(operation,branch);
+            {
+               if (details::is_ivector_node(branch[1]))
+                  return synthesize_expression<assignment_vecvec_node_t,2>(operation,branch);
+              else
+                  return synthesize_expression<assignment_vec_node_t,2>(operation,branch);
+            }
             else
             {
                parser_->set_synthesis_error("Invalid assignment operation.[1]");
@@ -16836,14 +18192,14 @@ namespace exprtk
                   default : return error_node();
                }
             }
-            if (details::is_vector_node(branch[0]))
+            else if (details::is_vector_elem_node(branch[0]))
             {
                switch (operation)
                {
-                  #define case_stmt(op0,op1)                                                                      \
-                  case op0 : return node_allocator_->                                                             \
-                                template allocate_rrr<typename details::assignment_vec_op_node<Type,op1<Type> > > \
-                                   (operation,branch[0],branch[1]);                                               \
+                  #define case_stmt(op0,op1)                                                                            \
+                  case op0 : return node_allocator_->                                                                   \
+                                 template allocate_rrr<typename details::assignment_vec_elem_op_node<Type,op1<Type> > > \
+                                    (operation,branch[0],branch[1]);                                                    \
 
                   case_stmt(details:: e_addass,details:: add_op)
                   case_stmt(details:: e_subass,details:: sub_op)
@@ -16854,6 +18210,45 @@ namespace exprtk
                   default : return error_node();
                }
             }
+            else if (details::is_vector_node(branch[0]))
+            {
+               if (details::is_ivector_node(branch[1]))
+               {
+                  switch (operation)
+                  {
+                     #define case_stmt(op0,op1)                                                                         \
+                     case op0 : return node_allocator_->                                                                \
+                                   template allocate_rrr<typename details::assignment_vecvec_op_node<Type,op1<Type> > > \
+                                      (operation,branch[0],branch[1]);                                                  \
+
+                     case_stmt(details:: e_addass,details:: add_op)
+                     case_stmt(details:: e_subass,details:: sub_op)
+                     case_stmt(details:: e_mulass,details:: mul_op)
+                     case_stmt(details:: e_divass,details:: div_op)
+                     case_stmt(details:: e_modass,details:: mod_op)
+                     #undef case_stmt
+                     default : return error_node();
+                  }
+               }
+               else
+               {
+                  switch (operation)
+                  {
+                     #define case_stmt(op0,op1)                                                                      \
+                     case op0 : return node_allocator_->                                                             \
+                                   template allocate_rrr<typename details::assignment_vec_op_node<Type,op1<Type> > > \
+                                      (operation,branch[0],branch[1]);                                               \
+
+                     case_stmt(details:: e_addass,details:: add_op)
+                     case_stmt(details:: e_subass,details:: sub_op)
+                     case_stmt(details:: e_mulass,details:: mul_op)
+                     case_stmt(details:: e_divass,details:: div_op)
+                     case_stmt(details:: e_modass,details:: mod_op)
+                     #undef case_stmt
+                     default : return error_node();
+                  }
+               }
+            }
             else
             {
                parser_->set_synthesis_error("Invalid assignment operation[2]");
@@ -16861,30 +18256,169 @@ namespace exprtk
             }
          }
 
+         inline expression_node_ptr synthesize_veceqineq_operation_expression(const details::operator_type& operation,
+                                                                              expression_node_ptr (&branch)[2])
+         {
+            const bool is_b0_ivec = details::is_ivector_node(branch[0]);
+            const bool is_b1_ivec = details::is_ivector_node(branch[1]);
+
+            if (is_b0_ivec && is_b1_ivec)
+            {
+               switch (operation)
+               {
+                  #define case_stmt(op0,op1)                                                                  \
+                  case op0 : return node_allocator_->                                                         \
+                                template allocate_rrr<typename details::eqineq_vecvec_node<Type,op1<Type> > > \
+                                   (operation,branch[0],branch[1]);                                           \
+
+                  case_stmt(details::  e_lt,details::  lt_op)
+                  case_stmt(details:: e_lte,details:: lte_op)
+                  case_stmt(details::  e_gt,details::  gt_op)
+                  case_stmt(details:: e_gte,details:: gte_op)
+                  case_stmt(details::  e_eq,details::  eq_op)
+                  case_stmt(details::  e_ne,details::  ne_op)
+                  #undef case_stmt
+                  default : return error_node();
+               }
+            }
+            else if (is_b0_ivec && !is_b1_ivec)
+            {
+               switch (operation)
+               {
+                  #define case_stmt(op0,op1)                                                                  \
+                  case op0 : return node_allocator_->                                                         \
+                                template allocate_rrr<typename details::eqineq_vecval_node<Type,op1<Type> > > \
+                                   (operation,branch[0],branch[1]);                                           \
+
+                  case_stmt(details::  e_lt,details::  lt_op)
+                  case_stmt(details:: e_lte,details:: lte_op)
+                  case_stmt(details::  e_gt,details::  gt_op)
+                  case_stmt(details:: e_gte,details:: gte_op)
+                  case_stmt(details::  e_eq,details::  eq_op)
+                  case_stmt(details::  e_ne,details::  ne_op)
+                  #undef case_stmt
+                  default : return error_node();
+               }
+            }
+            else if (!is_b0_ivec && is_b1_ivec)
+            {
+               switch (operation)
+               {
+                  #define case_stmt(op0,op1)                                                                  \
+                  case op0 : return node_allocator_->                                                         \
+                                template allocate_rrr<typename details::eqineq_valvec_node<Type,op1<Type> > > \
+                                   (operation,branch[0],branch[1]);                                           \
+
+                  case_stmt(details::  e_lt,details::  lt_op)
+                  case_stmt(details:: e_lte,details:: lte_op)
+                  case_stmt(details::  e_gt,details::  gt_op)
+                  case_stmt(details:: e_gte,details:: gte_op)
+                  case_stmt(details::  e_eq,details::  eq_op)
+                  case_stmt(details::  e_ne,details::  ne_op)
+                  #undef case_stmt
+                  default : return error_node();
+               }
+            }
+            else
+               return error_node();
+         }
+
+         inline expression_node_ptr synthesize_vecarithmetic_operation_expression(const details::operator_type& operation,
+                                                                                  expression_node_ptr (&branch)[2])
+         {
+            const bool is_b0_ivec = details::is_ivector_node(branch[0]);
+            const bool is_b1_ivec = details::is_ivector_node(branch[1]);
+
+            #define vector_ops                         \
+            case_stmt(details::e_add,details:: add_op) \
+            case_stmt(details::e_sub,details:: sub_op) \
+            case_stmt(details::e_mul,details:: mul_op) \
+            case_stmt(details::e_div,details:: div_op) \
+            case_stmt(details::e_mod,details:: mod_op) \
+
+            if (is_b0_ivec && is_b1_ivec)
+            {
+               switch (operation)
+               {
+                  #define case_stmt(op0,op1)                                                                    \
+                  case op0 : return node_allocator_->                                                           \
+                                template allocate_rrr<typename details::vecarith_vecvec_node<Type,op1<Type> > > \
+                                   (operation,branch[0],branch[1]);                                             \
+
+                  vector_ops
+                  case_stmt(details::e_pow,details:: pow_op)
+                  #undef case_stmt
+                  default : return error_node();
+               }
+            }
+            else if (is_b0_ivec && !is_b1_ivec)
+            {
+               switch (operation)
+               {
+                  #define case_stmt(op0,op1)                                                                    \
+                  case op0 : return node_allocator_->                                                           \
+                                template allocate_rrr<typename details::vecarith_vecval_node<Type,op1<Type> > > \
+                                   (operation,branch[0],branch[1]);                                             \
+
+                  vector_ops
+                  case_stmt(details::e_pow,details:: pow_op)
+                  #undef case_stmt
+                  default : return error_node();
+               }
+            }
+            else if (!is_b0_ivec && is_b1_ivec)
+            {
+               switch (operation)
+               {
+                  #define case_stmt(op0,op1)                                                                    \
+                  case op0 : return node_allocator_->                                                           \
+                                template allocate_rrr<typename details::vecarith_valvec_node<Type,op1<Type> > > \
+                                   (operation,branch[0],branch[1]);                                             \
+
+                  vector_ops
+                  #undef case_stmt
+                  default : return error_node();
+               }
+            }
+            else
+               return error_node();
+
+            #undef vector_ops
+         }
+
          inline expression_node_ptr synthesize_swap_expression(expression_node_ptr (&branch)[2])
          {
             const bool v0_is_ivar = details::is_ivariable_node(branch[0]);
             const bool v1_is_ivar = details::is_ivariable_node(branch[1]);
 
-            if (!v0_is_ivar || !v1_is_ivar)
+            const bool v0_is_ivec = details::is_ivector_node(branch[0]);
+            const bool v1_is_ivec = details::is_ivector_node(branch[1]);
+
+            if (v0_is_ivar && v1_is_ivar)
             {
-               parser_->set_synthesis_error("Only variables or vector elements can be swapped");
-               return error_node();
+               typedef details::variable_node<T>* variable_node_ptr;
+               variable_node_ptr v0 = variable_node_ptr(0);
+               variable_node_ptr v1 = variable_node_ptr(0);
+
+               if (
+                    (0 != (v0 = dynamic_cast<variable_node_ptr>(branch[0]))) &&
+                    (0 != (v1 = dynamic_cast<variable_node_ptr>(branch[1])))
+                  )
+               {
+                  return node_allocator_->allocate<details::swap_node<T> >(v0,v1);
+               }
+               else
+                  return node_allocator_->allocate<details::swap_generic_node<T> >(branch[0],branch[1]);
             }
-
-            typedef details::variable_node<T>* variable_node_ptr;
-            variable_node_ptr v0 = variable_node_ptr(0);
-            variable_node_ptr v1 = variable_node_ptr(0);
-
-            if (
-                 (0 != (v0 = dynamic_cast<variable_node_ptr>(branch[0]))) &&
-                 (0 != (v1 = dynamic_cast<variable_node_ptr>(branch[1])))
-               )
+            else if (v0_is_ivec && v1_is_ivec)
             {
-               return node_allocator_->allocate<details::swap_node<T> >(v0,v1);
+               return node_allocator_->allocate<details::swap_vecvec_node<T> >(branch[0],branch[1]);
             }
             else
-               return node_allocator_->allocate<details::swap_generic_node<T> >(branch[0],branch[1]);
+            {
+               parser_->set_synthesis_error("Only variables, vectors or vector elements can be swapped");
+               return error_node();
+            }
          }
 
          #ifndef exprtk_disable_sc_andor
@@ -17043,7 +18577,7 @@ namespace exprtk
                                                       expression_node_ptr (&branch)[2])
             {
                const Type& v = dynamic_cast<details::variable_node<Type>*>(branch[0])->ref();
-
+               #ifndef exprtk_disable_enhanced_features
                if (details::is_sf3ext_node(branch[1]))
                {
                   expression_node_ptr result = error_node();
@@ -17053,6 +18587,7 @@ namespace exprtk
                      return result;
                   }
                }
+               #endif
 
                switch (operation)
                {
@@ -17076,7 +18611,7 @@ namespace exprtk
                                                       expression_node_ptr (&branch)[2])
             {
                const Type& v = dynamic_cast<details::variable_node<Type>*>(branch[1])->ref();
-
+               #ifndef exprtk_disable_enhanced_features
                if (details::is_sf3ext_node(branch[0]))
                {
                   expression_node_ptr result = error_node();
@@ -17086,6 +18621,7 @@ namespace exprtk
                      return result;
                   }
                }
+               #endif
 
                switch (operation)
                {
@@ -17183,6 +18719,7 @@ namespace exprtk
                      }
                   }
                }
+               #ifndef exprtk_disable_enhanced_features
                else if (details::is_sf3ext_node(branch[1]))
                {
                   expression_node_ptr result = error_node();
@@ -17192,6 +18729,7 @@ namespace exprtk
                      return result;
                   }
                }
+               #endif
 
                switch (operation)
                {
@@ -17259,6 +18797,7 @@ namespace exprtk
                   }
                }
 
+               #ifndef exprtk_disable_enhanced_features
                if (details::is_sf3ext_node(branch[0]))
                {
                   expression_node_ptr result = error_node();
@@ -17268,6 +18807,7 @@ namespace exprtk
                      return result;
                   }
                }
+               #endif
 
                switch (operation)
                {
@@ -17284,6 +18824,7 @@ namespace exprtk
             }
          };
 
+         #ifndef exprtk_disable_enhanced_features
          inline bool synthesize_expression(const details::operator_type& operation,
                                            expression_node_ptr (&branch)[2],
                                            expression_node_ptr& result)
@@ -18450,7 +19991,9 @@ namespace exprtk
             }
 
             static inline std::string id(expression_generator<Type>& expr_gen,
-                                         const details::operator_type o0, const details::operator_type o1, const details::operator_type o2)
+                                         const details::operator_type o0,
+                                         const details::operator_type o1,
+                                         const details::operator_type o2)
             {
                return (details::build_string() << "(t" << expr_gen.to_str(o0) << "t)" << expr_gen.to_str(o1) << "(t" << expr_gen.to_str(o2) << "t)");
             }
@@ -18496,7 +20039,9 @@ namespace exprtk
             }
 
             static inline std::string id(expression_generator<Type>& expr_gen,
-                                         const details::operator_type o0, const details::operator_type o1, const details::operator_type o2)
+                                         const details::operator_type o0,
+                                         const details::operator_type o1,
+                                         const details::operator_type o2)
             {
                return (details::build_string() << "(t" << expr_gen.to_str(o0) << "t)" << expr_gen.to_str(o1) << "(t" << expr_gen.to_str(o2) << "t)");
             }
@@ -18543,7 +20088,9 @@ namespace exprtk
             }
 
             static inline std::string id(expression_generator<Type>& expr_gen,
-                                         const details::operator_type o0, const details::operator_type o1, const details::operator_type o2)
+                                         const details::operator_type o0,
+                                         const details::operator_type o1,
+                                         const details::operator_type o2)
             {
                return (details::build_string() << "(t" << expr_gen.to_str(o0) << "t)" << expr_gen.to_str(o1) << "(t" << expr_gen.to_str(o2) << "t)");
             }
@@ -18590,7 +20137,9 @@ namespace exprtk
             }
 
             static inline std::string id(expression_generator<Type>& expr_gen,
-                                         const details::operator_type o0, const details::operator_type o1, const details::operator_type o2)
+                                         const details::operator_type o0,
+                                         const details::operator_type o1,
+                                         const details::operator_type o2)
             {
                return (details::build_string() << "(t" << expr_gen.to_str(o0) << "t)" << expr_gen.to_str(o1) << "(t" << expr_gen.to_str(o2) << "t)");
             }
@@ -18637,7 +20186,9 @@ namespace exprtk
             }
 
             static inline std::string id(expression_generator<Type>& expr_gen,
-                                         const details::operator_type o0, const details::operator_type o1, const details::operator_type o2)
+                                         const details::operator_type o0,
+                                         const details::operator_type o1,
+                                         const details::operator_type o2)
             {
                return (details::build_string() << "(t" << expr_gen.to_str(o0) << "t)" << expr_gen.to_str(o1) << "(t" << expr_gen.to_str(o2) << "t)");
             }
@@ -18777,7 +20328,9 @@ namespace exprtk
             }
 
             static inline std::string id(expression_generator<Type>& expr_gen,
-                                         const details::operator_type o0, const details::operator_type o1, const details::operator_type o2)
+                                         const details::operator_type o0,
+                                         const details::operator_type o1,
+                                         const details::operator_type o2)
             {
                return (details::build_string() << "(t" << expr_gen.to_str(o0) << "t)" << expr_gen.to_str(o1) << "(t" << expr_gen.to_str(o2) << "t)");
             }
@@ -18917,7 +20470,9 @@ namespace exprtk
             }
 
             static inline std::string id(expression_generator<Type>& expr_gen,
-                                         const details::operator_type o0, const details::operator_type o1, const details::operator_type o2)
+                                         const details::operator_type o0,
+                                         const details::operator_type o1,
+                                         const details::operator_type o2)
             {
                return (details::build_string() << "(t" << expr_gen.to_str(o0) << "t)" << expr_gen.to_str(o1) << "(t" << expr_gen.to_str(o2) << "t)");
             }
@@ -19057,7 +20612,9 @@ namespace exprtk
             }
 
             static inline std::string id(expression_generator<Type>& expr_gen,
-                                         const details::operator_type o0, const details::operator_type o1, const details::operator_type o2)
+                                         const details::operator_type o0,
+                                         const details::operator_type o1,
+                                         const details::operator_type o2)
             {
                return (details::build_string() << "(t" << expr_gen.to_str(o0) << "t)" << expr_gen.to_str(o1) << "(t" << expr_gen.to_str(o2) << "t)");
             }
@@ -19078,10 +20635,10 @@ namespace exprtk
                // (v0 o0 c0) o1 (c1 o2 v1)
                const details::voc_base_node<Type>* voc = dynamic_cast<details::voc_base_node<Type>*>(branch[0]);
                const details::cov_base_node<Type>* cov = dynamic_cast<details::cov_base_node<Type>*>(branch[1]);
-               const T  c0 = voc->c();
-               const T& v0 = voc->v();
-               const T  c1 = cov->c();
-               const T& v1 = cov->v();
+               const Type  c0 = voc->c();
+               const Type& v0 = voc->v();
+               const Type  c1 = cov->c();
+               const Type& v1 = cov->v();
                const details::operator_type o0 = voc->operation();
                const details::operator_type o1 = operation;
                const details::operator_type o2 = cov->operation();
@@ -19196,7 +20753,9 @@ namespace exprtk
             }
 
             static inline std::string id(expression_generator<Type>& expr_gen,
-                                         const details::operator_type o0, const details::operator_type o1, const details::operator_type o2)
+                                         const details::operator_type o0,
+                                         const details::operator_type o1,
+                                         const details::operator_type o2)
             {
                return (details::build_string() << "(t" << expr_gen.to_str(o0) << "t)" << expr_gen.to_str(o1) << "(t" << expr_gen.to_str(o2) << "t)");
             }
@@ -19217,10 +20776,10 @@ namespace exprtk
                // v0 o0 (v1 o1 (v2 o2 v3))
                typedef typename synthesize_vovov_expression1::node_type vovov_t;
                const vovov_t* vovov = dynamic_cast<const vovov_t*>(branch[1]);
-               const T& v0 = dynamic_cast<details::variable_node<Type>*>(branch[0])->ref();
-               const T& v1 = vovov->t0();
-               const T& v2 = vovov->t1();
-               const T& v3 = vovov->t2();
+               const Type& v0 = dynamic_cast<details::variable_node<Type>*>(branch[0])->ref();
+               const Type& v1 = vovov->t0();
+               const Type& v2 = vovov->t1();
+               const Type& v3 = vovov->t2();
                const details::operator_type o0 = operation;
                const details::operator_type o1 = expr_gen.get_operator(vovov->f0());
                const details::operator_type o2 = expr_gen.get_operator(vovov->f1());
@@ -19238,7 +20797,9 @@ namespace exprtk
             }
 
             static inline std::string id(expression_generator<Type>& expr_gen,
-                                         const details::operator_type o0, const details::operator_type o1, const details::operator_type o2)
+                                         const details::operator_type o0,
+                                         const details::operator_type o1,
+                                         const details::operator_type o2)
             {
                return (details::build_string() << "t" << expr_gen.to_str(o0) << "(t" << expr_gen.to_str(o1) << "(t" << expr_gen.to_str(o2) << "t))");
             }
@@ -19259,10 +20820,10 @@ namespace exprtk
                // v0 o0 (v1 o1 (v2 o2 c))
                typedef typename synthesize_vovoc_expression1::node_type vovoc_t;
                const vovoc_t* vovoc = dynamic_cast<const vovoc_t*>(branch[1]);
-               const T& v0 = dynamic_cast<details::variable_node<Type>*>(branch[0])->ref();
-               const T& v1 = vovoc->t0();
-               const T& v2 = vovoc->t1();
-               const T   c = vovoc->t2();
+               const Type& v0 = dynamic_cast<details::variable_node<Type>*>(branch[0])->ref();
+               const Type& v1 = vovoc->t0();
+               const Type& v2 = vovoc->t1();
+               const Type   c = vovoc->t2();
                const details::operator_type o0 = operation;
                const details::operator_type o1 = expr_gen.get_operator(vovoc->f0());
                const details::operator_type o2 = expr_gen.get_operator(vovoc->f1());
@@ -19280,7 +20841,9 @@ namespace exprtk
             }
 
             static inline std::string id(expression_generator<Type>& expr_gen,
-                                         const details::operator_type o0, const details::operator_type o1, const details::operator_type o2)
+                                         const details::operator_type o0,
+                                         const details::operator_type o1,
+                                         const details::operator_type o2)
             {
                return (details::build_string() << "t" << expr_gen.to_str(o0) << "(t" << expr_gen.to_str(o1) << "(t" << expr_gen.to_str(o2) << "t))");
             }
@@ -19301,10 +20864,10 @@ namespace exprtk
                // v0 o0 (v1 o1 (c o2 v2))
                typedef typename synthesize_vocov_expression1::node_type vocov_t;
                const vocov_t* vocov = dynamic_cast<const vocov_t*>(branch[1]);
-               const T& v0 = dynamic_cast<details::variable_node<Type>*>(branch[0])->ref();
-               const T& v1 = vocov->t0();
-               const T   c = vocov->t1();
-               const T& v2 = vocov->t2();
+               const Type& v0 = dynamic_cast<details::variable_node<Type>*>(branch[0])->ref();
+               const Type& v1 = vocov->t0();
+               const Type   c = vocov->t1();
+               const Type& v2 = vocov->t2();
                const details::operator_type o0 = operation;
                const details::operator_type o1 = expr_gen.get_operator(vocov->f0());
                const details::operator_type o2 = expr_gen.get_operator(vocov->f1());
@@ -19322,7 +20885,9 @@ namespace exprtk
             }
 
             static inline std::string id(expression_generator<Type>& expr_gen,
-                                         const details::operator_type o0, const details::operator_type o1, const details::operator_type o2)
+                                         const details::operator_type o0,
+                                         const details::operator_type o1,
+                                         const details::operator_type o2)
             {
                return (details::build_string() << "t" << expr_gen.to_str(o0) << "(t" << expr_gen.to_str(o1) << "(t" << expr_gen.to_str(o2) << "t))");
             }
@@ -19343,10 +20908,10 @@ namespace exprtk
                // v0 o0 (c o1 (v1 o2 v2))
                typedef typename synthesize_covov_expression1::node_type covov_t;
                const covov_t* covov = dynamic_cast<const covov_t*>(branch[1]);
-               const T& v0 = dynamic_cast<details::variable_node<Type>*>(branch[0])->ref();
-               const T   c = covov->t0();
-               const T& v1 = covov->t1();
-               const T& v2 = covov->t2();
+               const Type& v0 = dynamic_cast<details::variable_node<Type>*>(branch[0])->ref();
+               const Type   c = covov->t0();
+               const Type& v1 = covov->t1();
+               const Type& v2 = covov->t2();
                const details::operator_type o0 = operation;
                const details::operator_type o1 = expr_gen.get_operator(covov->f0());
                const details::operator_type o2 = expr_gen.get_operator(covov->f1());
@@ -19364,7 +20929,9 @@ namespace exprtk
             }
 
             static inline std::string id(expression_generator<Type>& expr_gen,
-                                         const details::operator_type o0, const details::operator_type o1, const details::operator_type o2)
+                                         const details::operator_type o0,
+                                         const details::operator_type o1,
+                                         const details::operator_type o2)
             {
                return (details::build_string() << "t" << expr_gen.to_str(o0) << "(t" << expr_gen.to_str(o1) << "(t" << expr_gen.to_str(o2) << "t))");
             }
@@ -19385,10 +20952,10 @@ namespace exprtk
                // c o0 (v0 o1 (v1 o2 v2))
                typedef typename synthesize_vovov_expression1::node_type vovov_t;
                const vovov_t* vovov = dynamic_cast<const vovov_t*>(branch[1]);
-               const T   c = dynamic_cast<details::literal_node<Type>*>(branch[0])->value();
-               const T& v0 = vovov->t0();
-               const T& v1 = vovov->t1();
-               const T& v2 = vovov->t2();
+               const Type   c = dynamic_cast<details::literal_node<Type>*>(branch[0])->value();
+               const Type& v0 = vovov->t0();
+               const Type& v1 = vovov->t1();
+               const Type& v2 = vovov->t2();
                const details::operator_type o0 = operation;
                const details::operator_type o1 = expr_gen.get_operator(vovov->f0());
                const details::operator_type o2 = expr_gen.get_operator(vovov->f1());
@@ -19407,7 +20974,9 @@ namespace exprtk
             }
 
             static inline std::string id(expression_generator<Type>& expr_gen,
-                                         const details::operator_type o0, const details::operator_type o1, const details::operator_type o2)
+                                         const details::operator_type o0,
+                                         const details::operator_type o1,
+                                         const details::operator_type o2)
             {
                return (details::build_string() << "t" << expr_gen.to_str(o0) << "(t" << expr_gen.to_str(o1) << "(t" << expr_gen.to_str(o2) << "t))");
             }
@@ -19428,10 +20997,10 @@ namespace exprtk
                // c0 o0 (v0 o1 (c1 o2 v1))
                typedef typename synthesize_vocov_expression1::node_type vocov_t;
                const vocov_t* vocov = dynamic_cast<const vocov_t*>(branch[1]);
-               const T  c0 = dynamic_cast<details::literal_node<Type>*>(branch[0])->value();
-               const T& v0 = vocov->t0();
-               const T  c1 = vocov->t1();
-               const T& v1 = vocov->t2();
+               const Type  c0 = dynamic_cast<details::literal_node<Type>*>(branch[0])->value();
+               const Type& v0 = vocov->t0();
+               const Type  c1 = vocov->t1();
+               const Type& v1 = vocov->t2();
                const details::operator_type o0 = operation;
                const details::operator_type o1 = expr_gen.get_operator(vocov->f0());
                const details::operator_type o2 = expr_gen.get_operator(vocov->f1());
@@ -19450,7 +21019,9 @@ namespace exprtk
             }
 
             static inline std::string id(expression_generator<Type>& expr_gen,
-                                         const details::operator_type o0, const details::operator_type o1, const details::operator_type o2)
+                                         const details::operator_type o0,
+                                         const details::operator_type o1,
+                                         const details::operator_type o2)
             {
                return (details::build_string() << "t" << expr_gen.to_str(o0) << "(t" << expr_gen.to_str(o1) << "(t" << expr_gen.to_str(o2) << "t))");
             }
@@ -19471,10 +21042,10 @@ namespace exprtk
                // v0 o0 (c0 o1 (v1 o2 c2))
                typedef typename synthesize_covoc_expression1::node_type covoc_t;
                const covoc_t* covoc = dynamic_cast<const covoc_t*>(branch[1]);
-               const T& v0 = dynamic_cast<details::variable_node<Type>*>(branch[0])->ref();
-               const T  c0 = covoc->t0();
-               const T& v1 = covoc->t1();
-               const T  c1 = covoc->t2();
+               const Type& v0 = dynamic_cast<details::variable_node<Type>*>(branch[0])->ref();
+               const Type  c0 = covoc->t0();
+               const Type& v1 = covoc->t1();
+               const Type  c1 = covoc->t2();
                const details::operator_type o0 = operation;
                const details::operator_type o1 = expr_gen.get_operator(covoc->f0());
                const details::operator_type o2 = expr_gen.get_operator(covoc->f1());
@@ -19492,7 +21063,9 @@ namespace exprtk
             }
 
             static inline std::string id(expression_generator<Type>& expr_gen,
-                                         const details::operator_type o0, const details::operator_type o1, const details::operator_type o2)
+                                         const details::operator_type o0,
+                                         const details::operator_type o1,
+                                         const details::operator_type o2)
             {
                return (details::build_string() << "t" << expr_gen.to_str(o0) << "(t" << expr_gen.to_str(o1) << "(t" << expr_gen.to_str(o2) << "t))");
             }
@@ -19513,10 +21086,10 @@ namespace exprtk
                // c0 o0 (v0 o1 (v1 o2 c1))
                typedef typename synthesize_vovoc_expression1::node_type vovoc_t;
                const vovoc_t* vovoc = dynamic_cast<const vovoc_t*>(branch[1]);
-               const T  c0 = dynamic_cast<details::literal_node<Type>*>(branch[0])->value();
-               const T& v0 = vovoc->t0();
-               const T& v1 = vovoc->t1();
-               const T  c1 = vovoc->t2();
+               const Type  c0 = dynamic_cast<details::literal_node<Type>*>(branch[0])->value();
+               const Type& v0 = vovoc->t0();
+               const Type& v1 = vovoc->t1();
+               const Type  c1 = vovoc->t2();
                const details::operator_type o0 = operation;
                const details::operator_type o1 = expr_gen.get_operator(vovoc->f0());
                const details::operator_type o2 = expr_gen.get_operator(vovoc->f1());
@@ -19535,7 +21108,9 @@ namespace exprtk
             }
 
             static inline std::string id(expression_generator<Type>& expr_gen,
-                                         const details::operator_type o0, const details::operator_type o1, const details::operator_type o2)
+                                         const details::operator_type o0,
+                                         const details::operator_type o1,
+                                         const details::operator_type o2)
             {
                return (details::build_string() << "t" << expr_gen.to_str(o0) << "(t" << expr_gen.to_str(o1) << "(t" << expr_gen.to_str(o2) << "t))");
             }
@@ -19556,10 +21131,10 @@ namespace exprtk
                // v0 o0 (c0 o1 (c1 o2 v1))
                typedef typename synthesize_cocov_expression1::node_type cocov_t;
                const cocov_t* cocov = dynamic_cast<const cocov_t*>(branch[1]);
-               const T& v0 = dynamic_cast<details::variable_node<Type>*>(branch[0])->ref();
-               const T  c0 = cocov->t0();
-               const T  c1 = cocov->t1();
-               const T& v1 = cocov->t2();
+               const Type& v0 = dynamic_cast<details::variable_node<Type>*>(branch[0])->ref();
+               const Type  c0 = cocov->t0();
+               const Type  c1 = cocov->t1();
+               const Type& v1 = cocov->t2();
                const details::operator_type o0 = operation;
                const details::operator_type o1 = expr_gen.get_operator(cocov->f0());
                const details::operator_type o2 = expr_gen.get_operator(cocov->f1());
@@ -19577,7 +21152,9 @@ namespace exprtk
             }
 
             static inline std::string id(expression_generator<Type>& expr_gen,
-                                         const details::operator_type o0, const details::operator_type o1, const details::operator_type o2)
+                                         const details::operator_type o0,
+                                         const details::operator_type o1,
+                                         const details::operator_type o2)
             {
                return (details::build_string() << "t" << expr_gen.to_str(o0) << "(t" << expr_gen.to_str(o1) << "(t" << expr_gen.to_str(o2) << "t))");
             }
@@ -19598,10 +21175,10 @@ namespace exprtk
                // v0 o0 ((v1 o1 v2) o2 v3)
                typedef typename synthesize_vovov_expression0::node_type vovov_t;
                const vovov_t* vovov = dynamic_cast<const vovov_t*>(branch[1]);
-               const T& v0 = dynamic_cast<details::variable_node<Type>*>(branch[0])->ref();
-               const T& v1 = vovov->t0();
-               const T& v2 = vovov->t1();
-               const T& v3 = vovov->t2();
+               const Type& v0 = dynamic_cast<details::variable_node<Type>*>(branch[0])->ref();
+               const Type& v1 = vovov->t0();
+               const Type& v2 = vovov->t1();
+               const Type& v3 = vovov->t2();
                const details::operator_type o0 = operation;
                const details::operator_type o1 = expr_gen.get_operator(vovov->f0());
                const details::operator_type o2 = expr_gen.get_operator(vovov->f1());
@@ -19619,7 +21196,9 @@ namespace exprtk
             }
 
             static inline std::string id(expression_generator<Type>& expr_gen,
-                                         const details::operator_type o0, const details::operator_type o1, const details::operator_type o2)
+                                         const details::operator_type o0,
+                                         const details::operator_type o1,
+                                         const details::operator_type o2)
             {
                return (details::build_string() << "t" << expr_gen.to_str(o0) << "((t" << expr_gen.to_str(o1) << "t)" << expr_gen.to_str(o2) << "t)");
             }
@@ -19640,10 +21219,10 @@ namespace exprtk
                // v0 o0 ((v1 o1 v2) o2 c)
                typedef typename synthesize_vovoc_expression0::node_type vovoc_t;
                const vovoc_t* vovoc = dynamic_cast<const vovoc_t*>(branch[1]);
-               const T& v0 = dynamic_cast<details::variable_node<Type>*>(branch[0])->ref();
-               const T& v1 = vovoc->t0();
-               const T& v2 = vovoc->t1();
-               const T   c = vovoc->t2();
+               const Type& v0 = dynamic_cast<details::variable_node<Type>*>(branch[0])->ref();
+               const Type& v1 = vovoc->t0();
+               const Type& v2 = vovoc->t1();
+               const Type   c = vovoc->t2();
                const details::operator_type o0 = operation;
                const details::operator_type o1 = expr_gen.get_operator(vovoc->f0());
                const details::operator_type o2 = expr_gen.get_operator(vovoc->f1());
@@ -19661,7 +21240,9 @@ namespace exprtk
             }
 
             static inline std::string id(expression_generator<Type>& expr_gen,
-                                         const details::operator_type o0, const details::operator_type o1, const details::operator_type o2)
+                                         const details::operator_type o0,
+                                         const details::operator_type o1,
+                                         const details::operator_type o2)
             {
                return (details::build_string() << "t" << expr_gen.to_str(o0) << "((t" << expr_gen.to_str(o1) << "t)" << expr_gen.to_str(o2) << "t)");
             }
@@ -19682,10 +21263,10 @@ namespace exprtk
                // v0 o0 ((v1 o1 c) o2 v2)
                typedef typename synthesize_vocov_expression0::node_type vocov_t;
                const vocov_t* vocov = dynamic_cast<const vocov_t*>(branch[1]);
-               const T& v0 = dynamic_cast<details::variable_node<Type>*>(branch[0])->ref();
-               const T& v1 = vocov->t0();
-               const T   c = vocov->t1();
-               const T& v2 = vocov->t2();
+               const Type& v0 = dynamic_cast<details::variable_node<Type>*>(branch[0])->ref();
+               const Type& v1 = vocov->t0();
+               const Type   c = vocov->t1();
+               const Type& v2 = vocov->t2();
                const details::operator_type o0 = operation;
                const details::operator_type o1 = expr_gen.get_operator(vocov->f0());
                const details::operator_type o2 = expr_gen.get_operator(vocov->f1());
@@ -19703,7 +21284,9 @@ namespace exprtk
             }
 
             static inline std::string id(expression_generator<Type>& expr_gen,
-                                         const details::operator_type o0, const details::operator_type o1, const details::operator_type o2)
+                                         const details::operator_type o0,
+                                         const details::operator_type o1,
+                                         const details::operator_type o2)
             {
                return (details::build_string() << "t" << expr_gen.to_str(o0) << "((t" << expr_gen.to_str(o1) << "t)" << expr_gen.to_str(o2) << "t)");
             }
@@ -19724,10 +21307,10 @@ namespace exprtk
                // v0 o0 ((c o1 v1) o2 v2)
                typedef typename synthesize_covov_expression0::node_type covov_t;
                const covov_t* covov = dynamic_cast<const covov_t*>(branch[1]);
-               const T& v0 = dynamic_cast<details::variable_node<Type>*>(branch[0])->ref();
-               const T   c = covov->t0();
-               const T& v1 = covov->t1();
-               const T& v2 = covov->t2();
+               const Type& v0 = dynamic_cast<details::variable_node<Type>*>(branch[0])->ref();
+               const Type   c = covov->t0();
+               const Type& v1 = covov->t1();
+               const Type& v2 = covov->t2();
                const details::operator_type o0 = operation;
                const details::operator_type o1 = expr_gen.get_operator(covov->f0());
                const details::operator_type o2 = expr_gen.get_operator(covov->f1());
@@ -19745,7 +21328,9 @@ namespace exprtk
             }
 
             static inline std::string id(expression_generator<Type>& expr_gen,
-                                         const details::operator_type o0, const details::operator_type o1, const details::operator_type o2)
+                                         const details::operator_type o0,
+                                         const details::operator_type o1,
+                                         const details::operator_type o2)
             {
                return (details::build_string() << "t" << expr_gen.to_str(o0) << "((t" << expr_gen.to_str(o1) << "t)" << expr_gen.to_str(o2) << "t)");
             }
@@ -19766,10 +21351,10 @@ namespace exprtk
                // c o0 ((v1 o1 v2) o2 v3)
                typedef typename synthesize_vovov_expression0::node_type vovov_t;
                const vovov_t* vovov = dynamic_cast<const vovov_t*>(branch[1]);
-               const T   c = dynamic_cast<details::literal_node<Type>*>(branch[0])->value();
-               const T& v0 = vovov->t0();
-               const T& v1 = vovov->t1();
-               const T& v2 = vovov->t2();
+               const Type   c = dynamic_cast<details::literal_node<Type>*>(branch[0])->value();
+               const Type& v0 = vovov->t0();
+               const Type& v1 = vovov->t1();
+               const Type& v2 = vovov->t2();
                const details::operator_type o0 = operation;
                const details::operator_type o1 = expr_gen.get_operator(vovov->f0());
                const details::operator_type o2 = expr_gen.get_operator(vovov->f1());
@@ -19788,7 +21373,9 @@ namespace exprtk
             }
 
             static inline std::string id(expression_generator<Type>& expr_gen,
-                                         const details::operator_type o0, const details::operator_type o1, const details::operator_type o2)
+                                         const details::operator_type o0,
+                                         const details::operator_type o1,
+                                         const details::operator_type o2)
             {
                return (details::build_string() << "t" << expr_gen.to_str(o0) << "((t" << expr_gen.to_str(o1) << "t)" << expr_gen.to_str(o2) << "t)");
             }
@@ -19809,10 +21396,10 @@ namespace exprtk
                // c0 o0 ((v0 o1 c1) o2 v1)
                typedef typename synthesize_vocov_expression0::node_type vocov_t;
                const vocov_t* vocov = dynamic_cast<const vocov_t*>(branch[1]);
-               const T  c0 = dynamic_cast<details::literal_node<Type>*>(branch[0])->value();
-               const T& v0 = vocov->t0();
-               const T  c1 = vocov->t1();
-               const T& v1 = vocov->t2();
+               const Type  c0 = dynamic_cast<details::literal_node<Type>*>(branch[0])->value();
+               const Type& v0 = vocov->t0();
+               const Type  c1 = vocov->t1();
+               const Type& v1 = vocov->t2();
                const details::operator_type o0 = operation;
                const details::operator_type o1 = expr_gen.get_operator(vocov->f0());
                const details::operator_type o2 = expr_gen.get_operator(vocov->f1());
@@ -19831,7 +21418,9 @@ namespace exprtk
             }
 
             static inline std::string id(expression_generator<Type>& expr_gen,
-                                         const details::operator_type o0, const details::operator_type o1, const details::operator_type o2)
+                                         const details::operator_type o0,
+                                         const details::operator_type o1,
+                                         const details::operator_type o2)
             {
                return (details::build_string() << "t" << expr_gen.to_str(o0) << "((t" << expr_gen.to_str(o1) << "t)" << expr_gen.to_str(o2) << "t)");
             }
@@ -19852,10 +21441,10 @@ namespace exprtk
                // v0 o0 ((c0 o1 v1) o2 c1)
                typedef typename synthesize_covoc_expression0::node_type covoc_t;
                const covoc_t* covoc = dynamic_cast<const covoc_t*>(branch[1]);
-               const T& v0 = dynamic_cast<details::variable_node<Type>*>(branch[0])->ref();
-               const T  c0 = covoc->t0();
-               const T& v1 = covoc->t1();
-               const T  c1 = covoc->t2();
+               const Type& v0 = dynamic_cast<details::variable_node<Type>*>(branch[0])->ref();
+               const Type  c0 = covoc->t0();
+               const Type& v1 = covoc->t1();
+               const Type  c1 = covoc->t2();
                const details::operator_type o0 = operation;
                const details::operator_type o1 = expr_gen.get_operator(covoc->f0());
                const details::operator_type o2 = expr_gen.get_operator(covoc->f1());
@@ -19873,7 +21462,9 @@ namespace exprtk
             }
 
             static inline std::string id(expression_generator<Type>& expr_gen,
-                                         const details::operator_type o0, const details::operator_type o1, const details::operator_type o2)
+                                         const details::operator_type o0,
+                                         const details::operator_type o1,
+                                         const details::operator_type o2)
             {
                return (details::build_string() << "t" << expr_gen.to_str(o0) << "((t" << expr_gen.to_str(o1) << "t)" << expr_gen.to_str(o2) << "t)");
             }
@@ -19894,10 +21485,10 @@ namespace exprtk
                // c0 o0 ((v0 o1 v1) o2 c1)
                typedef typename synthesize_vovoc_expression0::node_type vovoc_t;
                const vovoc_t* vovoc = dynamic_cast<const vovoc_t*>(branch[1]);
-               const T  c0 = dynamic_cast<details::literal_node<Type>*>(branch[0])->value();
-               const T& v0 = vovoc->t0();
-               const T& v1 = vovoc->t1();
-               const T  c1 = vovoc->t2();
+               const Type  c0 = dynamic_cast<details::literal_node<Type>*>(branch[0])->value();
+               const Type& v0 = vovoc->t0();
+               const Type& v1 = vovoc->t1();
+               const Type  c1 = vovoc->t2();
                const details::operator_type o0 = operation;
                const details::operator_type o1 = expr_gen.get_operator(vovoc->f0());
                const details::operator_type o2 = expr_gen.get_operator(vovoc->f1());
@@ -19916,7 +21507,9 @@ namespace exprtk
             }
 
             static inline std::string id(expression_generator<Type>& expr_gen,
-                                         const details::operator_type o0, const details::operator_type o1, const details::operator_type o2)
+                                         const details::operator_type o0,
+                                         const details::operator_type o1,
+                                         const details::operator_type o2)
             {
                return (details::build_string() << "t" << expr_gen.to_str(o0) << "((t" << expr_gen.to_str(o1) << "t)" << expr_gen.to_str(o2) << "t)");
             }
@@ -19953,10 +21546,10 @@ namespace exprtk
                // ((v0 o0 v1) o1 v2) o2 v3
                typedef typename synthesize_vovov_expression0::node_type vovov_t;
                const vovov_t* vovov = dynamic_cast<const vovov_t*>(branch[0]);
-               const T& v0 = vovov->t0();
-               const T& v1 = vovov->t1();
-               const T& v2 = vovov->t2();
-               const T& v3 = dynamic_cast<details::variable_node<Type>*>(branch[1])->ref();
+               const Type& v0 = vovov->t0();
+               const Type& v1 = vovov->t1();
+               const Type& v2 = vovov->t2();
+               const Type& v3 = dynamic_cast<details::variable_node<Type>*>(branch[1])->ref();
                const details::operator_type o0 = expr_gen.get_operator(vovov->f0());
                const details::operator_type o1 = expr_gen.get_operator(vovov->f1());
                const details::operator_type o2 = operation;
@@ -19974,7 +21567,9 @@ namespace exprtk
             }
 
             static inline std::string id(expression_generator<Type>& expr_gen,
-                                         const details::operator_type o0, const details::operator_type o1, const details::operator_type o2)
+                                         const details::operator_type o0,
+                                         const details::operator_type o1,
+                                         const details::operator_type o2)
             {
                return (details::build_string() << "((t" << expr_gen.to_str(o0) << "t)" << expr_gen.to_str(o1) << "t)" << expr_gen.to_str(o2) << "t");
             }
@@ -19995,10 +21590,10 @@ namespace exprtk
                // ((v0 o0 v1) o1 v2) o2 c
                typedef typename synthesize_vovov_expression0::node_type vovov_t;
                const vovov_t* vovov = dynamic_cast<const vovov_t*>(branch[0]);
-               const T& v0 = vovov->t0();
-               const T& v1 = vovov->t1();
-               const T& v2 = vovov->t2();
-               const T   c = dynamic_cast<details::literal_node<Type>*>(branch[1])->value();
+               const Type& v0 = vovov->t0();
+               const Type& v1 = vovov->t1();
+               const Type& v2 = vovov->t2();
+               const Type   c = dynamic_cast<details::literal_node<Type>*>(branch[1])->value();
                const details::operator_type o0 = expr_gen.get_operator(vovov->f0());
                const details::operator_type o1 = expr_gen.get_operator(vovov->f1());
                const details::operator_type o2 = operation;
@@ -20017,7 +21612,9 @@ namespace exprtk
             }
 
             static inline std::string id(expression_generator<Type>& expr_gen,
-                                         const details::operator_type o0, const details::operator_type o1, const details::operator_type o2)
+                                         const details::operator_type o0,
+                                         const details::operator_type o1,
+                                         const details::operator_type o2)
             {
                return (details::build_string() << "((t" << expr_gen.to_str(o0) << "t)" << expr_gen.to_str(o1) << "t)" << expr_gen.to_str(o2) << "t");
             }
@@ -20038,10 +21635,10 @@ namespace exprtk
                // ((v0 o0 v1) o1 c) o2 v2
                typedef typename synthesize_vovoc_expression0::node_type vovoc_t;
                const vovoc_t* vovoc = dynamic_cast<const vovoc_t*>(branch[0]);
-               const T& v0 = vovoc->t0();
-               const T& v1 = vovoc->t1();
-               const T   c = vovoc->t2();
-               const T& v2 = dynamic_cast<details::variable_node<Type>*>(branch[1])->ref();
+               const Type& v0 = vovoc->t0();
+               const Type& v1 = vovoc->t1();
+               const Type   c = vovoc->t2();
+               const Type& v2 = dynamic_cast<details::variable_node<Type>*>(branch[1])->ref();
                const details::operator_type o0 = expr_gen.get_operator(vovoc->f0());
                const details::operator_type o1 = expr_gen.get_operator(vovoc->f1());
                const details::operator_type o2 = operation;
@@ -20059,7 +21656,9 @@ namespace exprtk
             }
 
             static inline std::string id(expression_generator<Type>& expr_gen,
-                                         const details::operator_type o0, const details::operator_type o1, const details::operator_type o2)
+                                         const details::operator_type o0,
+                                         const details::operator_type o1,
+                                         const details::operator_type o2)
             {
                return (details::build_string() << "((t" << expr_gen.to_str(o0) << "t)" << expr_gen.to_str(o1) << "t)" << expr_gen.to_str(o2) << "t");
             }
@@ -20080,10 +21679,10 @@ namespace exprtk
                // ((v0 o0 c) o1 v1) o2 v2
                typedef typename synthesize_vocov_expression0::node_type vocov_t;
                const vocov_t* vocov = dynamic_cast<const vocov_t*>(branch[0]);
-               const T& v0 = vocov->t0();
-               const T   c = vocov->t1();
-               const T& v1 = vocov->t2();
-               const T& v2 = dynamic_cast<details::variable_node<Type>*>(branch[1])->ref();
+               const Type& v0 = vocov->t0();
+               const Type   c = vocov->t1();
+               const Type& v1 = vocov->t2();
+               const Type& v2 = dynamic_cast<details::variable_node<Type>*>(branch[1])->ref();
                const details::operator_type o0 = expr_gen.get_operator(vocov->f0());
                const details::operator_type o1 = expr_gen.get_operator(vocov->f1());
                const details::operator_type o2 = operation;
@@ -20101,7 +21700,9 @@ namespace exprtk
             }
 
             static inline std::string id(expression_generator<Type>& expr_gen,
-                                         const details::operator_type o0, const details::operator_type o1, const details::operator_type o2)
+                                         const details::operator_type o0,
+                                         const details::operator_type o1,
+                                         const details::operator_type o2)
             {
                return (details::build_string() << "((t" << expr_gen.to_str(o0) << "t)" << expr_gen.to_str(o1) << "t)" << expr_gen.to_str(o2) << "t");
             }
@@ -20122,10 +21723,10 @@ namespace exprtk
                // ((c o0 v0) o1 v1) o2 v2
                typedef typename synthesize_covov_expression0::node_type covov_t;
                const covov_t* covov = dynamic_cast<const covov_t*>(branch[0]);
-               const T   c = covov->t0();
-               const T& v0 = covov->t1();
-               const T& v1 = covov->t2();
-               const T& v2 = dynamic_cast<details::variable_node<Type>*>(branch[1])->ref();
+               const Type   c = covov->t0();
+               const Type& v0 = covov->t1();
+               const Type& v1 = covov->t2();
+               const Type& v2 = dynamic_cast<details::variable_node<Type>*>(branch[1])->ref();
                const details::operator_type o0 = expr_gen.get_operator(covov->f0());
                const details::operator_type o1 = expr_gen.get_operator(covov->f1());
                const details::operator_type o2 = operation;
@@ -20143,7 +21744,9 @@ namespace exprtk
             }
 
             static inline std::string id(expression_generator<Type>& expr_gen,
-                                         const details::operator_type o0, const details::operator_type o1, const details::operator_type o2)
+                                         const details::operator_type o0,
+                                         const details::operator_type o1,
+                                         const details::operator_type o2)
             {
                return (details::build_string() << "((t" << expr_gen.to_str(o0) << "t)" << expr_gen.to_str(o1) << "t)" << expr_gen.to_str(o2) << "t");
             }
@@ -20164,10 +21767,10 @@ namespace exprtk
                // ((c0 o0 v0) o1 c1) o2 v1
                typedef typename synthesize_covoc_expression0::node_type covoc_t;
                const covoc_t* covoc = dynamic_cast<const covoc_t*>(branch[0]);
-               const T  c0 = covoc->t0();
-               const T& v0 = covoc->t1();
-               const T  c1 = covoc->t2();
-               const T& v1 = dynamic_cast<details::variable_node<Type>*>(branch[1])->ref();
+               const Type  c0 = covoc->t0();
+               const Type& v0 = covoc->t1();
+               const Type  c1 = covoc->t2();
+               const Type& v1 = dynamic_cast<details::variable_node<Type>*>(branch[1])->ref();
                const details::operator_type o0 = expr_gen.get_operator(covoc->f0());
                const details::operator_type o1 = expr_gen.get_operator(covoc->f1());
                const details::operator_type o2 = operation;
@@ -20185,7 +21788,9 @@ namespace exprtk
             }
 
             static inline std::string id(expression_generator<Type>& expr_gen,
-                                         const details::operator_type o0, const details::operator_type o1, const details::operator_type o2)
+                                         const details::operator_type o0,
+                                         const details::operator_type o1,
+                                         const details::operator_type o2)
             {
                return (details::build_string() << "((t" << expr_gen.to_str(o0) << "t)" << expr_gen.to_str(o1) << "t)" << expr_gen.to_str(o2) << "t");
             }
@@ -20206,10 +21811,10 @@ namespace exprtk
                // ((v0 o0 c0) o1 v1) o2 c1
                typedef typename synthesize_vocov_expression0::node_type vocov_t;
                const vocov_t* vocov = dynamic_cast<const vocov_t*>(branch[0]);
-               const T& v0 = vocov->t0();
-               const T  c0 = vocov->t1();
-               const T& v1 = vocov->t2();
-               const T  c1 = dynamic_cast<details::literal_node<Type>*>(branch[1])->value();
+               const Type& v0 = vocov->t0();
+               const Type  c0 = vocov->t1();
+               const Type& v1 = vocov->t2();
+               const Type  c1 = dynamic_cast<details::literal_node<Type>*>(branch[1])->value();
                const details::operator_type o0 = expr_gen.get_operator(vocov->f0());
                const details::operator_type o1 = expr_gen.get_operator(vocov->f1());
                const details::operator_type o2 = operation;
@@ -20228,7 +21833,9 @@ namespace exprtk
             }
 
             static inline std::string id(expression_generator<Type>& expr_gen,
-                                         const details::operator_type o0, const details::operator_type o1, const details::operator_type o2)
+                                         const details::operator_type o0,
+                                         const details::operator_type o1,
+                                         const details::operator_type o2)
             {
                return (details::build_string() << "((t" << expr_gen.to_str(o0) << "t)" << expr_gen.to_str(o1) << "t)" << expr_gen.to_str(o2) << "t");
             }
@@ -20249,10 +21856,10 @@ namespace exprtk
                // ((c0 o0 v0) o1 v1) o2 c1
                typedef typename synthesize_covov_expression0::node_type covov_t;
                const covov_t* covov = dynamic_cast<const covov_t*>(branch[0]);
-               const T  c0 = covov->t0();
-               const T& v0 = covov->t1();
-               const T& v1 = covov->t2();
-               const T  c1 = dynamic_cast<details::literal_node<Type>*>(branch[1])->value();
+               const Type  c0 = covov->t0();
+               const Type& v0 = covov->t1();
+               const Type& v1 = covov->t2();
+               const Type  c1 = dynamic_cast<details::literal_node<Type>*>(branch[1])->value();
                const details::operator_type o0 = expr_gen.get_operator(covov->f0());
                const details::operator_type o1 = expr_gen.get_operator(covov->f1());
                const details::operator_type o2 = operation;
@@ -20271,7 +21878,9 @@ namespace exprtk
             }
 
             static inline std::string id(expression_generator<Type>& expr_gen,
-                                         const details::operator_type o0, const details::operator_type o1, const details::operator_type o2)
+                                         const details::operator_type o0,
+                                         const details::operator_type o1,
+                                         const details::operator_type o2)
             {
                return (details::build_string() << "((t" << expr_gen.to_str(o0) << "t)" << expr_gen.to_str(o1) << "t)" << expr_gen.to_str(o2) << "t");
             }
@@ -20292,10 +21901,10 @@ namespace exprtk
                // ((v0 o0 c0) o1 c1) o2 v1
                typedef typename synthesize_vococ_expression0::node_type vococ_t;
                const vococ_t* vococ = dynamic_cast<const vococ_t*>(branch[0]);
-               const T& v0 = vococ->t0();
-               const T  c0 = vococ->t1();
-               const T  c1 = vococ->t2();
-               const T& v1 = dynamic_cast<details::variable_node<Type>*>(branch[1])->ref();
+               const Type& v0 = vococ->t0();
+               const Type  c0 = vococ->t1();
+               const Type  c1 = vococ->t2();
+               const Type& v1 = dynamic_cast<details::variable_node<Type>*>(branch[1])->ref();
                const details::operator_type o0 = expr_gen.get_operator(vococ->f0());
                const details::operator_type o1 = expr_gen.get_operator(vococ->f1());
                const details::operator_type o2 = operation;
@@ -20313,7 +21922,9 @@ namespace exprtk
             }
 
             static inline std::string id(expression_generator<Type>& expr_gen,
-                                         const details::operator_type o0, const details::operator_type o1, const details::operator_type o2)
+                                         const details::operator_type o0,
+                                         const details::operator_type o1,
+                                         const details::operator_type o2)
             {
                return (details::build_string() << "((t" << expr_gen.to_str(o0) << "t)" << expr_gen.to_str(o1) << "t)" << expr_gen.to_str(o2) << "t");
             }
@@ -20334,10 +21945,10 @@ namespace exprtk
                // (v0 o0 (v1 o1 v2)) o2 v3
                typedef typename synthesize_vovov_expression1::node_type vovov_t;
                const vovov_t* vovov = dynamic_cast<const vovov_t*>(branch[0]);
-               const T& v0 = vovov->t0();
-               const T& v1 = vovov->t1();
-               const T& v2 = vovov->t2();
-               const T& v3 = dynamic_cast<details::variable_node<Type>*>(branch[1])->ref();
+               const Type& v0 = vovov->t0();
+               const Type& v1 = vovov->t1();
+               const Type& v2 = vovov->t2();
+               const Type& v3 = dynamic_cast<details::variable_node<Type>*>(branch[1])->ref();
                const details::operator_type o0 = expr_gen.get_operator(vovov->f0());
                const details::operator_type o1 = expr_gen.get_operator(vovov->f1());
                const details::operator_type o2 = operation;
@@ -20355,7 +21966,9 @@ namespace exprtk
             }
 
             static inline std::string id(expression_generator<Type>& expr_gen,
-                                         const details::operator_type o0, const details::operator_type o1, const details::operator_type o2)
+                                         const details::operator_type o0,
+                                         const details::operator_type o1,
+                                         const details::operator_type o2)
             {
                return (details::build_string() << "(t" << expr_gen.to_str(o0) << "(t" << expr_gen.to_str(o1) << "t)" << expr_gen.to_str(o2) << "t");
             }
@@ -20376,10 +21989,10 @@ namespace exprtk
                // ((v0 o0 (v1 o1 v2)) o2 c)
                typedef typename synthesize_vovov_expression1::node_type vovov_t;
                const vovov_t* vovov = dynamic_cast<const vovov_t*>(branch[0]);
-               const T& v0 = vovov->t0();
-               const T& v1 = vovov->t1();
-               const T& v2 = vovov->t2();
-               const T   c = dynamic_cast<details::literal_node<Type>*>(branch[1])->value();
+               const Type& v0 = vovov->t0();
+               const Type& v1 = vovov->t1();
+               const Type& v2 = vovov->t2();
+               const Type   c = dynamic_cast<details::literal_node<Type>*>(branch[1])->value();
                const details::operator_type o0 = expr_gen.get_operator(vovov->f0());
                const details::operator_type o1 = expr_gen.get_operator(vovov->f1());
                const details::operator_type o2 = operation;
@@ -20398,7 +22011,9 @@ namespace exprtk
             }
 
             static inline std::string id(expression_generator<Type>& expr_gen,
-                                         const details::operator_type o0, const details::operator_type o1, const details::operator_type o2)
+                                         const details::operator_type o0,
+                                         const details::operator_type o1,
+                                         const details::operator_type o2)
             {
                return (details::build_string() << "(t" << expr_gen.to_str(o0) << "(t" << expr_gen.to_str(o1) << "t)" << expr_gen.to_str(o2) << "t");
             }
@@ -20419,10 +22034,10 @@ namespace exprtk
                // ((v0 o0 (v1 o1 c)) o2 v1)
                typedef typename synthesize_vovoc_expression1::node_type vovoc_t;
                const vovoc_t* vovoc = dynamic_cast<const vovoc_t*>(branch[0]);
-               const T& v0 = vovoc->t0();
-               const T& v1 = vovoc->t1();
-               const T   c = vovoc->t2();
-               const T& v2 = dynamic_cast<details::variable_node<Type>*>(branch[1])->ref();
+               const Type& v0 = vovoc->t0();
+               const Type& v1 = vovoc->t1();
+               const Type   c = vovoc->t2();
+               const Type& v2 = dynamic_cast<details::variable_node<Type>*>(branch[1])->ref();
                const details::operator_type o0 = expr_gen.get_operator(vovoc->f0());
                const details::operator_type o1 = expr_gen.get_operator(vovoc->f1());
                const details::operator_type o2 = operation;
@@ -20440,7 +22055,9 @@ namespace exprtk
             }
 
             static inline std::string id(expression_generator<Type>& expr_gen,
-                                         const details::operator_type o0, const details::operator_type o1, const details::operator_type o2)
+                                         const details::operator_type o0,
+                                         const details::operator_type o1,
+                                         const details::operator_type o2)
             {
                return (details::build_string() << "(t" << expr_gen.to_str(o0) << "(t" << expr_gen.to_str(o1) << "t)" << expr_gen.to_str(o2) << "t");
             }
@@ -20461,10 +22078,10 @@ namespace exprtk
                // ((v0 o0 (c o1 v1)) o2 v2)
                typedef typename synthesize_vocov_expression1::node_type vocov_t;
                const vocov_t* vocov = dynamic_cast<const vocov_t*>(branch[0]);
-               const T& v0 = vocov->t0();
-               const T   c = vocov->t1();
-               const T& v1 = vocov->t2();
-               const T& v2 = dynamic_cast<details::variable_node<Type>*>(branch[1])->ref();
+               const Type& v0 = vocov->t0();
+               const Type   c = vocov->t1();
+               const Type& v1 = vocov->t2();
+               const Type& v2 = dynamic_cast<details::variable_node<Type>*>(branch[1])->ref();
                const details::operator_type o0 = expr_gen.get_operator(vocov->f0());
                const details::operator_type o1 = expr_gen.get_operator(vocov->f1());
                const details::operator_type o2 = operation;
@@ -20482,7 +22099,9 @@ namespace exprtk
             }
 
             static inline std::string id(expression_generator<Type>& expr_gen,
-                                         const details::operator_type o0, const details::operator_type o1, const details::operator_type o2)
+                                         const details::operator_type o0,
+                                         const details::operator_type o1,
+                                         const details::operator_type o2)
             {
                return (details::build_string() << "(t" << expr_gen.to_str(o0) << "(t" << expr_gen.to_str(o1) << "t)" << expr_gen.to_str(o2) << "t");
             }
@@ -20503,10 +22122,10 @@ namespace exprtk
                // ((c o0 (v0 o1 v1)) o2 v2)
                typedef typename synthesize_covov_expression1::node_type covov_t;
                const covov_t* covov = dynamic_cast<const covov_t*>(branch[0]);
-               const T   c = covov->t0();
-               const T& v0 = covov->t1();
-               const T& v1 = covov->t2();
-               const T& v2 = dynamic_cast<details::variable_node<Type>*>(branch[1])->ref();
+               const Type   c = covov->t0();
+               const Type& v0 = covov->t1();
+               const Type& v1 = covov->t2();
+               const Type& v2 = dynamic_cast<details::variable_node<Type>*>(branch[1])->ref();
                const details::operator_type o0 = expr_gen.get_operator(covov->f0());
                const details::operator_type o1 = expr_gen.get_operator(covov->f1());
                const details::operator_type o2 = operation;
@@ -20524,7 +22143,9 @@ namespace exprtk
             }
 
             static inline std::string id(expression_generator<Type>& expr_gen,
-                                         const details::operator_type o0, const details::operator_type o1, const details::operator_type o2)
+                                         const details::operator_type o0,
+                                         const details::operator_type o1,
+                                         const details::operator_type o2)
             {
                return (details::build_string() << "(t" << expr_gen.to_str(o0) << "(t" << expr_gen.to_str(o1) << "t)" << expr_gen.to_str(o2) << "t");
             }
@@ -20545,10 +22166,10 @@ namespace exprtk
                // ((c0 o0 (v0 o1 c1)) o2 v1)
                typedef typename synthesize_covoc_expression1::node_type covoc_t;
                const covoc_t* covoc = dynamic_cast<const covoc_t*>(branch[0]);
-               const T  c0 = covoc->t0();
-               const T& v0 = covoc->t1();
-               const T  c1 = covoc->t2();
-               const T& v1 = dynamic_cast<details::variable_node<Type>*>(branch[1])->ref();
+               const Type  c0 = covoc->t0();
+               const Type& v0 = covoc->t1();
+               const Type  c1 = covoc->t2();
+               const Type& v1 = dynamic_cast<details::variable_node<Type>*>(branch[1])->ref();
                const details::operator_type o0 = expr_gen.get_operator(covoc->f0());
                const details::operator_type o1 = expr_gen.get_operator(covoc->f1());
                const details::operator_type o2 = operation;
@@ -20566,7 +22187,9 @@ namespace exprtk
             }
 
             static inline std::string id(expression_generator<Type>& expr_gen,
-                                         const details::operator_type o0, const details::operator_type o1, const details::operator_type o2)
+                                         const details::operator_type o0,
+                                         const details::operator_type o1,
+                                         const details::operator_type o2)
             {
                return (details::build_string() << "(t" << expr_gen.to_str(o0) << "(t" << expr_gen.to_str(o1) << "t)" << expr_gen.to_str(o2) << "t");
             }
@@ -20587,10 +22210,10 @@ namespace exprtk
                // ((v0 o0 (c0 o1 v1)) o2 c1)
                typedef typename synthesize_vocov_expression1::node_type vocov_t;
                const vocov_t* vocov = dynamic_cast<const vocov_t*>(branch[0]);
-               const T& v0 = vocov->t0();
-               const T  c0 = vocov->t1();
-               const T& v1 = vocov->t2();
-               const T  c1 = dynamic_cast<details::literal_node<Type>*>(branch[1])->value();
+               const Type& v0 = vocov->t0();
+               const Type  c0 = vocov->t1();
+               const Type& v1 = vocov->t2();
+               const Type  c1 = dynamic_cast<details::literal_node<Type>*>(branch[1])->value();
                const details::operator_type o0 = expr_gen.get_operator(vocov->f0());
                const details::operator_type o1 = expr_gen.get_operator(vocov->f1());
                const details::operator_type o2 = operation;
@@ -20609,7 +22232,9 @@ namespace exprtk
             }
 
             static inline std::string id(expression_generator<Type>& expr_gen,
-                                         const details::operator_type o0, const details::operator_type o1, const details::operator_type o2)
+                                         const details::operator_type o0,
+                                         const details::operator_type o1,
+                                         const details::operator_type o2)
             {
                return (details::build_string() << "(t" << expr_gen.to_str(o0) << "(t" << expr_gen.to_str(o1) << "t)" << expr_gen.to_str(o2) << "t");
             }
@@ -20630,10 +22255,10 @@ namespace exprtk
                // ((c0 o0 (v0 o1 v1)) o2 c1)
                typedef typename synthesize_covov_expression1::node_type covov_t;
                const covov_t* covov = dynamic_cast<const covov_t*>(branch[0]);
-               const T  c0 = covov->t0();
-               const T& v0 = covov->t1();
-               const T& v1 = covov->t2();
-               const T  c1 = dynamic_cast<details::literal_node<Type>*>(branch[1])->value();
+               const Type  c0 = covov->t0();
+               const Type& v0 = covov->t1();
+               const Type& v1 = covov->t2();
+               const Type  c1 = dynamic_cast<details::literal_node<Type>*>(branch[1])->value();
                const details::operator_type o0 = expr_gen.get_operator(covov->f0());
                const details::operator_type o1 = expr_gen.get_operator(covov->f1());
                const details::operator_type o2 = operation;
@@ -20652,7 +22277,9 @@ namespace exprtk
             }
 
             static inline std::string id(expression_generator<Type>& expr_gen,
-                                         const details::operator_type o0, const details::operator_type o1, const details::operator_type o2)
+                                         const details::operator_type o0,
+                                         const details::operator_type o1,
+                                         const details::operator_type o2)
             {
                return (details::build_string() << "(t" << expr_gen.to_str(o0) << "(t" << expr_gen.to_str(o1) << "t)" << expr_gen.to_str(o2) << "t");
             }
@@ -20673,6 +22300,7 @@ namespace exprtk
                return "INVALID";
             }
          };
+         #endif
 
          inline expression_node_ptr synthesize_uvouv_expression(const details::operator_type& operation, expression_node_ptr (&branch)[2])
          {
@@ -22938,8 +24566,8 @@ namespace exprtk
    namespace information
    {
       static const char* library = "Mathematical Expression Toolkit";
-      static const char* version = "2.71828182845904523536028747135266249775724709";
-      static const char* date    = "20140420";
+      static const char* version = "2.71828182845904523536028747135266249775724709369";
+      static const char* date    = "20140601";
 
       static inline std::string data()
       {
