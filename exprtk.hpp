@@ -286,10 +286,10 @@ namespace exprtk
                                      "deg2grad", "deg2rad", "equal", "erf", "erfc", "exp", "expm1", "false", "floor",
                                      "for", "frac", "grad2deg", "hypot", "iclamp", "if", "else", "ilike", "in", "inrange",
                                      "like", "log", "log10", "log2", "logn", "log1p", "mand", "max", "min", "mod", "mor",
-                                     "mul", "nand", "nor", "not", "not_equal", "null", "or", "pow", "rad2deg", "repeat",
-                                     "root", "round", "roundn", "sec", "sgn", "shl", "shr", "sin", "sinc", "sinh", "sqrt",
-                                     "sum", "swap", "switch", "tan", "tanh", "true", "trunc", "until", "var", "while",
-                                     "xnor", "xor", "&", "|"
+                                     "mul", "ncdf", "nand", "nor", "not", "not_equal", "null", "or", "pow", "rad2deg",
+                                     "repeat", "root", "round", "roundn", "sec", "sgn", "shl", "shr", "sin", "sinc",
+                                     "sinh", "sqrt", "sum", "swap", "switch", "tan", "tanh", "true", "trunc", "until",
+                                     "var", "while", "xnor", "xor", "&", "|"
                                   };
 
       static const std::size_t reserved_symbols_size = sizeof(reserved_symbols) / sizeof(std::string);
@@ -428,6 +428,7 @@ namespace exprtk
             static const double _2_pi   =  0.636619772367581343076;
             static const double _180_pi = 57.295779513082320876798;
             static const double log2    =  0.693147180559945309417;
+            static const double sqrt2   =  1.414213562373095048801;
          }
 
          namespace details
@@ -853,6 +854,21 @@ namespace exprtk
             }
 
             template <typename T>
+            inline T ncdf_impl(T v, real_type_tag)
+            {
+               T cnd = T(0.5) * (T(1) + erf_impl(
+                                           abs_impl(v,real_type_tag()) /
+                                           numeric::constant::sqrt2,real_type_tag()));
+               return  (v < 0) ? (T(1) - cnd) : cnd;
+            }
+
+            template <typename T>
+            inline T ncdf_impl(T v, int_type_tag)
+            {
+               return ncdf_impl(static_cast<double>(v),real_type_tag());
+            }
+
+            template <typename T>
             inline T sinc_impl(T v, real_type_tag)
             {
                if (std::abs(v) >= std::numeric_limits<T>::epsilon())
@@ -864,7 +880,7 @@ namespace exprtk
             template <typename T>
             inline T sinc_impl(T v, int_type_tag)
             {
-               return erfc_impl(static_cast<double>(v),real_type_tag());
+               return sinc_impl(static_cast<double>(v),real_type_tag());
             }
 
             template <typename T> inline T  acos_impl(const T v, real_type_tag) { return std::acos (v); }
@@ -1158,6 +1174,7 @@ namespace exprtk
          exprtk_define_unary_function(sgn  )
          exprtk_define_unary_function(erf  )
          exprtk_define_unary_function(erfc )
+         exprtk_define_unary_function(ncdf )
          exprtk_define_unary_function(frac )
          exprtk_define_unary_function(trunc)
          #undef exprtk_define_unary_function
@@ -3217,10 +3234,10 @@ namespace exprtk
          e_tanh    , e_cot     , e_clamp   , e_iclamp  ,
          e_inrange , e_sgn     , e_r2d     , e_d2r     ,
          e_d2g     , e_g2d     , e_hypot   , e_notl    ,
-         e_erf     , e_erfc    , e_frac    , e_trunc   ,
-         e_assign  , e_addass  , e_subass  , e_mulass  ,
-         e_divass  , e_modass  , e_in      , e_like    ,
-         e_ilike   , e_multi   , e_swap    ,
+         e_erf     , e_erfc    , e_ncdf    , e_frac    ,
+         e_trunc   , e_assign  , e_addass  , e_subass  ,
+         e_mulass  , e_divass  , e_modass  , e_in      ,
+         e_like    , e_ilike   , e_multi   , e_swap    ,
 
          // Do not add new functions/operators after this point.
          e_sf00 = 1000, e_sf01 = 1001, e_sf02 = 1002, e_sf03 = 1003,
@@ -3320,6 +3337,7 @@ namespace exprtk
                   case e_sgn   : return numeric::sgn  (arg);
                   case e_erf   : return numeric::erf  (arg);
                   case e_erfc  : return numeric::erfc (arg);
+                  case e_ncdf  : return numeric::ncdf (arg);
                   case e_frac  : return numeric::frac (arg);
                   case e_trunc : return numeric::trunc(arg);
                   default      : return std::numeric_limits<T>::quiet_NaN();
@@ -3465,18 +3483,19 @@ namespace exprtk
             e_sqrt         , e_tan          , e_tanh         , e_cot          ,
             e_sec          , e_csc          , e_r2d          , e_d2r          ,
             e_d2g          , e_g2d          , e_notl         , e_sgn          ,
-            e_erf          , e_erfc         , e_frac         , e_trunc        ,
-            e_uvouv        , e_vov          , e_cov          , e_voc          ,
-            e_vob          , e_bov          , e_cob          , e_boc          ,
-            e_vovov        , e_vovoc        , e_vocov        , e_covov        ,
-            e_covoc        , e_vovovov      , e_vovovoc      , e_vovocov      ,
-            e_vocovov      , e_covovov      , e_covocov      , e_vocovoc      ,
-            e_covovoc      , e_vococov      , e_sf3ext       , e_sf4ext       ,
-            e_nulleq       , e_vector       , e_vecelem      , e_vecdefass    ,
-            e_vecvalass    , e_vecvecass    , e_vecopvalass  , e_vecopvecass  ,
-            e_vecfunc      , e_vecvecswap   , e_vecvecineq   , e_vecvalineq   ,
-            e_valvecineq   , e_vecvecarith  , e_vecvalarith  , e_valvecarith  ,
-            e_vecunaryop   , e_break        , e_continue     , e_swap
+            e_erf          , e_erfc         , e_ncdf         , e_frac         ,
+            e_trunc        , e_uvouv        , e_vov          , e_cov          ,
+            e_voc          , e_vob          , e_bov          , e_cob          ,
+            e_boc          , e_vovov        , e_vovoc        , e_vocov        ,
+            e_covov        , e_covoc        , e_vovovov      , e_vovovoc      ,
+            e_vovocov      , e_vocovov      , e_covovov      , e_covocov      ,
+            e_vocovoc      , e_covovoc      , e_vococov      , e_sf3ext       ,
+            e_sf4ext       , e_nulleq       , e_vector       , e_vecelem      ,
+            e_vecdefass    , e_vecvalass    , e_vecvecass    , e_vecopvalass  ,
+            e_vecopvecass  , e_vecfunc      , e_vecvecswap   , e_vecvecineq   ,
+            e_vecvalineq   , e_valvecineq   , e_vecvecarith  , e_vecvalarith  ,
+            e_valvecarith  , e_vecunaryop   , e_break        , e_continue     ,
+            e_swap
          };
 
          typedef T value_type;
@@ -7692,6 +7711,7 @@ namespace exprtk
       exprtk_define_unary_op(log10)
       exprtk_define_unary_op(log2 )
       exprtk_define_unary_op(log1p)
+      exprtk_define_unary_op(ncdf )
       exprtk_define_unary_op(neg  )
       exprtk_define_unary_op(notl )
       exprtk_define_unary_op(pos  )
@@ -10940,6 +10960,7 @@ namespace exprtk
          register_op(      "not",e_notl    , 1)
          register_op(      "erf",e_erf     , 1)
          register_op(     "erfc",e_erfc    , 1)
+         register_op(     "ncdf",e_ncdf    , 1)
          register_op(     "frac",e_frac    , 1)
          register_op(    "trunc",e_trunc   , 1)
          register_op(    "atan2",e_atan2   , 2)
@@ -16789,8 +16810,8 @@ namespace exprtk
                    (details::e_d2r   == operation) || (details::e_d2g   == operation) ||
                    (details::e_g2d   == operation) || (details::e_notl  == operation) ||
                    (details::e_sgn   == operation) || (details::e_erf   == operation) ||
-                   (details::e_erfc  == operation) || (details::e_frac  == operation) ||
-                   (details::e_trunc == operation);
+                   (details::e_erfc  == operation) || (details::e_ncdf  == operation) ||
+                   (details::e_frac  == operation) || (details::e_trunc == operation);
          }
 
          inline bool sf3_optimizable(const std::string& sf3id, trinary_functor_t& tfunc)
@@ -17558,6 +17579,7 @@ namespace exprtk
          case_stmt(details::  e_sgn,details::  sgn_op) \
          case_stmt(details::  e_erf,details::  erf_op) \
          case_stmt(details:: e_erfc,details:: erfc_op) \
+         case_stmt(details:: e_ncdf,details:: ncdf_op) \
          case_stmt(details:: e_frac,details:: frac_op) \
          case_stmt(details::e_trunc,details::trunc_op) \
 
@@ -23000,6 +23022,7 @@ namespace exprtk
          register_unary_op(details::  e_sgn,details::  sgn_op)
          register_unary_op(details::  e_erf,details::  erf_op)
          register_unary_op(details:: e_erfc,details:: erfc_op)
+         register_unary_op(details:: e_ncdf,details:: ncdf_op)
          register_unary_op(details:: e_frac,details:: frac_op)
          register_unary_op(details::e_trunc,details::trunc_op)
          #undef register_unary_op

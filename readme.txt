@@ -17,7 +17,7 @@ arithmetic operations, functions and processes:
 
  (01) Functions:       abs, avg, ceil, clamp, equal, erf, erfc, exp,
                        expm1, floor, frac, log, log10, log1p, log2,
-                       logn, max, min, mul, nequal, root, round,
+                       logn, max, min, mul, ncdf, nequal, root, round,
                        roundn, sgn, sqrt, sum, swap, trunc
 
  (02) Trigonometry:    acos, acosh, asin, asinh, atan, atanh, atan2,
@@ -282,6 +282,8 @@ of C++ compilers:
 +----------+---------------------------------------------------------+
 | mul      | Product of all the inputs.                              |
 |          | (eg: mul(x,y,z,w,u,v,t) == (x * y * z * w * u * v * t)) |
++----------+---------------------------------------------------------+
+| ncdf     | Normal cumulative distribution function.  (eg: ncdf(x)) |
 +----------+---------------------------------------------------------+
 | nequal   | Not-equal test between x and y using normalized epsilon |
 +----------+---------------------------------------------------------+
@@ -1343,6 +1345,7 @@ in a compilation failure.
 (16) exprtk_simple_example_12.cpp
 (17) exprtk_simple_example_13.cpp
 (18) exprtk_simple_example_14.cpp
+(19) exprtk_simple_example_15.cpp
 
 
 
