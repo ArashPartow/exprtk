@@ -26,9 +26,8 @@
 template<typename T>
 void stddev_example()
 {
-   typedef exprtk::symbol_table<T> symbol_table_t;
-   typedef exprtk::expression<T>     expression_t;
-   typedef exprtk::parser<T>             parser_t;
+   typedef exprtk::expression<T> expression_t;
+   typedef exprtk::parser<T>         parser_t;
 
    std::string stddev_program =
                   " var x[25] := {                     "
