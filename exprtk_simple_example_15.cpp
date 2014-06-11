@@ -17,8 +17,6 @@
 
 
 #include <cstdio>
-#include <cstdlib>
-#include <ctime>
 #include <string>
 #include "exprtk.hpp"
 
