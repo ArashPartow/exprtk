@@ -258,8 +258,8 @@ namespace exprtk
             const std::size_t length = std::min(s1.size(),s2.size());
             for (std::size_t i = 0; i < length;  ++i)
             {
-               const char c1 = std::tolower(s1[i]);
-               const char c2 = std::tolower(s2[i]);
+               const char c1 = static_cast<char>(std::tolower(s1[i]));
+               const char c2 = static_cast<char>(std::tolower(s2[i]));
                if (c1 > c2)
                   return false;
                else if (c1 < c2)
@@ -4565,7 +4565,9 @@ namespace exprtk
          inline T value() const
          {
             throw break_exception<T>(return_ ? return_->value() : std::numeric_limits<T>::quiet_NaN());
+            #ifndef _MSC_VER
             return std::numeric_limits<T>::quiet_NaN();
+            #endif
          }
 
          inline typename expression_node<T>::node_type type() const
@@ -4587,7 +4589,9 @@ namespace exprtk
          inline T value() const
          {
             throw continue_exception();
+            #ifndef _MSC_VER
             return std::numeric_limits<T>::quiet_NaN();
+            #endif
          }
 
          inline typename expression_node<T>::node_type type() const
@@ -5421,6 +5425,8 @@ namespace exprtk
          }
 
       private:
+
+         vector_assignment_node<T>& operator=(const vector_assignment_node<T>&);
 
          mutable T* vector_base_;
          std::vector<expression_ptr> initialiser_list_;
@@ -12760,6 +12766,8 @@ namespace exprtk
 
       private:
 
+         scope_element_manager& operator=(const scope_element_manager&);
+
          parser_t& parser_;
          std::vector<scope_element> element_;
          scope_element null_element_;
@@ -12792,6 +12800,8 @@ namespace exprtk
          }
 
       private:
+
+         scope_handler& operator=(const scope_handler&);
 
          parser_t& parser_;
       };

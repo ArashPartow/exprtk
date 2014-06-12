@@ -69,7 +69,7 @@ void savitzky_golay_filter()
 
    const T pi = T(3.141592653589793238462);
 
-   srand(time(0));
+   srand(static_cast<unsigned int>(time(0)));
 
    // Generate a signal with noise.
    for (T t = T(-5); t <= T(+5); t += T(10.0 / n))
