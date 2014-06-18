@@ -6133,7 +6133,7 @@ namespace exprtk
             {
                if (arg_list[i] && is_variable_node(arg_list[i]))
                {
-                  variable_node<T>* var_node_ptr = dynamic_cast<variable_node<T>*>(arg_list[i]);
+                  variable_node<T>* var_node_ptr = static_cast<variable_node<T>*>(arg_list[i]);
                   arg_list_[i] = (&var_node_ptr->ref());
                }
                else
@@ -6228,7 +6228,7 @@ namespace exprtk
          {
             if (is_variable_node(binary_node<T>::branch_[0].first))
             {
-               var_node_ptr_ = dynamic_cast<variable_node<T>*>(binary_node<T>::branch_[0].first);
+               var_node_ptr_ = static_cast<variable_node<T>*>(binary_node<T>::branch_[0].first);
             }
          }
 
@@ -6264,7 +6264,7 @@ namespace exprtk
          {
             if (is_vector_elem_node(binary_node<T>::branch_[0].first))
             {
-               vec_node_ptr_ = dynamic_cast<vector_elem_node<T>*>(binary_node<T>::branch_[0].first);
+               vec_node_ptr_ = static_cast<vector_elem_node<T>*>(binary_node<T>::branch_[0].first);
             }
          }
 
@@ -6302,7 +6302,7 @@ namespace exprtk
          {
             if (is_vector_node(binary_node<T>::branch_[0].first))
             {
-               vec_node_ptr_ = dynamic_cast<vector_node<T>*>(binary_node<T>::branch_[0].first);
+               vec_node_ptr_ = static_cast<vector_node<T>*>(binary_node<T>::branch_[0].first);
             }
          }
 
@@ -6360,12 +6360,12 @@ namespace exprtk
          {
             if (is_vector_node(binary_node<T>::branch_[0].first))
             {
-               vec0_node_ptr_ = dynamic_cast<vector_node<T>*>(binary_node<T>::branch_[0].first);
+               vec0_node_ptr_ = static_cast<vector_node<T>*>(binary_node<T>::branch_[0].first);
             }
 
             if (is_vector_node(binary_node<T>::branch_[1].first))
             {
-               vec1_node_ptr_ = dynamic_cast<vector_node<T>*>(binary_node<T>::branch_[1].first);
+               vec1_node_ptr_ = static_cast<vector_node<T>*>(binary_node<T>::branch_[1].first);
             }
             else if (is_ivector_node(binary_node<T>::branch_[1].first))
             {
@@ -6431,7 +6431,7 @@ namespace exprtk
          {
             if (is_variable_node(binary_node<T>::branch_[0].first))
             {
-               var_node_ptr_ = dynamic_cast<variable_node<T>*>(binary_node<T>::branch_[0].first);
+               var_node_ptr_ = static_cast<variable_node<T>*>(binary_node<T>::branch_[0].first);
             }
          }
 
@@ -6467,7 +6467,7 @@ namespace exprtk
          {
             if (is_vector_elem_node(binary_node<T>::branch_[0].first))
             {
-               vec_node_ptr_ = dynamic_cast<vector_elem_node<T>*>(binary_node<T>::branch_[0].first);
+               vec_node_ptr_ = static_cast<vector_elem_node<T>*>(binary_node<T>::branch_[0].first);
             }
          }
 
@@ -6505,7 +6505,7 @@ namespace exprtk
          {
             if (is_vector_node(binary_node<T>::branch_[0].first))
             {
-               vec_node_ptr_ = dynamic_cast<vector_node<T>*>(binary_node<T>::branch_[0].first);
+               vec_node_ptr_ = static_cast<vector_node<T>*>(binary_node<T>::branch_[0].first);
             }
          }
 
@@ -6564,12 +6564,12 @@ namespace exprtk
          {
             if (is_vector_node(binary_node<T>::branch_[0].first))
             {
-               vec0_node_ptr_ = dynamic_cast<vector_node<T>*>(binary_node<T>::branch_[0].first);
+               vec0_node_ptr_ = static_cast<vector_node<T>*>(binary_node<T>::branch_[0].first);
             }
 
             if (is_vector_node(binary_node<T>::branch_[1].first))
             {
-               vec1_node_ptr_ = dynamic_cast<vector_node<T>*>(binary_node<T>::branch_[1].first);
+               vec1_node_ptr_ = static_cast<vector_node<T>*>(binary_node<T>::branch_[1].first);
             }
             else if (is_ivector_node(binary_node<T>::branch_[1].first))
             {
@@ -6643,7 +6643,7 @@ namespace exprtk
 
             if (is_vector_node(binary_node<T>::branch_[0].first))
             {
-               vec0_node_ptr_ = dynamic_cast<vector_node<T>*>(binary_node<T>::branch_[0].first);
+               vec0_node_ptr_ = static_cast<vector_node<T>*>(binary_node<T>::branch_[0].first);
             }
             else if (is_ivector_node(binary_node<T>::branch_[0].first))
             {
@@ -6653,7 +6653,7 @@ namespace exprtk
 
             if (is_vector_node(binary_node<T>::branch_[1].first))
             {
-               vec1_node_ptr_ = dynamic_cast<vector_node<T>*>(binary_node<T>::branch_[1].first);
+               vec1_node_ptr_ = static_cast<vector_node<T>*>(binary_node<T>::branch_[1].first);
             }
             else if (is_ivector_node(binary_node<T>::branch_[1].first))
             {
@@ -6727,7 +6727,7 @@ namespace exprtk
 
             if (is_vector_node(binary_node<T>::branch_[0].first))
             {
-               vec_node_ptr_ = dynamic_cast<vector_node<T>*>(binary_node<T>::branch_[0].first);
+               vec_node_ptr_ = static_cast<vector_node<T>*>(binary_node<T>::branch_[0].first);
             }
             else if (is_ivector_node(binary_node<T>::branch_[0].first))
             {
@@ -6799,7 +6799,7 @@ namespace exprtk
 
             if (is_vector_node(binary_node<T>::branch_[1].first))
             {
-               vec_node_ptr_ = dynamic_cast<vector_node<T>*>(binary_node<T>::branch_[1].first);
+               vec_node_ptr_ = static_cast<vector_node<T>*>(binary_node<T>::branch_[1].first);
             }
             else if (is_ivector_node(binary_node<T>::branch_[1].first))
             {
@@ -6876,7 +6876,7 @@ namespace exprtk
          {
             if (is_vector_node(binary_node<T>::branch_[0].first))
             {
-               vec0_node_ptr_ = dynamic_cast<vector_node<T>*>(binary_node<T>::branch_[0].first);
+               vec0_node_ptr_ = static_cast<vector_node<T>*>(binary_node<T>::branch_[0].first);
             }
             else if (is_ivector_node(binary_node<T>::branch_[0].first))
             {
@@ -6886,7 +6886,7 @@ namespace exprtk
 
             if (is_vector_node(binary_node<T>::branch_[1].first))
             {
-               vec1_node_ptr_ = dynamic_cast<vector_node<T>*>(binary_node<T>::branch_[1].first);
+               vec1_node_ptr_ = static_cast<vector_node<T>*>(binary_node<T>::branch_[1].first);
             }
             else if (is_ivector_node(binary_node<T>::branch_[1].first))
             {
@@ -6986,7 +6986,7 @@ namespace exprtk
          {
             if (is_vector_node(binary_node<T>::branch_[0].first))
             {
-               vec0_node_ptr_ = dynamic_cast<vector_node<T>*>(binary_node<T>::branch_[0].first);
+               vec0_node_ptr_ = static_cast<vector_node<T>*>(binary_node<T>::branch_[0].first);
             }
             else if (is_ivector_node(binary_node<T>::branch_[0].first))
             {
@@ -7081,7 +7081,7 @@ namespace exprtk
          {
             if (is_vector_node(binary_node<T>::branch_[1].first))
             {
-               vec1_node_ptr_ = dynamic_cast<vector_node<T>*>(binary_node<T>::branch_[1].first);
+               vec1_node_ptr_ = static_cast<vector_node<T>*>(binary_node<T>::branch_[1].first);
             }
             else if (is_ivector_node(binary_node<T>::branch_[1].first))
             {
@@ -7174,7 +7174,7 @@ namespace exprtk
          {
             if (is_vector_node(unary_node<T>::branch_))
             {
-               vec0_node_ptr_ = dynamic_cast<vector_node<T>*>(unary_node<T>::branch_);
+               vec0_node_ptr_ = static_cast<vector_node<T>*>(unary_node<T>::branch_);
             }
             else if (is_ivector_node(unary_node<T>::branch_))
             {
@@ -15296,7 +15296,7 @@ namespace exprtk
 
          if (symbol_table_.is_constant_string(symbol))
          {
-            const_str_node = dynamic_cast<strvar_node_t>(result);
+            const_str_node = static_cast<strvar_node_t>(result);
             result = expression_generator_(const_str_node->str());
          }
 
@@ -15315,7 +15315,7 @@ namespace exprtk
                   return expression_generator_(T(const_str_node->str().size()));
                else
                   return node_allocator_.allocate<details::stringsize_node<T> >
-                            (dynamic_cast<details::stringvar_node<T>*>(result)->ref());
+                            (static_cast<details::stringvar_node<T>*>(result)->ref());
             }
 
             range_pack rp;
@@ -15328,7 +15328,7 @@ namespace exprtk
             else if (const_str_node)
                result = expression_generator_(const_str_node->ref(),rp);
             else
-               result = expression_generator_(dynamic_cast<details::stringvar_node<T>*>(result)->ref(),rp);
+               result = expression_generator_(static_cast<details::stringvar_node<T>*>(result)->ref(),rp);
 
             if (result)
                rp.clear();
@@ -17596,7 +17596,7 @@ namespace exprtk
          inline expression_node_ptr synthesize_uv_expression(const details::operator_type& operation,
                                                              expression_node_ptr (&branch)[1])
          {
-            T& v = dynamic_cast<details::variable_node<T>*>(branch[0])->ref();
+            T& v = static_cast<details::variable_node<T>*>(branch[0])->ref();
             switch (operation)
             {
                #define case_stmt(op0,op1)                                                          \
@@ -17689,9 +17689,9 @@ namespace exprtk
 
          inline expression_node_ptr varnode_optimize_sf3(const details::operator_type& operation, expression_node_ptr (&branch)[3])
          {
-            const Type& v0 = dynamic_cast<details::variable_node<Type>*>(branch[0])->ref();
-            const Type& v1 = dynamic_cast<details::variable_node<Type>*>(branch[1])->ref();
-            const Type& v2 = dynamic_cast<details::variable_node<Type>*>(branch[2])->ref();
+            const Type& v0 = static_cast<details::variable_node<Type>*>(branch[0])->ref();
+            const Type& v1 = static_cast<details::variable_node<Type>*>(branch[1])->ref();
+            const Type& v2 = static_cast<details::variable_node<Type>*>(branch[2])->ref();
 
             switch (operation)
             {
@@ -17821,10 +17821,10 @@ namespace exprtk
 
          inline expression_node_ptr varnode_optimize_sf4(const details::operator_type& operation, expression_node_ptr (&branch)[4])
          {
-            const Type& v0 = dynamic_cast<details::variable_node<Type>*>(branch[0])->ref();
-            const Type& v1 = dynamic_cast<details::variable_node<Type>*>(branch[1])->ref();
-            const Type& v2 = dynamic_cast<details::variable_node<Type>*>(branch[2])->ref();
-            const Type& v3 = dynamic_cast<details::variable_node<Type>*>(branch[3])->ref();
+            const Type& v0 = static_cast<details::variable_node<Type>*>(branch[0])->ref();
+            const Type& v1 = static_cast<details::variable_node<Type>*>(branch[1])->ref();
+            const Type& v2 = static_cast<details::variable_node<Type>*>(branch[2])->ref();
+            const Type& v3 = static_cast<details::variable_node<Type>*>(branch[3])->ref();
 
             switch (operation)
             {
@@ -18053,7 +18053,7 @@ namespace exprtk
                   return error_node();
                }
 
-               function_N_node_t* func_node_ptr = dynamic_cast<function_N_node_t*>(result);
+               function_N_node_t* func_node_ptr = static_cast<function_N_node_t*>(result);
 
                if (func_node_ptr)
                {
@@ -18608,7 +18608,7 @@ namespace exprtk
                                                       const details::operator_type& operation,
                                                       expression_node_ptr (&branch)[2])
             {
-               const Type& v = dynamic_cast<details::variable_node<Type>*>(branch[0])->ref();
+               const Type& v = static_cast<details::variable_node<Type>*>(branch[0])->ref();
                #ifndef exprtk_disable_enhanced_features
                if (details::is_sf3ext_node(branch[1]))
                {
@@ -18642,7 +18642,7 @@ namespace exprtk
                                                       const details::operator_type& operation,
                                                       expression_node_ptr (&branch)[2])
             {
-               const Type& v = dynamic_cast<details::variable_node<Type>*>(branch[1])->ref();
+               const Type& v = static_cast<details::variable_node<Type>*>(branch[1])->ref();
                #ifndef exprtk_disable_enhanced_features
                if (details::is_sf3ext_node(branch[0]))
                {
@@ -18676,7 +18676,7 @@ namespace exprtk
                                                       const details::operator_type& operation,
                                                       expression_node_ptr (&branch)[2])
             {
-               const Type c = dynamic_cast<details::literal_node<Type>*>(branch[0])->value();
+               const Type c = static_cast<details::literal_node<Type>*>(branch[0])->value();
                free_node(*expr_gen.node_allocator_,branch[0]);
                if (details::is_cob_node(branch[1]))
                {
@@ -18688,7 +18688,7 @@ namespace exprtk
                        (operation == details::e_add)
                      )
                   {
-                     details::cob_base_node<Type>* cobnode = dynamic_cast<details::cob_base_node<Type>*>(branch[1]);
+                     details::cob_base_node<Type>* cobnode = static_cast<details::cob_base_node<Type>*>(branch[1]);
                      if (operation == cobnode->operation())
                      {
                         switch (operation)
@@ -18703,7 +18703,7 @@ namespace exprtk
 
                   if (operation == details::e_mul)
                   {
-                     details::cob_base_node<Type>* cobnode = dynamic_cast<details::cob_base_node<Type>*>(branch[1]);
+                     details::cob_base_node<Type>* cobnode = static_cast<details::cob_base_node<Type>*>(branch[1]);
                      details::operator_type cob_opr = cobnode->operation();
 
                      if (
@@ -18722,7 +18722,7 @@ namespace exprtk
                   }
                   else if (operation == details::e_div)
                   {
-                     details::cob_base_node<Type>* cobnode = dynamic_cast<details::cob_base_node<Type>*>(branch[1]);
+                     details::cob_base_node<Type>* cobnode = static_cast<details::cob_base_node<Type>*>(branch[1]);
                      details::operator_type cob_opr = cobnode->operation();
 
                      if (
@@ -18784,7 +18784,7 @@ namespace exprtk
                                                       const details::operator_type& operation,
                                                       expression_node_ptr (&branch)[2])
             {
-               const Type c = dynamic_cast<details::literal_node<Type>*>(branch[1])->value();
+               const Type c = static_cast<details::literal_node<Type>*>(branch[1])->value();
                details::free_node(*(expr_gen.node_allocator_),branch[1]);
                if (details::is_boc_node(branch[0]))
                {
@@ -18796,7 +18796,7 @@ namespace exprtk
                        (operation == details::e_add)
                      )
                   {
-                     details::boc_base_node<Type>* bocnode = dynamic_cast<details::boc_base_node<Type>*>(branch[0]);
+                     details::boc_base_node<Type>* bocnode = static_cast<details::boc_base_node<Type>*>(branch[0]);
                      if (operation == bocnode->operation())
                      {
                         switch (operation)
@@ -18810,7 +18810,7 @@ namespace exprtk
                   }
                   else if (operation == details::e_div)
                   {
-                     details::boc_base_node<Type>* bocnode = dynamic_cast<details::boc_base_node<Type>*>(branch[0]);
+                     details::boc_base_node<Type>* bocnode = static_cast<details::boc_base_node<Type>*>(branch[0]);
                      details::operator_type boc_opr = bocnode->operation();
 
                      if (
@@ -18881,8 +18881,8 @@ namespace exprtk
                                                       const details::operator_type& operation,
                                                       expression_node_ptr (&branch)[2])
             {
-               const Type& v1 = dynamic_cast<details::variable_node<Type>*>(branch[0])->ref();
-               const Type& v2 = dynamic_cast<details::variable_node<Type>*>(branch[1])->ref();
+               const Type& v1 = static_cast<details::variable_node<Type>*>(branch[0])->ref();
+               const Type& v2 = static_cast<details::variable_node<Type>*>(branch[1])->ref();
                switch (operation)
                {
                   #define case_stmt(op0,op1)                                                       \
@@ -18904,8 +18904,8 @@ namespace exprtk
                                                       const details::operator_type& operation,
                                                       expression_node_ptr (&branch)[2])
             {
-               const Type  c = dynamic_cast<details::literal_node<Type>*> (branch[0])->value();
-               const Type& v = dynamic_cast<details::variable_node<Type>*>(branch[1])->ref();
+               const Type  c = static_cast<details::literal_node<Type>*> (branch[0])->value();
+               const Type& v = static_cast<details::variable_node<Type>*>(branch[1])->ref();
                details::free_node(*(expr_gen.node_allocator_),branch[0]);
                switch (operation)
                {
@@ -18928,8 +18928,8 @@ namespace exprtk
                                                       const details::operator_type& operation,
                                                       expression_node_ptr (&branch)[2])
             {
-               const Type& v = dynamic_cast<details::variable_node<Type>*>(branch[0])->ref();
-               const Type  c = dynamic_cast<details::literal_node<Type>*> (branch[1])->value();
+               const Type& v = static_cast<details::variable_node<Type>*>(branch[0])->ref();
+               const Type  c = static_cast<details::literal_node<Type>*> (branch[1])->value();
                details::free_node(*(expr_gen.node_allocator_),branch[1]);
 
                if (expr_gen.cardinal_pow_optimizable(operation,c))
@@ -19088,25 +19088,30 @@ namespace exprtk
                   return false;
 
                typedef details::T0oT1oT2_base_node<Type>* sf3ext_base_ptr;
-               sf3ext_base_ptr n = dynamic_cast<sf3ext_base_ptr>(sf3node);
+               sf3ext_base_ptr n = static_cast<sf3ext_base_ptr>(sf3node);
                std::string id = "t" + expr_gen.to_str(operation) + "(" + n->type_id() + ")";
 
                switch (n->type())
                {
                   case details::expression_node<Type>::e_covoc : return compile_right_impl
-                                                                        <typename covoc_t::sf3_type_node,ExternalType,ctype,vtype,ctype>(expr_gen,id,t,sf3node,result);
+                                                                        <typename covoc_t::sf3_type_node,ExternalType,ctype,vtype,ctype>
+                                                                           (expr_gen,id,t,sf3node,result);
 
                   case details::expression_node<Type>::e_covov : return compile_right_impl
-                                                                        <typename covov_t::sf3_type_node,ExternalType,ctype,vtype,vtype>(expr_gen,id,t,sf3node,result);
+                                                                        <typename covov_t::sf3_type_node,ExternalType,ctype,vtype,vtype>
+                                                                           (expr_gen,id,t,sf3node,result);
 
                   case details::expression_node<Type>::e_vocov : return compile_right_impl
-                                                                        <typename vocov_t::sf3_type_node,ExternalType,vtype,ctype,vtype>(expr_gen,id,t,sf3node,result);
+                                                                        <typename vocov_t::sf3_type_node,ExternalType,vtype,ctype,vtype>
+                                                                           (expr_gen,id,t,sf3node,result);
 
                   case details::expression_node<Type>::e_vovoc : return compile_right_impl
-                                                                        <typename vovoc_t::sf3_type_node,ExternalType,vtype,vtype,ctype>(expr_gen,id,t,sf3node,result);
+                                                                        <typename vovoc_t::sf3_type_node,ExternalType,vtype,vtype,ctype>
+                                                                           (expr_gen,id,t,sf3node,result);
 
                   case details::expression_node<Type>::e_vovov : return compile_right_impl
-                                                                        <typename vovov_t::sf3_type_node,ExternalType,vtype,vtype,vtype>(expr_gen,id,t,sf3node,result);
+                                                                        <typename vovov_t::sf3_type_node,ExternalType,vtype,vtype,vtype>
+                                                                           (expr_gen,id,t,sf3node,result);
 
                   default                                      : return false;
                }
@@ -19124,24 +19129,29 @@ namespace exprtk
                   return false;
 
                typedef details::T0oT1oT2_base_node<Type>* sf3ext_base_ptr;
-               sf3ext_base_ptr n = dynamic_cast<sf3ext_base_ptr>(sf3node);
+               sf3ext_base_ptr n = static_cast<sf3ext_base_ptr>(sf3node);
                std::string id = "(" + n->type_id() + ")" + expr_gen.to_str(operation) + "t";
                switch (n->type())
                {
                   case details::expression_node<Type>::e_covoc : return compile_left_impl
-                                                                        <typename covoc_t::sf3_type_node,ExternalType,ctype,vtype,ctype>(expr_gen,id,t,sf3node,result);
+                                                                        <typename covoc_t::sf3_type_node,ExternalType,ctype,vtype,ctype>
+                                                                           (expr_gen,id,t,sf3node,result);
 
                   case details::expression_node<Type>::e_covov : return compile_left_impl
-                                                                        <typename covov_t::sf3_type_node,ExternalType,ctype,vtype,vtype>(expr_gen,id,t,sf3node,result);
+                                                                        <typename covov_t::sf3_type_node,ExternalType,ctype,vtype,vtype>
+                                                                           (expr_gen,id,t,sf3node,result);
 
                   case details::expression_node<Type>::e_vocov : return compile_left_impl
-                                                                        <typename vocov_t::sf3_type_node,ExternalType,vtype,ctype,vtype>(expr_gen,id,t,sf3node,result);
+                                                                        <typename vocov_t::sf3_type_node,ExternalType,vtype,ctype,vtype>
+                                                                           (expr_gen,id,t,sf3node,result);
 
                   case details::expression_node<Type>::e_vovoc : return compile_left_impl
-                                                                        <typename vovoc_t::sf3_type_node,ExternalType,vtype,vtype,ctype>(expr_gen,id,t,sf3node,result);
+                                                                        <typename vovoc_t::sf3_type_node,ExternalType,vtype,vtype,ctype>
+                                                                           (expr_gen,id,t,sf3node,result);
 
                   case details::expression_node<Type>::e_vovov : return compile_left_impl
-                                                                        <typename vovov_t::sf3_type_node,ExternalType,vtype,vtype,vtype>(expr_gen,id,t,sf3node,result);
+                                                                        <typename vovov_t::sf3_type_node,ExternalType,vtype,vtype,vtype>
+                                                                           (expr_gen,id,t,sf3node,result);
 
                   default                                      : return false;
                }
@@ -19154,7 +19164,7 @@ namespace exprtk
                                                   expression_node_ptr& node,
                                                   expression_node_ptr& result)
             {
-               SF3TypeNode* n = dynamic_cast<SF3TypeNode*>(node);
+               SF3TypeNode* n = static_cast<SF3TypeNode*>(node);
                if (n)
                {
                   T0 t0 = n->t0();
@@ -19174,7 +19184,7 @@ namespace exprtk
                                                  expression_node_ptr& node,
                                                  expression_node_ptr& result)
             {
-               SF3TypeNode* n = dynamic_cast<SF3TypeNode*>(node);
+               SF3TypeNode* n = static_cast<SF3TypeNode*>(node);
                if (n)
                {
                   T0 t0 = n->t0();
@@ -19197,10 +19207,10 @@ namespace exprtk
                                                       expression_node_ptr (&branch)[2])
             {
                // (v0 o0 v1) o1 (v2)
-               const details::vov_base_node<Type>* vov = dynamic_cast<details::vov_base_node<Type>*>(branch[0]);
+               const details::vov_base_node<Type>* vov = static_cast<details::vov_base_node<Type>*>(branch[0]);
                const Type& v0 = vov->v0();
                const Type& v1 = vov->v1();
-               const Type& v2 = dynamic_cast<details::variable_node<Type>*>(branch[1])->ref();
+               const Type& v2 = static_cast<details::variable_node<Type>*>(branch[1])->ref();
                const details::operator_type o0 = vov->operation();
                const details::operator_type o1 = operation;
                binary_functor_t f0 = reinterpret_cast<binary_functor_t>(0);
@@ -19246,8 +19256,8 @@ namespace exprtk
                                                       expression_node_ptr (&branch)[2])
             {
                // (v0) o0 (v1 o1 v2)
-               const details::vov_base_node<Type>* vov = dynamic_cast<details::vov_base_node<Type>*>(branch[1]);
-               const Type& v0 = dynamic_cast<details::variable_node<Type>*>(branch[0])->ref();
+               const details::vov_base_node<Type>* vov = static_cast<details::vov_base_node<Type>*>(branch[1]);
+               const Type& v0 = static_cast<details::variable_node<Type>*>(branch[0])->ref();
                const Type& v1 = vov->v0();
                const Type& v2 = vov->v1();
                const details::operator_type o0 = operation;
@@ -19295,10 +19305,10 @@ namespace exprtk
                                                       expression_node_ptr (&branch)[2])
             {
                // (v0 o0 v1) o1 (c)
-               const details::vov_base_node<Type>* vov = dynamic_cast<details::vov_base_node<Type>*>(branch[0]);
+               const details::vov_base_node<Type>* vov = static_cast<details::vov_base_node<Type>*>(branch[0]);
                const Type& v0 = vov->v0();
                const Type& v1 = vov->v1();
-               const Type   c = dynamic_cast<details::literal_node<Type>*>(branch[1])->value();
+               const Type   c = static_cast<details::literal_node<Type>*>(branch[1])->value();
                const details::operator_type o0 = vov->operation();
                const details::operator_type o1 = operation;
                binary_functor_t f0 = reinterpret_cast<binary_functor_t>(0);
@@ -19345,8 +19355,8 @@ namespace exprtk
                                                       expression_node_ptr (&branch)[2])
             {
                // (v0) o0 (v1 o1 c)
-               const details::voc_base_node<Type>* voc = dynamic_cast<const details::voc_base_node<Type>*>(branch[1]);
-               const Type& v0 = dynamic_cast<details::variable_node<Type>*>(branch[0])->ref();
+               const details::voc_base_node<Type>* voc = static_cast<const details::voc_base_node<Type>*>(branch[1]);
+               const Type& v0 = static_cast<details::variable_node<Type>*>(branch[0])->ref();
                const Type& v1 = voc->v();
                const Type   c = voc->c();
                const details::operator_type o0 = operation;
@@ -19394,10 +19404,10 @@ namespace exprtk
                                                       expression_node_ptr (&branch)[2])
             {
                // (v0 o0 c) o1 (v1)
-               const details::voc_base_node<Type>* voc = dynamic_cast<details::voc_base_node<Type>*>(branch[0]);
+               const details::voc_base_node<Type>* voc = static_cast<details::voc_base_node<Type>*>(branch[0]);
                const Type& v0 = voc->v();
                const Type   c = voc->c();
-               const Type& v1 = dynamic_cast<details::variable_node<Type>*>(branch[1])->ref();
+               const Type& v1 = static_cast<details::variable_node<Type>*>(branch[1])->ref();
                const details::operator_type o0 = voc->operation();
                const details::operator_type o1 = operation;
                binary_functor_t f0 = reinterpret_cast<binary_functor_t>(0);
@@ -19443,8 +19453,8 @@ namespace exprtk
                                                       expression_node_ptr (&branch)[2])
             {
                // (v0) o0 (c o1 v1)
-               const details::cov_base_node<Type>* cov = dynamic_cast<details::cov_base_node<Type>*>(branch[1]);
-               const Type& v0 = dynamic_cast<details::variable_node<Type>*>(branch[0])->ref();
+               const details::cov_base_node<Type>* cov = static_cast<details::cov_base_node<Type>*>(branch[1]);
+               const Type& v0 = static_cast<details::variable_node<Type>*>(branch[0])->ref();
                const Type   c = cov->c();
                const Type& v1 = cov->v();
                const details::operator_type o0 = operation;
@@ -19492,10 +19502,10 @@ namespace exprtk
                                                       expression_node_ptr (&branch)[2])
             {
                // (c o0 v0) o1 (v1)
-               const details::cov_base_node<Type>* cov = dynamic_cast<details::cov_base_node<Type>*>(branch[0]);
+               const details::cov_base_node<Type>* cov = static_cast<details::cov_base_node<Type>*>(branch[0]);
                const Type   c = cov->c();
                const Type& v0 = cov->v();
-               const Type& v1 = dynamic_cast<details::variable_node<Type>*>(branch[1])->ref();
+               const Type& v1 = static_cast<details::variable_node<Type>*>(branch[1])->ref();
                const details::operator_type o0 = cov->operation();
                const details::operator_type o1 = operation;
                binary_functor_t f0 = reinterpret_cast<binary_functor_t>(0);
@@ -19541,8 +19551,8 @@ namespace exprtk
                                                       expression_node_ptr (&branch)[2])
             {
                // (c) o0 (v0 o1 v1)
-               const details::vov_base_node<Type>* vov = dynamic_cast<details::vov_base_node<Type>*>(branch[1]);
-               const Type   c = dynamic_cast<details::literal_node<Type>*>(branch[0])->value();
+               const details::vov_base_node<Type>* vov = static_cast<details::vov_base_node<Type>*>(branch[1]);
+               const Type   c = static_cast<details::literal_node<Type>*>(branch[0])->value();
                const Type& v0 = vov->v0();
                const Type& v1 = vov->v1();
                const details::operator_type o0 = operation;
@@ -19590,10 +19600,10 @@ namespace exprtk
                                                       expression_node_ptr (&branch)[2])
             {
                // (c0 o0 v) o1 (c1)
-               const details::cov_base_node<Type>* cov = dynamic_cast<details::cov_base_node<Type>*>(branch[0]);
+               const details::cov_base_node<Type>* cov = static_cast<details::cov_base_node<Type>*>(branch[0]);
                const Type  c0 = cov->c();
                const Type&  v = cov->v();
-               const Type  c1 = dynamic_cast<details::literal_node<Type>*>(branch[1])->value();
+               const Type  c1 = static_cast<details::literal_node<Type>*>(branch[1])->value();
                const details::operator_type o0 = cov->operation();
                const details::operator_type o1 = operation;
                binary_functor_t f0 = reinterpret_cast<binary_functor_t>(0);
@@ -19680,8 +19690,8 @@ namespace exprtk
                                                       expression_node_ptr (&branch)[2])
             {
                // (c0) o0 (v o1 c1)
-               const details::voc_base_node<Type>* voc = dynamic_cast<details::voc_base_node<Type>*>(branch[1]);
-               const Type  c0 = dynamic_cast<details::literal_node<Type>*>(branch[0])->value();
+               const details::voc_base_node<Type>* voc = static_cast<details::voc_base_node<Type>*>(branch[1]);
+               const Type  c0 = static_cast<details::literal_node<Type>*>(branch[0])->value();
                const Type&  v = voc->v();
                const Type  c1 = voc->c();
                const details::operator_type o0 = operation;
@@ -19780,8 +19790,8 @@ namespace exprtk
                                                       expression_node_ptr (&branch)[2])
             {
                // (c0) o0 (c1 o1 v)
-               const details::cov_base_node<Type>* cov = dynamic_cast<details::cov_base_node<Type>*>(branch[1]);
-               const Type  c0 = dynamic_cast<details::literal_node<Type>*>(branch[0])->value();
+               const details::cov_base_node<Type>* cov = static_cast<details::cov_base_node<Type>*>(branch[1]);
+               const Type  c0 = static_cast<details::literal_node<Type>*>(branch[0])->value();
                const Type  c1 = cov->c();
                const Type&  v = cov->v();
                const details::operator_type o0 = operation;
@@ -19869,10 +19879,10 @@ namespace exprtk
                                                       expression_node_ptr (&branch)[2])
             {
                // (v o0 c0) o1 (c1)
-               const details::voc_base_node<Type>* voc = dynamic_cast<details::voc_base_node<Type>*>(branch[0]);
+               const details::voc_base_node<Type>* voc = static_cast<details::voc_base_node<Type>*>(branch[0]);
                const Type&  v = voc->v();
                const Type& c0 = voc->c();
-               const Type& c1 = dynamic_cast<details::literal_node<Type>*>(branch[1])->value();
+               const Type& c1 = static_cast<details::literal_node<Type>*>(branch[1])->value();
                const details::operator_type o0 = voc->operation();
                const details::operator_type o1 = operation;
                binary_functor_t f0 = reinterpret_cast<binary_functor_t>(0);
@@ -19974,8 +19984,8 @@ namespace exprtk
                                                       expression_node_ptr (&branch)[2])
             {
                // (v0 o0 v1) o1 (v2 o2 v3)
-               const details::vov_base_node<Type>* vov0 = dynamic_cast<details::vov_base_node<Type>*>(branch[0]);
-               const details::vov_base_node<Type>* vov1 = dynamic_cast<details::vov_base_node<Type>*>(branch[1]);
+               const details::vov_base_node<Type>* vov0 = static_cast<details::vov_base_node<Type>*>(branch[0]);
+               const details::vov_base_node<Type>* vov1 = static_cast<details::vov_base_node<Type>*>(branch[1]);
                const Type& v0 = vov0->v0();
                const Type& v1 = vov0->v1();
                const Type& v2 = vov1->v0();
@@ -20043,8 +20053,8 @@ namespace exprtk
                                                       expression_node_ptr (&branch)[2])
             {
                // (v0 o0 v1) o1 (v2 o2 c)
-               const details::vov_base_node<Type>* vov = dynamic_cast<details::vov_base_node<Type>*>(branch[0]);
-               const details::voc_base_node<Type>* voc = dynamic_cast<details::voc_base_node<Type>*>(branch[1]);
+               const details::vov_base_node<Type>* vov = static_cast<details::vov_base_node<Type>*>(branch[0]);
+               const details::voc_base_node<Type>* voc = static_cast<details::voc_base_node<Type>*>(branch[1]);
                const Type& v0 = vov->v0();
                const Type& v1 = vov->v1();
                const Type& v2 = voc->v ();
@@ -20092,8 +20102,8 @@ namespace exprtk
                                                       expression_node_ptr (&branch)[2])
             {
                // (v0 o0 v1) o1 (c o2 v2)
-               const details::vov_base_node<Type>* vov = dynamic_cast<details::vov_base_node<Type>*>(branch[0]);
-               const details::cov_base_node<Type>* cov = dynamic_cast<details::cov_base_node<Type>*>(branch[1]);
+               const details::vov_base_node<Type>* vov = static_cast<details::vov_base_node<Type>*>(branch[0]);
+               const details::cov_base_node<Type>* cov = static_cast<details::cov_base_node<Type>*>(branch[1]);
                const Type& v0 = vov->v0();
                const Type& v1 = vov->v1();
                const Type& v2 = cov->v ();
@@ -20141,8 +20151,8 @@ namespace exprtk
                                                       expression_node_ptr (&branch)[2])
             {
                // (v0 o0 c) o1 (v1 o2 v2)
-               const details::voc_base_node<Type>* voc = dynamic_cast<details::voc_base_node<Type>*>(branch[0]);
-               const details::vov_base_node<Type>* vov = dynamic_cast<details::vov_base_node<Type>*>(branch[1]);
+               const details::voc_base_node<Type>* voc = static_cast<details::voc_base_node<Type>*>(branch[0]);
+               const details::vov_base_node<Type>* vov = static_cast<details::vov_base_node<Type>*>(branch[1]);
                const Type   c = voc->c ();
                const Type& v0 = voc->v ();
                const Type& v1 = vov->v0();
@@ -20190,8 +20200,8 @@ namespace exprtk
                                                       expression_node_ptr (&branch)[2])
             {
                // (c o0 v0) o1 (v1 o2 v2)
-               const details::cov_base_node<Type>* cov = dynamic_cast<details::cov_base_node<Type>*>(branch[0]);
-               const details::vov_base_node<Type>* vov = dynamic_cast<details::vov_base_node<Type>*>(branch[1]);
+               const details::cov_base_node<Type>* cov = static_cast<details::cov_base_node<Type>*>(branch[0]);
+               const details::vov_base_node<Type>* vov = static_cast<details::vov_base_node<Type>*>(branch[1]);
                const Type   c = cov->c ();
                const Type& v0 = cov->v ();
                const Type& v1 = vov->v0();
@@ -20239,8 +20249,8 @@ namespace exprtk
                                                       expression_node_ptr (&branch)[2])
             {
                // (c0 o0 v0) o1 (c1 o2 v1)
-               const details::cov_base_node<Type>* cov0 = dynamic_cast<details::cov_base_node<Type>*>(branch[0]);
-               const details::cov_base_node<Type>* cov1 = dynamic_cast<details::cov_base_node<Type>*>(branch[1]);
+               const details::cov_base_node<Type>* cov0 = static_cast<details::cov_base_node<Type>*>(branch[0]);
+               const details::cov_base_node<Type>* cov1 = static_cast<details::cov_base_node<Type>*>(branch[1]);
                const Type  c0 = cov0->c();
                const Type& v0 = cov0->v();
                const Type  c1 = cov1->c();
@@ -20381,8 +20391,8 @@ namespace exprtk
                                                       expression_node_ptr (&branch)[2])
             {
                // (v0 o0 c0) o1 (v1 o2 c1)
-               const details::voc_base_node<Type>* voc0 = dynamic_cast<details::voc_base_node<Type>*>(branch[0]);
-               const details::voc_base_node<Type>* voc1 = dynamic_cast<details::voc_base_node<Type>*>(branch[1]);
+               const details::voc_base_node<Type>* voc0 = static_cast<details::voc_base_node<Type>*>(branch[0]);
+               const details::voc_base_node<Type>* voc1 = static_cast<details::voc_base_node<Type>*>(branch[1]);
                const Type  c0 = voc0->c();
                const Type& v0 = voc0->v();
                const Type  c1 = voc1->c();
@@ -20523,8 +20533,8 @@ namespace exprtk
                                                       expression_node_ptr (&branch)[2])
             {
                // (c0 o0 v0) o1 (v1 o2 c1)
-               const details::cov_base_node<Type>* cov = dynamic_cast<details::cov_base_node<Type>*>(branch[0]);
-               const details::voc_base_node<Type>* voc = dynamic_cast<details::voc_base_node<Type>*>(branch[1]);
+               const details::cov_base_node<Type>* cov = static_cast<details::cov_base_node<Type>*>(branch[0]);
+               const details::voc_base_node<Type>* voc = static_cast<details::voc_base_node<Type>*>(branch[1]);
                const Type  c0 = cov->c();
                const Type& v0 = cov->v();
                const Type  c1 = voc->c();
@@ -20665,8 +20675,8 @@ namespace exprtk
                                                       expression_node_ptr (&branch)[2])
             {
                // (v0 o0 c0) o1 (c1 o2 v1)
-               const details::voc_base_node<Type>* voc = dynamic_cast<details::voc_base_node<Type>*>(branch[0]);
-               const details::cov_base_node<Type>* cov = dynamic_cast<details::cov_base_node<Type>*>(branch[1]);
+               const details::voc_base_node<Type>* voc = static_cast<details::voc_base_node<Type>*>(branch[0]);
+               const details::cov_base_node<Type>* cov = static_cast<details::cov_base_node<Type>*>(branch[1]);
                const Type  c0 = voc->c();
                const Type& v0 = voc->v();
                const Type  c1 = cov->c();
@@ -20807,8 +20817,8 @@ namespace exprtk
             {
                // v0 o0 (v1 o1 (v2 o2 v3))
                typedef typename synthesize_vovov_expression1::node_type vovov_t;
-               const vovov_t* vovov = dynamic_cast<const vovov_t*>(branch[1]);
-               const Type& v0 = dynamic_cast<details::variable_node<Type>*>(branch[0])->ref();
+               const vovov_t* vovov = static_cast<const vovov_t*>(branch[1]);
+               const Type& v0 = static_cast<details::variable_node<Type>*>(branch[0])->ref();
                const Type& v1 = vovov->t0();
                const Type& v2 = vovov->t1();
                const Type& v3 = vovov->t2();
@@ -20851,8 +20861,8 @@ namespace exprtk
             {
                // v0 o0 (v1 o1 (v2 o2 c))
                typedef typename synthesize_vovoc_expression1::node_type vovoc_t;
-               const vovoc_t* vovoc = dynamic_cast<const vovoc_t*>(branch[1]);
-               const Type& v0 = dynamic_cast<details::variable_node<Type>*>(branch[0])->ref();
+               const vovoc_t* vovoc = static_cast<const vovoc_t*>(branch[1]);
+               const Type& v0 = static_cast<details::variable_node<Type>*>(branch[0])->ref();
                const Type& v1 = vovoc->t0();
                const Type& v2 = vovoc->t1();
                const Type   c = vovoc->t2();
@@ -20895,8 +20905,8 @@ namespace exprtk
             {
                // v0 o0 (v1 o1 (c o2 v2))
                typedef typename synthesize_vocov_expression1::node_type vocov_t;
-               const vocov_t* vocov = dynamic_cast<const vocov_t*>(branch[1]);
-               const Type& v0 = dynamic_cast<details::variable_node<Type>*>(branch[0])->ref();
+               const vocov_t* vocov = static_cast<const vocov_t*>(branch[1]);
+               const Type& v0 = static_cast<details::variable_node<Type>*>(branch[0])->ref();
                const Type& v1 = vocov->t0();
                const Type   c = vocov->t1();
                const Type& v2 = vocov->t2();
@@ -20939,8 +20949,8 @@ namespace exprtk
             {
                // v0 o0 (c o1 (v1 o2 v2))
                typedef typename synthesize_covov_expression1::node_type covov_t;
-               const covov_t* covov = dynamic_cast<const covov_t*>(branch[1]);
-               const Type& v0 = dynamic_cast<details::variable_node<Type>*>(branch[0])->ref();
+               const covov_t* covov = static_cast<const covov_t*>(branch[1]);
+               const Type& v0 = static_cast<details::variable_node<Type>*>(branch[0])->ref();
                const Type   c = covov->t0();
                const Type& v1 = covov->t1();
                const Type& v2 = covov->t2();
@@ -20984,7 +20994,7 @@ namespace exprtk
                // c o0 (v0 o1 (v1 o2 v2))
                typedef typename synthesize_vovov_expression1::node_type vovov_t;
                const vovov_t* vovov = dynamic_cast<const vovov_t*>(branch[1]);
-               const Type   c = dynamic_cast<details::literal_node<Type>*>(branch[0])->value();
+               const Type   c = static_cast<details::literal_node<Type>*>(branch[0])->value();
                const Type& v0 = vovov->t0();
                const Type& v1 = vovov->t1();
                const Type& v2 = vovov->t2();
@@ -21028,8 +21038,8 @@ namespace exprtk
             {
                // c0 o0 (v0 o1 (c1 o2 v1))
                typedef typename synthesize_vocov_expression1::node_type vocov_t;
-               const vocov_t* vocov = dynamic_cast<const vocov_t*>(branch[1]);
-               const Type  c0 = dynamic_cast<details::literal_node<Type>*>(branch[0])->value();
+               const vocov_t* vocov = static_cast<const vocov_t*>(branch[1]);
+               const Type  c0 = static_cast<details::literal_node<Type>*>(branch[0])->value();
                const Type& v0 = vocov->t0();
                const Type  c1 = vocov->t1();
                const Type& v1 = vocov->t2();
@@ -21073,8 +21083,8 @@ namespace exprtk
             {
                // v0 o0 (c0 o1 (v1 o2 c2))
                typedef typename synthesize_covoc_expression1::node_type covoc_t;
-               const covoc_t* covoc = dynamic_cast<const covoc_t*>(branch[1]);
-               const Type& v0 = dynamic_cast<details::variable_node<Type>*>(branch[0])->ref();
+               const covoc_t* covoc = static_cast<const covoc_t*>(branch[1]);
+               const Type& v0 = static_cast<details::variable_node<Type>*>(branch[0])->ref();
                const Type  c0 = covoc->t0();
                const Type& v1 = covoc->t1();
                const Type  c1 = covoc->t2();
@@ -21117,8 +21127,8 @@ namespace exprtk
             {
                // c0 o0 (v0 o1 (v1 o2 c1))
                typedef typename synthesize_vovoc_expression1::node_type vovoc_t;
-               const vovoc_t* vovoc = dynamic_cast<const vovoc_t*>(branch[1]);
-               const Type  c0 = dynamic_cast<details::literal_node<Type>*>(branch[0])->value();
+               const vovoc_t* vovoc = static_cast<const vovoc_t*>(branch[1]);
+               const Type  c0 = static_cast<details::literal_node<Type>*>(branch[0])->value();
                const Type& v0 = vovoc->t0();
                const Type& v1 = vovoc->t1();
                const Type  c1 = vovoc->t2();
@@ -21162,8 +21172,8 @@ namespace exprtk
             {
                // v0 o0 (c0 o1 (c1 o2 v1))
                typedef typename synthesize_cocov_expression1::node_type cocov_t;
-               const cocov_t* cocov = dynamic_cast<const cocov_t*>(branch[1]);
-               const Type& v0 = dynamic_cast<details::variable_node<Type>*>(branch[0])->ref();
+               const cocov_t* cocov = static_cast<const cocov_t*>(branch[1]);
+               const Type& v0 = static_cast<details::variable_node<Type>*>(branch[0])->ref();
                const Type  c0 = cocov->t0();
                const Type  c1 = cocov->t1();
                const Type& v1 = cocov->t2();
@@ -21206,8 +21216,8 @@ namespace exprtk
             {
                // v0 o0 ((v1 o1 v2) o2 v3)
                typedef typename synthesize_vovov_expression0::node_type vovov_t;
-               const vovov_t* vovov = dynamic_cast<const vovov_t*>(branch[1]);
-               const Type& v0 = dynamic_cast<details::variable_node<Type>*>(branch[0])->ref();
+               const vovov_t* vovov = static_cast<const vovov_t*>(branch[1]);
+               const Type& v0 = static_cast<details::variable_node<Type>*>(branch[0])->ref();
                const Type& v1 = vovov->t0();
                const Type& v2 = vovov->t1();
                const Type& v3 = vovov->t2();
@@ -21250,8 +21260,8 @@ namespace exprtk
             {
                // v0 o0 ((v1 o1 v2) o2 c)
                typedef typename synthesize_vovoc_expression0::node_type vovoc_t;
-               const vovoc_t* vovoc = dynamic_cast<const vovoc_t*>(branch[1]);
-               const Type& v0 = dynamic_cast<details::variable_node<Type>*>(branch[0])->ref();
+               const vovoc_t* vovoc = static_cast<const vovoc_t*>(branch[1]);
+               const Type& v0 = static_cast<details::variable_node<Type>*>(branch[0])->ref();
                const Type& v1 = vovoc->t0();
                const Type& v2 = vovoc->t1();
                const Type   c = vovoc->t2();
@@ -21294,8 +21304,8 @@ namespace exprtk
             {
                // v0 o0 ((v1 o1 c) o2 v2)
                typedef typename synthesize_vocov_expression0::node_type vocov_t;
-               const vocov_t* vocov = dynamic_cast<const vocov_t*>(branch[1]);
-               const Type& v0 = dynamic_cast<details::variable_node<Type>*>(branch[0])->ref();
+               const vocov_t* vocov = static_cast<const vocov_t*>(branch[1]);
+               const Type& v0 = static_cast<details::variable_node<Type>*>(branch[0])->ref();
                const Type& v1 = vocov->t0();
                const Type   c = vocov->t1();
                const Type& v2 = vocov->t2();
@@ -21338,8 +21348,8 @@ namespace exprtk
             {
                // v0 o0 ((c o1 v1) o2 v2)
                typedef typename synthesize_covov_expression0::node_type covov_t;
-               const covov_t* covov = dynamic_cast<const covov_t*>(branch[1]);
-               const Type& v0 = dynamic_cast<details::variable_node<Type>*>(branch[0])->ref();
+               const covov_t* covov = static_cast<const covov_t*>(branch[1]);
+               const Type& v0 = static_cast<details::variable_node<Type>*>(branch[0])->ref();
                const Type   c = covov->t0();
                const Type& v1 = covov->t1();
                const Type& v2 = covov->t2();
@@ -21382,8 +21392,8 @@ namespace exprtk
             {
                // c o0 ((v1 o1 v2) o2 v3)
                typedef typename synthesize_vovov_expression0::node_type vovov_t;
-               const vovov_t* vovov = dynamic_cast<const vovov_t*>(branch[1]);
-               const Type   c = dynamic_cast<details::literal_node<Type>*>(branch[0])->value();
+               const vovov_t* vovov = static_cast<const vovov_t*>(branch[1]);
+               const Type   c = static_cast<details::literal_node<Type>*>(branch[0])->value();
                const Type& v0 = vovov->t0();
                const Type& v1 = vovov->t1();
                const Type& v2 = vovov->t2();
@@ -21427,8 +21437,8 @@ namespace exprtk
             {
                // c0 o0 ((v0 o1 c1) o2 v1)
                typedef typename synthesize_vocov_expression0::node_type vocov_t;
-               const vocov_t* vocov = dynamic_cast<const vocov_t*>(branch[1]);
-               const Type  c0 = dynamic_cast<details::literal_node<Type>*>(branch[0])->value();
+               const vocov_t* vocov = static_cast<const vocov_t*>(branch[1]);
+               const Type  c0 = static_cast<details::literal_node<Type>*>(branch[0])->value();
                const Type& v0 = vocov->t0();
                const Type  c1 = vocov->t1();
                const Type& v1 = vocov->t2();
@@ -21472,8 +21482,8 @@ namespace exprtk
             {
                // v0 o0 ((c0 o1 v1) o2 c1)
                typedef typename synthesize_covoc_expression0::node_type covoc_t;
-               const covoc_t* covoc = dynamic_cast<const covoc_t*>(branch[1]);
-               const Type& v0 = dynamic_cast<details::variable_node<Type>*>(branch[0])->ref();
+               const covoc_t* covoc = static_cast<const covoc_t*>(branch[1]);
+               const Type& v0 = static_cast<details::variable_node<Type>*>(branch[0])->ref();
                const Type  c0 = covoc->t0();
                const Type& v1 = covoc->t1();
                const Type  c1 = covoc->t2();
@@ -21516,8 +21526,8 @@ namespace exprtk
             {
                // c0 o0 ((v0 o1 v1) o2 c1)
                typedef typename synthesize_vovoc_expression0::node_type vovoc_t;
-               const vovoc_t* vovoc = dynamic_cast<const vovoc_t*>(branch[1]);
-               const Type  c0 = dynamic_cast<details::literal_node<Type>*>(branch[0])->value();
+               const vovoc_t* vovoc = static_cast<const vovoc_t*>(branch[1]);
+               const Type  c0 = static_cast<details::literal_node<Type>*>(branch[0])->value();
                const Type& v0 = vovoc->t0();
                const Type& v1 = vovoc->t1();
                const Type  c1 = vovoc->t2();
@@ -21577,11 +21587,11 @@ namespace exprtk
             {
                // ((v0 o0 v1) o1 v2) o2 v3
                typedef typename synthesize_vovov_expression0::node_type vovov_t;
-               const vovov_t* vovov = dynamic_cast<const vovov_t*>(branch[0]);
+               const vovov_t* vovov = static_cast<const vovov_t*>(branch[0]);
                const Type& v0 = vovov->t0();
                const Type& v1 = vovov->t1();
                const Type& v2 = vovov->t2();
-               const Type& v3 = dynamic_cast<details::variable_node<Type>*>(branch[1])->ref();
+               const Type& v3 = static_cast<details::variable_node<Type>*>(branch[1])->ref();
                const details::operator_type o0 = expr_gen.get_operator(vovov->f0());
                const details::operator_type o1 = expr_gen.get_operator(vovov->f1());
                const details::operator_type o2 = operation;
@@ -21621,11 +21631,11 @@ namespace exprtk
             {
                // ((v0 o0 v1) o1 v2) o2 c
                typedef typename synthesize_vovov_expression0::node_type vovov_t;
-               const vovov_t* vovov = dynamic_cast<const vovov_t*>(branch[0]);
+               const vovov_t* vovov = static_cast<const vovov_t*>(branch[0]);
                const Type& v0 = vovov->t0();
                const Type& v1 = vovov->t1();
                const Type& v2 = vovov->t2();
-               const Type   c = dynamic_cast<details::literal_node<Type>*>(branch[1])->value();
+               const Type   c = static_cast<details::literal_node<Type>*>(branch[1])->value();
                const details::operator_type o0 = expr_gen.get_operator(vovov->f0());
                const details::operator_type o1 = expr_gen.get_operator(vovov->f1());
                const details::operator_type o2 = operation;
@@ -21666,11 +21676,11 @@ namespace exprtk
             {
                // ((v0 o0 v1) o1 c) o2 v2
                typedef typename synthesize_vovoc_expression0::node_type vovoc_t;
-               const vovoc_t* vovoc = dynamic_cast<const vovoc_t*>(branch[0]);
+               const vovoc_t* vovoc = static_cast<const vovoc_t*>(branch[0]);
                const Type& v0 = vovoc->t0();
                const Type& v1 = vovoc->t1();
                const Type   c = vovoc->t2();
-               const Type& v2 = dynamic_cast<details::variable_node<Type>*>(branch[1])->ref();
+               const Type& v2 = static_cast<details::variable_node<Type>*>(branch[1])->ref();
                const details::operator_type o0 = expr_gen.get_operator(vovoc->f0());
                const details::operator_type o1 = expr_gen.get_operator(vovoc->f1());
                const details::operator_type o2 = operation;
@@ -21710,11 +21720,11 @@ namespace exprtk
             {
                // ((v0 o0 c) o1 v1) o2 v2
                typedef typename synthesize_vocov_expression0::node_type vocov_t;
-               const vocov_t* vocov = dynamic_cast<const vocov_t*>(branch[0]);
+               const vocov_t* vocov = static_cast<const vocov_t*>(branch[0]);
                const Type& v0 = vocov->t0();
                const Type   c = vocov->t1();
                const Type& v1 = vocov->t2();
-               const Type& v2 = dynamic_cast<details::variable_node<Type>*>(branch[1])->ref();
+               const Type& v2 = static_cast<details::variable_node<Type>*>(branch[1])->ref();
                const details::operator_type o0 = expr_gen.get_operator(vocov->f0());
                const details::operator_type o1 = expr_gen.get_operator(vocov->f1());
                const details::operator_type o2 = operation;
@@ -21754,11 +21764,11 @@ namespace exprtk
             {
                // ((c o0 v0) o1 v1) o2 v2
                typedef typename synthesize_covov_expression0::node_type covov_t;
-               const covov_t* covov = dynamic_cast<const covov_t*>(branch[0]);
+               const covov_t* covov = static_cast<const covov_t*>(branch[0]);
                const Type   c = covov->t0();
                const Type& v0 = covov->t1();
                const Type& v1 = covov->t2();
-               const Type& v2 = dynamic_cast<details::variable_node<Type>*>(branch[1])->ref();
+               const Type& v2 = static_cast<details::variable_node<Type>*>(branch[1])->ref();
                const details::operator_type o0 = expr_gen.get_operator(covov->f0());
                const details::operator_type o1 = expr_gen.get_operator(covov->f1());
                const details::operator_type o2 = operation;
@@ -21798,11 +21808,11 @@ namespace exprtk
             {
                // ((c0 o0 v0) o1 c1) o2 v1
                typedef typename synthesize_covoc_expression0::node_type covoc_t;
-               const covoc_t* covoc = dynamic_cast<const covoc_t*>(branch[0]);
+               const covoc_t* covoc = static_cast<const covoc_t*>(branch[0]);
                const Type  c0 = covoc->t0();
                const Type& v0 = covoc->t1();
                const Type  c1 = covoc->t2();
-               const Type& v1 = dynamic_cast<details::variable_node<Type>*>(branch[1])->ref();
+               const Type& v1 = static_cast<details::variable_node<Type>*>(branch[1])->ref();
                const details::operator_type o0 = expr_gen.get_operator(covoc->f0());
                const details::operator_type o1 = expr_gen.get_operator(covoc->f1());
                const details::operator_type o2 = operation;
@@ -21842,11 +21852,11 @@ namespace exprtk
             {
                // ((v0 o0 c0) o1 v1) o2 c1
                typedef typename synthesize_vocov_expression0::node_type vocov_t;
-               const vocov_t* vocov = dynamic_cast<const vocov_t*>(branch[0]);
+               const vocov_t* vocov = static_cast<const vocov_t*>(branch[0]);
                const Type& v0 = vocov->t0();
                const Type  c0 = vocov->t1();
                const Type& v1 = vocov->t2();
-               const Type  c1 = dynamic_cast<details::literal_node<Type>*>(branch[1])->value();
+               const Type  c1 = static_cast<details::literal_node<Type>*>(branch[1])->value();
                const details::operator_type o0 = expr_gen.get_operator(vocov->f0());
                const details::operator_type o1 = expr_gen.get_operator(vocov->f1());
                const details::operator_type o2 = operation;
@@ -21887,11 +21897,11 @@ namespace exprtk
             {
                // ((c0 o0 v0) o1 v1) o2 c1
                typedef typename synthesize_covov_expression0::node_type covov_t;
-               const covov_t* covov = dynamic_cast<const covov_t*>(branch[0]);
+               const covov_t* covov = static_cast<const covov_t*>(branch[0]);
                const Type  c0 = covov->t0();
                const Type& v0 = covov->t1();
                const Type& v1 = covov->t2();
-               const Type  c1 = dynamic_cast<details::literal_node<Type>*>(branch[1])->value();
+               const Type  c1 = static_cast<details::literal_node<Type>*>(branch[1])->value();
                const details::operator_type o0 = expr_gen.get_operator(covov->f0());
                const details::operator_type o1 = expr_gen.get_operator(covov->f1());
                const details::operator_type o2 = operation;
@@ -21932,11 +21942,11 @@ namespace exprtk
             {
                // ((v0 o0 c0) o1 c1) o2 v1
                typedef typename synthesize_vococ_expression0::node_type vococ_t;
-               const vococ_t* vococ = dynamic_cast<const vococ_t*>(branch[0]);
+               const vococ_t* vococ = static_cast<const vococ_t*>(branch[0]);
                const Type& v0 = vococ->t0();
                const Type  c0 = vococ->t1();
                const Type  c1 = vococ->t2();
-               const Type& v1 = dynamic_cast<details::variable_node<Type>*>(branch[1])->ref();
+               const Type& v1 = static_cast<details::variable_node<Type>*>(branch[1])->ref();
                const details::operator_type o0 = expr_gen.get_operator(vococ->f0());
                const details::operator_type o1 = expr_gen.get_operator(vococ->f1());
                const details::operator_type o2 = operation;
@@ -21976,11 +21986,11 @@ namespace exprtk
             {
                // (v0 o0 (v1 o1 v2)) o2 v3
                typedef typename synthesize_vovov_expression1::node_type vovov_t;
-               const vovov_t* vovov = dynamic_cast<const vovov_t*>(branch[0]);
+               const vovov_t* vovov = static_cast<const vovov_t*>(branch[0]);
                const Type& v0 = vovov->t0();
                const Type& v1 = vovov->t1();
                const Type& v2 = vovov->t2();
-               const Type& v3 = dynamic_cast<details::variable_node<Type>*>(branch[1])->ref();
+               const Type& v3 = static_cast<details::variable_node<Type>*>(branch[1])->ref();
                const details::operator_type o0 = expr_gen.get_operator(vovov->f0());
                const details::operator_type o1 = expr_gen.get_operator(vovov->f1());
                const details::operator_type o2 = operation;
@@ -22020,11 +22030,11 @@ namespace exprtk
             {
                // ((v0 o0 (v1 o1 v2)) o2 c)
                typedef typename synthesize_vovov_expression1::node_type vovov_t;
-               const vovov_t* vovov = dynamic_cast<const vovov_t*>(branch[0]);
+               const vovov_t* vovov = static_cast<const vovov_t*>(branch[0]);
                const Type& v0 = vovov->t0();
                const Type& v1 = vovov->t1();
                const Type& v2 = vovov->t2();
-               const Type   c = dynamic_cast<details::literal_node<Type>*>(branch[1])->value();
+               const Type   c = static_cast<details::literal_node<Type>*>(branch[1])->value();
                const details::operator_type o0 = expr_gen.get_operator(vovov->f0());
                const details::operator_type o1 = expr_gen.get_operator(vovov->f1());
                const details::operator_type o2 = operation;
@@ -22065,11 +22075,11 @@ namespace exprtk
             {
                // ((v0 o0 (v1 o1 c)) o2 v1)
                typedef typename synthesize_vovoc_expression1::node_type vovoc_t;
-               const vovoc_t* vovoc = dynamic_cast<const vovoc_t*>(branch[0]);
+               const vovoc_t* vovoc = static_cast<const vovoc_t*>(branch[0]);
                const Type& v0 = vovoc->t0();
                const Type& v1 = vovoc->t1();
                const Type   c = vovoc->t2();
-               const Type& v2 = dynamic_cast<details::variable_node<Type>*>(branch[1])->ref();
+               const Type& v2 = static_cast<details::variable_node<Type>*>(branch[1])->ref();
                const details::operator_type o0 = expr_gen.get_operator(vovoc->f0());
                const details::operator_type o1 = expr_gen.get_operator(vovoc->f1());
                const details::operator_type o2 = operation;
@@ -22109,11 +22119,11 @@ namespace exprtk
             {
                // ((v0 o0 (c o1 v1)) o2 v2)
                typedef typename synthesize_vocov_expression1::node_type vocov_t;
-               const vocov_t* vocov = dynamic_cast<const vocov_t*>(branch[0]);
+               const vocov_t* vocov = static_cast<const vocov_t*>(branch[0]);
                const Type& v0 = vocov->t0();
                const Type   c = vocov->t1();
                const Type& v1 = vocov->t2();
-               const Type& v2 = dynamic_cast<details::variable_node<Type>*>(branch[1])->ref();
+               const Type& v2 = static_cast<details::variable_node<Type>*>(branch[1])->ref();
                const details::operator_type o0 = expr_gen.get_operator(vocov->f0());
                const details::operator_type o1 = expr_gen.get_operator(vocov->f1());
                const details::operator_type o2 = operation;
@@ -22153,11 +22163,11 @@ namespace exprtk
             {
                // ((c o0 (v0 o1 v1)) o2 v2)
                typedef typename synthesize_covov_expression1::node_type covov_t;
-               const covov_t* covov = dynamic_cast<const covov_t*>(branch[0]);
+               const covov_t* covov = static_cast<const covov_t*>(branch[0]);
                const Type   c = covov->t0();
                const Type& v0 = covov->t1();
                const Type& v1 = covov->t2();
-               const Type& v2 = dynamic_cast<details::variable_node<Type>*>(branch[1])->ref();
+               const Type& v2 = static_cast<details::variable_node<Type>*>(branch[1])->ref();
                const details::operator_type o0 = expr_gen.get_operator(covov->f0());
                const details::operator_type o1 = expr_gen.get_operator(covov->f1());
                const details::operator_type o2 = operation;
@@ -22197,11 +22207,11 @@ namespace exprtk
             {
                // ((c0 o0 (v0 o1 c1)) o2 v1)
                typedef typename synthesize_covoc_expression1::node_type covoc_t;
-               const covoc_t* covoc = dynamic_cast<const covoc_t*>(branch[0]);
+               const covoc_t* covoc = static_cast<const covoc_t*>(branch[0]);
                const Type  c0 = covoc->t0();
                const Type& v0 = covoc->t1();
                const Type  c1 = covoc->t2();
-               const Type& v1 = dynamic_cast<details::variable_node<Type>*>(branch[1])->ref();
+               const Type& v1 = static_cast<details::variable_node<Type>*>(branch[1])->ref();
                const details::operator_type o0 = expr_gen.get_operator(covoc->f0());
                const details::operator_type o1 = expr_gen.get_operator(covoc->f1());
                const details::operator_type o2 = operation;
@@ -22241,11 +22251,11 @@ namespace exprtk
             {
                // ((v0 o0 (c0 o1 v1)) o2 c1)
                typedef typename synthesize_vocov_expression1::node_type vocov_t;
-               const vocov_t* vocov = dynamic_cast<const vocov_t*>(branch[0]);
+               const vocov_t* vocov = static_cast<const vocov_t*>(branch[0]);
                const Type& v0 = vocov->t0();
                const Type  c0 = vocov->t1();
                const Type& v1 = vocov->t2();
-               const Type  c1 = dynamic_cast<details::literal_node<Type>*>(branch[1])->value();
+               const Type  c1 = static_cast<details::literal_node<Type>*>(branch[1])->value();
                const details::operator_type o0 = expr_gen.get_operator(vocov->f0());
                const details::operator_type o1 = expr_gen.get_operator(vocov->f1());
                const details::operator_type o2 = operation;
@@ -22286,11 +22296,11 @@ namespace exprtk
             {
                // ((c0 o0 (v0 o1 v1)) o2 c1)
                typedef typename synthesize_covov_expression1::node_type covov_t;
-               const covov_t* covov = dynamic_cast<const covov_t*>(branch[0]);
+               const covov_t* covov = static_cast<const covov_t*>(branch[0]);
                const Type  c0 = covov->t0();
                const Type& v0 = covov->t1();
                const Type& v1 = covov->t2();
-               const Type  c1 = dynamic_cast<details::literal_node<Type>*>(branch[1])->value();
+               const Type  c1 = static_cast<details::literal_node<Type>*>(branch[1])->value();
                const details::operator_type o0 = expr_gen.get_operator(covov->f0());
                const details::operator_type o1 = expr_gen.get_operator(covov->f1());
                const details::operator_type o2 = operation;
@@ -22337,10 +22347,10 @@ namespace exprtk
          inline expression_node_ptr synthesize_uvouv_expression(const details::operator_type& operation, expression_node_ptr (&branch)[2])
          {
             // Definition: uv o uv
-            details::operator_type o0 = dynamic_cast<details::uv_base_node<Type>*>(branch[0])->operation();
-            details::operator_type o1 = dynamic_cast<details::uv_base_node<Type>*>(branch[1])->operation();
-            const Type& v0 = dynamic_cast<details::uv_base_node<Type>*>(branch[0])->v();
-            const Type& v1 = dynamic_cast<details::uv_base_node<Type>*>(branch[1])->v();
+            details::operator_type o0 = static_cast<details::uv_base_node<Type>*>(branch[0])->operation();
+            details::operator_type o1 = static_cast<details::uv_base_node<Type>*>(branch[1])->operation();
+            const Type& v0 = static_cast<details::uv_base_node<Type>*>(branch[0])->v();
+            const Type& v1 = static_cast<details::uv_base_node<Type>*>(branch[1])->v();
             unary_functor_t u0 = reinterpret_cast<unary_functor_t>(0);
             unary_functor_t u1 = reinterpret_cast<unary_functor_t>(0);
             binary_functor_t f = reinterpret_cast<binary_functor_t>(0);
@@ -22441,49 +22451,49 @@ namespace exprtk
 
          inline expression_node_ptr synthesize_sos_expression(const details::operator_type& opr, expression_node_ptr (&branch)[2])
          {
-            std::string& s0 = dynamic_cast<details::stringvar_node<Type>*>(branch[0])->ref();
-            std::string& s1 = dynamic_cast<details::stringvar_node<Type>*>(branch[1])->ref();
+            std::string& s0 = static_cast<details::stringvar_node<Type>*>(branch[0])->ref();
+            std::string& s1 = static_cast<details::stringvar_node<Type>*>(branch[1])->ref();
             return synthesize_sos_expression_impl<std::string&,std::string&>(opr,s0,s1);
          }
 
          inline expression_node_ptr synthesize_sros_expression(const details::operator_type& opr, expression_node_ptr (&branch)[2])
          {
-            std::string& s0 = dynamic_cast<details::string_range_node<Type,range_pack>*>(branch[0])->ref();
-            std::string& s1 = dynamic_cast<details::stringvar_node<Type>*>(branch[1])->ref();
-            range_pack rp0  = dynamic_cast<details::string_range_node<Type,range_pack>*>(branch[0])->range();
-            dynamic_cast<details::string_range_node<Type,range_pack>*>(branch[0])->range_ref().clear();
+            std::string& s0 = static_cast<details::string_range_node<Type,range_pack>*>(branch[0])->ref();
+            std::string& s1 = static_cast<details::stringvar_node<Type>*>(branch[1])->ref();
+            range_pack rp0  = static_cast<details::string_range_node<Type,range_pack>*>(branch[0])->range();
+            static_cast<details::string_range_node<Type,range_pack>*>(branch[0])->range_ref().clear();
             free_node(*node_allocator_,branch[0]);
             return synthesize_str_xrox_expression_impl<std::string&,std::string&>(opr,s0,s1,rp0);
          }
 
          inline expression_node_ptr synthesize_sosr_expression(const details::operator_type& opr, expression_node_ptr (&branch)[2])
          {
-            std::string& s0 = dynamic_cast<details::stringvar_node<Type>*>(branch[0])->ref();
-            std::string& s1 = dynamic_cast<details::string_range_node<Type,range_pack>*>(branch[1])->ref();
-            range_pack rp1  = dynamic_cast<details::string_range_node<Type,range_pack>*>(branch[1])->range();
-            dynamic_cast<details::string_range_node<Type,range_pack>*>(branch[1])->range_ref().clear();
+            std::string& s0 = static_cast<details::stringvar_node<Type>*>(branch[0])->ref();
+            std::string& s1 = static_cast<details::string_range_node<Type,range_pack>*>(branch[1])->ref();
+            range_pack rp1  = static_cast<details::string_range_node<Type,range_pack>*>(branch[1])->range();
+            static_cast<details::string_range_node<Type,range_pack>*>(branch[1])->range_ref().clear();
             free_node(*node_allocator_,branch[1]);
             return synthesize_str_xoxr_expression_impl<std::string&,std::string&>(opr,s0,s1,rp1);
          }
 
          inline expression_node_ptr synthesize_socsr_expression(const details::operator_type& opr, expression_node_ptr (&branch)[2])
          {
-            std::string& s0 = dynamic_cast<details::stringvar_node<Type>*>(branch[0])->ref();
-            std::string  s1 = dynamic_cast<details::const_string_range_node<Type,range_pack>*>(branch[1])->str();
-            range_pack rp1  = dynamic_cast<details::const_string_range_node<Type,range_pack>*>(branch[1])->range();
-            dynamic_cast<details::const_string_range_node<Type,range_pack>*>(branch[1])->range_ref().clear();
+            std::string& s0 = static_cast<details::stringvar_node<Type>*>(branch[0])->ref();
+            std::string  s1 = static_cast<details::const_string_range_node<Type,range_pack>*>(branch[1])->str();
+            range_pack rp1  = static_cast<details::const_string_range_node<Type,range_pack>*>(branch[1])->range();
+            static_cast<details::const_string_range_node<Type,range_pack>*>(branch[1])->range_ref().clear();
             free_node(*node_allocator_,branch[1]);
             return synthesize_str_xoxr_expression_impl<std::string&,const std::string>(opr,s0,s1,rp1);
          }
 
          inline expression_node_ptr synthesize_srosr_expression(const details::operator_type& opr, expression_node_ptr (&branch)[2])
          {
-            std::string& s0 = dynamic_cast<details::string_range_node<Type,range_pack>*>(branch[0])->ref();
-            std::string& s1 = dynamic_cast<details::string_range_node<Type,range_pack>*>(branch[1])->ref();
-            range_pack rp0  = dynamic_cast<details::string_range_node<Type,range_pack>*>(branch[0])->range();
-            range_pack rp1  = dynamic_cast<details::string_range_node<Type,range_pack>*>(branch[1])->range();
-            dynamic_cast<details::string_range_node<Type,range_pack>*>(branch[0])->range_ref().clear();
-            dynamic_cast<details::string_range_node<Type,range_pack>*>(branch[1])->range_ref().clear();
+            std::string& s0 = static_cast<details::string_range_node<Type,range_pack>*>(branch[0])->ref();
+            std::string& s1 = static_cast<details::string_range_node<Type,range_pack>*>(branch[1])->ref();
+            range_pack rp0  = static_cast<details::string_range_node<Type,range_pack>*>(branch[0])->range();
+            range_pack rp1  = static_cast<details::string_range_node<Type,range_pack>*>(branch[1])->range();
+            static_cast<details::string_range_node<Type,range_pack>*>(branch[0])->range_ref().clear();
+            static_cast<details::string_range_node<Type,range_pack>*>(branch[1])->range_ref().clear();
             details::free_node(*node_allocator_,branch[0]);
             details::free_node(*node_allocator_,branch[1]);
             return synthesize_str_xroxr_expression_impl<std::string&,std::string&>(opr,s0,s1,rp0,rp1);
@@ -22491,26 +22501,26 @@ namespace exprtk
 
          inline expression_node_ptr synthesize_socs_expression(const details::operator_type& opr, expression_node_ptr (&branch)[2])
          {
-            std::string& s0 = dynamic_cast<     details::stringvar_node<Type>*>(branch[0])->ref();
-            std::string  s1 = dynamic_cast<details::string_literal_node<Type>*>(branch[1])->str();
+            std::string& s0 = static_cast<     details::stringvar_node<Type>*>(branch[0])->ref();
+            std::string  s1 = static_cast<details::string_literal_node<Type>*>(branch[1])->str();
             details::free_node(*node_allocator_,branch[1]);
             return synthesize_sos_expression_impl<std::string&,const std::string>(opr,s0,s1);
          }
 
          inline expression_node_ptr synthesize_csos_expression(const details::operator_type& opr, expression_node_ptr (&branch)[2])
          {
-            std::string  s0 = dynamic_cast<details::string_literal_node<Type>*>(branch[0])->str();
-            std::string& s1 = dynamic_cast<     details::stringvar_node<Type>*>(branch[1])->ref();
+            std::string  s0 = static_cast<details::string_literal_node<Type>*>(branch[0])->str();
+            std::string& s1 = static_cast<     details::stringvar_node<Type>*>(branch[1])->ref();
             details::free_node(*node_allocator_,branch[0]);
             return synthesize_sos_expression_impl<const std::string,std::string&>(opr,s0,s1);
          }
 
          inline expression_node_ptr synthesize_csosr_expression(const details::operator_type& opr, expression_node_ptr (&branch)[2])
          {
-            std::string  s0 = dynamic_cast<details::string_literal_node<Type>*>         (branch[0])->str();
-            std::string& s1 = dynamic_cast<details::string_range_node<Type,range_pack>*>(branch[1])->ref();
-            range_pack rp1  = dynamic_cast<details::string_range_node<Type,range_pack>*>(branch[1])->range();
-            dynamic_cast<details::string_range_node<Type,range_pack>*>(branch[1])->range_ref().clear();
+            std::string  s0 = static_cast<details::string_literal_node<Type>*>         (branch[0])->str();
+            std::string& s1 = static_cast<details::string_range_node<Type,range_pack>*>(branch[1])->ref();
+            range_pack rp1  = static_cast<details::string_range_node<Type,range_pack>*>(branch[1])->range();
+            static_cast<details::string_range_node<Type,range_pack>*>(branch[1])->range_ref().clear();
             details::free_node(*node_allocator_,branch[0]);
             details::free_node(*node_allocator_,branch[1]);
             return synthesize_str_xoxr_expression_impl<const std::string,std::string&>(opr,s0,s1,rp1);
@@ -22518,10 +22528,10 @@ namespace exprtk
 
          inline expression_node_ptr synthesize_srocs_expression(const details::operator_type& opr, expression_node_ptr (&branch)[2])
          {
-            std::string& s0 = dynamic_cast<details::string_range_node<Type,range_pack>*>(branch[0])->ref();
-            std::string  s1 = dynamic_cast<details::string_literal_node<Type>*>         (branch[1])->str();
-            range_pack rp0  = dynamic_cast<details::string_range_node<Type,range_pack>*>(branch[0])->range();
-            dynamic_cast<details::string_range_node<Type,range_pack>*>(branch[0])->range_ref().clear();
+            std::string& s0 = static_cast<details::string_range_node<Type,range_pack>*>(branch[0])->ref();
+            std::string  s1 = static_cast<details::string_literal_node<Type>*>         (branch[1])->str();
+            range_pack rp0  = static_cast<details::string_range_node<Type,range_pack>*>(branch[0])->range();
+            static_cast<details::string_range_node<Type,range_pack>*>(branch[0])->range_ref().clear();
             details::free_node(*node_allocator_,branch[0]);
             details::free_node(*node_allocator_,branch[1]);
             return synthesize_str_xrox_expression_impl<std::string&,const std::string>(opr,s0,s1,rp0);
@@ -22529,12 +22539,12 @@ namespace exprtk
 
          inline expression_node_ptr synthesize_srocsr_expression(const details::operator_type& opr, expression_node_ptr (&branch)[2])
          {
-            std::string& s0 = dynamic_cast<details::string_range_node<Type,range_pack>*>      (branch[0])->ref();
-            std::string  s1 = dynamic_cast<details::const_string_range_node<Type,range_pack>*>(branch[1])->str();
-            range_pack rp0  = dynamic_cast<details::string_range_node<Type,range_pack>*>      (branch[0])->range();
-            range_pack rp1  = dynamic_cast<details::const_string_range_node<Type,range_pack>*>(branch[1])->range();
-            dynamic_cast<details::string_range_node<Type,range_pack>*>      (branch[0])->range_ref().clear();
-            dynamic_cast<details::const_string_range_node<Type,range_pack>*>(branch[1])->range_ref().clear();
+            std::string& s0 = static_cast<details::string_range_node<Type,range_pack>*>      (branch[0])->ref();
+            std::string  s1 = static_cast<details::const_string_range_node<Type,range_pack>*>(branch[1])->str();
+            range_pack rp0  = static_cast<details::string_range_node<Type,range_pack>*>      (branch[0])->range();
+            range_pack rp1  = static_cast<details::const_string_range_node<Type,range_pack>*>(branch[1])->range();
+            static_cast<details::string_range_node<Type,range_pack>*>      (branch[0])->range_ref().clear();
+            static_cast<details::const_string_range_node<Type,range_pack>*>(branch[1])->range_ref().clear();
             details::free_node(*node_allocator_,branch[0]);
             details::free_node(*node_allocator_,branch[1]);
             return synthesize_str_xroxr_expression_impl<std::string&,const std::string>(opr,s0,s1,rp0,rp1);
@@ -22542,8 +22552,8 @@ namespace exprtk
 
          inline expression_node_ptr synthesize_csocs_expression(const details::operator_type& opr, expression_node_ptr (&branch)[2])
          {
-            const std::string s0 = dynamic_cast<details::string_literal_node<Type>*>(branch[0])->str();
-            const std::string s1 = dynamic_cast<details::string_literal_node<Type>*>(branch[1])->str();
+            const std::string s0 = static_cast<details::string_literal_node<Type>*>(branch[0])->str();
+            const std::string s1 = static_cast<details::string_literal_node<Type>*>(branch[1])->str();
             expression_node_ptr result = error_node();
 
             if (details::e_add == opr)
@@ -22567,10 +22577,10 @@ namespace exprtk
 
          inline expression_node_ptr synthesize_csocsr_expression(const details::operator_type& opr, expression_node_ptr (&branch)[2])
          {
-            const std::string s0 = dynamic_cast<details::string_literal_node<Type>*>               (branch[0])->str();
-                  std::string s1 = dynamic_cast<details::const_string_range_node<Type,range_pack>*>(branch[1])->str();
-            range_pack rp1       = dynamic_cast<details::const_string_range_node<Type,range_pack>*>(branch[1])->range();
-            dynamic_cast<details::const_string_range_node<Type,range_pack>*>(branch[1])->range_ref().clear();
+            const std::string s0 = static_cast<details::string_literal_node<Type>*>               (branch[0])->str();
+                  std::string s1 = static_cast<details::const_string_range_node<Type,range_pack>*>(branch[1])->str();
+            range_pack rp1       = static_cast<details::const_string_range_node<Type,range_pack>*>(branch[1])->range();
+            static_cast<details::const_string_range_node<Type,range_pack>*>(branch[1])->range_ref().clear();
             free_node(*node_allocator_,branch[0]);
             free_node(*node_allocator_,branch[1]);
             return synthesize_str_xoxr_expression_impl<const std::string,const std::string>(opr,s0,s1,rp1);
@@ -22578,22 +22588,22 @@ namespace exprtk
 
          inline expression_node_ptr synthesize_csros_expression(const details::operator_type& opr, expression_node_ptr (&branch)[2])
          {
-            std::string  s0 = dynamic_cast<details::const_string_range_node<Type,range_pack>*>(branch[0])->str();
-            std::string& s1 = dynamic_cast<details::stringvar_node<Type>*>                    (branch[1])->ref();
-            range_pack rp0  = dynamic_cast<details::const_string_range_node<Type,range_pack>*>(branch[0])->range();
-            dynamic_cast<details::const_string_range_node<Type,range_pack>*>(branch[0])->range_ref().clear();
+            std::string  s0 = static_cast<details::const_string_range_node<Type,range_pack>*>(branch[0])->str();
+            std::string& s1 = static_cast<details::stringvar_node<Type>*>                    (branch[1])->ref();
+            range_pack rp0  = static_cast<details::const_string_range_node<Type,range_pack>*>(branch[0])->range();
+            static_cast<details::const_string_range_node<Type,range_pack>*>(branch[0])->range_ref().clear();
             free_node(*node_allocator_,branch[0]);
             return synthesize_str_xrox_expression_impl<const std::string,std::string&>(opr,s0,s1,rp0);
          }
 
          inline expression_node_ptr synthesize_csrosr_expression(const details::operator_type& opr, expression_node_ptr (&branch)[2])
          {
-            const std::string  s0 = dynamic_cast<details::const_string_range_node<Type,range_pack>*>(branch[0])->str();
-                  std::string& s1 = dynamic_cast<details::string_range_node<Type,range_pack>*>      (branch[1])->ref();
-            range_pack rp0        = dynamic_cast<details::const_string_range_node<Type,range_pack>*>(branch[0])->range();
-            range_pack rp1        = dynamic_cast<details::string_range_node<Type,range_pack>*>      (branch[1])->range();
-            dynamic_cast<details::const_string_range_node<Type,range_pack>*>(branch[0])->range_ref().clear();
-            dynamic_cast<details::string_range_node<Type,range_pack>*>      (branch[1])->range_ref().clear();
+            const std::string  s0 = static_cast<details::const_string_range_node<Type,range_pack>*>(branch[0])->str();
+                  std::string& s1 = static_cast<details::string_range_node<Type,range_pack>*>      (branch[1])->ref();
+            range_pack rp0        = static_cast<details::const_string_range_node<Type,range_pack>*>(branch[0])->range();
+            range_pack rp1        = static_cast<details::string_range_node<Type,range_pack>*>      (branch[1])->range();
+            static_cast<details::const_string_range_node<Type,range_pack>*>(branch[0])->range_ref().clear();
+            static_cast<details::string_range_node<Type,range_pack>*>      (branch[1])->range_ref().clear();
             free_node(*node_allocator_,branch[0]);
             free_node(*node_allocator_,branch[1]);
             return synthesize_str_xroxr_expression_impl<const std::string,std::string&>(opr,s0,s1,rp0,rp1);
@@ -22601,22 +22611,22 @@ namespace exprtk
 
          inline expression_node_ptr synthesize_csrocs_expression(const details::operator_type& opr, expression_node_ptr (&branch)[2])
          {
-            std::string       s0 = dynamic_cast<details::const_string_range_node<Type,range_pack>*>(branch[0])->str();
-            const std::string s1 = dynamic_cast<details::string_literal_node<Type>*>               (branch[1])->str();
-            range_pack rp0  = dynamic_cast<details::const_string_range_node<Type,range_pack>*>(branch[0])->range();
-            dynamic_cast<details::const_string_range_node<Type,range_pack>*>(branch[0])->range_ref().clear();
+            std::string       s0 = static_cast<details::const_string_range_node<Type,range_pack>*>(branch[0])->str();
+            const std::string s1 = static_cast<details::string_literal_node<Type>*>               (branch[1])->str();
+            range_pack rp0  = static_cast<details::const_string_range_node<Type,range_pack>*>(branch[0])->range();
+            static_cast<details::const_string_range_node<Type,range_pack>*>(branch[0])->range_ref().clear();
             details::free_all_nodes(*node_allocator_,branch);
             return synthesize_str_xrox_expression_impl<const std::string,std::string>(opr,s0,s1,rp0);
          }
 
          inline expression_node_ptr synthesize_csrocsr_expression(const details::operator_type& opr, expression_node_ptr (&branch)[2])
          {
-            std::string s0 = dynamic_cast<details::const_string_range_node<Type,range_pack>*>(branch[0])->str();
-            std::string s1 = dynamic_cast<details::const_string_range_node<Type,range_pack>*>(branch[1])->str();
-            range_pack rp0 = dynamic_cast<details::const_string_range_node<Type,range_pack>*>(branch[0])->range();
-            range_pack rp1 = dynamic_cast<details::const_string_range_node<Type,range_pack>*>(branch[1])->range();
-            dynamic_cast<details::const_string_range_node<Type,range_pack>*>(branch[0])->range_ref().clear();
-            dynamic_cast<details::const_string_range_node<Type,range_pack>*>(branch[1])->range_ref().clear();
+            std::string s0 = static_cast<details::const_string_range_node<Type,range_pack>*>(branch[0])->str();
+            std::string s1 = static_cast<details::const_string_range_node<Type,range_pack>*>(branch[1])->str();
+            range_pack rp0 = static_cast<details::const_string_range_node<Type,range_pack>*>(branch[0])->range();
+            range_pack rp1 = static_cast<details::const_string_range_node<Type,range_pack>*>(branch[1])->range();
+            static_cast<details::const_string_range_node<Type,range_pack>*>(branch[0])->range_ref().clear();
+            static_cast<details::const_string_range_node<Type,range_pack>*>(branch[1])->range_ref().clear();
             details::free_all_nodes(*node_allocator_,branch);
             return synthesize_str_xroxr_expression_impl<const std::string,const std::string>(opr,s0,s1,rp0,rp1);
          }
@@ -22694,9 +22704,9 @@ namespace exprtk
                       details::is_const_string_node(branch[2])
                     )
             {
-               const std::string s0 = dynamic_cast<details::string_literal_node<Type>*>(branch[0])->str();
-               const std::string s1 = dynamic_cast<details::string_literal_node<Type>*>(branch[1])->str();
-               const std::string s2 = dynamic_cast<details::string_literal_node<Type>*>(branch[2])->str();
+               const std::string s0 = static_cast<details::string_literal_node<Type>*>(branch[0])->str();
+               const std::string s1 = static_cast<details::string_literal_node<Type>*>(branch[1])->str();
+               const std::string s2 = static_cast<details::string_literal_node<Type>*>(branch[2])->str();
                Type v = (((s0 <= s1) && (s1 <= s2)) ? Type(1) : Type(0));
                details::free_all_nodes(*node_allocator_,branch);
                return node_allocator_->allocate_c<details::literal_node<Type> >(v);
@@ -22707,9 +22717,9 @@ namespace exprtk
                       details::is_string_node(branch[2])
                     )
             {
-               std::string& s0 = dynamic_cast<details::stringvar_node<Type>*>(branch[0])->ref();
-               std::string& s1 = dynamic_cast<details::stringvar_node<Type>*>(branch[1])->ref();
-               std::string& s2 = dynamic_cast<details::stringvar_node<Type>*>(branch[2])->ref();
+               std::string& s0 = static_cast<details::stringvar_node<Type>*>(branch[0])->ref();
+               std::string& s1 = static_cast<details::stringvar_node<Type>*>(branch[1])->ref();
+               std::string& s2 = static_cast<details::stringvar_node<Type>*>(branch[2])->ref();
                typedef typename details::sosos_node<Type,std::string&,std::string&,std::string&,details::inrange_op<Type> > inrange_t;
                return node_allocator_->allocate_type<inrange_t,std::string&,std::string&,std::string&>(s0,s1,s2);
             }
@@ -22719,9 +22729,9 @@ namespace exprtk
                       details::is_const_string_node(branch[2])
                     )
             {
-               std::string  s0 = dynamic_cast<details::string_literal_node<Type>*>(branch[0])->str();
-               std::string& s1 = dynamic_cast<     details::stringvar_node<Type>*>(branch[1])->ref();
-               std::string  s2 = dynamic_cast<details::string_literal_node<Type>*>(branch[2])->str();
+               std::string  s0 = static_cast<details::string_literal_node<Type>*>(branch[0])->str();
+               std::string& s1 = static_cast<     details::stringvar_node<Type>*>(branch[1])->ref();
+               std::string  s2 = static_cast<details::string_literal_node<Type>*>(branch[2])->str();
                typedef typename details::sosos_node<Type,std::string,std::string&,std::string,details::inrange_op<Type> > inrange_t;
                details::free_node(*node_allocator_,branch[0]);
                details::free_node(*node_allocator_,branch[2]);
@@ -22733,9 +22743,9 @@ namespace exprtk
                             details::is_string_node(branch[2])
                     )
             {
-               std::string&  s0 = dynamic_cast<     details::stringvar_node<Type>*>(branch[0])->ref();
-               std::string   s1 = dynamic_cast<details::string_literal_node<Type>*>(branch[1])->str();
-               std::string&  s2 = dynamic_cast<     details::stringvar_node<Type>*>(branch[2])->ref();
+               std::string&  s0 = static_cast<     details::stringvar_node<Type>*>(branch[0])->ref();
+               std::string   s1 = static_cast<details::string_literal_node<Type>*>(branch[1])->str();
+               std::string&  s2 = static_cast<     details::stringvar_node<Type>*>(branch[2])->ref();
                typedef typename details::sosos_node<Type,std::string&,std::string,std::string&,details::inrange_op<Type> > inrange_t;
                details::free_node(*node_allocator_,branch[1]);
                return node_allocator_->allocate_type<inrange_t,std::string&,std::string,std::string&>(s0,s1,s2);
@@ -22746,9 +22756,9 @@ namespace exprtk
                       details::is_const_string_node(branch[2])
                     )
             {
-               std::string& s0 = dynamic_cast<     details::stringvar_node<Type>*>(branch[0])->ref();
-               std::string& s1 = dynamic_cast<     details::stringvar_node<Type>*>(branch[1])->ref();
-               std::string  s2 = dynamic_cast<details::string_literal_node<Type>*>(branch[2])->str();
+               std::string& s0 = static_cast<     details::stringvar_node<Type>*>(branch[0])->ref();
+               std::string& s1 = static_cast<     details::stringvar_node<Type>*>(branch[1])->ref();
+               std::string  s2 = static_cast<details::string_literal_node<Type>*>(branch[2])->str();
                typedef typename details::sosos_node<Type,std::string&,std::string&,std::string,details::inrange_op<Type> > inrange_t;
                details::free_node(*node_allocator_,branch[2]);
                return node_allocator_->allocate_type<inrange_t,std::string&,std::string&,std::string>(s0,s1,s2);
@@ -22759,9 +22769,9 @@ namespace exprtk
                       details::      is_string_node(branch[2])
                     )
             {
-               std::string  s0 = dynamic_cast<details::string_literal_node<Type>*>(branch[0])->str();
-               std::string& s1 = dynamic_cast<     details::stringvar_node<Type>*>(branch[1])->ref();
-               std::string& s2 = dynamic_cast<     details::stringvar_node<Type>*>(branch[2])->ref();
+               std::string  s0 = static_cast<details::string_literal_node<Type>*>(branch[0])->str();
+               std::string& s1 = static_cast<     details::stringvar_node<Type>*>(branch[1])->ref();
+               std::string& s2 = static_cast<     details::stringvar_node<Type>*>(branch[2])->ref();
                typedef typename details::sosos_node<Type,std::string,std::string&,std::string&,details::inrange_op<Type> > inrange_t;
                details::free_node(*node_allocator_,branch[0]);
                return node_allocator_->allocate_type<inrange_t,std::string,std::string&,std::string&>(s0,s1,s2);
