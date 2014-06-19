@@ -3856,7 +3856,7 @@ inline bool run_test14()
          if (result != T(1))
          {
             failure = true;
-            printf("run_test14() - Error with expression: %s\n",
+            printf("run_test14() - Error with evaluation of expression: %s\n",
                    expr_str_list[i].c_str());
          }
       }

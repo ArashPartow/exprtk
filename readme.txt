@@ -1042,7 +1042,7 @@ demonstrates how all the pieces are put together:
 
    symbol_table_t symbol_table;
    symbol_table.add_function("foo",f);
-   symbol_table.add_function("boo",b);
+   symbol_table.add_vararg_function("boo",b);
 
    expression_t expression;
    expression.register_symbol_table(symbol_table);
@@ -1082,10 +1082,10 @@ to the constructor to denote the lack of side-effects.
 
 
 (5) Zero Parameter Functions
-When  an  ifunction  derived  type  is  defined  with  zero  number of
-parameters, there are two calling conventions within expressions  that
-are allowed. For a function named 'foo' with zero input parameters the
-calling styles are as follows:
+When either an ifunction  or ivararg_function derived type  is defined
+with  zero number  of parameters,  there are  two calling  conventions
+within expressions that are allowed.  For a function named 'foo'  with
+zero input parameters the calling styles are as follows:
 
    (1)  x + sin(foo()- 2) / y
    (2)  x + sin(foo  - 2) / y

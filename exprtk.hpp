@@ -858,8 +858,8 @@ namespace exprtk
             {
                T cnd = T(0.5) * (T(1) + erf_impl(
                                            abs_impl(v,real_type_tag()) /
-                                           numeric::constant::sqrt2,real_type_tag()));
-               return  (v < 0) ? (T(1) - cnd) : cnd;
+                                           T(numeric::constant::sqrt2),real_type_tag()));
+               return  (v < T(0)) ? (T(1) - cnd) : cnd;
             }
 
             template <typename T>
@@ -3277,7 +3277,8 @@ namespace exprtk
          e_sf4ext32 = 2032, e_sf4ext33 = 2033, e_sf4ext34 = 2034, e_sf4ext35 = 2035,
          e_sf4ext36 = 2036, e_sf4ext37 = 2037, e_sf4ext38 = 2038, e_sf4ext39 = 2039,
          e_sf4ext40 = 2040, e_sf4ext41 = 2041, e_sf4ext42 = 2042, e_sf4ext43 = 2043,
-         e_sf4ext44 = 2044, e_sf4ext45 = 2045
+         e_sf4ext44 = 2044, e_sf4ext45 = 2045, e_sf4ext46 = 2046, e_sf4ext47 = 2047,
+         e_sf4ext48 = 2048, e_sf4ext49 = 2049
       };
 
       struct base_operation_t
@@ -5940,6 +5941,10 @@ namespace exprtk
       template <typename T> struct sfext43_op : public sf_base<T> { typedef typename sf_base<T>::Type Type; static inline T process(Type x, Type y, Type z, Type w) { return x - (y * (z / w)); } static inline std::string id() { return "t-(t*(t/t))";} };
       template <typename T> struct sfext44_op : public sf_base<T> { typedef typename sf_base<T>::Type Type; static inline T process(Type x, Type y, Type z, Type w) { return x + (y / (z * w)); } static inline std::string id() { return "t+(t/(t*t))";} };
       template <typename T> struct sfext45_op : public sf_base<T> { typedef typename sf_base<T>::Type Type; static inline T process(Type x, Type y, Type z, Type w) { return x - (y / (z * w)); } static inline std::string id() { return "t-(t/(t*t))";} };
+      template <typename T> struct sfext46_op : public sf_base<T> { typedef typename sf_base<T>::Type Type; static inline T process(Type x, Type y, Type z, Type w) { return ((x - y) - z) * w; } static inline std::string id() { return "((t-t)-t)*t";} };
+      template <typename T> struct sfext47_op : public sf_base<T> { typedef typename sf_base<T>::Type Type; static inline T process(Type x, Type y, Type z, Type w) { return ((x - y) - z) / w; } static inline std::string id() { return "((t-t)-t)/t";} };
+      template <typename T> struct sfext48_op : public sf_base<T> { typedef typename sf_base<T>::Type Type; static inline T process(Type x, Type y, Type z, Type w) { return ((x - y) + z) * w; } static inline std::string id() { return "((t-t)+t)*t";} };
+      template <typename T> struct sfext49_op : public sf_base<T> { typedef typename sf_base<T>::Type Type; static inline T process(Type x, Type y, Type z, Type w) { return ((x - y) + z) / w; } static inline std::string id() { return "((t-t)+t)/t";} };
 
       template <typename T, typename SpecialFunction>
       class sf3_node : public trinary_node<T>
@@ -19058,6 +19063,9 @@ namespace exprtk
                   case_stmt(details::e_sf4ext40,details::sfext40_op) case_stmt(details::e_sf4ext41,details::sfext41_op)
                   case_stmt(details::e_sf4ext42,details::sfext42_op) case_stmt(details::e_sf4ext43,details::sfext43_op)
                   case_stmt(details::e_sf4ext44,details::sfext44_op) case_stmt(details::e_sf4ext45,details::sfext45_op)
+                  case_stmt(details::e_sf4ext46,details::sfext46_op) case_stmt(details::e_sf4ext47,details::sfext47_op)
+                  case_stmt(details::e_sf4ext48,details::sfext48_op) case_stmt(details::e_sf4ext49,details::sfext49_op)
+
                   #undef case_stmt
                   default : return error_node();
                }
@@ -19164,7 +19172,7 @@ namespace exprtk
                                                   expression_node_ptr& node,
                                                   expression_node_ptr& result)
             {
-               SF3TypeNode* n = static_cast<SF3TypeNode*>(node);
+               SF3TypeNode* n = dynamic_cast<SF3TypeNode*>(node);
                if (n)
                {
                   T0 t0 = n->t0();
@@ -19184,7 +19192,7 @@ namespace exprtk
                                                  expression_node_ptr& node,
                                                  expression_node_ptr& result)
             {
-               SF3TypeNode* n = static_cast<SF3TypeNode*>(node);
+               SF3TypeNode* n = dynamic_cast<SF3TypeNode*>(node);
                if (n)
                {
                   T0 t0 = n->t0();
@@ -23150,7 +23158,8 @@ namespace exprtk
          register_sf4ext(32) register_sf4ext(33) register_sf4ext(34) register_sf4ext(35)
          register_sf4ext(36) register_sf4ext(36) register_sf4ext(38) register_sf4ext(39)
          register_sf4ext(40) register_sf4ext(41) register_sf4ext(42) register_sf4ext(43)
-         register_sf4ext(44) register_sf4ext(45)
+         register_sf4ext(44) register_sf4ext(45) register_sf4ext(46) register_sf4ext(47)
+         register_sf4ext(48) register_sf4ext(49)
          #undef register_sf4ext
       }
 
