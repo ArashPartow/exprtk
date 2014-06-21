@@ -3822,7 +3822,10 @@ inline bool run_test14()
 
    std::deque<std::string> expr_str_list;
 
-   if (0 == load_expressions("exprtk_functional_test.txt",expr_str_list))
+   load_expressions("exprtk_functional_test.txt"    ,expr_str_list);
+   load_expressions("exprtk_functional_ext_test.txt",expr_str_list);
+
+   if (expr_str_list.empty())
    {
       return true;
    }
@@ -3844,11 +3847,14 @@ inline bool run_test14()
             printf("run_test14() - Error: %s   Expression: %s\n",
                    parser.error().c_str(),
                    expr_str_list[i].c_str());
-            return false;
+            failure = true;
          }
          else
             expression_list.push_back(current_expression);
       }
+
+      if (failure)
+         break;
 
       for (std::size_t i = 0; i < expression_list.size(); ++i)
       {
