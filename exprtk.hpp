@@ -3653,6 +3653,19 @@ namespace exprtk
          return node && (details::expression_node<T>::e_function == node->type());
       }
 
+      template <typename T> class unary_node;
+
+      template <typename T>
+      inline bool is_negate_node(const expression_node<T>* node)
+      {
+         if (node && is_unary_node(node))
+         {
+            return (details::e_neg == static_cast<const unary_node<T>*>(node)->operation());
+         }
+         else
+            return false;
+      }
+
       template <typename T>
       inline bool branch_deletable(expression_node<T>* node)
       {
@@ -4057,6 +4070,11 @@ namespace exprtk
          inline expression_node<T>* branch(const std::size_t&) const
          {
             return branch_;
+         }
+
+         inline void release()
+         {
+            branch_deletable_ = false;
          }
 
       protected:
@@ -13514,10 +13532,16 @@ namespace exprtk
             expression_node_ptr right_branch = parse_expression(current_state.right);
             expression_node_ptr new_expression = error_node();
 
+            details::operator_type current_operation = current_state.operation;
+
             if (right_branch)
             {
+               simplify_negation(current_operation,
+                                 expression,
+                                 right_branch);
+
                new_expression = expression_generator_(
-                                                       current_state.operation,
+                                                       current_operation,
                                                        expression,
                                                        right_branch
                                                      );
@@ -13551,6 +13575,77 @@ namespace exprtk
          }
 
          return expression;
+      }
+
+      bool simplify_negation_branch(expression_node_ptr& right)
+      {
+         if (is_unary_node(right))
+         {
+            details::unary_node<T>* un = static_cast<details::unary_node<T>*>(right);
+            if (details::e_neg == un->operation())
+            {
+               expression_node_ptr un_r = un->branch(0);
+               un->release();
+               free_node(node_allocator_,right);
+               right = un_r;
+               return true;
+            }
+         }
+
+         return false;
+      }
+
+      void simplify_negation(details::operator_type& current_operation,
+                             expression_node_ptr& left,
+                             expression_node_ptr& right)
+      {
+         bool simplified = false;
+         do
+         {
+            simplified = false;
+            // (x + - y)  --> (x - y)
+            if (details::e_add == current_operation)
+            {
+               if (is_negate_node(right))
+               {
+                  if (simplify_negation_branch(right))
+                  {
+                     current_operation = details::e_sub;
+                     simplified = true;
+                  }
+               }
+            }
+            // (x - - y)  --> (x + y)
+            else if (details::e_sub == current_operation)
+            {
+               if (is_negate_node(right))
+               {
+                  if (simplify_negation_branch(right))
+                  {
+                     current_operation = details::e_add;
+                     simplified = true;
+                  }
+               }
+            }
+            // -x * - y  --> x * y
+            // -x / - y  --> x / y
+            else if (
+                      (details::e_mul == current_operation) ||
+                      (details::e_div == current_operation)
+                    )
+            {
+               if (
+                    is_negate_node(left ) &&
+                    is_negate_node(right)
+                  )
+               {
+                  simplify_negation_branch(left );
+                  simplify_negation_branch(right);
+                  simplified = true;
+               }
+            }
+         }
+         while (simplified);
       }
 
       static inline expression_node_ptr error_node()
@@ -16017,7 +16112,7 @@ namespace exprtk
               !token_is(token_t::e_rsqrbracket,false)
             )
          {
-            if (!token_is(token_t::e_eof))
+            if (!token_is(token_t::e_eof,false))
             {
                set_error(
                   make_error(parser_error::e_syntax,
@@ -18686,8 +18781,8 @@ namespace exprtk
                if (details::is_cob_node(branch[1]))
                {
                   // Simplify expressions of the form:
-                  // 1. (1 * (2 * (3 * (4 * (5 * (6 * (7 * (8 * (9 + x))))))))) ---> 40320 * (9 + x)
-                  // 2. (1 + (2 + (3 + (4 + (5 + (6 + (7 + (8 + (9 + x))))))))) ---> 45 + x
+                  // 1. (1 * (2 * (3 * (4 * (5 * (6 * (7 * (8 * (9 + x))))))))) --> 40320 * (9 + x)
+                  // 2. (1 + (2 + (3 + (4 + (5 + (6 + (7 + (8 + (9 + x))))))))) --> 45 + x
                   if (
                        (operation == details::e_mul) ||
                        (operation == details::e_add)
@@ -18794,8 +18889,8 @@ namespace exprtk
                if (details::is_boc_node(branch[0]))
                {
                   // Simplify expressions of the form:
-                  // 1. (((((((((x + 9) * 8) * 7) * 6) * 5) * 4) * 3) * 2) * 1) ---> (x + 9) * 40320
-                  // 2. (((((((((x + 9) + 8) + 7) + 6) + 5) + 4) + 3) + 2) + 1) ---> x + 45
+                  // 1. (((((((((x + 9) * 8) * 7) * 6) * 5) * 4) * 3) * 2) * 1) --> (x + 9) * 40320
+                  // 2. (((((((((x + 9) + 8) + 7) + 6) + 5) + 4) + 3) + 2) + 1) --> x + 45
                   if (
                        (operation == details::e_mul) ||
                        (operation == details::e_add)
