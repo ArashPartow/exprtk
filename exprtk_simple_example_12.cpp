@@ -29,23 +29,23 @@ void bubble_sort()
    typedef exprtk::parser<T>             parser_t;
 
    std::string bubblesort_program =
-                  " var upper_bound := v[];                      "
-                  " var swapped := false;                        "
-                  " repeat                                       "
-                  "   swapped := false;                          "
-                  "   for(i := 0; i < upper_bound; i += 1)       "
-                  "   {                                          "
-                  "     for(j := i + 1; j < upper_bound; j += 1) "
-                  "     {                                        "
-                  "       if (v[i] > v[j])                       "
-                  "       {                                      "
-                  "         v[i] <=> v[j];                       "
-                  "         swapped := true;                     "
-                  "       };                                     "
-                  "     };                                       "
-                  "   };                                         "
-                  "   upper_bound -= 1;                          "
-                  " until (not(swapped) or (upper_bound == 0));  ";
+                  " var upper_bound := v[];                          "
+                  " var swapped := false;                            "
+                  " repeat                                           "
+                  "   swapped := false;                              "
+                  "   for(var i := 0; i < upper_bound; i += 1)       "
+                  "   {                                              "
+                  "     for(var j := i + 1; j < upper_bound; j += 1) "
+                  "     {                                            "
+                  "       if (v[i] > v[j])                           "
+                  "       {                                          "
+                  "         v[i] <=> v[j];                           "
+                  "         swapped := true;                         "
+                  "       };                                         "
+                  "     };                                           "
+                  "   };                                             "
+                  "   upper_bound -= 1;                              "
+                  " until (not(swapped) or (upper_bound == 0));      ";
 
    T v[] = { T(2.2), T(1.1), T(5.5), T(4.4), T(3.3) };
 

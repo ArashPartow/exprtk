@@ -474,7 +474,7 @@ of C++ compilers:
 |          | The conditional is mandatory whereas the initializer    |
 |          | and incrementing expressions are optional.              |
 |          | eg:                                                     |
-|          | for (x := 0; (x < n) and (x != y); x += 1)              |
+|          | for (var x := 0; (x < n) and (x != y); x += 1)          |
 |          | {                                                       |
 |          |   y := y + x / 2 - z;                                   |
 |          |   w := u + y;                                           |
@@ -500,7 +500,7 @@ of C++ compilers:
 | continue | Continue results in the remaining portion of the nearest|
 |          | enclosing loop body to be skipped.                      |
 |          | eg:                                                     |
-|          | for (i := 0; i < 10; i += 1)                            |
+|          | for (var i := 0; i < 10; i += 1)                        |
 |          | {                                                       |
 |          |   if (i < 5)                                            |
 |          |     continue;                                           |
@@ -619,7 +619,7 @@ current values assigned to the variables will be used.
    expression.value(); // 3.7 * -9 + 3
 
    // 'x * -9 + 3' for x in range of [0,100] in steps of 0.0001
-   for (x = 0; x < 100; x += 0.0001)
+   for (var x = 0; x < 100; x += 0.0001)
    {
       expression.value(); // x * -9 + 3
    }
@@ -962,7 +962,7 @@ the previously mentioned dot-product computation expression:
    var v1[3] := {4,5,6};
    var v0dotv1;
 
-   for (i := 0; i < min(v0[],v1[]); i += 1)
+   for (var i := 0; i < min(v0[],v1[]); i += 1)
    {
      v0dotv1 += (v0[i] * v1[i]);
    }
@@ -1413,7 +1413,7 @@ in a compilation failure.
 |                                                    |        |
 |   +-----------------------<------------------------+        |
 |   |                                                         |
-|   +--> [,] -+-> [condition] -+-> [,] ---+                   |
+|   +--> [;] -+-> [condition] -+-> [;] ---+                   |
 |             |                |          |                   |
 |             +------->--------+          v                   |
 |                                         |                   |

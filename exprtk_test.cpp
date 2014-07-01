@@ -1524,11 +1524,11 @@ inline bool run_test01()
                                  test_xy<T>("(x *= 2y) ==    6 "              ,T(1),T(3),T(1)),
                                  test_xy<T>("(x /= 2 ) == (1/2)"              ,T(1),T(3),T(1)),
                                  test_xy<T>("(x /= 2y) == (1/6)"              ,T(1),T(3),T(1)),
-                                 test_xy<T>("for(i := 0; (i < 10);) { i += 1; }; x;"                   ,T(1),T(20),T( 1)),
-                                 test_xy<T>("for(i := 0; (i < 10) and (i != y); i+=2) { x += i; }; x;" ,T(1),T(20),T(21)),
-                                 test_xy<T>("for(i := 0; (i < 10) and (i != y);) { x += i; i+=2; }; x;",T(1),T(20),T(21)),
-                                 test_xy<T>("for(i := 0; (i < y); i += 1) { if (i <= (y / 2)) x += i; else break; }; x;" ,T(0),T(10),T(15)),
-                                 test_xy<T>("for(i := 0; (i < y); i += 1) { if (i <= (y / 2)) continue; else x += i; }; x;" ,T(0),T(10),T(30))
+                                 test_xy<T>("for(var i := 0; (i < 10);) { i += 1; }; x;"                   ,T(1),T(20),T( 1)),
+                                 test_xy<T>("for(var i := 0; (i < 10) and (i != y); i+=2) { x += i; }; x;" ,T(1),T(20),T(21)),
+                                 test_xy<T>("for(var i := 0; (i < 10) and (i != y);) { x += i; i+=2; }; x;",T(1),T(20),T(21)),
+                                 test_xy<T>("for(var i := 0; (i < y); i += 1) { if (i <= (y / 2)) x += i; else break; }; x;" ,T(0),T(10),T(15)),
+                                 test_xy<T>("for(var i := 0; (i < y); i += 1) { if (i <= (y / 2)) continue; else x += i; }; x;" ,T(0),T(10),T(30))
                               };
 
       static const std::size_t test_list_size = sizeof(test_list) / sizeof(test_xy<T>);
@@ -3281,6 +3281,22 @@ inline bool run_test10()
    {
       std::string expression_list[] =
       {
+         "var x:=6; var y:=4; x + -3  ==   3",
+         "var x:=6; var y:=4; x - -3  ==   9",
+         "var x:=6; var y:=4; x * -3  == -18",
+         "var x:=6; var y:=4; x / -3  ==  -2",
+         "var x:=6; var y:=4; -x + -3 ==  -9",
+         "var x:=6; var y:=4; -x - -3 ==  -3",
+         "var x:=6; var y:=4; -x * -3 ==  18",
+         "var x:=6; var y:=4; -x / -3 ==   2",
+         "var x:=6; var y:=4; -3 + -x ==   -9",
+         "var x:=6; var y:=4; -3 - -x ==    3",
+         "var x:=6; var y:=4; -3 * -x ==   18",
+         "var x:=6; var y:=4; -3 / -x ==  0.5",
+         "var x:=6; var y:=4;  3 + -x ==   -3",
+         "var x:=6; var y:=4;  3 - -x ==    9",
+         "var x:=6; var y:=4;  3 * -x ==  -18",
+         "var x:=6; var y:=4;  3 / -x == -0.5",
          "var x := 3; var y := 6;  x + -y == -3",
          "var x := 3; var y := 6;  x - -y ==  9",
          "var x := 3; var y := 6; -x + -y == -9",
@@ -3444,20 +3460,20 @@ inline bool run_test10()
          "var x[3] := {-1,-2,-3};    sum(abs(x)  ) == 6",
          "var x[3] := {0.1,0.2,0.3}; sum(trunc(x)) == 0",
 
-         "var x := 2; (~{ for (i := 0; i < 10; i += 1) { for (j := 0; j <= i;"
-         "j += 1) { var y := 3; if ((i + j + y + x) < 6) { y += x; continue; "
-         "} else break[i + j]; } } } + ~{ for (i := 0; i < 10; i += 1) { for "
-         "(j := 0; j <= i; j += 1) { var y := 3; if ((i + j + y + x) < 6) {  "
-         "y += x; continue; } else break[i + j]; } } }) == 18                ",
+         "var x := 2; (~{ for (var i := 0; i < 10; i += 1) { for (var j := 0; j <= i;  "
+         "j += 1) { var y := 3; if ((i + j + y + x) < 6) { y += x; continue; } else    "
+         "break[i + j]; } } } + ~{ for (var i := 0; i < 10; i += 1) { for (var j := 0; "
+         "j <= i; j += 1) { var y := 3; if ((i + j + y + x) < 6) { y += x; continue; } "
+         " else break[i + j]; } } }) == 18                                             ",
 
-         "var x := 2; var v0[3] := {1,2,3}; ( ~{ for (i := 0; i < 10; i += 1) { "
-         "for (j := 0; j <= i; j += 1) { var y := 3; var v2[3] := {1,2,3}; if ( "
-         "(i + j + y + x + abs(v0[i % v0[]] - v2[j % v2[]])) < 6) { var v3[3] :="
-         "{1,2,3}; y += x / v3[j % v3[]]; continue; } else break[i + j]; } } }  "
-         "+ ~{ for (i := 0; i < 10; i += 1) { for (j := 0; j <= i; j += 1) { var"
-         " y := 3; var v2[3] := {1,2,3}; if ((i + j + y + x + abs(v0[i % v0[]] -"
-         "v2[j % v2[]])) < 6) { var v3[3] := {1,2,3}; y += x / v3[j % v3[]];    "
-         "continue; } else break[i + j]; } } } ) == 18                          "
+         "var x := 2; var v0[3] := {1,2,3}; ( ~{ for (var i := 0; i < 10; i += 1) { "
+         "for (var j := 0; j <= i; j += 1) { var y := 3; var v2[3] := {1,2,3}; if ( "
+         "(i + j + y + x + abs(v0[i % v0[]] - v2[j % v2[]])) < 6) { var v3[3] :=    "
+         "{1,2,3}; y += x / v3[j % v3[]]; continue; } else break[i + j]; } } }      "
+         "+ ~{ for (var i := 0; i < 10; i += 1) { for (var j := 0; j <= i; j += 1)  "
+         " { var y := 3; var v2[3] := {1,2,3}; if ((i + j + y + x + abs(v0[i % v0[]] - "
+         "v2[j % v2[]])) < 6) { var v3[3] := {1,2,3}; y += x / v3[j % v3[]];        "
+         "continue; } else break[i + j]; } } } ) == 18                              "
       };
 
       const std::size_t expression_list_size = sizeof(expression_list) / sizeof(std::string);
@@ -4593,25 +4609,25 @@ inline bool run_test19()
 
       compositor
          .add("is_prime_impl4",
-              "switch                          "
-              "{                               "
-              "  case 1 == x     : false;      "
-              "  case 2 == x     : true;       "
-              "  case 3 == x     : true;       "
-              "  case 5 == x     : true;       "
-              "  case 7 == x     : true;       "
-              "  case 0 == x % 2 : false;      "
-              "  default         :             "
-              "  {                             "
-              "    for (i := 3; i < y; i += 2) "
-              "    {                           "
-              "      if ((x % i) == 0)         "
-              "        break[false];           "
-              "      else                      "
-              "        true;                   "
-              "    }                           "
-              "  };                            "
-              "}                               ",
+              "switch                              "
+              "{                                   "
+              "  case 1 == x     : false;          "
+              "  case 2 == x     : true;           "
+              "  case 3 == x     : true;           "
+              "  case 5 == x     : true;           "
+              "  case 7 == x     : true;           "
+              "  case 0 == x % 2 : false;          "
+              "  default         :                 "
+              "  {                                 "
+              "    for (var i := 3; i < y; i += 2) "
+              "    {                               "
+              "      if ((x % i) == 0)             "
+              "        break[false];               "
+              "      else                          "
+              "        true;                       "
+              "    }                               "
+              "  };                                "
+              "}                                   ",
               "x","y");
 
       compositor
@@ -5000,16 +5016,16 @@ inline bool run_test19()
               " var real_min := -2.5;                           "
               " var x_step   := (real_max - real_min) / width;  "
               " var y_step   := (imag_max - imag_min) / height; "
-              " for (y := 0; y < height; y += 1)                "
+              " for (var y := 0; y < height; y += 1)            "
               " {                                               "
               "   var imag := imag_min + (y_step * y);          "
-              "   for (x := 0; x < width; x += 1)               "
+              "   for (var x := 0; x < width; x += 1)           "
               "   {                                             "
               "     var real   := real_min + x_step * x;        "
               "     var z_real := real;                         "
               "     var z_imag := imag;                         "
               "     var plot_value;                             "
-              "     for (n := 0; n < 30; n += 1)                "
+              "     for (var n := 0; n < 30; n += 1)            "
               "     {                                           "
               "       var a := z_real^2;                        "
               "       var b := z_imag^2;                        "
