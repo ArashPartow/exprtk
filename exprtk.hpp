@@ -12160,6 +12160,9 @@ namespace exprtk
    };
 
    template <typename T>
+   class function_compositor;
+
+   template <typename T>
    class expression
    {
    private:
@@ -12171,12 +12174,33 @@ namespace exprtk
       {
          enum data_type
          {
-            e_unknown,
-            e_expr,
+            e_unknown  ,
+            e_expr     ,
             e_vecholder,
-            e_data,
+            e_data     ,
             e_vecdata
          };
+
+         struct data_pack
+         {
+            data_pack()
+            : pointer(0),
+              type(e_unknown),
+              size(0)
+            {}
+
+            data_pack(void* ptr, data_type dt, std::size_t sz = 0)
+            : pointer(ptr),
+              type(dt),
+              size(sz)
+            {}
+
+            void*       pointer;
+            data_type   type;
+            std::size_t size;
+         };
+
+         typedef std::vector<data_pack> local_data_list_t;
 
          expression_holder()
          : ref_count(0),
@@ -12199,18 +12223,18 @@ namespace exprtk
             {
                for (std::size_t i = 0; i < local_data_list.size(); ++i)
                {
-                  switch (local_data_list[i].second)
+                  switch (local_data_list[i].type)
                   {
-                     case e_expr      : delete reinterpret_cast<expression_ptr>(local_data_list[i].first);
+                     case e_expr      : delete reinterpret_cast<expression_ptr>(local_data_list[i].pointer);
                                         break;
 
-                     case e_vecholder : delete reinterpret_cast<vector_holder_ptr>(local_data_list[i].first);
+                     case e_vecholder : delete reinterpret_cast<vector_holder_ptr>(local_data_list[i].pointer);
                                         break;
 
-                     case e_data      : delete (T*)(local_data_list[i].first);
+                     case e_data      : delete (T*)(local_data_list[i].pointer);
                                         break;
 
-                     case e_vecdata   : delete [] (T*)(local_data_list[i].first);
+                     case e_vecdata   : delete [] (T*)(local_data_list[i].pointer);
                                         break;
 
                      default          : break;
@@ -12221,7 +12245,7 @@ namespace exprtk
 
          std::size_t ref_count;
          expression_ptr expr;
-         std::vector<std::pair<void*,data_type> > local_data_list;
+         local_data_list_t local_data_list;
       };
 
    public:
@@ -12249,8 +12273,10 @@ namespace exprtk
                {
                   delete expression_holder_;
                }
+
                expression_holder_ = 0;
             }
+
             expression_holder_ = e.expression_holder_;
             expression_holder_->ref_count++;
             symbol_table_ = e.symbol_table_;
@@ -12266,7 +12292,7 @@ namespace exprtk
       inline bool operator!() const
       {
          return (
-                  (0 == expression_holder_) ||
+                  (0 == expression_holder_      ) ||
                   (0 == expression_holder_->expr)
                 );
       }
@@ -12279,8 +12305,10 @@ namespace exprtk
             {
                delete expression_holder_;
             }
+
             expression_holder_ = 0;
          }
+
          return *this;
       }
 
@@ -12343,6 +12371,7 @@ namespace exprtk
                   delete expression_holder_;
                }
             }
+
             expression_holder_ = new expression_holder(expr);
          }
       }
@@ -12355,8 +12384,9 @@ namespace exprtk
             {
                expression_holder_->
                   local_data_list.push_back(
-                     std::make_pair(reinterpret_cast<void*>(expr),
-                                    expression_holder::e_expr));
+                     typename expression<T>::expression_holder::
+                        data_pack(reinterpret_cast<void*>(expr),
+                                  expression_holder::e_expr));
             }
          }
       }
@@ -12369,8 +12399,9 @@ namespace exprtk
             {
                expression_holder_->
                   local_data_list.push_back(
-                     std::make_pair(reinterpret_cast<void*>(vec_holder),
-                                    expression_holder::e_vecholder));
+                     typename expression<T>::expression_holder::
+                        data_pack(reinterpret_cast<void*>(vec_holder),
+                                  expression_holder::e_vecholder));
             }
          }
       }
@@ -12383,10 +12414,24 @@ namespace exprtk
             {
                expression_holder_->
                   local_data_list.push_back(
-                     std::make_pair(reinterpret_cast<void*>(data),
-                                    vectype ? expression_holder::e_vecdata :
-                                              expression_holder::e_data));
+                     typename expression<T>::expression_holder::
+                        data_pack(reinterpret_cast<void*>(data),
+                                  vectype ? expression_holder::e_vecdata :
+                                            expression_holder::e_data));
             }
+         }
+      }
+
+      inline typename expression_holder::local_data_list_t local_data_list()
+      {
+         if (expression_holder_)
+         {
+            return expression_holder_->local_data_list;
+         }
+         else
+         {
+            static typename expression_holder::local_data_list_t null_local_data_list;
+            return null_local_data_list;
          }
       }
 
@@ -12395,6 +12440,7 @@ namespace exprtk
 
       friend class parser<T>;
       friend class expression_helper<T>;
+      friend class function_compositor<T>;
    };
 
    template <typename T>
@@ -12476,12 +12522,12 @@ namespace exprtk
          switch (mode)
          {
             case e_unknown : return std::string("Unknown Error");
-            case e_syntax  : return std::string("Syntax Error");
-            case e_token   : return std::string("Token Error");
+            case e_syntax  : return std::string("Syntax Error" );
+            case e_token   : return std::string("Token Error"  );
             case e_numeric : return std::string("Numeric Error");
-            case e_symtab  : return std::string("Symbol Error");
-            case e_lexer   : return std::string("Lexer Error");
-            case e_helper  : return std::string("Helper Error");
+            case e_symtab  : return std::string("Symbol Error" );
+            case e_lexer   : return std::string("Lexer Error"  );
+            case e_helper  : return std::string("Helper Error" );
             default        : return std::string("Unknown Error");
          }
       }
