@@ -3281,6 +3281,10 @@ inline bool run_test10()
    {
       std::string expression_list[] =
       {
+         "var x; 1",
+         "var x := 1; x",
+         "var x := 1; var y := 2; 1",
+         "var x := 1; var y := 2; x",
          "var x:=6; var y:=4; x + -3  ==   3",
          "var x:=6; var y:=4; x - -3  ==   9",
          "var x:=6; var y:=4; x * -3  == -18",
@@ -4520,28 +4524,64 @@ inline bool run_test19()
       symbol_table.add_variable("u",u);
       symbol_table.add_variable("v",v);
 
-      expression_t expression;
-      expression.register_symbol_table(symbol_table);
-
       parser_t parser;
 
-      std::string expression_str = "f6(x,y,z,w,u,v) + 2";
+      const std::string expr_str_list[] =
+                          {
+                            "f0()",
+                            "f1(x)",
+                            "f2(x,x)",
+                            "f3(x,x,x)",
+                            "f4(x,x,x,x)",
+                            "f5(x,x,x,x,x)",
+                            "f6(x,x,x,x,x,x)",
+                            "f2(x,y)",
+                            "f3(x,y,z)",
+                            "f4(x,y,z,w)",
+                            "f5(x,y,z,w,u)",
+                            "f6(x,y,z,w,u,v)"
+                          };
+      const std::size_t expr_str_list_size = sizeof(expr_str_list) / sizeof(std::string);
 
-      if (!parser.compile(expression_str,expression))
+      const T result_list[] =
+                {
+                  T(6         ),
+                  T(35        ),
+                  T(490       ),
+                  T(13230     ),
+                  T(436590    ),
+                  T(22702680  ),
+                  T(1543782240),
+                  T(525       ),
+                  T(15120     ),
+                  T(533610    ),
+                  T(29459430  ),
+                  T(2122700580)
+                };
+
+      for (std::size_t i = 0; i < expr_str_list_size; ++i)
       {
-         printf("run_test19() - Error: %s   Expression: %s\n",
-                parser.error().c_str(),
-                expression_str.c_str());
-         return false;
-      }
+         expression_t expression;
+         expression.register_symbol_table(symbol_table);
 
-      T result = expression.value();
+         if (!parser.compile(expr_str_list[i],expression))
+         {
+            printf("run_test19() - Error: %s   Expression: %s\n",
+                   parser.error().c_str(),
+                   expr_str_list[i].c_str());
+            return false;
+         }
 
-      if (T(2122700582) != result)
-      {
-         printf("run_test19() - Error in evaluation! (2) Expression: %s\n",
-                expression_str.c_str());
-         return false;
+         T result = expression.value();
+
+         if (result_list[i] != result)
+         {
+            printf("run_test19() - Error in evaluation! (2) Expression: %s Expected: %10.1f\tResult: %10.1f\n",
+                   expr_str_list[i].c_str(),
+                   result_list[i],
+                   result);
+            return false;
+         }
       }
    }
 
@@ -4558,6 +4598,13 @@ inline bool run_test19()
               "x","y");
 
       compositor
+         .add("is_prime1",
+              "if(frac(x) != 0, false,                                "
+              "   if(x <= 0, false,                                   "
+              "      is_prime_impl1(x,min(x - 1,trunc(sqrt(x)) + 1))))",
+              "x");
+
+      compositor
          .add("is_prime_impl2",
               "switch                                        "
               "{                                             "
@@ -4566,13 +4613,6 @@ inline bool run_test19()
               "  default           : is_prime_impl2(x,y - 1);"
               "}                                             ",
               "x","y");
-
-      compositor
-         .add("is_prime1",
-              "if(frac(x) != 0, false,                                "
-              "   if(x <= 0, false,                                   "
-              "      is_prime_impl1(x,min(x - 1,trunc(sqrt(x)) + 1))))",
-              "x");
 
       compositor
          .add("is_prime2",
@@ -5063,6 +5103,60 @@ inline bool run_test19()
       }
    }
 
+   {
+      T x = T(0);
+
+      symbol_table_t symbol_table;
+
+      symbol_table.add_variable("x",x);
+
+      compositor_t compositor(symbol_table);
+
+      compositor
+         .add("fooboo",
+              " var x := input;       "
+              " if (x > 0)            "
+              "   fooboo(x - 1) + x;  "
+              " else                  "
+              "   0;                  ",
+              "input");
+
+      std::string expression_str = "fOoBoO(x)";
+
+      expression_t expression;
+
+      expression.register_symbol_table(symbol_table);
+
+      parser_t parser;
+
+      if (!parser.compile(expression_str,expression))
+      {
+         printf("run_test19() - Error: %s   Expression: %s\n",
+                parser.error().c_str(),
+                expression_str.c_str());
+         return false;
+      }
+
+      T sum = T(0);
+
+      for (std::size_t i = 0; i < 100; ++i)
+      {
+         x = T(i);
+         sum += x;
+         T result = expression.value();
+
+         if (result != sum)
+         {
+            printf("run_test19() - FooBoo(%5.2f)  Expected: %5.2f\tResult: %5.2f\n",
+                   x,
+                   sum,
+                   result);
+            return false;
+         }
+      }
+
+   }
+
    return true;
 }
 
@@ -5205,3 +5299,4 @@ int main()
 
    return 0;
 }
+
