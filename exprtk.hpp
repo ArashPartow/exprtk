@@ -8783,6 +8783,8 @@ namespace exprtk
          virtual const T c() const = 0;
 
          virtual void set_c(const T) = 0;
+
+         virtual expression_node<T>* move_branch(const std::size_t& index) = 0;
       };
 
       template <typename T>
@@ -10227,6 +10229,12 @@ namespace exprtk
             return branch_[0].first;
          }
 
+         inline expression_node<T>* move_branch(const std::size_t&)
+         {
+            branch_[0].second = false;
+            return branch_[0].first;
+         }
+
       private:
 
          boc_node(const boc_node<T,Operation>&);
@@ -11430,6 +11438,7 @@ namespace exprtk
                {
                   tm_itr_t itr = map.begin();
                   tm_itr_t end = map.end();
+
                   while (end != itr)
                   {
                      deleter::process((*itr).second);
@@ -12082,9 +12091,8 @@ namespace exprtk
          else if (!local_data().stringvar_store.symbol_exists(symbol_name))
             return false;
          return (
-                  local_data().stringvar_store.symbol_exists(symbol_name)
-                  ||
-                  local_data().stringvar_store.is_constant(symbol_name)
+                  local_data().stringvar_store.symbol_exists(symbol_name) ||
+                  local_data().stringvar_store.is_constant  (symbol_name)
                 );
       }
       #endif
@@ -12204,7 +12212,7 @@ namespace exprtk
    {
    private:
 
-      typedef details::expression_node<T>* expression_ptr;
+      typedef details::expression_node<T>*  expression_ptr;
       typedef details::vector_holder<T>* vector_holder_ptr;
 
       struct expression_holder
@@ -12665,7 +12673,7 @@ namespace exprtk
       typedef details::cons_conditional_node<T>     cons_conditional_node_t;
       typedef details::while_loop_node <T>                while_loop_node_t;
       typedef details::repeat_until_loop_node<T>   repeat_until_loop_node_t;
-      typedef details::for_loop_node<T>                     for_loop_node_t;
+      typedef details::for_loop_node   <T>                  for_loop_node_t;
       #ifndef exprtk_disable_break_continue
       typedef details::while_loop_bc_node <T>          while_loop_bc_node_t;
       typedef details::repeat_until_loop_bc_node<T> repeat_until_loop_bc_node_t;
@@ -16570,6 +16578,7 @@ namespace exprtk
       inline expression_node_ptr parse_symtab_symbol()
       {
          const std::string symbol = current_token_.value;
+
          // Are we dealing with a variable or a special constant?
          expression_node_ptr variable = symbol_table_.get_variable(symbol);
          if (variable)
@@ -17365,6 +17374,38 @@ namespace exprtk
                return (!details::is_constant_node(branch[0]) && details::is_constant_node(branch[1]));
          }
 
+         inline bool cocob_optimizable(const details::operator_type& operation, expression_node_ptr (&branch)[2]) const
+         {
+            if (
+                 (details::e_add  == operation) ||
+                 (details::e_sub  == operation) ||
+                 (details::e_mul  == operation) ||
+                 (details::e_div  == operation)
+               )
+            {
+               return (details::is_constant_node(branch[0]) && details::is_cob_node(branch[1])) ||
+                      (details::is_constant_node(branch[1]) && details::is_cob_node(branch[0]));
+            }
+            else
+               return false;
+         }
+
+         inline bool coboc_optimizable(const details::operator_type& operation, expression_node_ptr (&branch)[2]) const
+         {
+            if (
+                 (details::e_add  == operation) ||
+                 (details::e_sub  == operation) ||
+                 (details::e_mul  == operation) ||
+                 (details::e_div  == operation)
+               )
+            {
+               return (details::is_constant_node(branch[0]) && details::is_boc_node(branch[1])) ||
+                      (details::is_constant_node(branch[1]) && details::is_boc_node(branch[0]));
+            }
+            else
+               return false;
+         }
+
          inline bool uvouv_optimizable(const details::operator_type& operation, expression_node_ptr (&branch)[2]) const
          {
             if (!operation_optimizable(operation))
@@ -17546,6 +17587,25 @@ namespace exprtk
                return result;
             else
             #endif
+
+            {
+               /*
+                  Possible reductions:
+                  1. c o cob -> cob
+                  2. cob o c -> cob
+                  3. c o boc -> boc
+                  4. boc o c -> boc
+               */
+               expression_node_ptr result = error_node();
+               if (cocob_optimizable(operation,branch))
+                  result = synthesize_cocob_expression::process(*this,operation,branch);
+               else if (coboc_optimizable(operation,branch) && (0 == result))
+                  result = synthesize_coboc_expression::process(*this,operation,branch);
+
+               if (result)
+                  return result;
+            }
+
             if (uvouv_optimizable(operation,branch))
                return synthesize_uvouv_expression(operation,branch);
             else if (vob_optimizable(operation,branch))
@@ -19169,6 +19229,289 @@ namespace exprtk
                   #undef case_stmt
                   default : return error_node();
                }
+            }
+         };
+
+         struct synthesize_cocob_expression
+         {
+            static inline expression_node_ptr process(expression_generator<Type>& expr_gen,
+                                                      const details::operator_type& operation,
+                                                      expression_node_ptr (&branch)[2])
+            {
+               expression_node_ptr result = error_node();
+
+               // (cob) o c --> cob
+               if (details::is_cob_node(branch[0]))
+               {
+                  details::cob_base_node<Type>* cobnode = static_cast<details::cob_base_node<Type>*>(branch[0]);
+                  const Type c = static_cast<details::literal_node<Type>*>(branch[1])->value();
+
+                  bool op_addsub = (details::e_add == cobnode->operation()) ||
+                                   (details::e_sub == cobnode->operation());
+
+                  if (op_addsub)
+                  {
+                     switch (operation)
+                     {
+                        case details::e_add : cobnode->set_c(cobnode->c() + c); break;
+                        case details::e_sub : cobnode->set_c(cobnode->c() - c); break;
+                        default             : return error_node();
+                     }
+
+                     result = cobnode;
+
+                  }
+                  else if (details::e_mul == cobnode->operation())
+                  {
+                     switch (operation)
+                     {
+                        case details::e_mul : cobnode->set_c(cobnode->c() * c); break;
+                        case details::e_div : cobnode->set_c(cobnode->c() / c); break;
+                        default             : return error_node();
+                     }
+
+                     result = cobnode;
+                  }
+                  else if (details::e_div == cobnode->operation())
+                  {
+                     if (details::e_mul == operation)
+                     {
+                        cobnode->set_c(cobnode->c() * c);
+                        result = cobnode;
+                     }
+                     else if (details::e_div == operation)
+                     {
+                        result = expr_gen.node_allocator_->
+                                    template allocate_tt<typename details::cob_node<Type,details::div_op<Type> > >
+                                       (cobnode->c() / c,cobnode->move_branch(0));
+                        free_node(*expr_gen.node_allocator_,branch[0]);
+                     }
+                  }
+
+                  if (result)
+                  {
+                     free_node(*expr_gen.node_allocator_,branch[1]);
+                  }
+               }
+
+               // c o (cob) --> cob
+               else if (details::is_cob_node(branch[1]))
+               {
+                  details::cob_base_node<Type>* cobnode = static_cast<details::cob_base_node<Type>*>(branch[1]);
+                  const Type c = static_cast<details::literal_node<Type>*>(branch[0])->value();
+
+                  if (details::e_add == cobnode->operation())
+                  {
+                     if (details::e_add == operation)
+                     {
+                        cobnode->set_c(c + cobnode->c());
+                        result = cobnode;
+                     }
+                     else if (details::e_sub == operation)
+                     {
+                        result = expr_gen.node_allocator_->
+                                    template allocate_tt<typename details::cob_node<Type,details::sub_op<Type> > >
+                                       (c - cobnode->c(),cobnode->move_branch(0));
+                        free_node(*expr_gen.node_allocator_,branch[1]);
+                     }
+                  }
+                  else if (details::e_sub == cobnode->operation())
+                  {
+                     if (details::e_add == operation)
+                     {
+                        cobnode->set_c(c + cobnode->c());
+                        result = cobnode;
+                     }
+                     else if (details::e_sub == operation)
+                     {
+                        result = expr_gen.node_allocator_->
+                                    template allocate_tt<typename details::cob_node<Type,details::add_op<Type> > >
+                                       (c - cobnode->c(),cobnode->move_branch(0));
+                        free_node(*expr_gen.node_allocator_,branch[1]);
+                     }
+                  }
+                  else if (details::e_mul == cobnode->operation())
+                  {
+                     if (details::e_mul == operation)
+                     {
+                        cobnode->set_c(c * cobnode->c());
+                        result = cobnode;
+                     }
+                     else if (details::e_div == operation)
+                     {
+                        result = expr_gen.node_allocator_->
+                                    template allocate_tt<typename details::cob_node<Type,details::div_op<Type> > >
+                                       (c / cobnode->c(),cobnode->move_branch(0));
+                        free_node(*expr_gen.node_allocator_,branch[1]);
+                     }
+                  }
+                  else if (details::e_div == cobnode->operation())
+                  {
+                     if (details::e_mul == operation)
+                     {
+                        cobnode->set_c(c * cobnode->c());
+                        result = cobnode;
+                     }
+                     else if (details::e_div == operation)
+                     {
+                        result = expr_gen.node_allocator_->
+                                    template allocate_tt<typename details::cob_node<Type,details::mul_op<Type> > >
+                                       (c / cobnode->c(),cobnode->move_branch(0));
+                        free_node(*expr_gen.node_allocator_,branch[1]);
+                     }
+                  }
+
+                  if (result)
+                  {
+                     free_node(*expr_gen.node_allocator_,branch[0]);
+                  }
+
+               }
+               return result;
+            }
+         };
+
+         struct synthesize_coboc_expression
+         {
+            static inline expression_node_ptr process(expression_generator<Type>& expr_gen,
+                                                      const details::operator_type& operation,
+                                                      expression_node_ptr (&branch)[2])
+            {
+               expression_node_ptr result = error_node();
+
+               // (boc) o c --> boc
+               if (details::is_boc_node(branch[0]))
+               {
+                  details::boc_base_node<Type>* bocnode = static_cast<details::boc_base_node<Type>*>(branch[0]);
+                  const Type c = static_cast<details::literal_node<Type>*>(branch[1])->value();
+
+                  if (details::e_add == bocnode->operation())
+                  {
+                     switch (operation)
+                     {
+                        case details::e_add : bocnode->set_c(bocnode->c() + c); break;
+                        case details::e_sub : bocnode->set_c(bocnode->c() - c); break;
+                        default             : return error_node();
+                     }
+                     result = bocnode;
+                  }
+                  else if (details::e_mul == bocnode->operation())
+                  {
+                     switch (operation)
+                     {
+                        case details::e_mul : bocnode->set_c(bocnode->c() * c); break;
+                        case details::e_div : bocnode->set_c(bocnode->c() / c); break;
+                        default             : return error_node();
+                     }
+                     result = bocnode;
+                  }
+                  else if (details::e_sub == bocnode->operation())
+                  {
+                     if (details::e_add == operation)
+                     {
+                        result = expr_gen.node_allocator_->
+                                    template allocate_tt<typename details::boc_node<Type,details::add_op<Type> > >
+                                       (bocnode->move_branch(0),c - bocnode->c());
+                        free_node(*expr_gen.node_allocator_,branch[0]);
+                     }
+                     else if (details::e_sub == operation)
+                     {
+                        bocnode->set_c(bocnode->c() + c);
+                        result = bocnode;
+                     }
+                  }
+                  else if (details::e_div == bocnode->operation())
+                  {
+                     switch (operation)
+                     {
+                        case details::e_div : bocnode->set_c(bocnode->c() * c); break;
+                        case details::e_mul : bocnode->set_c(bocnode->c() / c); break;
+                        default             : return error_node();
+                     }
+                     result = bocnode;
+                  }
+
+                  if (result)
+                  {
+                     free_node(*expr_gen.node_allocator_,branch[1]);
+                  }
+               }
+
+               // c o (boc) --> boc
+               else if (details::is_boc_node(branch[1]))
+               {
+                  details::boc_base_node<Type>* bocnode = static_cast<details::boc_base_node<Type>*>(branch[1]);
+                  const Type c = static_cast<details::literal_node<Type>*>(branch[0])->value();
+
+                  if (details::e_add == bocnode->operation())
+                  {
+                     if (details::e_add == operation)
+                     {
+                        bocnode->set_c(c + bocnode->c());
+                        result = bocnode;
+                     }
+                     else if (details::e_sub == operation)
+                     {
+                        result = expr_gen.node_allocator_->
+                                    template allocate_tt<typename details::cob_node<Type,details::sub_op<Type> > >
+                                       (c - bocnode->c(),bocnode->move_branch(0));
+                        free_node(*expr_gen.node_allocator_,branch[1]);
+                     }
+                  }
+                  else if (details::e_sub == bocnode->operation())
+                  {
+                     if (details::e_add == operation)
+                     {
+                        result = expr_gen.node_allocator_->
+                                    template allocate_tt<typename details::boc_node<Type,details::add_op<Type> > >
+                                       (bocnode->move_branch(0),c - bocnode->c());
+                        free_node(*expr_gen.node_allocator_,branch[1]);
+                     }
+                     else if (details::e_sub == operation)
+                     {
+                        result = expr_gen.node_allocator_->
+                                    template allocate_tt<typename details::cob_node<Type,details::sub_op<Type> > >
+                                       (c + bocnode->c(),bocnode->move_branch(0));
+                        free_node(*expr_gen.node_allocator_,branch[1]);
+                     }
+                  }
+                  else if (details::e_mul == bocnode->operation())
+                  {
+                     if (details::e_mul == operation)
+                     {
+                        bocnode->set_c(c * bocnode->c());
+                        result = bocnode;
+                     }
+                     else if (details::e_div == operation)
+                     {
+                        result = expr_gen.node_allocator_->
+                                    template allocate_tt<typename details::cob_node<Type,details::div_op<Type> > >
+                                       (c / bocnode->c(),bocnode->move_branch(0));
+                        free_node(*expr_gen.node_allocator_,branch[1]);
+                     }
+                  }
+                  else if (details::e_div == bocnode->operation())
+                  {
+                     if (details::e_mul == operation)
+                     {
+                        bocnode->set_c(bocnode->c() / c);
+                        result = bocnode;
+                     }
+                     else if (details::e_div == operation)
+                     {
+                        result = expr_gen.node_allocator_->
+                                    template allocate_tt<typename details::cob_node<Type,details::div_op<Type> > >
+                                       (c * bocnode->c(),bocnode->move_branch(0));
+                        free_node(*expr_gen.node_allocator_,branch[1]);
+                     }
+                  }
+
+                  if (result)
+                  {
+                     free_node(*expr_gen.node_allocator_,branch[0]);
+                  }
+               }
+               return result;
             }
          };
 
