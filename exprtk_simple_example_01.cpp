@@ -21,7 +21,7 @@
 #include "exprtk.hpp"
 
 
-template<typename T>
+template <typename T>
 void trig_function()
 {
    std::string expression_string = "clamp(-1.0,sin(2 * pi * x) + cos(x / 2 * pi),+1.0)";

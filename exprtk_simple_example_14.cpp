@@ -21,7 +21,7 @@
 #include "exprtk.hpp"
 
 
-template<typename T>
+template <typename T>
 void stddev_example()
 {
    typedef exprtk::expression<T> expression_t;

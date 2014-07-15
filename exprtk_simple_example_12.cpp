@@ -21,7 +21,7 @@
 #include "exprtk.hpp"
 
 
-template<typename T>
+template <typename T>
 void bubble_sort()
 {
    typedef exprtk::symbol_table<T> symbol_table_t;

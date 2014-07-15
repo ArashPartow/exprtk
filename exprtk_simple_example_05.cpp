@@ -21,7 +21,7 @@
 #include "exprtk.hpp"
 
 
-template<typename T>
+template <typename T>
 struct myfunc : public exprtk::ifunction<T>
 {
    myfunc()

@@ -19,6 +19,7 @@
 #include <cstdio>
 #include <cmath>
 #include <iostream>
+#include <fstream>
 #include <string>
 #include <deque>
 
@@ -269,9 +270,20 @@ struct native
 };
 
 void pgo_primer();
+void perform_file_based_benchmark(const std::string& file_name, const std::size_t& rounds = 100000);
 
-int main()
+int main(int argc, char* argv[])
 {
+   if (argc >= 2)
+   {
+      const std::string file_name = argv[1];
+      if (argc == 2)
+         perform_file_based_benchmark(file_name);
+      else
+         perform_file_based_benchmark(file_name,atoi(argv[2]));
+      return 0;
+   }
+
    pgo_primer();
 
    double x = 0;
@@ -361,4 +373,159 @@ void pgo_primer()
          total += native<double>::func16(x,y);
       }
    }
+}
+
+std::size_t load_expression_file(const std::string& file_name, std::deque<std::string>& expression_list)
+{
+   std::ifstream stream(file_name.c_str());
+   if (!stream) return 0;
+   std::string buffer;
+   buffer.reserve(1024);
+   std::size_t line_count = 0;
+   while (std::getline(stream,buffer))
+   {
+      if (buffer.empty())
+         continue;
+      else if ('#' == buffer[0])
+         continue;
+      ++line_count;
+      expression_list.push_back(buffer);
+   }
+
+   return line_count;
+}
+
+void perform_file_based_benchmark(const std::string& file_name, const std::size_t& rounds)
+{
+   std::deque<std::string> expr_str_list;
+   if (0 == load_expression_file(file_name,expr_str_list))
+   {
+      std::cout << "Failed to load any expressions from: " << file_name << "\n";
+      return;
+   }
+
+   typedef exprtk::symbol_table<double> symbol_table_t;
+   typedef exprtk::expression<double>     expression_t;
+   typedef exprtk::parser<double>             parser_t;
+
+   std::deque<expression_t> expression_list;
+
+   symbol_table_t symbol_table;
+
+   double a = 1.1;
+   double b = 2.2;
+   double c = 3.3;
+   double x = 2.123456;
+   double y = 3.123456;
+   double z = 4.123456;
+   double w = 5.123456;
+
+   symbol_table.add_variable("a", a);
+   symbol_table.add_variable("b", b);
+   symbol_table.add_variable("c", c);
+
+   symbol_table.add_variable("x", x);
+   symbol_table.add_variable("y", y);
+   symbol_table.add_variable("z", z);
+   symbol_table.add_variable("w", w);
+
+   exprtk::polynomial<double, 1> poly01;
+   exprtk::polynomial<double, 2> poly02;
+   exprtk::polynomial<double, 3> poly03;
+   exprtk::polynomial<double, 4> poly04;
+   exprtk::polynomial<double, 5> poly05;
+   exprtk::polynomial<double, 6> poly06;
+   exprtk::polynomial<double, 7> poly07;
+   exprtk::polynomial<double, 8> poly08;
+   exprtk::polynomial<double, 9> poly09;
+   exprtk::polynomial<double,10> poly10;
+   exprtk::polynomial<double,11> poly11;
+   exprtk::polynomial<double,12> poly12;
+
+   symbol_table.add_function("poly01", poly01);
+   symbol_table.add_function("poly02", poly02);
+   symbol_table.add_function("poly03", poly03);
+   symbol_table.add_function("poly04", poly04);
+   symbol_table.add_function("poly05", poly05);
+   symbol_table.add_function("poly06", poly06);
+   symbol_table.add_function("poly07", poly07);
+   symbol_table.add_function("poly08", poly08);
+   symbol_table.add_function("poly09", poly09);
+   symbol_table.add_function("poly10", poly10);
+   symbol_table.add_function("poly11", poly11);
+   symbol_table.add_function("poly12", poly12);
+
+   static double e = exprtk::details::numeric::constant::e;
+   symbol_table.add_variable("e", e, true);
+
+   symbol_table.add_constants();
+
+   {
+      parser_t parser;
+      for (std::size_t i = 0; i < expr_str_list.size(); ++i)
+      {
+         expression_t expression;
+         expression.register_symbol_table(symbol_table);
+         if (!parser.compile(expr_str_list[i],expression))
+         {
+            printf("[perform_file_based_benchmark] - Parser Error: %s\tExpression: %s\n",
+                   parser.error().c_str(),
+                   expr_str_list[i].c_str());
+            return;
+         }
+         expression_list.push_back(expression);
+      }
+   }
+
+   exprtk::timer total_timer;
+
+   double single_eval_total_time = 0.0;
+
+   total_timer.start();
+   for (std::size_t i = 0; i < expression_list.size(); ++i)
+   {
+      expression_t& e = expression_list[i];
+
+      exprtk::timer timer;
+
+      a = 1.1;
+      b = 2.2;
+      c = 3.3;
+      x = 2.123456;
+      y = 3.123456;
+      z = 4.123456;
+      w = 5.123456;
+
+      timer.start();
+      double sum = 0.0;
+      for (std::size_t r = 0; r < rounds; ++r)
+      {
+         sum += e.value();
+         std::swap(a,b);
+         std::swap(x,y);
+      }
+      timer.stop();
+
+      printf("Expression %3d of %3d %9.3f ns\t%10d ns\t(%30.10f)  '%s'\n",
+             static_cast<int>(i + 1),
+             static_cast<int>(expression_list.size()),
+             (timer.time() * 1000000000.0) / (1.0 * rounds),
+             static_cast<unsigned int>(timer.time() * 1000000000.0),
+             sum,
+             expr_str_list[i].c_str());
+
+      fflush(stdout);
+
+      single_eval_total_time += (timer.time() * 1000000000.0) / (1.0 * rounds);
+   }
+   total_timer.stop();
+
+   printf("[*] Number Of Evals:        %15.0f\n",
+          rounds * (expression_list.size() * 1.0));
+
+   printf("[*] Total Time:             %9.3fsec\n",
+          total_timer.time());
+
+   printf("[*] Total Single Eval Time: %9.3fms\n",
+          single_eval_total_time / 1000000.0);
 }

@@ -21,7 +21,7 @@
 #include "exprtk.hpp"
 
 
-template<typename T>
+template <typename T>
 void square_wave2()
 {
    typedef exprtk::symbol_table<T> symbol_table_t;
@@ -30,7 +30,7 @@ void square_wave2()
 
    std::string wave_program =
                   " var r := 0;                                         "
-                  " for(i := 0; i < 1000; i += 1)                       "
+                  " for(var i := 0; i < 1000; i += 1)                   "
                   " {                                                   "
                   "   r += (1 / (2i + 1)) * sin((4i + 2) * pi * f * t); "
                   " };                                                  "

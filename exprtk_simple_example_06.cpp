@@ -21,7 +21,7 @@
 #include "exprtk.hpp"
 
 
-template<typename T>
+template <typename T>
 void vector_function()
 {
    typedef exprtk::symbol_table<T> symbol_table_t;

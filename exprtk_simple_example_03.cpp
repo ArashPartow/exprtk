@@ -21,7 +21,7 @@
 #include "exprtk.hpp"
 
 
-template<typename T>
+template <typename T>
 void polynomial()
 {
    std::string expression_string = "25x^5 - 35x^4 - 15x^3 + 40x^2 - 15x + 1";

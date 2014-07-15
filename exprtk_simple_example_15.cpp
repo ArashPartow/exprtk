@@ -21,7 +21,7 @@
 #include "exprtk.hpp"
 
 
-template<typename T>
+template <typename T>
 void black_scholes_merton_model()
 {
    typedef exprtk::symbol_table<T> symbol_table_t;

@@ -23,7 +23,7 @@
 #include "exprtk.hpp"
 
 
-template<typename T>
+template <typename T>
 void savitzky_golay_filter()
 {
    typedef exprtk::symbol_table<T> symbol_table_t;

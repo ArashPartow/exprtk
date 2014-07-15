@@ -21,7 +21,7 @@
 #include "exprtk.hpp"
 
 
-template<typename T>
+template <typename T>
 void square_wave()
 {
    std::string expr_string = "a*(4/pi)*"

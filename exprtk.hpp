@@ -3280,7 +3280,7 @@ namespace exprtk
          e_sf4ext44 = 2044, e_sf4ext45 = 2045, e_sf4ext46 = 2046, e_sf4ext47 = 2047,
          e_sf4ext48 = 2048, e_sf4ext49 = 2049, e_sf4ext50 = 2050, e_sf4ext51 = 2051,
          e_sf4ext52 = 2052, e_sf4ext53 = 2053, e_sf4ext54 = 2054, e_sf4ext55 = 2055,
-         e_sf4ext56 = 2056, e_sf4ext57 = 2057, e_sf4ext58 = 2058
+         e_sf4ext56 = 2056, e_sf4ext57 = 2057, e_sf4ext58 = 2058, e_sf4ext59 = 2059
       };
 
       struct base_operation_t
@@ -5974,6 +5974,7 @@ namespace exprtk
       template <typename T> struct sfext56_op : public sf_base<T> { typedef typename sf_base<T>::Type Type; static inline T process(Type x, Type y, Type z, Type w) { return (x - y) * (z - w); } static inline std::string id() { return "(t-t)*(t-t)";} };
       template <typename T> struct sfext57_op : public sf_base<T> { typedef typename sf_base<T>::Type Type; static inline T process(Type x, Type y, Type z, Type w) { return (x - y) + (z - w); } static inline std::string id() { return "(t-t)+(t-t)";} };
       template <typename T> struct sfext58_op : public sf_base<T> { typedef typename sf_base<T>::Type Type; static inline T process(Type x, Type y, Type z, Type w) { return (x - y) - (z - w); } static inline std::string id() { return "(t-t)-(t-t)";} };
+      template <typename T> struct sfext59_op : public sf_base<T> { typedef typename sf_base<T>::Type Type; static inline T process(Type x, Type y, Type z, Type w) { return (x / y) + (z * w); } static inline std::string id() { return "(t/t)+(t*t)";} };
 
       template <typename T, typename SpecialFunction>
       class sf3_node : public trinary_node<T>
@@ -19723,7 +19724,7 @@ namespace exprtk
                   case_stmt(details::e_sf4ext52,details::sfext52_op) case_stmt(details::e_sf4ext53,details::sfext53_op)
                   case_stmt(details::e_sf4ext54,details::sfext54_op) case_stmt(details::e_sf4ext55,details::sfext55_op)
                   case_stmt(details::e_sf4ext56,details::sfext56_op) case_stmt(details::e_sf4ext57,details::sfext57_op)
-                  case_stmt(details::e_sf4ext58,details::sfext58_op)
+                  case_stmt(details::e_sf4ext58,details::sfext58_op) case_stmt(details::e_sf4ext59,details::sfext59_op)
 
                   #undef case_stmt
                   default : return error_node();
@@ -23920,7 +23921,7 @@ namespace exprtk
          register_sf4ext(44) register_sf4ext(45) register_sf4ext(46) register_sf4ext(47)
          register_sf4ext(48) register_sf4ext(49) register_sf4ext(50) register_sf4ext(51)
          register_sf4ext(52) register_sf4ext(53) register_sf4ext(54) register_sf4ext(55)
-         register_sf4ext(56) register_sf4ext(57) register_sf4ext(58)
+         register_sf4ext(56) register_sf4ext(57) register_sf4ext(58) register_sf4ext(59)
          #undef register_sf4ext
       }
 
