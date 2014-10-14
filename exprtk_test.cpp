@@ -33,7 +33,7 @@ typedef std::pair<std::string,numeric_type> test_t;
 
 static const test_t test_list[] =
                   {
-                     // Note: Each of following tests should compile down
+                     // Note: Each of following tests must compile down
                      // to a single literal node.
                      test_t("0",0.0),
                      test_t("1",1.0),
@@ -3345,6 +3345,30 @@ inline bool run_test10()
          "var x:=3; var y:=6; -(-(-(x+y)))*-(-(y+x))    == -81",
          "var x:=3; var y:=6; -(-(x+y))*-(-(-(y+x)))    == -81",
          "var x:=3; var y:=6; -(-(-(x+y)))*-(-(-(y+x))) ==  81",
+         "var x:= 2; var y := 3; (-abs(x)+-abs(y)) == -5     ",
+         "var x:= 2; var y := 3; (-abs(x)--abs(y)) ==  1     ",
+         "var x:= 2; var y := 3; (-abs(x)*-abs(y)) ==  6     ",
+         "var x:= 2; var y := 3; (-abs(x)/-abs(y)) ==  (2/3) ",
+         "var x:= 2; var y := 3; (-abs(x)+abs(y))  ==  1     ",
+         "var x:= 2; var y := 3; (-abs(x)-abs(y))  == -5     ",
+         "var x:= 2; var y := 3; (-abs(x)*abs(y))  == -6     ",
+         "var x:= 2; var y := 3; (-abs(x)/abs(y))  == -(2/3) ",
+         "var x:= 2; var y := 3; (abs(x)+-abs(y))  == -1     ",
+         "var x:= 2; var y := 3; (abs(x)--abs(y))  ==  5     ",
+         "var x:= 2; var y := 3; (abs(x)*-abs(y))  == -6     ",
+         "var x:= 2; var y := 3; (abs(x)/-abs(y))  == -(2/3) ",
+         "var x:= 2; var y := 3; (-abs(x + 0)+-abs(y - 0)) == -5     ",
+         "var x:= 2; var y := 3; (-abs(x + 0)--abs(y - 0)) ==  1     ",
+         "var x:= 2; var y := 3; (-abs(x + 0)*-abs(y - 0)) ==  6     ",
+         "var x:= 2; var y := 3; (-abs(x + 0)/-abs(y - 0)) ==  (2/3) ",
+         "var x:= 2; var y := 3; (-abs(x + 0)+abs(y - 0))  ==  1     ",
+         "var x:= 2; var y := 3; (-abs(x + 0)-abs(y - 0))  == -5     ",
+         "var x:= 2; var y := 3; (-abs(x + 0)*abs(y - 0))  == -6     ",
+         "var x:= 2; var y := 3; (-abs(x + 0)/abs(y - 0))  == -(2/3) ",
+         "var x:= 2; var y := 3; (abs(x + 0)+-abs(y - 0))  == -1     ",
+         "var x:= 2; var y := 3; (abs(x + 0)--abs(y - 0))  ==  5     ",
+         "var x:= 2; var y := 3; (abs(x + 0)*-abs(y - 0))  == -6     ",
+         "var x:= 2; var y := 3; (abs(x + 0)/-abs(y - 0))  == -(2/3) ",
          "var x := 1; var y := 2; swap(x,y); (x == 2) and (y == 1)",
          "var x := 1; var y := 2; x <=> y     ; (x    == 2) and (y    == 1)",
          "var v[2] := {1,2}; swap(v[0],v[1]); (v[0] == 2) and (v[1] == 1)",

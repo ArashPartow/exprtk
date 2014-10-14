@@ -706,17 +706,19 @@ properly resolved the  original form will  cause a compilation  error.
 The  following is  a listing  of the  scenarios that  the joiner  can
 handle:
 
-   (a) '>' '='  --->  '>=' (gte)
-   (b) '<' '='  --->  '<=' (lte)
-   (c) '=' '='  --->  '==' (equal)
-   (d) '!' '='  --->  '!=' (not-equal)
-   (e) '<' '>'  --->  '<>' (not-equal)
-   (f) ':' '='  --->  ':=' (assignment)
-   (g) '+' '='  --->  '+=' (addition assignment)
-   (h) '-' '='  --->  '-=' (subtraction assignment)
-   (i) '*' '='  --->  '*=' (multiplication assignment)
-   (j) '/' '='  --->  '/=' (division assignment)
-   (j) '%' '='  --->  '%=' (modulo assignment)
+   (a) '>' '='  --->  '>='  (gte)
+   (b) '<' '='  --->  '<='  (lte)
+   (c) '=' '='  --->  '=='  (equal)
+   (d) '!' '='  --->  '!='  (not-equal)
+   (e) '<' '>'  --->  '<>'  (not-equal)
+   (f) ':' '='  --->  ':='  (assignment)
+   (g) '+' '='  --->  '+='  (addition assignment)
+   (h) '-' '='  --->  '-='  (subtraction assignment)
+   (i) '*' '='  --->  '*='  (multiplication assignment)
+   (j) '/' '='  --->  '/='  (division assignment)
+   (k) '%' '='  --->  '%='  (modulo assignment)
+   (l) '<=' '>' --->  '<=>' (swap)
+
 
 An example of the transformation that takes place is as follows:
 
@@ -917,6 +919,25 @@ will be returned. Where as for vectors, the value of the first element
 (eg: v[0]) will be returned.
 
 
+(4) Variable/Vector Assignment
+The value of a variable can be assigned to a vector and a vector or  a
+vector expression can be assigned to a variable.
+
+  (a) Variable To Vector:
+      Every element of the vector is assigned the value of the variable
+      or expression.
+      var x    := 3;
+      var y[3] := {1,2,3};
+      y := x + 1;
+
+  (b) Vector To Variable:
+      The variable is assigned the value of the first element of the
+      vector (aka vec[0])
+      var x    := 3;
+      var y[3] := {1,2,3};
+      x := y + 1;
+
+
 
 [13 - VECTOR PROCESSING]
 ExprTk  provides  support  for   various  forms  of  vector   oriented
@@ -932,14 +953,15 @@ with vectors:
 
    (a) Arithmetic:       +, -, *, /, %
    (b) Exponentiation:   vector ^ scalar
-   (c) Assignment:       :=, +=, -=, *=, /=, %=
+   (c) Assignment:       :=, +=, -=, *=, /=, %=, <=>
    (d) Inequalities:     <, <=, >, >=, ==, =
    (e) Unary operations:
-       abs, acos, acosh, asin, asinh, atan, atanh, avg, ceil,
-       cos, cosh, cot, csc, deg2grad, deg2rad, erf, erfc, exp,
-       expm1, floor, frac, grad2deg, log, log10, log1p, log2,
-       max, min, mul, rad2deg, round, sec, sgn, sin, sinc, sinh,
-       sqrt, sum, tan, tanh, trunc
+       abs, acos, acosh, asin, asinh, atan, atanh, ceil, cos, cosh,
+       cot, csc, deg2grad, deg2rad, erf, erfc, exp, expm1, floor,
+       frac, grad2deg, log, log10, log1p, log2, rad2deg, round, sec,
+       sgn, sin, sinc, sinh, sqrt, swap, tan, tanh, trunc
+   (f) Aggregate and Reduce operations:
+       avg, max, min, mul, sum
 
 Note: When one of  the above  described operations  is being performed
 between two  vectors, the  operation will  only span  the size  of the
@@ -966,6 +988,27 @@ the previously mentioned dot-product computation expression:
    {
      v0dotv1 += (v0[i] * v1[i]);
    }
+
+
+Note: In the scenario of inequalities between two vectors, the  result
+is not  a vector  but rather  a singular  variable denoting  a boolean
+state  of either  'true' or  'false' depending  on the  nature of  the
+inequality.
+
+   var x[3] := {1,1,1};
+   var y[3] := {3,2,1};
+
+   y > x == false
+
+
+Note:  When  the  aggregate  operations  denoted  above  are  used  in
+conjunction with a  vector or vector  expression, the return  value is
+not a vector but rather a single value.
+
+   var x[3] := {1,2,3};
+
+   sum(1 + 2x) == 15
+   7 == avg(3x + 1)
 
 
 
@@ -1057,13 +1100,10 @@ demonstrates how all the pieces are put together:
 
 
 (4) Function Side-Effects
-All function calls are assumed  to have side-effects by default.  What
-that means is that a certain type of optimisation will not be  carried
-out when the  function is being  called. The optimisation  in question
-is: constant  folding. Normally  during compilation  this optimisation
-would  be  invoked  when  all the  parameters  being  passed  into the
-function are literals,  the function will  be evaluated at  that point
-and a new literal will replace the function call node in the AST.
+All function calls are assumed  to have side-effects by default.  This
+assumption implicitly disables constant folding optimisations when all
+parameters being passed to the function are deduced as being constants
+at compile time.
 
 If it is certain that the function being registered does not have  any
 side effects and can  be correctly constant folded  where appropriate,
@@ -1102,7 +1142,7 @@ into account when using Exprtk:
  (01) ExprTk uses a rudimentary imperative programming model with
       syntax based on languages such as Pascal and C.
 
- (02) Supported types are float, double and long double.
+ (02) Supported types are float, double, long double and MPFR/GMP.
 
  (03) Standard mathematical operator precedence is applied (BEDMAS).
 
@@ -1113,9 +1153,10 @@ into account when using Exprtk:
  (05) Supported user defined types are numeric and string variables
       and functions.
 
- (06) All variable and function names are case-insensitive.
+ (06) All reserved and key words, variable, vector and function names
+      are case-insensitive.
 
- (07) Variable and function names must begin with a letter
+ (07) Variable, vector and function names must begin with a letter
       (A-Z or a-z), then can be comprised of any combination of
       letters, digits and underscores. (eg: x, var1 or power_func99)
 
@@ -1139,10 +1180,10 @@ into account when using Exprtk:
       space,  tabs, new-lines, control-feed et al.
       ('\n', '\r', '\t', '\b', '\v', '\f')
 
- (13) Strings may be constructed from any letters, digits or special
-      characters such as (~!@#$%^&*()[]|=+ ,./?<>;:"`~_), and must
-      be enclosed with single-quotes.
-      eg: 'Frankly my dear, I do not give a damn!'
+ (13) Strings may be comprised of any combination of letters, digits
+      or special characters including (~!@#$%^&*()[]|=+ ,./?<>;:"`~_),
+      and must be enclosed with single-quotes.
+      eg: 'Frankly my dear, 1 do n0t give a damn!'
 
  (14) User defined normal functions can have up to 20 parameters,
       where as user defined vararg-functions can have an unlimited
@@ -1175,9 +1216,9 @@ into account when using Exprtk:
       appropriate.
 
  (22) The entity relationship between symbol_table and an expression
-      is one-to-many. Hence the intended use case is to have a single
-      symbol table manage the variable and function requirements of
-      multiple expressions.
+      is one-to-many. Hence the intended use case where possible is
+      to have a single symbol table manage the variable and function
+      requirements of multiple expressions.
 
  (23) The common use-case for an expression is to have it compiled
       only ONCE and then subsequently have it evaluated multiple
@@ -1196,6 +1237,28 @@ into account when using Exprtk:
       1. // .... \n
       2. #  .... \n
       3. /* .... */
+
+ (26) Every ExprTk statement is a "value returning" expression. Unlike
+      some languages that limit the types of expressions that can be
+      performed in certain situations, in ExprTk any valid expression
+      can be used in any "value consuming" context. Eg:
+
+      var y := 3;
+      for (var x := switch
+                    {
+                     case 1 :  7;
+                     case 2 : -1 + ~{var x{};};
+                     default:  y > 2 ? 3 : 4;
+                    };
+           x != while (y > 0) { y -= 1; };
+           x -= {if(min(x,y) < 2 * max(x,y))
+                  x + 2;
+                 else
+                  x + y - 3;}
+          )
+      {
+        (x + y) / (x - y);
+      }
 
 
 
@@ -1294,8 +1357,8 @@ part of a compiler command line switch or scoped around the include to
 the ExprTk header.
 
 (1) exprtk_enable_debugging
-This  define  will enable  printing  of debug  information  during the
-compilation process.
+This define will enable printing of debug information to stdout during
+the compilation process.
 
 (2) exprtk_disable_comments
 This define will disable the ability for expressions to have comments.
