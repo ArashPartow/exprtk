@@ -5851,167 +5851,196 @@ namespace exprtk
          typedef typename functor_t::ufunc_t unary_functor_t;
       };
 
-      template <typename T> struct sf00_op : public sf_base<T> { typedef typename sf_base<T>::Type Type; static inline T process(Type x, Type y, Type z) { return (x + y) / z; } static inline std::string id() { return "(t+t)/t";} };
-      template <typename T> struct sf01_op : public sf_base<T> { typedef typename sf_base<T>::Type Type; static inline T process(Type x, Type y, Type z) { return (x + y) * z; } static inline std::string id() { return "(t+t)*t";} };
-      template <typename T> struct sf02_op : public sf_base<T> { typedef typename sf_base<T>::Type Type; static inline T process(Type x, Type y, Type z) { return (x + y) - z; } static inline std::string id() { return "(t+t)-t";} };
-      template <typename T> struct sf03_op : public sf_base<T> { typedef typename sf_base<T>::Type Type; static inline T process(Type x, Type y, Type z) { return (x + y) + z; } static inline std::string id() { return "(t+t)+t";} };
-      template <typename T> struct sf04_op : public sf_base<T> { typedef typename sf_base<T>::Type Type; static inline T process(Type x, Type y, Type z) { return (x - y) + z; } static inline std::string id() { return "(t-t)+t";} };
-      template <typename T> struct sf05_op : public sf_base<T> { typedef typename sf_base<T>::Type Type; static inline T process(Type x, Type y, Type z) { return (x - y) / z; } static inline std::string id() { return "(t-t)/t";} };
-      template <typename T> struct sf06_op : public sf_base<T> { typedef typename sf_base<T>::Type Type; static inline T process(Type x, Type y, Type z) { return (x - y) * z; } static inline std::string id() { return "(t-t)*t";} };
-      template <typename T> struct sf07_op : public sf_base<T> { typedef typename sf_base<T>::Type Type; static inline T process(Type x, Type y, Type z) { return (x * y) + z; } static inline std::string id() { return "(t*t)+t";} };
-      template <typename T> struct sf08_op : public sf_base<T> { typedef typename sf_base<T>::Type Type; static inline T process(Type x, Type y, Type z) { return (x * y) - z; } static inline std::string id() { return "(t*t)-t";} };
-      template <typename T> struct sf09_op : public sf_base<T> { typedef typename sf_base<T>::Type Type; static inline T process(Type x, Type y, Type z) { return (x * y) / z; } static inline std::string id() { return "(t*t)/t";} };
-      template <typename T> struct sf10_op : public sf_base<T> { typedef typename sf_base<T>::Type Type; static inline T process(Type x, Type y, Type z) { return (x * y) * z; } static inline std::string id() { return "(t*t)*t";} };
-      template <typename T> struct sf11_op : public sf_base<T> { typedef typename sf_base<T>::Type Type; static inline T process(Type x, Type y, Type z) { return (x / y) + z; } static inline std::string id() { return "(t/t)+t";} };
-      template <typename T> struct sf12_op : public sf_base<T> { typedef typename sf_base<T>::Type Type; static inline T process(Type x, Type y, Type z) { return (x / y) - z; } static inline std::string id() { return "(t/t)-t";} };
-      template <typename T> struct sf13_op : public sf_base<T> { typedef typename sf_base<T>::Type Type; static inline T process(Type x, Type y, Type z) { return (x / y) / z; } static inline std::string id() { return "(t/t)/t";} };
-      template <typename T> struct sf14_op : public sf_base<T> { typedef typename sf_base<T>::Type Type; static inline T process(Type x, Type y, Type z) { return (x / y) * z; } static inline std::string id() { return "(t/t)*t";} };
-      template <typename T> struct sf15_op : public sf_base<T> { typedef typename sf_base<T>::Type Type; static inline T process(Type x, Type y, Type z) { return x / (y + z); } static inline std::string id() { return "t/(t+t)";} };
-      template <typename T> struct sf16_op : public sf_base<T> { typedef typename sf_base<T>::Type Type; static inline T process(Type x, Type y, Type z) { return x / (y - z); } static inline std::string id() { return "t/(t-t)";} };
-      template <typename T> struct sf17_op : public sf_base<T> { typedef typename sf_base<T>::Type Type; static inline T process(Type x, Type y, Type z) { return x / (y * z); } static inline std::string id() { return "t/(t*t)";} };
-      template <typename T> struct sf18_op : public sf_base<T> { typedef typename sf_base<T>::Type Type; static inline T process(Type x, Type y, Type z) { return x / (y / z); } static inline std::string id() { return "t/(t/t)";} };
-      template <typename T> struct sf19_op : public sf_base<T> { typedef typename sf_base<T>::Type Type; static inline T process(Type x, Type y, Type z) { return x * (y + z); } static inline std::string id() { return "t*(t+t)";} };
-      template <typename T> struct sf20_op : public sf_base<T> { typedef typename sf_base<T>::Type Type; static inline T process(Type x, Type y, Type z) { return x * (y - z); } static inline std::string id() { return "t*(t-t)";} };
-      template <typename T> struct sf21_op : public sf_base<T> { typedef typename sf_base<T>::Type Type; static inline T process(Type x, Type y, Type z) { return x * (y * z); } static inline std::string id() { return "t*(t*t)";} };
-      template <typename T> struct sf22_op : public sf_base<T> { typedef typename sf_base<T>::Type Type; static inline T process(Type x, Type y, Type z) { return x * (y / z); } static inline std::string id() { return "t*(t/t)";} };
-      template <typename T> struct sf23_op : public sf_base<T> { typedef typename sf_base<T>::Type Type; static inline T process(Type x, Type y, Type z) { return x - (y + z); } static inline std::string id() { return "t-(t+t)";} };
-      template <typename T> struct sf24_op : public sf_base<T> { typedef typename sf_base<T>::Type Type; static inline T process(Type x, Type y, Type z) { return x - (y - z); } static inline std::string id() { return "t-(t-t)";} };
-      template <typename T> struct sf25_op : public sf_base<T> { typedef typename sf_base<T>::Type Type; static inline T process(Type x, Type y, Type z) { return x - (y / z); } static inline std::string id() { return "t-(t/t)";} };
-      template <typename T> struct sf26_op : public sf_base<T> { typedef typename sf_base<T>::Type Type; static inline T process(Type x, Type y, Type z) { return x - (y * z); } static inline std::string id() { return "t-(t*t)";} };
-      template <typename T> struct sf27_op : public sf_base<T> { typedef typename sf_base<T>::Type Type; static inline T process(Type x, Type y, Type z) { return x + (y * z); } static inline std::string id() { return "t+(t*t)";} };
-      template <typename T> struct sf28_op : public sf_base<T> { typedef typename sf_base<T>::Type Type; static inline T process(Type x, Type y, Type z) { return x + (y / z); } static inline std::string id() { return "t+(t/t)";} };
-      template <typename T> struct sf29_op : public sf_base<T> { typedef typename sf_base<T>::Type Type; static inline T process(Type x, Type y, Type z) { return x + (y + z); } static inline std::string id() { return "t+(t+t)";} };
-      template <typename T> struct sf30_op : public sf_base<T> { typedef typename sf_base<T>::Type Type; static inline T process(Type x, Type y, Type z) { return x + (y - z); } static inline std::string id() { return "t+(t-t)";} };
-      template <typename T> struct sf31_op : public sf_base<T> { typedef typename sf_base<T>::Type Type; static inline T process(Type x, Type y, Type z) { return axnb<T,2>(x,y,z); } }; //x * y^2 + z
-      template <typename T> struct sf32_op : public sf_base<T> { typedef typename sf_base<T>::Type Type; static inline T process(Type x, Type y, Type z) { return axnb<T,3>(x,y,z); } }; //x * y^3 + z
-      template <typename T> struct sf33_op : public sf_base<T> { typedef typename sf_base<T>::Type Type; static inline T process(Type x, Type y, Type z) { return axnb<T,4>(x,y,z); } }; //x * y^4 + z
-      template <typename T> struct sf34_op : public sf_base<T> { typedef typename sf_base<T>::Type Type; static inline T process(Type x, Type y, Type z) { return axnb<T,5>(x,y,z); } }; //x * y^5 + z
-      template <typename T> struct sf35_op : public sf_base<T> { typedef typename sf_base<T>::Type Type; static inline T process(Type x, Type y, Type z) { return axnb<T,6>(x,y,z); } }; //x * y^6 + z
-      template <typename T> struct sf36_op : public sf_base<T> { typedef typename sf_base<T>::Type Type; static inline T process(Type x, Type y, Type z) { return axnb<T,7>(x,y,z); } }; //x * y^7 + z
-      template <typename T> struct sf37_op : public sf_base<T> { typedef typename sf_base<T>::Type Type; static inline T process(Type x, Type y, Type z) { return axnb<T,8>(x,y,z); } }; //x * y^8 + z
-      template <typename T> struct sf38_op : public sf_base<T> { typedef typename sf_base<T>::Type Type; static inline T process(Type x, Type y, Type z) { return axnb<T,9>(x,y,z); } }; //x * y^9 + z
-      template <typename T> struct sf39_op : public sf_base<T> { typedef typename sf_base<T>::Type Type; static inline T process(Type x, Type y, Type z) { return x * numeric::log(y)   + z; } };
-      template <typename T> struct sf40_op : public sf_base<T> { typedef typename sf_base<T>::Type Type; static inline T process(Type x, Type y, Type z) { return x * numeric::log(y)   - z; } };
-      template <typename T> struct sf41_op : public sf_base<T> { typedef typename sf_base<T>::Type Type; static inline T process(Type x, Type y, Type z) { return x * numeric::log10(y) + z; } };
-      template <typename T> struct sf42_op : public sf_base<T> { typedef typename sf_base<T>::Type Type; static inline T process(Type x, Type y, Type z) { return x * numeric::log10(y) - z; } };
-      template <typename T> struct sf43_op : public sf_base<T> { typedef typename sf_base<T>::Type Type; static inline T process(Type x, Type y, Type z) { return x * numeric::sin(y) + z; } };
-      template <typename T> struct sf44_op : public sf_base<T> { typedef typename sf_base<T>::Type Type; static inline T process(Type x, Type y, Type z) { return x * numeric::sin(y) - z; } };
-      template <typename T> struct sf45_op : public sf_base<T> { typedef typename sf_base<T>::Type Type; static inline T process(Type x, Type y, Type z) { return x * numeric::cos(y) + z; } };
-      template <typename T> struct sf46_op : public sf_base<T> { typedef typename sf_base<T>::Type Type; static inline T process(Type x, Type y, Type z) { return x * numeric::cos(y) - z; } };
-      template <typename T> struct sf47_op : public sf_base<T> { typedef typename sf_base<T>::Type Type; static inline T process(Type x, Type y, Type z) { return details::is_true(x) ? y : z; } };
-      template <typename T> struct sf48_op : public sf_base<T> { typedef typename sf_base<T>::Type Type; static inline T process(Type x, Type y, Type z, Type w) { return x + ((y + z) / w); } static inline std::string id() { return "t+((t+t)/t)";} };
-      template <typename T> struct sf49_op : public sf_base<T> { typedef typename sf_base<T>::Type Type; static inline T process(Type x, Type y, Type z, Type w) { return x + ((y + z) * w); } static inline std::string id() { return "t+((t+t)*t)";} };
-      template <typename T> struct sf50_op : public sf_base<T> { typedef typename sf_base<T>::Type Type; static inline T process(Type x, Type y, Type z, Type w) { return x + ((y - z) / w); } static inline std::string id() { return "t+((t-t)/t)";} };
-      template <typename T> struct sf51_op : public sf_base<T> { typedef typename sf_base<T>::Type Type; static inline T process(Type x, Type y, Type z, Type w) { return x + ((y - z) * w); } static inline std::string id() { return "t+((t-t)*t)";} };
-      template <typename T> struct sf52_op : public sf_base<T> { typedef typename sf_base<T>::Type Type; static inline T process(Type x, Type y, Type z, Type w) { return x + ((y * z) / w); } static inline std::string id() { return "t+((t*t)/t)";} };
-      template <typename T> struct sf53_op : public sf_base<T> { typedef typename sf_base<T>::Type Type; static inline T process(Type x, Type y, Type z, Type w) { return x + ((y * z) * w); } static inline std::string id() { return "t+((t*t)*t)";} };
-      template <typename T> struct sf54_op : public sf_base<T> { typedef typename sf_base<T>::Type Type; static inline T process(Type x, Type y, Type z, Type w) { return x + ((y / z) + w); } static inline std::string id() { return "t+((t/t)+t)";} };
-      template <typename T> struct sf55_op : public sf_base<T> { typedef typename sf_base<T>::Type Type; static inline T process(Type x, Type y, Type z, Type w) { return x + ((y / z) / w); } static inline std::string id() { return "t+((t/t)/t)";} };
-      template <typename T> struct sf56_op : public sf_base<T> { typedef typename sf_base<T>::Type Type; static inline T process(Type x, Type y, Type z, Type w) { return x + ((y / z) * w); } static inline std::string id() { return "t+((t/t)*t)";} };
-      template <typename T> struct sf57_op : public sf_base<T> { typedef typename sf_base<T>::Type Type; static inline T process(Type x, Type y, Type z, Type w) { return x - ((y + z) / w); } static inline std::string id() { return "t-((t+t)/t)";} };
-      template <typename T> struct sf58_op : public sf_base<T> { typedef typename sf_base<T>::Type Type; static inline T process(Type x, Type y, Type z, Type w) { return x - ((y + z) * w); } static inline std::string id() { return "t-((t+t)*t)";} };
-      template <typename T> struct sf59_op : public sf_base<T> { typedef typename sf_base<T>::Type Type; static inline T process(Type x, Type y, Type z, Type w) { return x - ((y - z) / w); } static inline std::string id() { return "t-((t-t)/t)";} };
-      template <typename T> struct sf60_op : public sf_base<T> { typedef typename sf_base<T>::Type Type; static inline T process(Type x, Type y, Type z, Type w) { return x - ((y - z) * w); } static inline std::string id() { return "t-((t-t)*t)";} };
-      template <typename T> struct sf61_op : public sf_base<T> { typedef typename sf_base<T>::Type Type; static inline T process(Type x, Type y, Type z, Type w) { return x - ((y * z) / w); } static inline std::string id() { return "t-((t*t)/t)";} };
-      template <typename T> struct sf62_op : public sf_base<T> { typedef typename sf_base<T>::Type Type; static inline T process(Type x, Type y, Type z, Type w) { return x - ((y * z) * w); } static inline std::string id() { return "t-((t*t)*t)";} };
-      template <typename T> struct sf63_op : public sf_base<T> { typedef typename sf_base<T>::Type Type; static inline T process(Type x, Type y, Type z, Type w) { return x - ((y / z) / w); } static inline std::string id() { return "t-((t/t)/t)";} };
-      template <typename T> struct sf64_op : public sf_base<T> { typedef typename sf_base<T>::Type Type; static inline T process(Type x, Type y, Type z, Type w) { return x - ((y / z) * w); } static inline std::string id() { return "t-((t/t)*t)";} };
-      template <typename T> struct sf65_op : public sf_base<T> { typedef typename sf_base<T>::Type Type; static inline T process(Type x, Type y, Type z, Type w) { return ((x + y) * z) - w; } static inline std::string id() { return "((t+t)*t)-t";} };
-      template <typename T> struct sf66_op : public sf_base<T> { typedef typename sf_base<T>::Type Type; static inline T process(Type x, Type y, Type z, Type w) { return ((x - y) * z) - w; } static inline std::string id() { return "((t-t)*t)-t";} };
-      template <typename T> struct sf67_op : public sf_base<T> { typedef typename sf_base<T>::Type Type; static inline T process(Type x, Type y, Type z, Type w) { return ((x * y) * z) - w; } static inline std::string id() { return "((t*t)*t)-t";} };
-      template <typename T> struct sf68_op : public sf_base<T> { typedef typename sf_base<T>::Type Type; static inline T process(Type x, Type y, Type z, Type w) { return ((x / y) * z) - w; } static inline std::string id() { return "((t/t)*t)-t";} };
-      template <typename T> struct sf69_op : public sf_base<T> { typedef typename sf_base<T>::Type Type; static inline T process(Type x, Type y, Type z, Type w) { return ((x + y) / z) - w; } static inline std::string id() { return "((t+t)/t)-t";} };
-      template <typename T> struct sf70_op : public sf_base<T> { typedef typename sf_base<T>::Type Type; static inline T process(Type x, Type y, Type z, Type w) { return ((x - y) / z) - w; } static inline std::string id() { return "((t-t)/t)-t";} };
-      template <typename T> struct sf71_op : public sf_base<T> { typedef typename sf_base<T>::Type Type; static inline T process(Type x, Type y, Type z, Type w) { return ((x * y) / z) - w; } static inline std::string id() { return "((t*t)/t)-t";} };
-      template <typename T> struct sf72_op : public sf_base<T> { typedef typename sf_base<T>::Type Type; static inline T process(Type x, Type y, Type z, Type w) { return ((x / y) / z) - w; } static inline std::string id() { return "((t/t)/t)-t";} };
-      template <typename T> struct sf73_op : public sf_base<T> { typedef typename sf_base<T>::Type Type; static inline T process(Type x, Type y, Type z, Type w) { return (x * y) + (z * w); } static inline std::string id() { return "(t*t)+(t*t)";} };
-      template <typename T> struct sf74_op : public sf_base<T> { typedef typename sf_base<T>::Type Type; static inline T process(Type x, Type y, Type z, Type w) { return (x * y) - (z * w); } static inline std::string id() { return "(t*t)-(t*t)";} };
-      template <typename T> struct sf75_op : public sf_base<T> { typedef typename sf_base<T>::Type Type; static inline T process(Type x, Type y, Type z, Type w) { return (x * y) + (z / w); } static inline std::string id() { return "(t*t)+(t/t)";} };
-      template <typename T> struct sf76_op : public sf_base<T> { typedef typename sf_base<T>::Type Type; static inline T process(Type x, Type y, Type z, Type w) { return (x * y) - (z / w); } static inline std::string id() { return "(t*t)-(t/t)";} };
-      template <typename T> struct sf77_op : public sf_base<T> { typedef typename sf_base<T>::Type Type; static inline T process(Type x, Type y, Type z, Type w) { return (x / y) + (z / w); } static inline std::string id() { return "(t/t)+(t/t)";} };
-      template <typename T> struct sf78_op : public sf_base<T> { typedef typename sf_base<T>::Type Type; static inline T process(Type x, Type y, Type z, Type w) { return (x / y) - (z / w); } static inline std::string id() { return "(t/t)-(t/t)";} };
-      template <typename T> struct sf79_op : public sf_base<T> { typedef typename sf_base<T>::Type Type; static inline T process(Type x, Type y, Type z, Type w) { return (x / y) - (z * w); } static inline std::string id() { return "(t/t)-(t*t)";} };
-      template <typename T> struct sf80_op : public sf_base<T> { typedef typename sf_base<T>::Type Type; static inline T process(Type x, Type y, Type z, Type w) { return x / (y + (z * w)); } static inline std::string id() { return "t/(t+(t*t))";} };
-      template <typename T> struct sf81_op : public sf_base<T> { typedef typename sf_base<T>::Type Type; static inline T process(Type x, Type y, Type z, Type w) { return x / (y - (z * w)); } static inline std::string id() { return "t/(t-(t*t))";} };
-      template <typename T> struct sf82_op : public sf_base<T> { typedef typename sf_base<T>::Type Type; static inline T process(Type x, Type y, Type z, Type w) { return x * (y + (z * w)); } static inline std::string id() { return "t*(t+(t*t))";} };
-      template <typename T> struct sf83_op : public sf_base<T> { typedef typename sf_base<T>::Type Type; static inline T process(Type x, Type y, Type z, Type w) { return x * (y - (z * w)); } static inline std::string id() { return "t*(t-(t*t))";} };
-      template <typename T> struct sf84_op : public sf_base<T> { typedef typename sf_base<T>::Type Type; static inline T process(Type x, Type y, Type z, Type w) { return axn<T,2>(x,y) + axn<T,2>(z,w); } }; //x*y^2+z*w^2
-      template <typename T> struct sf85_op : public sf_base<T> { typedef typename sf_base<T>::Type Type; static inline T process(Type x, Type y, Type z, Type w) { return axn<T,3>(x,y) + axn<T,3>(z,w); } }; //x*y^3+z*w^3
-      template <typename T> struct sf86_op : public sf_base<T> { typedef typename sf_base<T>::Type Type; static inline T process(Type x, Type y, Type z, Type w) { return axn<T,4>(x,y) + axn<T,4>(z,w); } }; //x*y^4+z*w^4
-      template <typename T> struct sf87_op : public sf_base<T> { typedef typename sf_base<T>::Type Type; static inline T process(Type x, Type y, Type z, Type w) { return axn<T,5>(x,y) + axn<T,5>(z,w); } }; //x*y^5+z*w^5
-      template <typename T> struct sf88_op : public sf_base<T> { typedef typename sf_base<T>::Type Type; static inline T process(Type x, Type y, Type z, Type w) { return axn<T,6>(x,y) + axn<T,6>(z,w); } }; //x*y^6+z*w^6
-      template <typename T> struct sf89_op : public sf_base<T> { typedef typename sf_base<T>::Type Type; static inline T process(Type x, Type y, Type z, Type w) { return axn<T,7>(x,y) + axn<T,7>(z,w); } }; //x*y^7+z*w^7
-      template <typename T> struct sf90_op : public sf_base<T> { typedef typename sf_base<T>::Type Type; static inline T process(Type x, Type y, Type z, Type w) { return axn<T,8>(x,y) + axn<T,8>(z,w); } }; //x*y^8+z*w^8
-      template <typename T> struct sf91_op : public sf_base<T> { typedef typename sf_base<T>::Type Type; static inline T process(Type x, Type y, Type z, Type w) { return axn<T,9>(x,y) + axn<T,9>(z,w); } }; //x*y^9+z*w^9
-      template <typename T> struct sf92_op : public sf_base<T> { typedef typename sf_base<T>::Type Type; static inline T process(Type x, Type y, Type z, Type w) { return (details::is_true(x) && details::is_true(y)) ? z : w; } };
-      template <typename T> struct sf93_op : public sf_base<T> { typedef typename sf_base<T>::Type Type; static inline T process(Type x, Type y, Type z, Type w) { return (details::is_true(x) || details::is_true(y)) ? z : w; } };
-      template <typename T> struct sf94_op : public sf_base<T> { typedef typename sf_base<T>::Type Type; static inline T process(Type x, Type y, Type z, Type w) { return (x <  y) ? z : w; } };
-      template <typename T> struct sf95_op : public sf_base<T> { typedef typename sf_base<T>::Type Type; static inline T process(Type x, Type y, Type z, Type w) { return (x <= y) ? z : w; } };
-      template <typename T> struct sf96_op : public sf_base<T> { typedef typename sf_base<T>::Type Type; static inline T process(Type x, Type y, Type z, Type w) { return (x >  y) ? z : w; } };
-      template <typename T> struct sf97_op : public sf_base<T> { typedef typename sf_base<T>::Type Type; static inline T process(Type x, Type y, Type z, Type w) { return (x >= y) ? z : w; } };
-      template <typename T> struct sf98_op : public sf_base<T> { typedef typename sf_base<T>::Type Type; static inline T process(Type x, Type y, Type z, Type w) { return details::is_true(numeric::equal(x,y)) ? z : w; } };
-      template <typename T> struct sf99_op : public sf_base<T> { typedef typename sf_base<T>::Type Type; static inline T process(Type x, Type y, Type z, Type w) { return x * numeric::sin(y) + z * numeric::cos(w); } };
+      #define define_sfop3(NN,OP0,OP1)                   \
+      template <typename T>                              \
+      struct sf##NN##_op : public sf_base<T>             \
+      {                                                  \
+         typedef typename sf_base<T>::Type Type;         \
+         static inline T process(Type x, Type y, Type z) \
+         {                                               \
+            return (OP0);                                \
+         }                                               \
+         static inline std::string id()                  \
+         {                                               \
+            return OP1;                                  \
+         }                                               \
+      };                                                 \
 
-      template <typename T> struct sfext00_op : public sf_base<T> { typedef typename sf_base<T>::Type Type; static inline T process(Type x, Type y, Type z, Type w) { return (x + y) - (z * w); } static inline std::string id() { return "(t+t)-(t*t)";} };
-      template <typename T> struct sfext01_op : public sf_base<T> { typedef typename sf_base<T>::Type Type; static inline T process(Type x, Type y, Type z, Type w) { return (x + y) - (z / w); } static inline std::string id() { return "(t+t)-(t/t)";} };
-      template <typename T> struct sfext02_op : public sf_base<T> { typedef typename sf_base<T>::Type Type; static inline T process(Type x, Type y, Type z, Type w) { return (x + y) + (z * w); } static inline std::string id() { return "(t+t)+(t*t)";} };
-      template <typename T> struct sfext03_op : public sf_base<T> { typedef typename sf_base<T>::Type Type; static inline T process(Type x, Type y, Type z, Type w) { return (x + y) + (z / w); } static inline std::string id() { return "(t+t)+(t/t)";} };
-      template <typename T> struct sfext04_op : public sf_base<T> { typedef typename sf_base<T>::Type Type; static inline T process(Type x, Type y, Type z, Type w) { return (x - y) + (z * w); } static inline std::string id() { return "(t-t)+(t*t)";} };
-      template <typename T> struct sfext05_op : public sf_base<T> { typedef typename sf_base<T>::Type Type; static inline T process(Type x, Type y, Type z, Type w) { return (x - y) + (z / w); } static inline std::string id() { return "(t-t)+(t/t)";} };
-      template <typename T> struct sfext06_op : public sf_base<T> { typedef typename sf_base<T>::Type Type; static inline T process(Type x, Type y, Type z, Type w) { return (x - y) - (z * w); } static inline std::string id() { return "(t-t)-(t*t)";} };
-      template <typename T> struct sfext07_op : public sf_base<T> { typedef typename sf_base<T>::Type Type; static inline T process(Type x, Type y, Type z, Type w) { return (x - y) - (z / w); } static inline std::string id() { return "(t-t)-(t/t)";} };
-      template <typename T> struct sfext08_op : public sf_base<T> { typedef typename sf_base<T>::Type Type; static inline T process(Type x, Type y, Type z, Type w) { return (x + y) - (z - w); } static inline std::string id() { return "(t+t)-(t-t)";} };
-      template <typename T> struct sfext09_op : public sf_base<T> { typedef typename sf_base<T>::Type Type; static inline T process(Type x, Type y, Type z, Type w) { return (x + y) + (z - w); } static inline std::string id() { return "(t+t)+(t-t)";} };
-      template <typename T> struct sfext10_op : public sf_base<T> { typedef typename sf_base<T>::Type Type; static inline T process(Type x, Type y, Type z, Type w) { return (x + y) * (z - w); } static inline std::string id() { return "(t+t)*(t-t)";} };
-      template <typename T> struct sfext11_op : public sf_base<T> { typedef typename sf_base<T>::Type Type; static inline T process(Type x, Type y, Type z, Type w) { return (x + y) / (z - w); } static inline std::string id() { return "(t+t)/(t-t)";} };
-      template <typename T> struct sfext12_op : public sf_base<T> { typedef typename sf_base<T>::Type Type; static inline T process(Type x, Type y, Type z, Type w) { return (x - y) - (z + w); } static inline std::string id() { return "(t-t)-(t+t)";} };
-      template <typename T> struct sfext13_op : public sf_base<T> { typedef typename sf_base<T>::Type Type; static inline T process(Type x, Type y, Type z, Type w) { return (x - y) + (z + w); } static inline std::string id() { return "(t-t)+(t+t)";} };
-      template <typename T> struct sfext14_op : public sf_base<T> { typedef typename sf_base<T>::Type Type; static inline T process(Type x, Type y, Type z, Type w) { return (x - y) * (z + w); } static inline std::string id() { return "(t-t)*(t+t)";} };
-      template <typename T> struct sfext15_op : public sf_base<T> { typedef typename sf_base<T>::Type Type; static inline T process(Type x, Type y, Type z, Type w) { return (x - y) / (z + w); } static inline std::string id() { return "(t-t)/(t+t)";} };
-      template <typename T> struct sfext16_op : public sf_base<T> { typedef typename sf_base<T>::Type Type; static inline T process(Type x, Type y, Type z, Type w) { return (x * y) - (z + w); } static inline std::string id() { return "(t*t)-(t+t)";} };
-      template <typename T> struct sfext17_op : public sf_base<T> { typedef typename sf_base<T>::Type Type; static inline T process(Type x, Type y, Type z, Type w) { return (x / y) - (z + w); } static inline std::string id() { return "(t/t)-(t+t)";} };
-      template <typename T> struct sfext18_op : public sf_base<T> { typedef typename sf_base<T>::Type Type; static inline T process(Type x, Type y, Type z, Type w) { return (x * y) + (z + w); } static inline std::string id() { return "(t*t)+(t+t)";} };
-      template <typename T> struct sfext19_op : public sf_base<T> { typedef typename sf_base<T>::Type Type; static inline T process(Type x, Type y, Type z, Type w) { return (x / y) + (z + w); } static inline std::string id() { return "(t/t)+(t+t)";} };
-      template <typename T> struct sfext20_op : public sf_base<T> { typedef typename sf_base<T>::Type Type; static inline T process(Type x, Type y, Type z, Type w) { return (x * y) + (z - w); } static inline std::string id() { return "(t*t)+(t-t)";} };
-      template <typename T> struct sfext21_op : public sf_base<T> { typedef typename sf_base<T>::Type Type; static inline T process(Type x, Type y, Type z, Type w) { return (x / y) + (z - w); } static inline std::string id() { return "(t/t)+(t-t)";} };
-      template <typename T> struct sfext22_op : public sf_base<T> { typedef typename sf_base<T>::Type Type; static inline T process(Type x, Type y, Type z, Type w) { return (x * y) - (z - w); } static inline std::string id() { return "(t*t)-(t-t)";} };
-      template <typename T> struct sfext23_op : public sf_base<T> { typedef typename sf_base<T>::Type Type; static inline T process(Type x, Type y, Type z, Type w) { return (x / y) - (z - w); } static inline std::string id() { return "(t/t)-(t-t)";} };
-      template <typename T> struct sfext24_op : public sf_base<T> { typedef typename sf_base<T>::Type Type; static inline T process(Type x, Type y, Type z, Type w) { return (x + y) * (z * w); } static inline std::string id() { return "(t+t)*(t*t)";} };
-      template <typename T> struct sfext25_op : public sf_base<T> { typedef typename sf_base<T>::Type Type; static inline T process(Type x, Type y, Type z, Type w) { return (x + y) * (z / w); } static inline std::string id() { return "(t+t)*(t/t)";} };
-      template <typename T> struct sfext26_op : public sf_base<T> { typedef typename sf_base<T>::Type Type; static inline T process(Type x, Type y, Type z, Type w) { return (x + y) / (z * w); } static inline std::string id() { return "(t+t)/(t*t)";} };
-      template <typename T> struct sfext27_op : public sf_base<T> { typedef typename sf_base<T>::Type Type; static inline T process(Type x, Type y, Type z, Type w) { return (x + y) / (z / w); } static inline std::string id() { return "(t+t)/(t/t)";} };
-      template <typename T> struct sfext28_op : public sf_base<T> { typedef typename sf_base<T>::Type Type; static inline T process(Type x, Type y, Type z, Type w) { return (x - y) / (z * w); } static inline std::string id() { return "(t-t)/(t*t)";} };
-      template <typename T> struct sfext29_op : public sf_base<T> { typedef typename sf_base<T>::Type Type; static inline T process(Type x, Type y, Type z, Type w) { return (x - y) / (z / w); } static inline std::string id() { return "(t-t)/(t/t)";} };
-      template <typename T> struct sfext30_op : public sf_base<T> { typedef typename sf_base<T>::Type Type; static inline T process(Type x, Type y, Type z, Type w) { return (x - y) * (z * w); } static inline std::string id() { return "(t-t)*(t*t)";} };
-      template <typename T> struct sfext31_op : public sf_base<T> { typedef typename sf_base<T>::Type Type; static inline T process(Type x, Type y, Type z, Type w) { return (x - y) * (z / w); } static inline std::string id() { return "(t-t)*(t/t)";} };
-      template <typename T> struct sfext32_op : public sf_base<T> { typedef typename sf_base<T>::Type Type; static inline T process(Type x, Type y, Type z, Type w) { return (x * y) * (z + w); } static inline std::string id() { return "(t*t)*(t+t)";} };
-      template <typename T> struct sfext33_op : public sf_base<T> { typedef typename sf_base<T>::Type Type; static inline T process(Type x, Type y, Type z, Type w) { return (x / y) * (z + w); } static inline std::string id() { return "(t/t)*(t+t)";} };
-      template <typename T> struct sfext34_op : public sf_base<T> { typedef typename sf_base<T>::Type Type; static inline T process(Type x, Type y, Type z, Type w) { return (x * y) / (z + w); } static inline std::string id() { return "(t*t)/(t+t)";} };
-      template <typename T> struct sfext35_op : public sf_base<T> { typedef typename sf_base<T>::Type Type; static inline T process(Type x, Type y, Type z, Type w) { return (x / y) / (z + w); } static inline std::string id() { return "(t/t)/(t+t)";} };
-      template <typename T> struct sfext36_op : public sf_base<T> { typedef typename sf_base<T>::Type Type; static inline T process(Type x, Type y, Type z, Type w) { return (x * y) / (z - w); } static inline std::string id() { return "(t*t)/(t-t)";} };
-      template <typename T> struct sfext37_op : public sf_base<T> { typedef typename sf_base<T>::Type Type; static inline T process(Type x, Type y, Type z, Type w) { return (x / y) / (z - w); } static inline std::string id() { return "(t/t)/(t-t)";} };
-      template <typename T> struct sfext38_op : public sf_base<T> { typedef typename sf_base<T>::Type Type; static inline T process(Type x, Type y, Type z, Type w) { return (x * y) * (z - w); } static inline std::string id() { return "(t*t)*(t-t)";} };
-      template <typename T> struct sfext39_op : public sf_base<T> { typedef typename sf_base<T>::Type Type; static inline T process(Type x, Type y, Type z, Type w) { return (x * y) / (z * w); } static inline std::string id() { return "(t*t)/(t*t)";} };
-      template <typename T> struct sfext40_op : public sf_base<T> { typedef typename sf_base<T>::Type Type; static inline T process(Type x, Type y, Type z, Type w) { return (x / y) * (z / w); } static inline std::string id() { return "(t/t)*(t/t)";} };
-      template <typename T> struct sfext41_op : public sf_base<T> { typedef typename sf_base<T>::Type Type; static inline T process(Type x, Type y, Type z, Type w) { return (x / y) * (z - w); } static inline std::string id() { return "(t/t)*(t-t)";} };
-      template <typename T> struct sfext42_op : public sf_base<T> { typedef typename sf_base<T>::Type Type; static inline T process(Type x, Type y, Type z, Type w) { return (x * y) * (z * w); } static inline std::string id() { return "(t*t)*(t*t)";} };
-      template <typename T> struct sfext43_op : public sf_base<T> { typedef typename sf_base<T>::Type Type; static inline T process(Type x, Type y, Type z, Type w) { return x + (y * (z / w)); } static inline std::string id() { return "t+(t*(t/t))";} };
-      template <typename T> struct sfext44_op : public sf_base<T> { typedef typename sf_base<T>::Type Type; static inline T process(Type x, Type y, Type z, Type w) { return x - (y * (z / w)); } static inline std::string id() { return "t-(t*(t/t))";} };
-      template <typename T> struct sfext45_op : public sf_base<T> { typedef typename sf_base<T>::Type Type; static inline T process(Type x, Type y, Type z, Type w) { return x + (y / (z * w)); } static inline std::string id() { return "t+(t/(t*t))";} };
-      template <typename T> struct sfext46_op : public sf_base<T> { typedef typename sf_base<T>::Type Type; static inline T process(Type x, Type y, Type z, Type w) { return x - (y / (z * w)); } static inline std::string id() { return "t-(t/(t*t))";} };
-      template <typename T> struct sfext47_op : public sf_base<T> { typedef typename sf_base<T>::Type Type; static inline T process(Type x, Type y, Type z, Type w) { return ((x - y) - z) * w; } static inline std::string id() { return "((t-t)-t)*t";} };
-      template <typename T> struct sfext48_op : public sf_base<T> { typedef typename sf_base<T>::Type Type; static inline T process(Type x, Type y, Type z, Type w) { return ((x - y) - z) / w; } static inline std::string id() { return "((t-t)-t)/t";} };
-      template <typename T> struct sfext49_op : public sf_base<T> { typedef typename sf_base<T>::Type Type; static inline T process(Type x, Type y, Type z, Type w) { return ((x - y) + z) * w; } static inline std::string id() { return "((t-t)+t)*t";} };
-      template <typename T> struct sfext50_op : public sf_base<T> { typedef typename sf_base<T>::Type Type; static inline T process(Type x, Type y, Type z, Type w) { return ((x - y) + z) / w; } static inline std::string id() { return "((t-t)+t)/t";} };
-      template <typename T> struct sfext51_op : public sf_base<T> { typedef typename sf_base<T>::Type Type; static inline T process(Type x, Type y, Type z, Type w) { return (x + (y - z)) * w; } static inline std::string id() { return "(t+(t-t))*t";} };
-      template <typename T> struct sfext52_op : public sf_base<T> { typedef typename sf_base<T>::Type Type; static inline T process(Type x, Type y, Type z, Type w) { return (x + (y - z)) / w; } static inline std::string id() { return "(t+(t-t))/t";} };
-      template <typename T> struct sfext53_op : public sf_base<T> { typedef typename sf_base<T>::Type Type; static inline T process(Type x, Type y, Type z, Type w) { return (x + y) / (z + w); } static inline std::string id() { return "(t+t)/(t+t)";} };
-      template <typename T> struct sfext54_op : public sf_base<T> { typedef typename sf_base<T>::Type Type; static inline T process(Type x, Type y, Type z, Type w) { return (x - y) / (z - w); } static inline std::string id() { return "(t-t)/(t-t)";} };
-      template <typename T> struct sfext55_op : public sf_base<T> { typedef typename sf_base<T>::Type Type; static inline T process(Type x, Type y, Type z, Type w) { return (x + y) * (z + w); } static inline std::string id() { return "(t+t)*(t+t)";} };
-      template <typename T> struct sfext56_op : public sf_base<T> { typedef typename sf_base<T>::Type Type; static inline T process(Type x, Type y, Type z, Type w) { return (x - y) * (z - w); } static inline std::string id() { return "(t-t)*(t-t)";} };
-      template <typename T> struct sfext57_op : public sf_base<T> { typedef typename sf_base<T>::Type Type; static inline T process(Type x, Type y, Type z, Type w) { return (x - y) + (z - w); } static inline std::string id() { return "(t-t)+(t-t)";} };
-      template <typename T> struct sfext58_op : public sf_base<T> { typedef typename sf_base<T>::Type Type; static inline T process(Type x, Type y, Type z, Type w) { return (x - y) - (z - w); } static inline std::string id() { return "(t-t)-(t-t)";} };
-      template <typename T> struct sfext59_op : public sf_base<T> { typedef typename sf_base<T>::Type Type; static inline T process(Type x, Type y, Type z, Type w) { return (x / y) + (z * w); } static inline std::string id() { return "(t/t)+(t*t)";} };
+      define_sfop3(00,(x + y) / z       ,"(t+t)/t")
+      define_sfop3(01,(x + y) * z       ,"(t+t)*t")
+      define_sfop3(02,(x + y) - z       ,"(t+t)-t")
+      define_sfop3(03,(x + y) + z       ,"(t+t)+t")
+      define_sfop3(04,(x - y) + z       ,"(t-t)+t")
+      define_sfop3(05,(x - y) / z       ,"(t-t)/t")
+      define_sfop3(06,(x - y) * z       ,"(t-t)*t")
+      define_sfop3(07,(x * y) + z       ,"(t*t)+t")
+      define_sfop3(08,(x * y) - z       ,"(t*t)-t")
+      define_sfop3(09,(x * y) / z       ,"(t*t)/t")
+      define_sfop3(10,(x * y) * z       ,"(t*t)*t")
+      define_sfop3(11,(x / y) + z       ,"(t/t)+t")
+      define_sfop3(12,(x / y) - z       ,"(t/t)-t")
+      define_sfop3(13,(x / y) / z       ,"(t/t)/t")
+      define_sfop3(14,(x / y) * z       ,"(t/t)*t")
+      define_sfop3(15,x / (y + z)       ,"t/(t+t)")
+      define_sfop3(16,x / (y - z)       ,"t/(t-t)")
+      define_sfop3(17,x / (y * z)       ,"t/(t*t)")
+      define_sfop3(18,x / (y / z)       ,"t/(t/t)")
+      define_sfop3(19,x * (y + z)       ,"t*(t+t)")
+      define_sfop3(20,x * (y - z)       ,"t*(t-t)")
+      define_sfop3(21,x * (y * z)       ,"t*(t*t)")
+      define_sfop3(22,x * (y / z)       ,"t*(t/t)")
+      define_sfop3(23,x - (y + z)       ,"t-(t+t)")
+      define_sfop3(24,x - (y - z)       ,"t-(t-t)")
+      define_sfop3(25,x - (y / z)       ,"t-(t/t)")
+      define_sfop3(26,x - (y * z)       ,"t-(t*t)")
+      define_sfop3(27,x + (y * z)       ,"t+(t*t)")
+      define_sfop3(28,x + (y / z)       ,"t+(t/t)")
+      define_sfop3(29,x + (y + z)       ,"t+(t+t)")
+      define_sfop3(30,x + (y - z)       ,"t+(t-t)")
+      define_sfop3(31,(axnb<T,2>(x,y,z)),"       ")
+      define_sfop3(32,(axnb<T,3>(x,y,z)),"       ")
+      define_sfop3(33,(axnb<T,4>(x,y,z)),"       ")
+      define_sfop3(34,(axnb<T,5>(x,y,z)),"       ")
+      define_sfop3(35,(axnb<T,6>(x,y,z)),"       ")
+      define_sfop3(36,(axnb<T,7>(x,y,z)),"       ")
+      define_sfop3(37,(axnb<T,8>(x,y,z)),"       ")
+      define_sfop3(38,(axnb<T,9>(x,y,z)),"       ")
+      define_sfop3(39,x * numeric::log(y)   + z,"")
+      define_sfop3(40,x * numeric::log(y)   - z,"")
+      define_sfop3(41,x * numeric::log10(y) + z,"")
+      define_sfop3(42,x * numeric::log10(y) - z,"")
+      define_sfop3(43,x * numeric::sin(y) + z  ,"")
+      define_sfop3(44,x * numeric::sin(y) - z  ,"")
+      define_sfop3(45,x * numeric::cos(y) + z  ,"")
+      define_sfop3(46,x * numeric::cos(y) - z  ,"")
+      define_sfop3(47,details::is_true(x) ? y : z,"")
+
+      #define define_sfop4(NN,OP0,OP1)                           \
+      template <typename T>                                      \
+      struct sf##NN##_op : public sf_base<T>                     \
+      {                                                          \
+         typedef typename sf_base<T>::Type Type;                 \
+         static inline T process(Type x, Type y, Type z, Type w) \
+         {                                                       \
+            return (OP0);                                        \
+         }                                                       \
+         static inline std::string id() { return OP1; }          \
+      };                                                         \
+
+      define_sfop4(48,(x + ((y + z) / w)),"t+((t+t)/t)")
+      define_sfop4(49,(x + ((y + z) * w)),"t+((t+t)*t)")
+      define_sfop4(50,(x + ((y - z) / w)),"t+((t-t)/t)")
+      define_sfop4(51,(x + ((y - z) * w)),"t+((t-t)*t)")
+      define_sfop4(52,(x + ((y * z) / w)),"t+((t*t)/t)")
+      define_sfop4(53,(x + ((y * z) * w)),"t+((t*t)*t)")
+      define_sfop4(54,(x + ((y / z) + w)),"t+((t/t)+t)")
+      define_sfop4(55,(x + ((y / z) / w)),"t+((t/t)/t)")
+      define_sfop4(56,(x + ((y / z) * w)),"t+((t/t)*t)")
+      define_sfop4(57,(x - ((y + z) / w)),"t-((t+t)/t)")
+      define_sfop4(58,(x - ((y + z) * w)),"t-((t+t)*t)")
+      define_sfop4(59,(x - ((y - z) / w)),"t-((t-t)/t)")
+      define_sfop4(60,(x - ((y - z) * w)),"t-((t-t)*t)")
+      define_sfop4(61,(x - ((y * z) / w)),"t-((t*t)/t)")
+      define_sfop4(62,(x - ((y * z) * w)),"t-((t*t)*t)")
+      define_sfop4(63,(x - ((y / z) / w)),"t-((t/t)/t)")
+      define_sfop4(64,(x - ((y / z) * w)),"t-((t/t)*t)")
+      define_sfop4(65,(((x + y) * z) - w),"((t+t)*t)-t")
+      define_sfop4(66,(((x - y) * z) - w),"((t-t)*t)-t")
+      define_sfop4(67,(((x * y) * z) - w),"((t*t)*t)-t")
+      define_sfop4(68,(((x / y) * z) - w),"((t/t)*t)-t")
+      define_sfop4(69,(((x + y) / z) - w),"((t+t)/t)-t")
+      define_sfop4(70,(((x - y) / z) - w),"((t-t)/t)-t")
+      define_sfop4(71,(((x * y) / z) - w),"((t*t)/t)-t")
+      define_sfop4(72,(((x / y) / z) - w),"((t/t)/t)-t")
+      define_sfop4(73,((x * y) + (z * w)),"(t*t)+(t*t)")
+      define_sfop4(74,((x * y) - (z * w)),"(t*t)-(t*t)")
+      define_sfop4(75,((x * y) + (z / w)),"(t*t)+(t/t)")
+      define_sfop4(76,((x * y) - (z / w)),"(t*t)-(t/t)")
+      define_sfop4(77,((x / y) + (z / w)),"(t/t)+(t/t)")
+      define_sfop4(78,((x / y) - (z / w)),"(t/t)-(t/t)")
+      define_sfop4(79,((x / y) - (z * w)),"(t/t)-(t*t)")
+      define_sfop4(80,(x / (y + (z * w))),"t/(t+(t*t))")
+      define_sfop4(81,(x / (y - (z * w))),"t/(t-(t*t))")
+      define_sfop4(82,(x * (y + (z * w))),"t*(t+(t*t))")
+      define_sfop4(83,(x * (y - (z * w))),"t*(t-(t*t))")
+
+      define_sfop4(84,(axn<T,2>(x,y) + axn<T,2>(z,w)),"")
+      define_sfop4(85,(axn<T,3>(x,y) + axn<T,3>(z,w)),"")
+      define_sfop4(86,(axn<T,4>(x,y) + axn<T,4>(z,w)),"")
+      define_sfop4(87,(axn<T,5>(x,y) + axn<T,5>(z,w)),"")
+      define_sfop4(88,(axn<T,6>(x,y) + axn<T,6>(z,w)),"")
+      define_sfop4(89,(axn<T,7>(x,y) + axn<T,7>(z,w)),"")
+      define_sfop4(90,(axn<T,8>(x,y) + axn<T,8>(z,w)),"")
+      define_sfop4(91,(axn<T,9>(x,y) + axn<T,9>(z,w)),"")
+      define_sfop4(92,((details::is_true(x) && details::is_true(y)) ? z : w),"")
+      define_sfop4(93,((details::is_true(x) || details::is_true(y)) ? z : w),"")
+      define_sfop4(94,((x <  y) ? z : w),"")
+      define_sfop4(95,((x <= y) ? z : w),"")
+      define_sfop4(96,((x >  y) ? z : w),"")
+      define_sfop4(97,((x >= y) ? z : w),"")
+      define_sfop4(98,(details::is_true(numeric::equal(x,y)) ? z : w),"")
+      define_sfop4(99,(x * numeric::sin(y) + z * numeric::cos(w)),"")
+
+      define_sfop4(ext00,((x + y) - (z * w)),"(t+t)-(t*t)")
+      define_sfop4(ext01,((x + y) - (z / w)),"(t+t)-(t/t)")
+      define_sfop4(ext02,((x + y) + (z * w)),"(t+t)+(t*t)")
+      define_sfop4(ext03,((x + y) + (z / w)),"(t+t)+(t/t)")
+      define_sfop4(ext04,((x - y) + (z * w)),"(t-t)+(t*t)")
+      define_sfop4(ext05,((x - y) + (z / w)),"(t-t)+(t/t)")
+      define_sfop4(ext06,((x - y) - (z * w)),"(t-t)-(t*t)")
+      define_sfop4(ext07,((x - y) - (z / w)),"(t-t)-(t/t)")
+      define_sfop4(ext08,((x + y) - (z - w)),"(t+t)-(t-t)")
+      define_sfop4(ext09,((x + y) + (z - w)),"(t+t)+(t-t)")
+      define_sfop4(ext10,((x + y) * (z - w)),"(t+t)*(t-t)")
+      define_sfop4(ext11,((x + y) / (z - w)),"(t+t)/(t-t)")
+      define_sfop4(ext12,((x - y) - (z + w)),"(t-t)-(t+t)")
+      define_sfop4(ext13,((x - y) + (z + w)),"(t-t)+(t+t)")
+      define_sfop4(ext14,((x - y) * (z + w)),"(t-t)*(t+t)")
+      define_sfop4(ext15,((x - y) / (z + w)),"(t-t)/(t+t)")
+      define_sfop4(ext16,((x * y) - (z + w)),"(t*t)-(t+t)")
+      define_sfop4(ext17,((x / y) - (z + w)),"(t/t)-(t+t)")
+      define_sfop4(ext18,((x * y) + (z + w)),"(t*t)+(t+t)")
+      define_sfop4(ext19,((x / y) + (z + w)),"(t/t)+(t+t)")
+      define_sfop4(ext20,((x * y) + (z - w)),"(t*t)+(t-t)")
+      define_sfop4(ext21,((x / y) + (z - w)),"(t/t)+(t-t)")
+      define_sfop4(ext22,((x * y) - (z - w)),"(t*t)-(t-t)")
+      define_sfop4(ext23,((x / y) - (z - w)),"(t/t)-(t-t)")
+      define_sfop4(ext24,((x + y) * (z * w)),"(t+t)*(t*t)")
+      define_sfop4(ext25,((x + y) * (z / w)),"(t+t)*(t/t)")
+      define_sfop4(ext26,((x + y) / (z * w)),"(t+t)/(t*t)")
+      define_sfop4(ext27,((x + y) / (z / w)),"(t+t)/(t/t)")
+      define_sfop4(ext28,((x - y) / (z * w)),"(t-t)/(t*t)")
+      define_sfop4(ext29,((x - y) / (z / w)),"(t-t)/(t/t)")
+      define_sfop4(ext30,((x - y) * (z * w)),"(t-t)*(t*t)")
+      define_sfop4(ext31,((x - y) * (z / w)),"(t-t)*(t/t)")
+      define_sfop4(ext32,((x * y) * (z + w)),"(t*t)*(t+t)")
+      define_sfop4(ext33,((x / y) * (z + w)),"(t/t)*(t+t)")
+      define_sfop4(ext34,((x * y) / (z + w)),"(t*t)/(t+t)")
+      define_sfop4(ext35,((x / y) / (z + w)),"(t/t)/(t+t)")
+      define_sfop4(ext36,((x * y) / (z - w)),"(t*t)/(t-t)")
+      define_sfop4(ext37,((x / y) / (z - w)),"(t/t)/(t-t)")
+      define_sfop4(ext38,((x * y) * (z - w)),"(t*t)*(t-t)")
+      define_sfop4(ext39,((x * y) / (z * w)),"(t*t)/(t*t)")
+      define_sfop4(ext40,((x / y) * (z / w)),"(t/t)*(t/t)")
+      define_sfop4(ext41,((x / y) * (z - w)),"(t/t)*(t-t)")
+      define_sfop4(ext42,((x * y) * (z * w)),"(t*t)*(t*t)")
+      define_sfop4(ext43,(x + (y * (z / w))),"t+(t*(t/t))")
+      define_sfop4(ext44,(x - (y * (z / w))),"t-(t*(t/t))")
+      define_sfop4(ext45,(x + (y / (z * w))),"t+(t/(t*t))")
+      define_sfop4(ext46,(x - (y / (z * w))),"t-(t/(t*t))")
+      define_sfop4(ext47,(((x - y) - z) * w),"((t-t)-t)*t")
+      define_sfop4(ext48,(((x - y) - z) / w),"((t-t)-t)/t")
+      define_sfop4(ext49,(((x - y) + z) * w),"((t-t)+t)*t")
+      define_sfop4(ext50,(((x - y) + z) / w),"((t-t)+t)/t")
+      define_sfop4(ext51,((x + (y - z)) * w),"(t+(t-t))*t")
+      define_sfop4(ext52,((x + (y - z)) / w),"(t+(t-t))/t")
+      define_sfop4(ext53,((x + y) / (z + w)),"(t+t)/(t+t)")
+      define_sfop4(ext54,((x - y) / (z - w)),"(t-t)/(t-t)")
+      define_sfop4(ext55,((x + y) * (z + w)),"(t+t)*(t+t)")
+      define_sfop4(ext56,((x - y) * (z - w)),"(t-t)*(t-t)")
+      define_sfop4(ext57,((x - y) + (z - w)),"(t-t)+(t-t)")
+      define_sfop4(ext58,((x - y) - (z - w)),"(t-t)-(t-t)")
+      define_sfop4(ext59,((x / y) + (z * w)),"(t/t)+(t*t)")
 
       template <typename T, typename SpecialFunction>
       class sf3_node : public trinary_node<T>
