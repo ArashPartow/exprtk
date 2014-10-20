@@ -1238,7 +1238,21 @@ into account when using Exprtk:
       2. #  .... \n
       3. /* .... */
 
- (26) Every ExprTk statement is a "value returning" expression. Unlike
+ (26) The 'null' value type is a special non-zero type that
+      incorporates specific semantics when undergoing operations
+      with the standard numeric type. The following is a list of
+      type and boolean results associated with the use of 'null':
+      1. null  +,-,*,/,%  x    --> x
+      2. x     +,-,*,/,%  null --> x
+      3. null  +,-,*,/,%  null --> null
+      4. null     ==      null --> true
+      5. null     ==      x    --> true
+      6. x        ==      null --> true
+      7. x        !=      null --> false
+      8. null     !=      null --> false
+      9. null     !=      x    --> false
+
+ (27) Every ExprTk statement is a "value returning" expression. Unlike
       some languages that limit the types of expressions that can be
       performed in certain situations, in ExprTk any valid expression
       can be used in any "value consuming" context. Eg:

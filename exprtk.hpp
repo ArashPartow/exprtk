@@ -55,6 +55,12 @@
 
 namespace exprtk
 {
+   #if exprtk_enable_debugging
+     #define exprtk_debug(params) printf params
+   #else
+     #define exprtk_debug(params) (void)0
+   #endif
+
    namespace details
    {
       inline bool is_whitespace(const char c)
@@ -6042,6 +6048,9 @@ namespace exprtk
       define_sfop4(ext58,((x - y) - (z - w)),"(t-t)-(t-t)")
       define_sfop4(ext59,((x / y) + (z * w)),"(t/t)+(t*t)")
 
+      #undef define_sfop3
+      #undef define_sfop4
+
       template <typename T, typename SpecialFunction>
       class sf3_node : public trinary_node<T>
       {
@@ -11466,9 +11475,7 @@ namespace exprtk
          {
             static inline bool test(const variable_node_t* p, const void* ptr)
             {
-               #ifdef exprtk_enable_debugging
-               printf("ptr_match::test() - %p <--> %p\n",&(p->ref()),ptr);
-               #endif
+               exprtk_debug(("ptr_match::test() - %p <--> %p\n",(void*)(&(p->ref())),ptr));
                return (&(p->ref()) == ptr);
             }
          };
@@ -12676,6 +12683,7 @@ namespace exprtk
          t.diagnostic = diagnostic;
          t.line_no    = 0;
          t.column_no  = 0;
+         exprtk_debug(((diagnostic + "\n").c_str()));
          return t;
       }
 
@@ -12685,6 +12693,7 @@ namespace exprtk
          t.mode       = mode;
          t.token      = tk;
          t.diagnostic = diagnostic;
+         exprtk_debug(((diagnostic + "\n").c_str()));
          return t;
       }
 
@@ -13069,7 +13078,7 @@ namespace exprtk
             parser_.scope_depth_++;
             #ifdef exprtk_enable_debugging
             std::string depth(2 * parser_.scope_depth_,'-');
-            printf("%s> Scope Depth: %02d\n",depth.c_str(),static_cast<int>(parser_.scope_depth_));
+            exprtk_debug(("%s> Scope Depth: %02d\n",depth.c_str(),static_cast<int>(parser_.scope_depth_)));
             #endif
          }
 
@@ -13079,7 +13088,7 @@ namespace exprtk
             parser_.sem_.deactivate(parser_.scope_depth_);
             #ifdef exprtk_enable_debugging
             std::string depth(2 * parser_.scope_depth_,'-');
-            printf("<%s Scope Depth: %02d\n",depth.c_str(),static_cast<int>(parser_.scope_depth_));
+            exprtk_debug(("<%s Scope Depth: %02d\n",depth.c_str(),static_cast<int>(parser_.scope_depth_)));
             #endif
          }
 
@@ -13587,11 +13596,11 @@ namespace exprtk
          std::string ct_str = current_token_.value;
          current_token_ = lexer_.next_token();
          std::string depth(2 * scope_depth_,' ');
-         printf("%s"
-                "prev[%s] --> curr[%s]\n",
-                depth.c_str(),
-                ct_str.c_str(),
-                current_token_.value.c_str());
+         exprtk_debug(("%s"
+                       "prev[%s] --> curr[%s]\n",
+                       depth.c_str(),
+                       ct_str.c_str(),
+                       current_token_.value.c_str()));
       }
       #endif
 
@@ -14199,20 +14208,20 @@ namespace exprtk
                {
                   switch (parameter_count)
                   {
-                     #define baseop_case(N)                                          \
+                     #define base_opr_case(N)                                          \
                      case N : {                                                      \
                                  expression_node_ptr pl##N[N] = {0};                 \
                                  std::copy(param_list,param_list + N,pl##N);         \
                                  return expression_generator_(operation.type,pl##N); \
                               }                                                      \
 
-                     baseop_case(1)
-                     baseop_case(2)
-                     baseop_case(3)
-                     baseop_case(4)
-                     baseop_case(5)
-                     baseop_case(6)
-                     #undef baseop_case
+                     base_opr_case(1)
+                     base_opr_case(2)
+                     base_opr_case(3)
+                     base_opr_case(4)
+                     base_opr_case(5)
+                     base_opr_case(6)
+                     #undef base_opr_case
                   }
                }
             }
@@ -14817,10 +14826,8 @@ namespace exprtk
                         result = false;
 
                      }
-                     #ifdef exprtk_enable_debugging
                      else
-                     printf("parse_for_loop() - INFO - Added new local variable: %s\n",nse.name.c_str());
-                     #endif
+                        exprtk_debug(("parse_for_loop() - INFO - Added new local variable: %s\n",nse.name.c_str()));
                   }
                }
             }
@@ -16246,11 +16253,9 @@ namespace exprtk
 
             vec_holder = nse.vec_node;
 
-            #ifdef exprtk_enable_debugging
-            printf("parse_define_vector_statement() - INFO - Added new local vector: %s[%d]\n",
-                   nse.name.c_str(),
-                   static_cast<unsigned int>(nse.size));
-            #endif
+            exprtk_debug(("parse_define_vector_statement() - INFO - Added new local vector: %s[%d]\n",
+                          nse.name.c_str(),
+                          static_cast<unsigned int>(nse.size)));
          }
 
          expression_node_ptr result =
@@ -16420,9 +16425,7 @@ namespace exprtk
 
             var_node = nse.var_node;
 
-            #ifdef exprtk_enable_debugging
-            printf("parse_define_var_statement() - INFO - Added new local variable: %s\n",nse.name.c_str());
-            #endif
+            exprtk_debug(("parse_define_var_statement() - INFO - Added new local variable: %s\n",nse.name.c_str()));
          }
 
          expression_node_ptr branch[2] = {0};
@@ -16502,9 +16505,7 @@ namespace exprtk
 
             var_node = nse.var_node;
 
-            #ifdef exprtk_enable_debugging
-            printf("parse_uninitialised_var_statement() - INFO - Added new local variable: %s\n",nse.name.c_str());
-            #endif
+            exprtk_debug(("parse_uninitialised_var_statement() - INFO - Added new local variable: %s\n",nse.name.c_str()));
          }
 
          return expression_generator_(T(0));
@@ -18618,10 +18619,8 @@ namespace exprtk
                      parser_->set_synthesis_error("Failed to add new local vector element to SEM [1]");
                      result = error_node();
                   }
-                  #ifdef exprtk_enable_debugging
                   else
-                  printf("vector_element() - INFO - Added new local vector element: %s\n",nse.name.c_str());
-                  #endif
+                     exprtk_debug(("vector_element() - INFO - Added new local vector element: %s\n",nse.name.c_str()));
                   result = nse.var_node;
                }
             }
@@ -20195,6 +20194,7 @@ namespace exprtk
                      const bool synthesis_result =
                         synthesize_sf3ext_expression::
                            template compile<vtype,vtype,vtype>(expr_gen,"t/(t*t)",v0,v1,v2,result);
+                     exprtk_debug(("(v0 / v1) / v2 --> (vovov) v0 / (v1 * v2)\n"));
                      return (synthesis_result) ? result : error_node();
                   }
                }
@@ -20244,6 +20244,7 @@ namespace exprtk
                      const bool synthesis_result =
                         synthesize_sf3ext_expression::
                            template compile<vtype,vtype,vtype>(expr_gen,"(t*t)/t",v0,v2,v1,result);
+                     exprtk_debug(("v0 / (v1 / v2) --> (vovov) (v0 * v2) / v1\n"));
                      return (synthesis_result) ? result : error_node();
                   }
                }
@@ -20294,6 +20295,7 @@ namespace exprtk
                      const bool synthesis_result =
                         synthesize_sf3ext_expression::
                            template compile<vtype,vtype,ctype>(expr_gen,"t/(t*t)",v0,v1,c,result);
+                     exprtk_debug(("(v0 / v1) / c --> (vovoc) v0 / (v1 * c)\n"));
                      return (synthesis_result) ? result : error_node();
                   }
                }
@@ -20343,6 +20345,7 @@ namespace exprtk
                      const bool synthesis_result =
                         synthesize_sf3ext_expression::
                            template compile<vtype,ctype,vtype>(expr_gen,"(t*t)/t",v0,c,v1,result);
+                     exprtk_debug(("v0 / (v1 / c) --> (vocov) (v0 * c) / v1\n"));
                      return (synthesis_result) ? result : error_node();
                   }
                }
@@ -20392,6 +20395,7 @@ namespace exprtk
                      const bool synthesis_result =
                         synthesize_sf3ext_expression::
                            template compile<vtype,vtype,ctype>(expr_gen,"t/(t*t)",v0,v1,c,result);
+                     exprtk_debug(("(v0 / c) / v1 --> (vovoc) v0 / (v1 * c)\n"));
                      return (synthesis_result) ? result : error_node();
                   }
                }
@@ -20441,6 +20445,7 @@ namespace exprtk
                      const bool synthesis_result =
                         synthesize_sf3ext_expression::
                            template compile<vtype,vtype,ctype>(expr_gen,"(t*t)/t",v0,v1,c,result);
+                     exprtk_debug(("v0 / (c / v1) --> (vovoc) (v0 * v1) / c\n"));
                      return (synthesis_result) ? result : error_node();
                   }
                }
@@ -20490,6 +20495,7 @@ namespace exprtk
                      const bool synthesis_result =
                         synthesize_sf3ext_expression::
                            template compile<ctype,vtype,vtype>(expr_gen,"t/(t*t)",c,v0,v1,result);
+                     exprtk_debug(("(c / v0) / v1 --> (covov) c / (v0 * v1)\n"));
                      return (synthesis_result) ? result : error_node();
                   }
                }
@@ -20540,6 +20546,7 @@ namespace exprtk
                      const bool synthesis_result =
                         synthesize_sf3ext_expression::
                            template compile<ctype,vtype,vtype>(expr_gen,"(t*t)/t",c,v1,v0,result);
+                     exprtk_debug(("c / (v0 / v1) --> (covov) (c * v1) / v0\n"));
                      return (synthesis_result) ? result : error_node();
                   }
                }
@@ -20586,48 +20593,56 @@ namespace exprtk
                   // (c0 + v) + c1 --> (cov) (c0 + c1) + v
                   if ((details::e_add == o0) && (details::e_add == o1))
                   {
+                     exprtk_debug(("(c0 + v) + c1 --> (cov) (c0 + c1) + v\n"));
                      return expr_gen.node_allocator_->
                                template allocate_cr<typename details::cov_node<Type,details::add_op<Type> > >(c0 + c1,v);
                   }
                   // (c0 + v) - c1 --> (cov) (c0 - c1) + v
                   else if ((details::e_add == o0) && (details::e_sub == o1))
                   {
+                     exprtk_debug(("(c0 + v) - c1 --> (cov) (c0 - c1) + v\n"));
                      return expr_gen.node_allocator_->
                                template allocate_cr<typename details::cov_node<Type,details::add_op<Type> > >(c0 - c1,v);
                   }
                   // (c0 - v) + c1 --> (cov) (c0 + c1) - v
                   else if ((details::e_sub == o0) && (details::e_add == o1))
                   {
+                     exprtk_debug(("(c0 - v) + c1 --> (cov) (c0 + c1) - v\n"));
                      return expr_gen.node_allocator_->
                                template allocate_cr<typename details::cov_node<Type,details::sub_op<Type> > >(c0 + c1,v);
                   }
                   // (c0 - v) - c1 --> (cov) (c0 - c1) - v
                   else if ((details::e_sub == o0) && (details::e_sub == o1))
                   {
+                     exprtk_debug(("(c0 - v) - c1 --> (cov) (c0 - c1) - v\n"));
                      return expr_gen.node_allocator_->
                                template allocate_cr<typename details::cov_node<Type,details::sub_op<Type> > >(c0 - c1,v);
                   }
                   // (c0 * v) * c1 --> (cov) (c0 * c1) * v
                   else if ((details::e_mul == o0) && (details::e_mul == o1))
                   {
+                     exprtk_debug(("(c0 * v) * c1 --> (cov) (c0 * c1) * v\n"));
                      return expr_gen.node_allocator_->
                                template allocate_cr<typename details::cov_node<Type,details::mul_op<Type> > >(c0 * c1,v);
                   }
                   // (c0 * v) / c1 --> (cov) (c0 / c1) * v
                   else if ((details::e_mul == o0) && (details::e_div == o1))
                   {
+                     exprtk_debug(("(c0 * v) / c1 --> (cov) (c0 / c1) * v\n"));
                      return expr_gen.node_allocator_->
                                template allocate_cr<typename details::cov_node<Type,details::mul_op<Type> > >(c0 / c1,v);
                   }
                   // (c0 / v) * c1 --> (cov) (c0 * c1) / v
                   else if ((details::e_div == o0) && (details::e_mul == o1))
                   {
+                     exprtk_debug(("(c0 / v) * c1 --> (cov) (c0 * c1) / v\n"));
                      return expr_gen.node_allocator_->
                                template allocate_cr<typename details::cov_node<Type,details::div_op<Type> > >(c0 * c1,v);
                   }
                   // (c0 / v) / c1 --> (cov) (c0 / c1) / v
                   else if ((details::e_div == o0) && (details::e_div == o1))
                   {
+                     exprtk_debug(("(c0 / v) / c1 --> (cov) (c0 / c1) / v\n"));
                      return expr_gen.node_allocator_->
                                template allocate_cr<typename details::cov_node<Type,details::div_op<Type> > >(c0 / c1,v);
                   }
@@ -20676,48 +20691,56 @@ namespace exprtk
                   // (c0) + (v + c1) --> (cov) (c0 + c1) + v
                   if ((details::e_add == o0) && (details::e_add == o1))
                   {
+                     exprtk_debug(("(c0) + (v + c1) --> (cov) (c0 + c1) + v\n"));
                      return expr_gen.node_allocator_->
                                template allocate_cr<typename details::cov_node<Type,details::add_op<Type> > >(c0 + c1,v);
                   }
                   // (c0) + (v - c1) --> (cov) (c0 - c1) + v
                   else if ((details::e_add == o0) && (details::e_sub == o1))
                   {
+                     exprtk_debug(("(c0) + (v - c1) --> (cov) (c0 - c1) + v\n"));
                      return expr_gen.node_allocator_->
                                template allocate_cr<typename details::cov_node<Type,details::add_op<Type> > >(c0 - c1,v);
                   }
                   // (c0) - (v + c1) --> (cov) (c0 - c1) - v
                   else if ((details::e_sub == o0) && (details::e_add == o1))
                   {
+                     exprtk_debug(("(c0) - (v + c1) --> (cov) (c0 - c1) - v\n"));
                      return expr_gen.node_allocator_->
                                template allocate_cr<typename details::cov_node<Type,details::sub_op<Type> > >(c0 - c1,v);
                   }
                   // (c0) - (v - c1) --> (cov) (c0 + c1) - v
                   else if ((details::e_sub == o0) && (details::e_sub == o1))
                   {
+                     exprtk_debug(("(c0) - (v - c1) --> (cov) (c0 + c1) - v\n"));
                      return expr_gen.node_allocator_->
                                template allocate_cr<typename details::cov_node<Type,details::sub_op<Type> > >(c0 + c1,v);
                   }
                   // (c0) * (v * c1) --> (voc) v * (c0 * c1)
                   else if ((details::e_mul == o0) && (details::e_mul == o1))
                   {
+                     exprtk_debug(("(c0) * (v * c1) --> (voc) v * (c0 * c1)\n"));
                      return expr_gen.node_allocator_->
                                template allocate_cr<typename details::cov_node<Type,details::mul_op<Type> > >(c0 * c1,v);
                   }
                   // (c0) * (v / c1) --> (cov) (c0 / c1) * v
                   else if ((details::e_mul == o0) && (details::e_div == o1))
                   {
+                     exprtk_debug(("(c0) * (v / c1) --> (cov) (c0 / c1) * v\n"));
                      return expr_gen.node_allocator_->
                                template allocate_cr<typename details::cov_node<Type,details::mul_op<Type> > >(c0 / c1,v);
                   }
                   // (c0) / (v * c1) --> (cov) (c0 / c1) / v
                   else if ((details::e_div == o0) && (details::e_mul == o1))
                   {
+                     exprtk_debug(("(c0) / (v * c1) --> (cov) (c0 / c1) / v\n"));
                      return expr_gen.node_allocator_->
                                template allocate_cr<typename details::cov_node<Type,details::div_op<Type> > >(c0 / c1,v);
                   }
                   // (c0) / (v / c1) --> (cov) (c0 * c1) / v
                   else if ((details::e_div == o0) && (details::e_div == o1))
                   {
+                     exprtk_debug(("(c0) / (v / c1) --> (cov) (c0 * c1) / v\n"));
                      return expr_gen.node_allocator_->
                                template allocate_cr<typename details::cov_node<Type,details::div_op<Type> > >(c0 * c1,v);
                   }
@@ -20776,48 +20799,56 @@ namespace exprtk
                   // (c0) + (c1 + v) --> (cov) (c0 + c1) + v
                   if ((details::e_add == o0) && (details::e_add == o1))
                   {
+                     exprtk_debug(("(c0) + (c1 + v) --> (cov) (c0 + c1) + v\n"));
                      return expr_gen.node_allocator_->
                                template allocate_cr<typename details::cov_node<Type,details::add_op<Type> > >(c0 + c1,v);
                   }
                   // (c0) + (c1 - v) --> (cov) (c0 + c1) - v
                   else if ((details::e_add == o0) && (details::e_sub == o1))
                   {
+                     exprtk_debug(("(c0) + (c1 - v) --> (cov) (c0 + c1) - v\n"));
                      return expr_gen.node_allocator_->
                                template allocate_cr<typename details::cov_node<Type,details::sub_op<Type> > >(c0 + c1,v);
                   }
                   // (c0) - (c1 + v) --> (cov) (c0 - c1) - v
                   else if ((details::e_sub == o0) && (details::e_add == o1))
                   {
+                     exprtk_debug(("(c0) - (c1 + v) --> (cov) (c0 - c1) - v\n"));
                      return expr_gen.node_allocator_->
                                template allocate_cr<typename details::cov_node<Type,details::sub_op<Type> > >(c0 - c1,v);
                   }
                   // (c0) - (c1 - v) --> (cov) (c0 - c1) + v
                   else if ((details::e_sub == o0) && (details::e_sub == o1))
                   {
+                     exprtk_debug(("(c0) - (c1 - v) --> (cov) (c0 - c1) + v\n"));
                      return expr_gen.node_allocator_->
                                template allocate_cr<typename details::cov_node<Type,details::add_op<Type> > >(c0 - c1,v);
                   }
                   // (c0) * (c1 * v) --> (cov) (c0 * c1) * v
                   else if ((details::e_mul == o0) && (details::e_mul == o1))
                   {
+                     exprtk_debug(("(c0) * (c1 * v) --> (cov) (c0 * c1) * v\n"));
                      return expr_gen.node_allocator_->
                                template allocate_cr<typename details::cov_node<Type,details::mul_op<Type> > >(c0 * c1,v);
                   }
                   // (c0) * (c1 / v) --> (cov) (c0 * c1) / v
                   else if ((details::e_mul == o0) && (details::e_div == o1))
                   {
+                     exprtk_debug(("(c0) * (c1 / v) --> (cov) (c0 * c1) / v\n"));
                      return expr_gen.node_allocator_->
                                template allocate_cr<typename details::cov_node<Type,details::div_op<Type> > >(c0 * c1,v);
                   }
                   // (c0) / (c1 * v) --> (cov) (c0 / c1) / v
                   else if ((details::e_div == o0) && (details::e_mul == o1))
                   {
+                     exprtk_debug(("(c0) / (c1 * v) --> (cov) (c0 / c1) / v\n"));
                      return expr_gen.node_allocator_->
                                template allocate_cr<typename details::cov_node<Type,details::div_op<Type> > >(c0 / c1,v);
                   }
                   // (c0) / (c1 / v) --> (cov) (c0 / c1) * v
                   else if ((details::e_div == o0) && (details::e_div == o1))
                   {
+                     exprtk_debug(("(c0) / (c1 / v) --> (cov) (c0 / c1) * v\n"));
                      return expr_gen.node_allocator_->
                                template allocate_cr<typename details::cov_node<Type,details::mul_op<Type> > >(c0 / c1,v);
                   }
@@ -20865,48 +20896,56 @@ namespace exprtk
                   // (v + c0) + c1 --> (voc) v + (c0 + c1)
                   if ((details::e_add == o0) && (details::e_add == o1))
                   {
+                     exprtk_debug(("(v + c0) + c1 --> (voc) v + (c0 + c1)\n"));
                      return expr_gen.node_allocator_->
                                template allocate_rc<typename details::voc_node<Type,details::add_op<Type> > >(v,c0 + c1);
                   }
                   // (v + c0) - c1 --> (voc) v + (c0 - c1)
                   else if ((details::e_add == o0) && (details::e_sub == o1))
                   {
+                     exprtk_debug(("(v + c0) - c1 --> (voc) v + (c0 - c1)\n"));
                      return expr_gen.node_allocator_->
                                template allocate_rc<typename details::voc_node<Type,details::add_op<Type> > >(v,c0 - c1);
                   }
                   // (v - c0) + c1 --> (voc) v - (c0 + c1)
                   else if ((details::e_sub == o0) && (details::e_add == o1))
                   {
+                     exprtk_debug(("(v - c0) + c1 --> (voc) v - (c0 + c1)\n"));
                      return expr_gen.node_allocator_->
                                template allocate_rc<typename details::voc_node<Type,details::add_op<Type> > >(v,c1 - c0);
                   }
                   // (v - c0) - c1 --> (voc) v - (c0 + c1)
                   else if ((details::e_sub == o0) && (details::e_sub == o1))
                   {
+                     exprtk_debug(("(v - c0) - c1 --> (voc) v - (c0 + c1)\n"));
                      return expr_gen.node_allocator_->
                                template allocate_rc<typename details::voc_node<Type,details::sub_op<Type> > >(v,c0 + c1);
                   }
                   // (v * c0) * c1 --> (voc) v * (c0 * c1)
                   else if ((details::e_mul == o0) && (details::e_mul == o1))
                   {
+                     exprtk_debug(("(v * c0) * c1 --> (voc) v * (c0 * c1)\n"));
                      return expr_gen.node_allocator_->
                                template allocate_rc<typename details::voc_node<Type,details::mul_op<Type> > >(v,c0 * c1);
                   }
                   // (v * c0) / c1 --> (voc) v * (c0 / c1)
                   else if ((details::e_mul == o0) && (details::e_div == o1))
                   {
+                     exprtk_debug(("(v * c0) / c1 --> (voc) v * (c0 / c1)\n"));
                      return expr_gen.node_allocator_->
                                template allocate_rc<typename details::voc_node<Type,details::mul_op<Type> > >(v,c0 / c1);
                   }
                   // (v / c0) * c1 --> (voc) v * (c1 / c0)
                   else if ((details::e_div == o0) && (details::e_mul == o1))
                   {
+                     exprtk_debug(("(v / c0) * c1 --> (voc) v * (c1 / c0)\n"));
                      return expr_gen.node_allocator_->
                                template allocate_rc<typename details::voc_node<Type,details::mul_op<Type> > >(v,c1 / c0);
                   }
                   // (v / c0) / c1 --> (voc) v / (c0 * c1)
                   else if ((details::e_div == o0) && (details::e_div == o1))
                   {
+                     exprtk_debug(("(v / c0) / c1 --> (voc) v / (c0 * c1)\n"));
                      return expr_gen.node_allocator_->
                                template allocate_rc<typename details::voc_node<Type,details::div_op<Type> > >(v,c0 * c1);
                   }
@@ -20935,6 +20974,7 @@ namespace exprtk
             static inline expression_node_ptr process(expression_generator<Type>&, const details::operator_type&, expression_node_ptr (&)[2])
             {
                // (v) o0 (c0 o1 c1) - Not possible.
+               exprtk_debug(("(v) o0 (c0 o1 c1) - Not possible.\n"));
                return error_node();
             }
          };
@@ -20977,6 +21017,7 @@ namespace exprtk
                      const bool synthesis_result =
                         synthesize_sf4ext_expression::
                            template compile<vtype,vtype,vtype,vtype>(expr_gen,"(t*t)/(t*t)",v0,v2,v1,v3,result);
+                     exprtk_debug(("(v0 / v1) * (v2 / v3) --> (vovovov) (v0 * v2) / (v1 * v3)\n"));
                      return (synthesis_result) ? result : error_node();
                   }
                   // (v0 / v1) / (v2 / v3) --> (vovovov) (v0 * v3) / (v1 * v2)
@@ -20985,6 +21026,7 @@ namespace exprtk
                      const bool synthesis_result =
                         synthesize_sf4ext_expression::
                            template compile<vtype,vtype,vtype,vtype>(expr_gen,"(t*t)/(t*t)",v0,v3,v1,v2,result);
+                     exprtk_debug(("(v0 / v1) / (v2 / v3) --> (vovovov) (v0 * v3) / (v1 * v2)\n"));
                      return (synthesis_result) ? result : error_node();
                   }
                }
@@ -21046,6 +21088,7 @@ namespace exprtk
                      const bool synthesis_result =
                         synthesize_sf4ext_expression::
                            template compile<vtype,vtype,vtype,ctype>(expr_gen,"(t*t)/(t*t)",v0,v2,v1,c,result);
+                     exprtk_debug(("(v0 / v1) * (v2 / c) --> (vovovoc) (v0 * v2) / (v1 * c)\n"));
                      return (synthesis_result) ? result : error_node();
                   }
                   // (v0 / v1) / (v2 / c) --> (vocovov) (v0 * c) / (v1 * v2)
@@ -21054,6 +21097,7 @@ namespace exprtk
                      const bool synthesis_result =
                         synthesize_sf4ext_expression::
                            template compile<vtype,ctype,vtype,vtype>(expr_gen,"(t*t)/(t*t)",v0,c,v1,v2,result);
+                     exprtk_debug(("(v0 / v1) / (v2 / c) --> (vocovov) (v0 * c) / (v1 * v2)\n"));
                      return (synthesis_result) ? result : error_node();
                   }
                }
@@ -21116,6 +21160,7 @@ namespace exprtk
                      const bool synthesis_result =
                         synthesize_sf4ext_expression::
                            template compile<vtype,ctype,vtype,vtype>(expr_gen,"(t*t)/(t*t)",v0,c,v1,v2,result);
+                     exprtk_debug(("(v0 / v1) * (c / v2) --> (vocovov) (v0 * c) / (v1 * v2)\n"));
                      return (synthesis_result) ? result : error_node();
                   }
                   // (v0 / v1) / (c / v2) --> (vovovoc) (v0 * v2) / (v1 * c)
@@ -21124,6 +21169,7 @@ namespace exprtk
                      const bool synthesis_result =
                         synthesize_sf4ext_expression::
                            template compile<vtype,vtype,vtype,ctype>(expr_gen,"(t*t)/(t*t)",v0,v2,v1,c,result);
+                     exprtk_debug(("(v0 / v1) / (c / v2) --> (vovovoc) (v0 * v2) / (v1 * c)\n"));
                      return (synthesis_result) ? result : error_node();
                   }
                }
@@ -21186,6 +21232,7 @@ namespace exprtk
                      const bool synthesis_result =
                         synthesize_sf4ext_expression::
                            template compile<vtype,vtype,ctype,vtype>(expr_gen,"(t*t)/(t*t)",v0,v1,c,v2,result);
+                     exprtk_debug(("(v0 / c) * (v1 / v2) --> (vovocov) (v0 * v1) / (c * v2)\n"));
                      return (synthesis_result) ? result : error_node();
                   }
                   // (v0 / c) / (v1 / v2) --> (vovocov) (v0 * v2) / (c * v1)
@@ -21194,6 +21241,7 @@ namespace exprtk
                      const bool synthesis_result =
                         synthesize_sf4ext_expression::
                            template compile<vtype,vtype,ctype,vtype>(expr_gen,"(t*t)/(t*t)",v0,v2,c,v1,result);
+                     exprtk_debug(("(v0 / c) / (v1 / v2) --> (vovocov) (v0 * v2) / (c * v1)\n"));
                      return (synthesis_result) ? result : error_node();
                   }
                }
@@ -21256,6 +21304,7 @@ namespace exprtk
                      const bool synthesis_result =
                         synthesize_sf4ext_expression::
                            template compile<ctype,vtype,vtype,vtype>(expr_gen,"(t*t)/(t*t)",c,v1,v0,v2,result);
+                     exprtk_debug(("(c / v0) * (v1 / v2) --> (covovov) (c * v1) / (v0 * v2)\n"));
                      return (synthesis_result) ? result : error_node();
                   }
                   // (c / v0) / (v1 / v2) --> (covovov) (c * v2) / (v0 * v1)
@@ -21264,6 +21313,7 @@ namespace exprtk
                      const bool synthesis_result =
                         synthesize_sf4ext_expression::
                            template compile<ctype,vtype,vtype,vtype>(expr_gen,"(t*t)/(t*t)",c,v2,v0,v1,result);
+                     exprtk_debug(("(c / v0) / (v1 / v2) --> (covovov) (c * v2) / (v0 * v1)\n"));
                      return (synthesis_result) ? result : error_node();
                   }
                }
@@ -21326,6 +21376,7 @@ namespace exprtk
                      const bool synthesis_result =
                         synthesize_sf3ext_expression::
                            template compile<ctype,vtype,vtype>(expr_gen,"(t+t)+t",(c0 + c1),v0,v1,result);
+                     exprtk_debug(("(c0 + v0) + (c1 + v1) --> (covov) (c0 + c1) + v0 + v1\n"));
                      return (synthesis_result) ? result : error_node();
                   }
                   // (c0 + v0) - (c1 + v1) --> (covov) (c0 - c1) + v0 - v1
@@ -21334,6 +21385,7 @@ namespace exprtk
                      const bool synthesis_result =
                         synthesize_sf3ext_expression::
                            template compile<ctype,vtype,vtype>(expr_gen,"(t+t)-t",(c0 - c1),v0,v1,result);
+                     exprtk_debug(("(c0 + v0) - (c1 + v1) --> (covov) (c0 - c1) + v0 - v1\n"));
                      return (synthesis_result) ? result : error_node();
                   }
                   // (c0 - v0) - (c1 - v1) --> (covov) (c0 - c1) - v0 + v1
@@ -21342,6 +21394,7 @@ namespace exprtk
                      const bool synthesis_result =
                         synthesize_sf3ext_expression::
                            template compile<ctype,vtype,vtype>(expr_gen,"(t-t)+t",(c0 - c1),v0,v1,result);
+                     exprtk_debug(("(c0 - v0) - (c1 - v1) --> (covov) (c0 - c1) - v0 + v1\n"));
                      return (synthesis_result) ? result : error_node();
                   }
                   // (c0 * v0) * (c1 * v1) --> (covov) (c0 * c1) * v0 * v1
@@ -21350,6 +21403,7 @@ namespace exprtk
                      const bool synthesis_result =
                         synthesize_sf3ext_expression::
                            template compile<ctype,vtype,vtype>(expr_gen,"(t*t)*t",(c0 * c1),v0,v1,result);
+                     exprtk_debug(("(c0 * v0) * (c1 * v1) --> (covov) (c0 * c1) * v0 * v1\n"));
                      return (synthesis_result) ? result : error_node();
                   }
                   // (c0 * v0) / (c1 * v1) --> (covov) (c0 / c1) * (v0 / v1)
@@ -21358,6 +21412,7 @@ namespace exprtk
                      const bool synthesis_result =
                         synthesize_sf3ext_expression::
                            template compile<ctype,vtype,vtype>(expr_gen,"(t*t)/t",(c0 / c1),v0,v1,result);
+                     exprtk_debug(("(c0 * v0) / (c1 * v1) --> (covov) (c0 / c1) * (v0 / v1)\n"));
                      return (synthesis_result) ? result : error_node();
                   }
                   // (c0 / v0) * (c1 / v1) --> (covov) (c0 * c1) / (v0 * v1)
@@ -21366,6 +21421,7 @@ namespace exprtk
                      const bool synthesis_result =
                         synthesize_sf3ext_expression::
                            template compile<ctype,vtype,vtype>(expr_gen,"t/(t*t)",(c0 * c1),v0,v1,result);
+                     exprtk_debug(("(c0 / v0) * (c1 / v1) --> (covov) (c0 * c1) / (v0 * v1)\n"));
                      return (synthesis_result) ? result : error_node();
                   }
                   // (c0 * v0) / (c1 / v1) --> (covov) (c0 / c1) * (v0 * v1)
@@ -21374,6 +21430,7 @@ namespace exprtk
                      const bool synthesis_result =
                         synthesize_sf3ext_expression::
                            template compile<ctype,vtype,vtype>(expr_gen,"t*(t*t)",(c0 / c1),v0,v1,result);
+                     exprtk_debug(("(c0 * v0) / (c1 / v1) --> (covov) (c0 / c1) * (v0 * v1)\n"));
                      return (synthesis_result) ? result : error_node();
                   }
                   // (c0 / v0) / (c1 * v1) --> (covov) (c0 / c1) / (v0 * v1)
@@ -21382,6 +21439,7 @@ namespace exprtk
                      const bool synthesis_result =
                         synthesize_sf3ext_expression::
                            template compile<ctype,vtype,vtype>(expr_gen,"t/(t*t)",(c0 / c1),v0,v1,result);
+                     exprtk_debug(("(c0 / v0) / (c1 * v1) --> (covov) (c0 / c1) / (v0 * v1)\n"));
                      return (synthesis_result) ? result : error_node();
                   }
                   // (c * v0) +/- (c * v1) --> (covov) c * (v0 +/- v1)
@@ -21406,6 +21464,7 @@ namespace exprtk
                      const bool synthesis_result =
                         synthesize_sf3ext_expression::
                            template compile<ctype,vtype,vtype>(expr_gen,specfunc,c0,v0,v1,result);
+                     exprtk_debug(("(c * v0) +/- (c * v1) --> (covov) c * (v0 +/- v1)\n"));
                      return (synthesis_result) ? result : error_node();
                   }
                }
@@ -21468,6 +21527,7 @@ namespace exprtk
                      const bool synthesis_result =
                         synthesize_sf3ext_expression::
                            template compile<ctype,vtype,vtype>(expr_gen,"(t+t)+t",(c0 + c1),v0,v1,result);
+                     exprtk_debug(("(v0 + c0) + (v1 + c1) --> (covov) (c0 + c1) + v0 + v1\n"));
                      return (synthesis_result) ? result : error_node();
                   }
                   // (v0 + c0) - (v1 + c1) --> (covov) (c0 - c1) + v0 - v1
@@ -21476,6 +21536,7 @@ namespace exprtk
                      const bool synthesis_result =
                         synthesize_sf3ext_expression::
                            template compile<ctype,vtype,vtype>(expr_gen,"(t+t)-t",(c0 - c1),v0,v1,result);
+                     exprtk_debug(("(v0 + c0) - (v1 + c1) --> (covov) (c0 - c1) + v0 - v1\n"));
                      return (synthesis_result) ? result : error_node();
                   }
                   // (v0 - c0) - (v1 - c1) --> (covov) (c1 - c0) + v0 - v1
@@ -21484,6 +21545,7 @@ namespace exprtk
                      const bool synthesis_result =
                         synthesize_sf3ext_expression::
                            template compile<ctype,vtype,vtype>(expr_gen,"(t+t)-t",(c1 - c0),v0,v1,result);
+                     exprtk_debug(("(v0 - c0) - (v1 - c1) --> (covov) (c1 - c0) + v0 - v1\n"));
                      return (synthesis_result) ? result : error_node();
                   }
                   // (v0 * c0) * (v1 * c1) --> (covov) (c0 * c1) * v0 * v1
@@ -21492,6 +21554,7 @@ namespace exprtk
                      const bool synthesis_result =
                         synthesize_sf3ext_expression::
                            template compile<ctype,vtype,vtype>(expr_gen,"(t*t)*t",(c0 * c1),v0,v1,result);
+                     exprtk_debug(("(v0 * c0) * (v1 * c1) --> (covov) (c0 * c1) * v0 * v1\n"));
                      return (synthesis_result) ? result : error_node();
                   }
                   // (v0 * c0) / (v1 * c1) --> (covov) (c0 / c1) * (v0 / v1)
@@ -21500,6 +21563,7 @@ namespace exprtk
                      const bool synthesis_result =
                         synthesize_sf3ext_expression::
                            template compile<ctype,vtype,vtype>(expr_gen,"(t*t)/t",(c0 / c1),v0,v1,result);
+                     exprtk_debug(("(v0 * c0) / (v1 * c1) --> (covov) (c0 / c1) * (v0 / v1)\n"));
                      return (synthesis_result) ? result : error_node();
                   }
                   // (v0 / c0) * (v1 / c1) --> (covov) (1 / (c0 * c1)) * v0 * v1
@@ -21508,6 +21572,7 @@ namespace exprtk
                      const bool synthesis_result =
                         synthesize_sf3ext_expression::
                            template compile<ctype,vtype,vtype>(expr_gen,"(t*t)*t",Type(1) / (c0 * c1),v0,v1,result);
+                     exprtk_debug(("(v0 / c0) * (v1 / c1) --> (covov) (1 / (c0 * c1)) * v0 * v1\n"));
                      return (synthesis_result) ? result : error_node();
                   }
                   // (v0 * c0) / (v1 / c1) --> (covov) (c0 * c1) * (v0 / v1)
@@ -21516,6 +21581,7 @@ namespace exprtk
                      const bool synthesis_result =
                         synthesize_sf3ext_expression::
                            template compile<ctype,vtype,vtype>(expr_gen,"t*(t/t)",(c0 * c1),v0,v1,result);
+                     exprtk_debug(("(v0 * c0) / (v1 / c1) --> (covov) (c0 * c1) * (v0 / v1)\n"));
                      return (synthesis_result) ? result : error_node();
                   }
                   // (v0 / c0) / (v1 * c1) --> (covov) (1 / (c0 * c1)) * v0 / v1
@@ -21524,6 +21590,7 @@ namespace exprtk
                      const bool synthesis_result =
                         synthesize_sf3ext_expression::
                            template compile<ctype,vtype,vtype>(expr_gen,"t*(t/t)",Type(1) / (c0 * c1),v0,v1,result);
+                     exprtk_debug(("(v0 / c0) / (v1 * c1) --> (covov) (1 / (c0 * c1)) * v0 / v1\n"));
                      return (synthesis_result) ? result : error_node();
                   }
                   // (v0 / c0) * (v1 + c1) --> (vocovoc) (v0 * (1 / c0)) * (v1 + c1)
@@ -21532,6 +21599,7 @@ namespace exprtk
                      const bool synthesis_result =
                         synthesize_sf4ext_expression::
                            template compile<vtype,ctype,vtype,ctype>(expr_gen,"(t*t)*(t+t)",v0,T(1) / c0,v1,c1,result);
+                     exprtk_debug(("(v0 / c0) * (v1 + c1) --> (vocovoc) (v0 * (1 / c0)) * (v1 + c1)\n"));
                      return (synthesis_result) ? result : error_node();
                   }
                   // (v0 / c0) * (v1 - c1) --> (vocovoc) (v0 * (1 / c0)) * (v1 - c1)
@@ -21540,6 +21608,7 @@ namespace exprtk
                      const bool synthesis_result =
                         synthesize_sf4ext_expression::
                            template compile<vtype,ctype,vtype,ctype>(expr_gen,"(t*t)*(t-t)",v0,T(1) / c0,v1,c1,result);
+                     exprtk_debug(("(v0 / c0) * (v1 - c1) --> (vocovoc) (v0 * (1 / c0)) * (v1 - c1)\n"));
                      return (synthesis_result) ? result : error_node();
                   }
                   // (v0 * c) +/- (v1 * c) --> (covov) c * (v0 +/- v1)
@@ -21564,6 +21633,32 @@ namespace exprtk
                      const bool synthesis_result =
                         synthesize_sf3ext_expression::
                            template compile<ctype,vtype,vtype>(expr_gen,specfunc,c0,v0,v1,result);
+                     exprtk_debug(("(v0 * c) +/- (v1 * c) --> (covov) c * (v0 +/- v1)\n"));
+                     return (synthesis_result) ? result : error_node();
+                  }
+                  // (v0 / c) +/- (v1 / c) --> (vovoc) (v0 +/- v1) / c
+                  else if (
+                            (c0 == c1)             &&
+                            (details::e_div == o0) &&
+                            (details::e_div == o2) &&
+                            (
+                              (details::e_add == o1) ||
+                              (details::e_sub == o1)
+                            )
+                          )
+                  {
+                     std::string specfunc;
+                     switch (o1)
+                     {
+                        case details::e_add : specfunc = "(t+t)/t"; break;
+                        case details::e_sub : specfunc = "(t-t)/t"; break;
+                        default             : return error_node();
+                     }
+
+                     const bool synthesis_result =
+                        synthesize_sf3ext_expression::
+                           template compile<ctype,vtype,vtype>(expr_gen,specfunc,c0,v0,v1,result);
+                     exprtk_debug(("(v0 / c) +/- (v1 / c) --> (vovoc) (v0 +/- v1) / c\n"));
                      return (synthesis_result) ? result : error_node();
                   }
                }
@@ -21626,6 +21721,7 @@ namespace exprtk
                      const bool synthesis_result =
                         synthesize_sf3ext_expression::
                            template compile<ctype,vtype,vtype>(expr_gen,"(t+t)+t",(c0 + c1),v0,v1,result);
+                     exprtk_debug(("(c0 + v0) + (v1 + c1) --> (covov) (c0 + c1) + v0 + v1\n"));
                      return (synthesis_result) ? result : error_node();
                   }
                   // (c0 + v0) - (v1 + c1) --> (covov) (c0 - c1) + v0 - v1
@@ -21634,6 +21730,7 @@ namespace exprtk
                      const bool synthesis_result =
                         synthesize_sf3ext_expression::
                            template compile<ctype,vtype,vtype>(expr_gen,"(t+t)-t",(c0 - c1),v0,v1,result);
+                     exprtk_debug(("(c0 + v0) - (v1 + c1) --> (covov) (c0 - c1) + v0 - v1\n"));
                      return (synthesis_result) ? result : error_node();
                   }
                   // (c0 - v0) - (v1 - c1) --> (covov) (c0 + c1) - v0 - v1
@@ -21642,6 +21739,7 @@ namespace exprtk
                      const bool synthesis_result =
                         synthesize_sf3ext_expression::
                            template compile<ctype,vtype,vtype>(expr_gen,"t-(t+t)",(c0 + c1),v0,v1,result);
+                     exprtk_debug(("(c0 - v0) - (v1 - c1) --> (covov) (c0 + c1) - v0 - v1\n"));
                      return (synthesis_result) ? result : error_node();
                   }
                   // (c0 * v0) * (v1 * c1) --> (covov) (c0 * c1) * v0 * v1
@@ -21650,6 +21748,7 @@ namespace exprtk
                      const bool synthesis_result =
                         synthesize_sf3ext_expression::
                            template compile<ctype,vtype,vtype>(expr_gen,"(t*t)*t",(c0 * c1),v0,v1,result);
+                     exprtk_debug(("(c0 * v0) * (v1 * c1) --> (covov) (c0 * c1) * v0 * v1\n"));
                      return (synthesis_result) ? result : error_node();
                   }
                   // (c0 * v0) / (v1 * c1) --> (covov) (c0 / c1) * (v0 / v1)
@@ -21658,6 +21757,7 @@ namespace exprtk
                      const bool synthesis_result =
                         synthesize_sf3ext_expression::
                            template compile<ctype,vtype,vtype>(expr_gen,"(t*t)/t",(c0 / c1),v0,v1,result);
+                     exprtk_debug(("(c0 * v0) / (v1 * c1) --> (covov) (c0 / c1) * (v0 / v1)\n"));
                      return (synthesis_result) ? result : error_node();
                   }
                   // (c0 / v0) * (v1 / c1) --> (covov) (c0 / c1) * (v1 / v0)
@@ -21666,6 +21766,7 @@ namespace exprtk
                      const bool synthesis_result =
                         synthesize_sf3ext_expression::
                            template compile<ctype,vtype,vtype>(expr_gen,"t*(t/t)",(c0 / c1),v1,v0,result);
+                     exprtk_debug(("(c0 / v0) * (v1 / c1) --> (covov) (c0 / c1) * (v1 / v0)\n"));
                      return (synthesis_result) ? result : error_node();
                   }
                   // (c0 * v0) / (v1 / c1) --> (covov) (c0 * c1) * (v0 / v1)
@@ -21674,6 +21775,7 @@ namespace exprtk
                      const bool synthesis_result =
                         synthesize_sf3ext_expression::
                            template compile<ctype,vtype,vtype>(expr_gen,"(t*t)/t",(c0 * c1),v0,v1,result);
+                     exprtk_debug(("(c0 * v0) / (v1 / c1) --> (covov) (c0 * c1) * (v0 / v1)\n"));
                      return (synthesis_result) ? result : error_node();
                   }
                   // (c0 / v0) / (v1 * c1) --> (covov) (c0 / c1) / (v0 * v1)
@@ -21682,6 +21784,7 @@ namespace exprtk
                      const bool synthesis_result =
                         synthesize_sf3ext_expression::
                            template compile<ctype,vtype,vtype>(expr_gen,"t/(t*t)",(c0 / c1),v0,v1,result);
+                     exprtk_debug(("(c0 / v0) / (v1 * c1) --> (covov) (c0 / c1) / (v0 * v1)\n"));
                      return (synthesis_result) ? result : error_node();
                   }
                   // (c * v0) +/- (v1 * c) --> (covov) c * (v0 +/- v1)
@@ -21706,6 +21809,7 @@ namespace exprtk
                      const bool synthesis_result =
                         synthesize_sf3ext_expression::
                            template compile<ctype,vtype,vtype>(expr_gen,specfunc,c0,v0,v1,result);
+                     exprtk_debug(("(c * v0) +/- (v1 * c) --> (covov) c * (v0 +/- v1)\n"));
                      return (synthesis_result) ? result : error_node();
                   }
                }
@@ -21768,6 +21872,7 @@ namespace exprtk
                      const bool synthesis_result =
                         synthesize_sf3ext_expression::
                            template compile<ctype,vtype,vtype>(expr_gen,"(t+t)+t",(c0 + c1),v0,v1,result);
+                     exprtk_debug(("(v0 + c0) + (c1 + v1) --> (covov) (c0 + c1) + v0 + v1\n"));
                      return (synthesis_result) ? result : error_node();
                   }
                   // (v0 + c0) - (c1 + v1) --> (covov) (c0 - c1) + v0 - v1
@@ -21776,6 +21881,7 @@ namespace exprtk
                      const bool synthesis_result =
                         synthesize_sf3ext_expression::
                            template compile<ctype,vtype,vtype>(expr_gen,"(t+t)-t",(c0 - c1),v0,v1,result);
+                     exprtk_debug(("(v0 + c0) - (c1 + v1) --> (covov) (c0 - c1) + v0 - v1\n"));
                      return (synthesis_result) ? result : error_node();
                   }
                   // (v0 - c0) - (c1 - v1) --> (vovoc) v0 + v1 - (c1 + c0)
@@ -21784,6 +21890,7 @@ namespace exprtk
                      const bool synthesis_result =
                         synthesize_sf3ext_expression::
                            template compile<vtype,vtype,ctype>(expr_gen,"(t+t)-t",v0,v1,(c1 + c0),result);
+                     exprtk_debug(("(v0 - c0) - (c1 - v1) --> (vovoc) v0 + v1 - (c1 + c0)\n"));
                      return (synthesis_result) ? result : error_node();
                   }
                   // (v0 * c0) * (c1 * v1) --> (covov) (c0 * c1) * v0 * v1
@@ -21792,6 +21899,7 @@ namespace exprtk
                      const bool synthesis_result =
                         synthesize_sf3ext_expression::
                            template compile<ctype,vtype,vtype>(expr_gen,"(t*t)*t",(c0 * c1),v0,v1,result);
+                     exprtk_debug(("(v0 * c0) * (c1 * v1) --> (covov) (c0 * c1) * v0 * v1\n"));
                      return (synthesis_result) ? result : error_node();
                   }
                   // (v0 * c0) / (c1 * v1) --> (covov) (c0 / c1) * (v0 * v1)
@@ -21800,6 +21908,7 @@ namespace exprtk
                      const bool synthesis_result =
                         synthesize_sf3ext_expression::
                            template compile<ctype,vtype,vtype>(expr_gen,"(t*t)/t",(c0 / c1),v0,v1,result);
+                     exprtk_debug(("(v0 * c0) / (c1 * v1) --> (covov) (c0 / c1) * (v0 * v1)\n"));
                      return (synthesis_result) ? result : error_node();
                   }
                   // (v0 / c0) * (c1 / v1) --> (covov) (c1 / c0) * (v0 / v1)
@@ -21808,6 +21917,7 @@ namespace exprtk
                      const bool synthesis_result =
                         synthesize_sf3ext_expression::
                            template compile<ctype,vtype,vtype>(expr_gen,"(t*t)/t",(c1 / c0),v0,v1,result);
+                     exprtk_debug(("(v0 / c0) * (c1 / v1) --> (covov) (c1 / c0) * (v0 / v1)\n"));
                      return (synthesis_result) ? result : error_node();
                   }
                   // (v0 * c0) / (c1 / v1) --> (covov) (c0 / c1) * (v0 * v1)
@@ -21816,6 +21926,7 @@ namespace exprtk
                      const bool synthesis_result =
                         synthesize_sf3ext_expression::
                            template compile<ctype,vtype,vtype>(expr_gen,"(t*t)*t",(c0 / c1),v0,v1,result);
+                     exprtk_debug(("(v0 * c0) / (c1 / v1) --> (covov) (c0 / c1) * (v0 * v1)\n"));
                      return (synthesis_result) ? result : error_node();
                   }
                   // (v0 / c0) / (c1 * v1) --> (covov) (1 / (c0 * c1)) * (v0 / v1)
@@ -21824,6 +21935,7 @@ namespace exprtk
                      const bool synthesis_result =
                         synthesize_sf3ext_expression::
                            template compile<ctype,vtype,vtype>(expr_gen,"(t*t)/t",Type(1) / (c0 * c1),v0,v1,result);
+                     exprtk_debug(("(v0 / c0) / (c1 * v1) --> (covov) (1 / (c0 * c1)) * (v0 / v1)\n"));
                      return (synthesis_result) ? result : error_node();
                   }
                   // (v0 * c) +/- (c * v1) --> (covov) c * (v0 +/- v1)
@@ -21847,6 +21959,7 @@ namespace exprtk
                      const bool synthesis_result =
                         synthesize_sf3ext_expression::
                            template compile<ctype,vtype,vtype>(expr_gen,specfunc,c0,v0,v1,result);
+                     exprtk_debug(("(v0 * c) +/- (c * v1) --> (covov) c * (v0 +/- v1)\n"));
                      return (synthesis_result) ? result : error_node();
                   }
                }
@@ -21903,8 +22016,8 @@ namespace exprtk
                   return result;
                else if (!expr_gen.valid_operator(o0,f0))
                   return error_node();
-               else
-                  return node_type::allocate(*(expr_gen.node_allocator_),v0,v1,v2,v3,f0,f1,f2);
+               exprtk_debug(("v0 o0 (v1 o1 (v2 o2 v3))\n"));
+               return node_type::allocate(*(expr_gen.node_allocator_),v0,v1,v2,v3,f0,f1,f2);
             }
 
             static inline std::string id(expression_generator<Type>& expr_gen,
@@ -21947,8 +22060,8 @@ namespace exprtk
                   return result;
                else if (!expr_gen.valid_operator(o0,f0))
                   return error_node();
-               else
-                  return node_type::allocate(*(expr_gen.node_allocator_),v0,v1,v2,c,f0,f1,f2);
+               exprtk_debug(("v0 o0 (v1 o1 (v2 o2 c))\n"));
+               return node_type::allocate(*(expr_gen.node_allocator_),v0,v1,v2,c,f0,f1,f2);
             }
 
             static inline std::string id(expression_generator<Type>& expr_gen,
@@ -21991,8 +22104,8 @@ namespace exprtk
                   return result;
                if (!expr_gen.valid_operator(o0,f0))
                   return error_node();
-               else
-                  return node_type::allocate(*(expr_gen.node_allocator_),v0,v1,c,v2,f0,f1,f2);
+               exprtk_debug(("v0 o0 (v1 o1 (c o2 v2))\n"));
+               return node_type::allocate(*(expr_gen.node_allocator_),v0,v1,c,v2,f0,f1,f2);
             }
 
             static inline std::string id(expression_generator<Type>& expr_gen,
@@ -22035,8 +22148,8 @@ namespace exprtk
                   return result;
                else if (!expr_gen.valid_operator(o0,f0))
                   return error_node();
-               else
-                  return node_type::allocate(*(expr_gen.node_allocator_),v0,c,v1,v2,f0,f1,f2);
+               exprtk_debug(("v0 o0 (c o1 (v1 o2 v2))\n"));
+               return node_type::allocate(*(expr_gen.node_allocator_),v0,c,v1,v2,f0,f1,f2);
             }
 
             static inline std::string id(expression_generator<Type>& expr_gen,
@@ -22080,8 +22193,8 @@ namespace exprtk
                   return result;
                if (!expr_gen.valid_operator(o0,f0))
                   return error_node();
-               else
-                  return node_type::allocate(*(expr_gen.node_allocator_),c,v0,v1,v2,f0,f1,f2);
+               exprtk_debug(("c o0 (v0 o1 (v1 o2 v2))\n"));
+               return node_type::allocate(*(expr_gen.node_allocator_),c,v0,v1,v2,f0,f1,f2);
             }
 
             static inline std::string id(expression_generator<Type>& expr_gen,
@@ -22125,8 +22238,8 @@ namespace exprtk
                   return result;
                else if (!expr_gen.valid_operator(o0,f0))
                   return error_node();
-               else
-                  return node_type::allocate(*(expr_gen.node_allocator_),c0,v0,c1,v1,f0,f1,f2);
+               exprtk_debug(("c0 o0 (v0 o1 (c1 o2 v1))\n"));
+               return node_type::allocate(*(expr_gen.node_allocator_),c0,v0,c1,v1,f0,f1,f2);
             }
 
             static inline std::string id(expression_generator<Type>& expr_gen,
@@ -22169,8 +22282,8 @@ namespace exprtk
                   return result;
                else if (!expr_gen.valid_operator(o0,f0))
                   return error_node();
-               else
-                  return node_type::allocate(*(expr_gen.node_allocator_),v0,c0,v1,c1,f0,f1,f2);
+               exprtk_debug(("v0 o0 (c0 o1 (v1 o2 c2))\n"));
+               return node_type::allocate(*(expr_gen.node_allocator_),v0,c0,v1,c1,f0,f1,f2);
             }
 
             static inline std::string id(expression_generator<Type>& expr_gen,
@@ -22214,8 +22327,8 @@ namespace exprtk
                   return result;
                else if (!expr_gen.valid_operator(o0,f0))
                   return error_node();
-               else
-                  return node_type::allocate(*(expr_gen.node_allocator_),c0,v0,v1,c1,f0,f1,f2);
+               exprtk_debug(("c0 o0 (v0 o1 (v1 o2 c1))\n"));
+               return node_type::allocate(*(expr_gen.node_allocator_),c0,v0,v1,c1,f0,f1,f2);
             }
 
             static inline std::string id(expression_generator<Type>& expr_gen,
@@ -22258,8 +22371,8 @@ namespace exprtk
                   return result;
                else if (!expr_gen.valid_operator(o0,f0))
                   return error_node();
-               else
-                  return node_type::allocate(*(expr_gen.node_allocator_),v0,c0,c1,v1,f0,f1,f2);
+               exprtk_debug(("v0 o0 (c0 o1 (c1 o2 v1))\n"));
+               return node_type::allocate(*(expr_gen.node_allocator_),v0,c0,c1,v1,f0,f1,f2);
             }
 
             static inline std::string id(expression_generator<Type>& expr_gen,
@@ -22302,8 +22415,8 @@ namespace exprtk
                   return result;
                else if (!expr_gen.valid_operator(o0,f0))
                   return error_node();
-               else
-                  return node_type::allocate(*(expr_gen.node_allocator_),v0,v1,v2,v3,f0,f1,f2);
+               exprtk_debug(("v0 o0 ((v1 o1 v2) o2 v3)\n"));
+               return node_type::allocate(*(expr_gen.node_allocator_),v0,v1,v2,v3,f0,f1,f2);
             }
 
             static inline std::string id(expression_generator<Type>& expr_gen,
@@ -22346,8 +22459,8 @@ namespace exprtk
                   return result;
                else if (!expr_gen.valid_operator(o0,f0))
                   return error_node();
-               else
-                  return node_type::allocate(*(expr_gen.node_allocator_),v0,v1,v2,c,f0,f1,f2);
+               exprtk_debug(("v0 o0 ((v1 o1 v2) o2 c)\n"));
+               return node_type::allocate(*(expr_gen.node_allocator_),v0,v1,v2,c,f0,f1,f2);
             }
 
             static inline std::string id(expression_generator<Type>& expr_gen,
@@ -22390,8 +22503,8 @@ namespace exprtk
                   return result;
                else if (!expr_gen.valid_operator(o0,f0))
                   return error_node();
-               else
-                  return node_type::allocate(*(expr_gen.node_allocator_),v0,v1,c,v2,f0,f1,f2);
+               exprtk_debug(("v0 o0 ((v1 o1 c) o2 v2)\n"));
+               return node_type::allocate(*(expr_gen.node_allocator_),v0,v1,c,v2,f0,f1,f2);
             }
 
             static inline std::string id(expression_generator<Type>& expr_gen,
@@ -22434,8 +22547,8 @@ namespace exprtk
                   return result;
                else if (!expr_gen.valid_operator(o0,f0))
                   return error_node();
-               else
-                  return node_type::allocate(*(expr_gen.node_allocator_),v0,c,v1,v2,f0,f1,f2);
+               exprtk_debug(("v0 o0 ((c o1 v1) o2 v2)\n"));
+               return node_type::allocate(*(expr_gen.node_allocator_),v0,c,v1,v2,f0,f1,f2);
             }
 
             static inline std::string id(expression_generator<Type>& expr_gen,
@@ -22479,8 +22592,8 @@ namespace exprtk
                   return result;
                else if (!expr_gen.valid_operator(o0,f0))
                   return error_node();
-               else
-                  return node_type::allocate(*(expr_gen.node_allocator_),c,v0,v1,v2,f0,f1,f2);
+               exprtk_debug(("c o0 ((v1 o1 v2) o2 v3)\n"));
+               return node_type::allocate(*(expr_gen.node_allocator_),c,v0,v1,v2,f0,f1,f2);
             }
 
             static inline std::string id(expression_generator<Type>& expr_gen,
@@ -22524,8 +22637,8 @@ namespace exprtk
                   return result;
                else if (!expr_gen.valid_operator(o0,f0))
                   return error_node();
-               else
-                  return node_type::allocate(*(expr_gen.node_allocator_),c0,v0,c1,v1,f0,f1,f2);
+               exprtk_debug(("c0 o0 ((v0 o1 c1) o2 v1)\n"));
+               return node_type::allocate(*(expr_gen.node_allocator_),c0,v0,c1,v1,f0,f1,f2);
             }
 
             static inline std::string id(expression_generator<Type>& expr_gen,
@@ -22568,8 +22681,8 @@ namespace exprtk
                   return result;
                else if (!expr_gen.valid_operator(o0,f0))
                   return error_node();
-               else
-                  return node_type::allocate(*(expr_gen.node_allocator_),v0,c0,v1,c1,f0,f1,f2);
+               exprtk_debug(("v0 o0 ((c0 o1 v1) o2 c1)\n"));
+               return node_type::allocate(*(expr_gen.node_allocator_),v0,c0,v1,c1,f0,f1,f2);
             }
 
             static inline std::string id(expression_generator<Type>& expr_gen,
@@ -22613,8 +22726,8 @@ namespace exprtk
                   return result;
                else if (!expr_gen.valid_operator(o0,f0))
                   return error_node();
-               else
-                  return node_type::allocate(*(expr_gen.node_allocator_),c0,v0,v1,c1,f0,f1,f2);
+               exprtk_debug(("c0 o0 ((v0 o1 v1) o2 c1)\n"));
+               return node_type::allocate(*(expr_gen.node_allocator_),c0,v0,v1,c1,f0,f1,f2);
             }
 
             static inline std::string id(expression_generator<Type>& expr_gen,
@@ -22632,6 +22745,7 @@ namespace exprtk
             static inline expression_node_ptr process(expression_generator<Type>&, const details::operator_type&, expression_node_ptr (&)[2])
             {
                // v0 o0 ((c0 o1 c1) o2 v1) - Not possible
+               exprtk_debug(("v0 o0 ((c0 o1 c1) o2 v1) - Not possible\n"));
                return error_node();
             }
 
@@ -22673,8 +22787,8 @@ namespace exprtk
                   return result;
                else if (!expr_gen.valid_operator(o2,f2))
                   return error_node();
-               else
-                  return node_type::allocate(*(expr_gen.node_allocator_),v0,v1,v2,v3,f0,f1,f2);
+               exprtk_debug(("((v0 o0 v1) o1 v2) o2 v3\n"));
+               return node_type::allocate(*(expr_gen.node_allocator_),v0,v1,v2,v3,f0,f1,f2);
             }
 
             static inline std::string id(expression_generator<Type>& expr_gen,
@@ -22718,8 +22832,8 @@ namespace exprtk
                   return result;
                else if (!expr_gen.valid_operator(o2,f2))
                   return error_node();
-               else
-                  return node_type::allocate(*(expr_gen.node_allocator_),v0,v1,v2,c,f0,f1,f2);
+               exprtk_debug(("((v0 o0 v1) o1 v2) o2 c\n"));
+               return node_type::allocate(*(expr_gen.node_allocator_),v0,v1,v2,c,f0,f1,f2);
             }
 
             static inline std::string id(expression_generator<Type>& expr_gen,
@@ -22762,8 +22876,8 @@ namespace exprtk
                   return result;
                else if (!expr_gen.valid_operator(o2,f2))
                   return error_node();
-               else
-                  return node_type::allocate(*(expr_gen.node_allocator_),v0,v1,c,v2,f0,f1,f2);
+               exprtk_debug(("((v0 o0 v1) o1 c) o2 v2\n"));
+               return node_type::allocate(*(expr_gen.node_allocator_),v0,v1,c,v2,f0,f1,f2);
             }
 
             static inline std::string id(expression_generator<Type>& expr_gen,
@@ -22806,8 +22920,8 @@ namespace exprtk
                   return result;
                else if (!expr_gen.valid_operator(o2,f2))
                   return error_node();
-               else
-                  return node_type::allocate(*(expr_gen.node_allocator_),v0,c,v1,v2,f0,f1,f2);
+               exprtk_debug(("((v0 o0 c) o1 v1) o2 v2\n"));
+               return node_type::allocate(*(expr_gen.node_allocator_),v0,c,v1,v2,f0,f1,f2);
             }
 
             static inline std::string id(expression_generator<Type>& expr_gen,
@@ -22850,8 +22964,8 @@ namespace exprtk
                   return result;
                else if (!expr_gen.valid_operator(o2,f2))
                   return error_node();
-               else
-                  return node_type::allocate(*(expr_gen.node_allocator_),c,v0,v1,v2,f0,f1,f2);
+               exprtk_debug(("((c o0 v0) o1 v1) o2 v2\n"));
+               return node_type::allocate(*(expr_gen.node_allocator_),c,v0,v1,v2,f0,f1,f2);
             }
 
             static inline std::string id(expression_generator<Type>& expr_gen,
@@ -22894,8 +23008,8 @@ namespace exprtk
                   return result;
                else if (!expr_gen.valid_operator(o2,f2))
                   return error_node();
-               else
-                  return node_type::allocate(*(expr_gen.node_allocator_),c0,v0,c1,v1,f0,f1,f2);
+               exprtk_debug(("((c0 o0 v0) o1 c1) o2 v1\n"));
+               return node_type::allocate(*(expr_gen.node_allocator_),c0,v0,c1,v1,f0,f1,f2);
             }
 
             static inline std::string id(expression_generator<Type>& expr_gen,
@@ -22939,8 +23053,8 @@ namespace exprtk
                   return result;
                else if (!expr_gen.valid_operator(o2,f2))
                   return error_node();
-               else
-                  return node_type::allocate(*(expr_gen.node_allocator_),v0,c0,v1,c1,f0,f1,f2);
+               exprtk_debug(("((v0 o0 c0) o1 v1) o2 c1\n"));
+               return node_type::allocate(*(expr_gen.node_allocator_),v0,c0,v1,c1,f0,f1,f2);
             }
 
             static inline std::string id(expression_generator<Type>& expr_gen,
@@ -22984,8 +23098,8 @@ namespace exprtk
                   return result;
                else if (!expr_gen.valid_operator(o2,f2))
                   return error_node();
-               else
-                  return node_type::allocate(*(expr_gen.node_allocator_),c0,v0,v1,c1,f0,f1,f2);
+               exprtk_debug(("((c0 o0 v0) o1 v1) o2 c1\n"));
+               return node_type::allocate(*(expr_gen.node_allocator_),c0,v0,v1,c1,f0,f1,f2);
             }
 
             static inline std::string id(expression_generator<Type>& expr_gen,
@@ -23028,8 +23142,8 @@ namespace exprtk
                   return result;
                else if (!expr_gen.valid_operator(o2,f2))
                   return error_node();
-               else
-                  return node_type::allocate(*(expr_gen.node_allocator_),v0,c0,c1,v1,f0,f1,f2);
+               exprtk_debug(("((v0 o0 c0) o1 c1) o2 v1\n"));
+               return node_type::allocate(*(expr_gen.node_allocator_),v0,c0,c1,v1,f0,f1,f2);
             }
 
             static inline std::string id(expression_generator<Type>& expr_gen,
@@ -23072,8 +23186,8 @@ namespace exprtk
                   return result;
                else if (!expr_gen.valid_operator(o2,f2))
                   return error_node();
-               else
-                  return node_type::allocate(*(expr_gen.node_allocator_),v0,v1,v2,v3,f0,f1,f2);
+               exprtk_debug(("(v0 o0 (v1 o1 v2)) o2 v3\n"));
+               return node_type::allocate(*(expr_gen.node_allocator_),v0,v1,v2,v3,f0,f1,f2);
             }
 
             static inline std::string id(expression_generator<Type>& expr_gen,
@@ -23117,8 +23231,8 @@ namespace exprtk
                   return result;
                else if (!expr_gen.valid_operator(o2,f2))
                   return error_node();
-               else
-                  return node_type::allocate(*(expr_gen.node_allocator_),v0,v1,v2,c,f0,f1,f2);
+               exprtk_debug(("((v0 o0 (v1 o1 v2)) o2 c)\n"));
+               return node_type::allocate(*(expr_gen.node_allocator_),v0,v1,v2,c,f0,f1,f2);
             }
 
             static inline std::string id(expression_generator<Type>& expr_gen,
@@ -23161,8 +23275,8 @@ namespace exprtk
                   return result;
                else if (!expr_gen.valid_operator(o2,f2))
                   return error_node();
-               else
-                  return node_type::allocate(*(expr_gen.node_allocator_),v0,v1,c,v2,f0,f1,f2);
+               exprtk_debug(("((v0 o0 (v1 o1 c)) o2 v1)\n"));
+               return node_type::allocate(*(expr_gen.node_allocator_),v0,v1,c,v2,f0,f1,f2);
             }
 
             static inline std::string id(expression_generator<Type>& expr_gen,
@@ -23205,8 +23319,8 @@ namespace exprtk
                   return result;
                else if (!expr_gen.valid_operator(o2,f2))
                   return error_node();
-               else
-                  return node_type::allocate(*(expr_gen.node_allocator_),v0,c,v1,v2,f0,f1,f2);
+               exprtk_debug(("((v0 o0 (c o1 v1)) o2 v2)\n"));
+               return node_type::allocate(*(expr_gen.node_allocator_),v0,c,v1,v2,f0,f1,f2);
             }
 
             static inline std::string id(expression_generator<Type>& expr_gen,
@@ -23249,8 +23363,8 @@ namespace exprtk
                   return result;
                else if (!expr_gen.valid_operator(o2,f2))
                   return error_node();
-               else
-                  return node_type::allocate(*(expr_gen.node_allocator_),c,v0,v1,v2,f0,f1,f2);
+               exprtk_debug(("((c o0 (v0 o1 v1)) o2 v2)\n"));
+               return node_type::allocate(*(expr_gen.node_allocator_),c,v0,v1,v2,f0,f1,f2);
             }
 
             static inline std::string id(expression_generator<Type>& expr_gen,
@@ -23293,8 +23407,8 @@ namespace exprtk
                   return result;
                else if (!expr_gen.valid_operator(o2,f2))
                   return error_node();
-               else
-                  return node_type::allocate(*(expr_gen.node_allocator_),c0,v0,c1,v1,f0,f1,f2);
+               exprtk_debug(("((c0 o0 (v0 o1 c1)) o2 v1)\n"));
+               return node_type::allocate(*(expr_gen.node_allocator_),c0,v0,c1,v1,f0,f1,f2);
             }
 
             static inline std::string id(expression_generator<Type>& expr_gen,
@@ -23338,8 +23452,8 @@ namespace exprtk
                   return result;
                else if (!expr_gen.valid_operator(o2,f2))
                   return error_node();
-               else
-                  return node_type::allocate(*(expr_gen.node_allocator_),v0,c0,v1,c1,f0,f1,f2);
+               exprtk_debug(("((v0 o0 (c0 o1 v1)) o2 c1)\n"));
+               return node_type::allocate(*(expr_gen.node_allocator_),v0,c0,v1,c1,f0,f1,f2);
             }
 
             static inline std::string id(expression_generator<Type>& expr_gen,
@@ -23383,8 +23497,8 @@ namespace exprtk
                   return result;
                else if (!expr_gen.valid_operator(o2,f2))
                   return error_node();
-               else
-                  return node_type::allocate(*(expr_gen.node_allocator_),c0,v0,v1,c1,f0,f1,f2);
+               exprtk_debug(("((c0 o0 (v0 o1 v1)) o2 c1)\n"));
+               return node_type::allocate(*(expr_gen.node_allocator_),c0,v0,v1,c1,f0,f1,f2);
             }
 
             static inline std::string id(expression_generator<Type>& expr_gen,
@@ -23402,6 +23516,7 @@ namespace exprtk
             static inline expression_node_ptr process(expression_generator<Type>&, const details::operator_type&, expression_node_ptr (&)[2])
             {
                // ((v0 o0 (c0 o1 c1)) o2 v1) - Not possible
+               exprtk_debug(("((v0 o0 (c0 o1 c1)) o2 v1) - Not possible\n"));
                return error_node();
             }
 
@@ -23445,24 +23560,28 @@ namespace exprtk
                                                     node_allocator_->
                                                        allocate_rr<typename details::
                                                           vov_node<Type,details::add_op<Type> > >(v0,v1));
+                                        exprtk_debug(("(-v0 + -v1) --> -(v0 + v1)\n"));
                                         break;
 
                   // (-v0 - -v1) --> (v1 - v0)
                   case details::e_sub : result = node_allocator_->
                                                     allocate_rr<typename details::
                                                        vov_node<Type,details::sub_op<Type> > >(v1,v0);
+                                        exprtk_debug(("(-v0 - -v1) --> (v1 - v0)\n"));
                                         break;
 
                   // (-v0 * -v1) --> (v0 * v1)
                   case details::e_mul : result = node_allocator_->
                                                     allocate_rr<typename details::
                                                        vov_node<Type,details::mul_op<Type> > >(v0,v1);
+                                        exprtk_debug(("(-v0 * -v1) --> (v0 * v1)\n"));
                                         break;
 
                   // (-v0 / -v1) --> (v0 / v1)
                   case details::e_div : result = node_allocator_->
                                                     allocate_rr<typename details::
                                                        vov_node<Type,details::div_op<Type> > >(v0,v1);
+                                        exprtk_debug(("(-v0 / -v1) --> (v0 / v1)\n"));
                                         break;
 
                   default             : break;
@@ -25317,9 +25436,7 @@ namespace exprtk
 
          if (!parser_.compile(mod_expression,compiled_expression))
          {
-            #ifdef exprtk_enable_debugging
-            printf("Error: %s\n",parser_.error().c_str());
-            #endif
+            exprtk_debug(("Error: %s\n",parser_.error().c_str()));
             return false;
          }
 
