@@ -71,7 +71,7 @@ void fibonacci()
       x = i;
       T result = expression.value();
       printf("fibonacci(%3d) = %10.0f\n",
-             static_cast<unsigned int>(i),
+             static_cast<int>(i),
              result);
    }
 }

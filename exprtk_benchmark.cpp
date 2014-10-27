@@ -511,7 +511,7 @@ void perform_file_based_benchmark(const std::string& file_name, const std::size_
              static_cast<int>(i + 1),
              static_cast<int>(expression_list.size()),
              (timer.time() * 1000000000.0) / (1.0 * rounds),
-             static_cast<unsigned int>(timer.time() * 1000000000.0),
+             static_cast<int>(timer.time() * 1000000000.0),
              sum,
              expr_str_list[i].c_str());
 

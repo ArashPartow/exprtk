@@ -2542,8 +2542,8 @@ namespace exprtk
             {
                lexer::token t = generator[i];
                printf("Token[%02d] @ %03d  %6s  -->  '%s'\n",
-                      static_cast<unsigned int>(i),
-                      static_cast<unsigned int>(t.position),
+                      static_cast<int>(i),
+                      static_cast<int>(t.position),
                       t.to_str(t.type).c_str(),
                       t.value.c_str());
             }
@@ -3981,7 +3981,6 @@ namespace exprtk
 
       private:
 
-         operator_type operation_;
          expression_ptr branch_;
          bool branch_deletable_;
          bool equality_;
@@ -6888,7 +6887,6 @@ namespace exprtk
       private:
 
          vector_node<T>* vec_node_ptr_;
-         vector_node<T>* vec1_node_ptr_;
       };
 
       template <typename T, typename Operation>
@@ -6960,7 +6958,6 @@ namespace exprtk
       private:
 
          vector_node<T>* vec_node_ptr_;
-         vector_node<T>* vec1_node_ptr_;
       };
 
       template <typename T, typename Operation>
@@ -12667,6 +12664,12 @@ namespace exprtk
 
       struct type
       {
+         type()
+         : mode(parser_error::e_unknown),
+           line_no(0),
+           column_no(0)
+         {}
+
          lexer::token token;
          error_mode mode;
          std::string diagnostic;
@@ -12681,13 +12684,11 @@ namespace exprtk
          t.mode       = mode;
          t.token.type = lexer::token::e_error;
          t.diagnostic = diagnostic;
-         t.line_no    = 0;
-         t.column_no  = 0;
          exprtk_debug(((diagnostic + "\n").c_str()));
          return t;
       }
 
-      inline type make_error(error_mode mode, const lexer::token tk, const std::string& diagnostic = "")
+      inline type make_error(error_mode mode, const lexer::token& tk, const std::string& diagnostic = "")
       {
          type t;
          t.mode       = mode;
@@ -12756,7 +12757,7 @@ namespace exprtk
       inline void dump_error(const type& error)
       {
          printf("Position: %02d   Type: [%s]   Msg: %s\n",
-                static_cast<unsigned int>(error.token.position),
+                static_cast<int>(error.token.position),
                 exprtk::parser_error::to_str(error.mode).c_str(),
                 error.diagnostic.c_str());
       }
@@ -12937,7 +12938,8 @@ namespace exprtk
          typedef parser<T> parser_t;
 
          scope_element_manager(parser<T>& p)
-         : parser_(p)
+         : parser_(p),
+           input_param_cnt_(0)
          {}
 
          inline std::size_t size() const
@@ -14350,7 +14352,6 @@ namespace exprtk
             }
          }
 
-         std::string symbol = current_token_.value;
          if (result)
          {
             if (details::imatch(current_token_.value,"else"))
@@ -14942,8 +14943,6 @@ namespace exprtk
          std::vector<expression_node_ptr> arg_list;
          expression_node_ptr result = error_node();
 
-         const std::string symbol = current_token_.value;
-
          if (!details::imatch(current_token_.value,"switch"))
          {
             set_error(
@@ -15076,8 +15075,6 @@ namespace exprtk
       {
          std::vector<expression_node_ptr> arg_list;
          expression_node_ptr result = error_node();
-
-         const std::string symbol = current_token_.value;
 
          if (!details::imatch(current_token_.value,"[*]"))
          {
@@ -15813,8 +15810,6 @@ namespace exprtk
          std::vector<expression_node_ptr> arg_list;
          expression_node_ptr result = error_node();
 
-         const std::string symbol = current_token_.value;
-
          scoped_vec_delete<expression_node_t> sdd(*this,arg_list);
 
          next_token();
@@ -16255,7 +16250,7 @@ namespace exprtk
 
             exprtk_debug(("parse_define_vector_statement() - INFO - Added new local vector: %s[%d]\n",
                           nse.name.c_str(),
-                          static_cast<unsigned int>(nse.size)));
+                          static_cast<int>(nse.size)));
          }
 
          expression_node_ptr result =
@@ -16503,8 +16498,6 @@ namespace exprtk
                return error_node();
             }
 
-            var_node = nse.var_node;
-
             exprtk_debug(("parse_uninitialised_var_statement() - INFO - Added new local variable: %s\n",nse.name.c_str()));
          }
 
@@ -16734,8 +16727,8 @@ namespace exprtk
 
          if (vararg_function)
          {
-            expression_node_ptr vararg_func_node = error_node();
-            vararg_func_node = parse_vararg_function_call(vararg_function,symbol);
+            expression_node_ptr vararg_func_node =
+                                   parse_vararg_function_call(vararg_function,symbol);
 
             if (vararg_func_node)
                return vararg_func_node;
@@ -21576,7 +21569,7 @@ namespace exprtk
                      return (synthesis_result) ? result : error_node();
                   }
                   // (v0 * c0) / (v1 / c1) --> (covov) (c0 * c1) * (v0 / v1)
-                  else if ((details::e_mul == o0) && (details::e_div == o1) && (details::e_mul == o2))
+                  else if ((details::e_mul == o0) && (details::e_div == o1) && (details::e_div == o2))
                   {
                      const bool synthesis_result =
                         synthesize_sf3ext_expression::
@@ -21921,7 +21914,7 @@ namespace exprtk
                      return (synthesis_result) ? result : error_node();
                   }
                   // (v0 * c0) / (c1 / v1) --> (covov) (c0 / c1) * (v0 * v1)
-                  else if ((details::e_mul == o0) && (details::e_mul == o1) && (details::e_mul == o2))
+                  else if ((details::e_mul == o0) && (details::e_div == o1) && (details::e_div == o2))
                   {
                      const bool synthesis_result =
                         synthesize_sf3ext_expression::
@@ -25270,8 +25263,6 @@ namespace exprtk
                       const Sequence<std::string,Allocator>& var_list)
       {
          const std::size_t n = var_list.size();
-         std::vector<T*> v(n,0);
-         std::vector<std::string> sv(n);
 
          if (expr_map_.end() != expr_map_.find(name))
             return false;
