@@ -2085,14 +2085,14 @@ inline bool run_test02()
          str_b = test.b;
          str_c = test.c;
 
-         T result = expression.value();
+         T expr_result = expression.value();
 
-         if (not_equal(result,test.result))
+         if (not_equal(expr_result,test.result))
          {
             printf("run_test02() - Computation Error:  Expression: [%s]\tExpected: %19.15f\tResult: %19.15f\n",
                    test.expr.c_str(),
                    (double)test.result,
-                   (double)result);
+                   (double)expr_result);
             result = false;
          }
       }
