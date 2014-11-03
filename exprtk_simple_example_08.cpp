@@ -66,6 +66,7 @@ void composite()
                 error.diagnostic.c_str(),
                 expression_string.c_str());
       }
+
       return;
    }
 

@@ -69,7 +69,9 @@ void fibonacci()
    for (std::size_t i = 0; i < 40; ++i)
    {
       x = i;
+
       T result = expression.value();
+
       printf("fibonacci(%3d) = %10.0f\n",
              static_cast<int>(i),
              result);

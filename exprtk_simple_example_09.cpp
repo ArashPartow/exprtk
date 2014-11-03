@@ -118,9 +118,11 @@ void primes()
    for (std::size_t i = 0; i < 100; ++i)
    {
       x = i;
+
       T result1 = expression1.value();
       T result2 = expression2.value();
       T result3 = expression3.value();
+
       printf("%03d  Result1: %c  Result2: %c  Result3: %c\n",
              static_cast<unsigned int>(i),
              (result1 == T(1)) ? 'T' : 'F',
