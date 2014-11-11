@@ -5080,8 +5080,10 @@ namespace exprtk
          {
             if (1 != (arg_list.size() & 1))
                return;
+
             arg_list_.resize(arg_list.size());
             delete_branch_.resize(arg_list.size());
+
             for (std::size_t i = 0; i < arg_list.size(); ++i)
             {
                if (arg_list[i])
@@ -5114,22 +5116,20 @@ namespace exprtk
          {
             if (!arg_list_.empty())
             {
-               if (1 != (arg_list_.size() & 1))
-               {
-                  return std::numeric_limits<T>::quiet_NaN();
-               }
+               const std::size_t upper_bound = (arg_list_.size() - 1);
 
-               for (std::size_t i = 0; i < arg_list_.size() / 2; ++i)
+               for (std::size_t i = 0; i < upper_bound; i += 2)
                {
-                  expression_ptr condition  = arg_list_[(2 * i)    ];
-                  expression_ptr consequent = arg_list_[(2 * i) + 1];
+                  expression_ptr condition  = arg_list_[i    ];
+                  expression_ptr consequent = arg_list_[i + 1];
+
                   if (is_true(condition))
                   {
                      return consequent->value();
                   }
                }
 
-               return arg_list_.back()->value();
+               return arg_list_[upper_bound]->value();
             }
             else
                return std::numeric_limits<T>::quiet_NaN();

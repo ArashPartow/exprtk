@@ -1252,7 +1252,23 @@ into account when using Exprtk:
       8. null     !=      null --> false
       9. null     !=      x    --> false
 
- (27) Every ExprTk statement is a "value returning" expression. Unlike
+ (27) The following is a list of reserved words and symbols used by
+      ExprTk. Attempting to add a variable or custom function to a
+      symbol table using any of the reserved words will result in
+      a failure.
+
+      abs, acos, acosh, and, asin, asinh, atan, atan2, atanh, avg,
+      break, case,  ceil, clamp,  continue, cosh,  cos, cot,  csc,
+      default,  deg2grad, deg2rad,  else, equal,  erfc, erf,  exp,
+      expm1, false, floor, for, frac, grad2deg, hypot, iclamp, if,
+      ilike, in, inrange, in, like, log, log10, log1p, log2, logn,
+      mand,  max,  min,  mod,  mor,  mul,  nand,  ncdf,  nor, not,
+      not_equal,  not,  null,  or,  pow,  rad2deg,  repeat,  root,
+      roundn, round, sec,  sgn, shl, shr,  sinc, sinh, sin,  sqrt,
+      sum,  swap,  switch,  tanh, tan,  true,  trunc,  until, var,
+      while, xnor, xor, xor
+
+ (28) Every ExprTk statement is a "value returning" expression. Unlike
       some languages that limit the types of expressions that can be
       performed in certain situations, in ExprTk any valid expression
       can be used in any "value consuming" context. Eg:
