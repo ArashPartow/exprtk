@@ -34,7 +34,7 @@ struct myfunc : public exprtk::ifunction<T>
    }
 };
 
-template<typename T>
+template <typename T>
 void custom_function()
 {
    typedef exprtk::expression<T> expression_t;
