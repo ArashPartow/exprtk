@@ -67,10 +67,10 @@ expressions that can be parsed and evaluated using the ExprTk library.
   (14) (sin(x / pi) cos(2y) + 1) == (sin(x / pi) * cos(2 * y) + 1)
   (15) 75x^17 + 25.1x^5 - 35x^4 - 15.2x^3 + 40x^2 - 15.3x + 1
   (16) (avg(x,y) <= x + y ? x - y : x * y) + 2.345 * pi / x
-  (17) fib_i := fib_i + (x := y + 0 * (fib_i := x + (y := fib_i)))
-  (18) while (x <= 100) { x -= 1; }
-  (19) x <= 'abc123' and (y in 'AString') or ('1x2y3z' != z)
-  (20) (x like '*123*') or ('a123b' ilike y)
+  (17) while (x <= 100) { x -= 1; }
+  (18) x <= 'abc123' and (y in 'AString') or ('1x2y3z' != z)
+  (19) (x like '*123*') or ('a123b' ilike y)
+  (20) sgn(+1.2^3.4z / -5.6y) <= {-7.8^9 / -10.11x }
 
 
 
@@ -88,8 +88,8 @@ The most  recent version  of the C++ Mathematical  Expression  Toolkit
 Library including all updates and tests can be found at the  following
 locations:
 
-  (1) Download:   http://www.partow.net/programming/exprtk/index.html
-  (2) Repository: https://exprtk.googlecode.com/svn/
+  (a) Download:   http://www.partow.net/programming/exprtk/index.html
+  (b) Repository: https://exprtk.googlecode.com/svn/
 
 
 
@@ -100,10 +100,10 @@ include path (e.g: /usr/include/).
 
 
 [06 - COMPILATION]
- (a) For a complete build: make clean all
- (b) For a PGO build: make clean pgo
- (c) To strip executables: make strip_bin
- (d) Execute valgrind check: make valgrind_check
+  (a) For a complete build: make clean all
+  (b) For a PGO build: make clean pgo
+  (c) To strip executables: make strip_bin
+  (d) Execute valgrind check: make valgrind_check
 
 
 
@@ -158,7 +158,7 @@ of C++ compilers:
 +----------+---------------------------------------------------------+
 |  /=      | Assign the division of x by the value of the expression |
 |          | on the right-hand side to x. Where x is either a        |
-|          | variable or vector type.  (eg: x[i+j] /= abs(y * z))    |
+|          | variable or vector type.  (eg: x[i + j] /= abs(y * z))  |
 +----------+---------------------------------------------------------+
 |  %=      | Assign x modulo the value of the expression on the right|
 |          | hand side to x. Where x is either a variable or vector  |
@@ -422,11 +422,11 @@ of C++ compilers:
 |          | eg:                                                     |
 |          | 1. if (x > y) z; else w;                                |
 |          | 2. if (x > y) z; else if (w != u) v;                    |
-|          | 3. if (x < y) {z; w+1;} else u;                         |
+|          | 3. if (x < y) {z; w + 1;} else u;                       |
 |          | 4. if ((x != y) and (z > w))                            |
 |          |    {                                                    |
 |          |      y := sin(x) / u;                                   |
-|          |      z := w+1;                                          |
+|          |      z := w + 1;                                        |
 |          |    }                                                    |
 |          |    else if (x > (z + 1))                                |
 |          |    {                                                    |
@@ -471,7 +471,7 @@ of C++ compilers:
 | for      | The structure will repeatedly evaluate the internal     |
 |          | statement(s) while the condition is true. On each loop  |
 |          | iteration, an 'incrementing' expression is evaluated.   |
-|          | The conditional is mandatory whereas the initializer    |
+|          | The conditional is mandatory whereas the initialiser    |
 |          | and incrementing expressions are optional.              |
 |          | eg:                                                     |
 |          | for (var x := 0; (x < n) and (x != y); x += 1)          |
@@ -868,7 +868,7 @@ vectors. The definitions  must be unique  as shadowing is  not allowed
 and  object  life-times  are  based  on  scope.  Definitions  use  the
 following general form:
 
-   var <name> := <initializer>;
+   var <name> := <initialiser>;
 
 (1) Variable Definition
 Variables are  of numeric  type denoting  a single  value. They can be
@@ -900,13 +900,13 @@ zero. The following are examples of vector definitions:
        var x[3] := [123 + 3y + sin(w/z)];
 
    (d) Initialise the first two values, other elements to zero
-       var x[3] := {1 + x[2], sin(y[0] / x[]) + 3};
+       var x[3] := { 1 + x[2], sin(y[0] / x[]) + 3 };
 
    (e) Initialise the first three (all) values
-       var x[3] := {1,2,3};
+       var x[3] := { 1, 2, 3 };
 
-   (f) Error as there are too many initializers
-       var x[3] := {1,2,3,4};
+   (f) Error as there are too many initialisers
+       var x[3] := { 1, 2, 3, 4 };
 
    (g) Error as a vector of size zero is not allowed.
        var x[0];
@@ -914,7 +914,7 @@ zero. The following are examples of vector definitions:
 
 (3) Return Value
 Variable and vector  definitions have a  return value. In  the case of
-variable definitions, the value  to which the variable  is initialized
+variable definitions, the value  to which the variable  is initialised
 will be returned. Where as for vectors, the value of the first element
 (eg: v[0]) will be returned.
 
@@ -927,14 +927,14 @@ vector expression can be assigned to a variable.
       Every element of the vector is assigned the value of the variable
       or expression.
       var x    := 3;
-      var y[3] := {1,2,3};
+      var y[3] := { 1, 2, 3 };
       y := x + 1;
 
   (b) Vector To Variable:
       The variable is assigned the value of the first element of the
       vector (aka vec[0])
       var x    := 3;
-      var y[3] := {1,2,3};
+      var y[3] := { 1, 2, 3 };
       x := y + 1;
 
 
@@ -972,16 +972,16 @@ The  following  simple  example  demonstrates  the  vector  processing
 capabilities by computing the dot-product of the vectors v0 and v1 and
 then assigning it to the variable v0dotv1:
 
-   var v0[3] := {1,2,3};
-   var v1[3] := {4,5,6};
+   var v0[3] := { 1, 2, 3 };
+   var v1[3] := { 4, 5, 6 };
    var v0dotv1 := sum(v0 * v1);
 
 
 The following is a for-loop based implementation that is equivalent to
 the previously mentioned dot-product computation expression:
 
-   var v0[3] := {1,2,3};
-   var v1[3] := {4,5,6};
+   var v0[3] := { 1, 2, 3 };
+   var v1[3] := { 4, 5, 6 };
    var v0dotv1;
 
    for (var i := 0; i < min(v0[],v1[]); i += 1)
@@ -995,8 +995,8 @@ is not  a vector  but rather  a singular  variable denoting  a boolean
 state  of either  'true' or  'false' depending  on the  nature of  the
 inequality.
 
-   var x[3] := {1,1,1};
-   var y[3] := {3,2,1};
+   var x[3] := { 1, 1, 1 };
+   var y[3] := { 3, 2, 1 };
 
    y > x == false
 
@@ -1005,10 +1005,12 @@ Note:  When  the  aggregate  operations  denoted  above  are  used  in
 conjunction with a  vector or vector  expression, the return  value is
 not a vector but rather a single value.
 
-   var x[3] := {1,2,3};
+   var x[3] := { 1, 2, 3 };
 
    sum(1 + 2x) == 15
-   7 == avg(3x + 1)
+   avg(3x + 1) ==  7
+   min(1 / x)  == (1 / 3)
+   max(x / 2)  == (3 / 2)
 
 
 
@@ -1027,6 +1029,7 @@ There are two types of function interface:
 
    (1) ifunction
    (2) ivararg_function
+   (3) function_compositor
 
 
 (1) ifunction
@@ -1061,24 +1064,62 @@ example defines a vararg function called 'boo':
       inline T operator()(const std::vector<T>& arglist)
       {
          T result = T(0);
+
          for (std::size_t i = 0; i < arglist.size(); ++i)
          {
             result += arglist[i] / arglist[i > 0 ? (i - 1) : 0];
          }
+
          return result;
       }
    };
 
 
-(3) Using Functions In Expressions
-For the above denoted custom functions to be used in an expression, an
-instance of each function needs  to be registered with a  symbol_table
-that  has been associated with the expression  instance. The following
-demonstrates how all the pieces are put together:
+(3) function_compositor
+The function compositor interface allows  a user to define a  function
+using ExprTk syntax. The functions  are limited to returning a  single
+scalar value and consuming up to six parameters as input.
 
-   typedef exprtk::symbol_table<double> symbol_table_t;
-   typedef exprtk::expression<double>     expression_t;
-   typedef exprtk::parser<double>             parser_t;
+All composited functions are registered with a symbol table,  allowing
+them to call other functions that have been registered with the symbol
+table instance, furthermore the functions can be recursive in  nature.
+The following example defines, using two different methods, composited
+functions then  implicitly registers  the functions  with the  denoted
+symbol table.
+
+   typedef exprtk::symbol_table<T>         symbol_table_t;
+   typedef exprtk::function_compositor<T>    compositor_t;
+   typedef typename compositor_t::function     function_t;
+
+   symbol_table_t symbol_table;
+
+   compositor_t compositor(symbol_table);
+
+   // define function koo0(v1,v2) { ... }
+   compositor
+      .add("koo0",
+           " 1 + cos(v1 * v2) / 3;",
+           "v1","v2");
+
+   // define function koo1(x,y,z) { ... }
+   compositor
+      .add(function_t()
+         .name("koo1")
+         .var("x").var("y").var("z")
+         .expression("1 + cos(x * y) / z;"));
+
+
+(4) Using Functions In Expressions
+For the above denoted custom and composited functions to be used in an
+expression, an instance of each function needs to be registered with a
+symbol_table that  has been  associated with  the expression instance.
+The following demonstrates how all the pieces are put together:
+
+   typedef exprtk::symbol_table<double>    symbol_table_t;
+   typedef exprtk::expression<double>        expression_t;
+   typedef exprtk::parser<double>                parser_t;
+   typedef exprtk::function_compositor<T>    compositor_t;
+   typedef typename compositor_t::function     function_t;
 
    foo<double> f;
    boo<double> b;
@@ -1087,11 +1128,18 @@ demonstrates how all the pieces are put together:
    symbol_table.add_function("foo",f);
    symbol_table.add_vararg_function("boo",b);
 
+   compositor
+      .add(function_t()
+         .name("koo")
+         .var("v1")
+         .var("v2")
+         .expression("1 + cos(v1 * v2) / 3;"));
+
    expression_t expression;
    expression.register_symbol_table(symbol_table);
 
    std::string expression_str =
-                  "foo(1,2,3) + boo(1) / boo(1/2,2/3,3/4,4/5,5/6)";
+             "foo(1,2,3) + boo(1) / boo(1/2,2/3,3/4,4/5) + koo(3,4)";
 
    parser_t parser;
    parser.compile(expression_str,expression);
@@ -1099,7 +1147,7 @@ demonstrates how all the pieces are put together:
    expression.value();
 
 
-(4) Function Side-Effects
+(5) Function Side-Effects
 All function calls are assumed  to have side-effects by default.  This
 assumption implicitly disables constant folding optimisations when all
 parameters being passed to the function are deduced as being constants
@@ -1121,7 +1169,7 @@ to the constructor to denote the lack of side-effects.
    };
 
 
-(5) Zero Parameter Functions
+(6) Zero Parameter Functions
 When either an ifunction  or ivararg_function derived type  is defined
 with  zero number  of parameters,  there are  two calling  conventions
 within expressions that are allowed.  For a function named 'foo'  with
@@ -1132,7 +1180,116 @@ zero input parameters the calling styles are as follows:
 
 
 
-[15 - EXPRTK NOTES]
+[15 - COMPILATION ERRORS]
+When attempting to compile  a malformed or otherwise  erroneous ExprTk
+expression, the  compilation process  will result  in an  error, as is
+indicated  by  the  'compile'  method  returning  a  false  value.   A
+diagnostic indicating the first error encountered and its cause can be
+obtained by  invoking the  'error' method,  as is  demonstrated in the
+following example:
+
+   if (!parser.compile(expression_string,expression))
+   {
+      printf("Error: %s\n", parser.error().c_str());
+      return 1;
+   }
+
+
+Any error(s) resulting from a failed compilation will be stored in the
+parser instance until the next time a compilation is performed. Before
+then errors can be enumerated  in the order they occurred  by invoking
+the 'get_error' method which itself will return a 'parser_error' type.
+A parser_error object will contain an error diagnostic, an error  mode
+(or class), and the character position of the error in the  expression
+string. The following example demonstrates the enumeration of error(s)
+in the event of a failed compilation.
+
+   if (!parser.compile(expression_string,expression))
+   {
+      for (std::size_t i = 0; i < parser.error_count(); ++i)
+      {
+         typedef exprtk::parser_error::type error_t;
+
+         error_t error = parser.get_error(i);
+
+         printf("Error[%02d] Position: %02d Type: [%14s] Msg: %s\n",
+                i,
+                error.token.position,
+                exprtk::parser_error::to_str(error.mode).c_str(),
+                error.diagnostic.c_str());
+      }
+
+      return 1;
+   }
+
+
+For  expressions  comprised  of  multiple  lines,  the  error position
+provided in the  parser_error object can  be converted into  a pair of
+line and column numbers by invoking the 'update_error' function as  is
+demonstrated by the following example:
+
+   if (!parser.compile(program_str,expression))
+   {
+      for (std::size_t i = 0; i < parser.error_count(); ++i)
+      {
+         typedef exprtk::parser_error::type error_t;
+
+         error_t error = parser.get_error(i);
+
+         exprtk::parser_error::update_error(error,program_str);
+
+         printf("Error[%02d] at line: %d column: %d\n",
+                i,
+                error.line_no,
+                error.column_no);
+      }
+
+      return 1;
+   }
+
+
+Note: The  are five  distinct error  modes in  ExprTk which denote the
+class of an error. These classes are as follows:
+
+   (a) Syntax
+   (b) Token
+   (c) Numeric
+   (d) Symbol Table
+   (e) Lexer
+
+
+(a) Syntax Errors
+These are errors  related to invalid  syntax found within  the denoted
+expression. Examples are invalid sequences of operators and variables,
+incorrect number  of parameters  to functions,  invalid conditional or
+loop structures and invalid use of keywords.
+
+   eg:  'for := sin(x,y,z) + 2 * equal > until[2 - x,3]'
+
+
+(b) Token Errors
+Errors in this class relate to  token level errors detected by one  or
+more of the following checkers:
+
+   (1) Bracket Checker
+   (2) Numeric Checker
+   (3) Sequence Checker
+
+(c) Numeric Errors
+This class of  error is related  to conversion of  numeric values from
+their  string form  to the  underlying numerical  type (float,  double
+etc).
+
+(d) Symbol Table Errors
+This is the class of errors related to failures when interacting  with
+the registered symbol_table instance. Errors such as not being able to
+find,  within  the  symbol_table,  symbols  representing  variables or
+functions, to being unable to create new variables in the symbol_table
+via the 'unknown symbol resolver' mechanism.
+
+
+
+[16 - EXPRTK NOTES]
 The following is a list of facts and suggestions one may want to take
 into account when using Exprtk:
 
@@ -1268,17 +1425,17 @@ into account when using Exprtk:
       sum,  swap,  switch,  tanh, tan,  true,  trunc,  until, var,
       while, xnor, xor, xor
 
- (28) Every ExprTk statement is a "value returning" expression. Unlike
-      some languages that limit the types of expressions that can be
-      performed in certain situations, in ExprTk any valid expression
-      can be used in any "value consuming" context. Eg:
+ (28) Every valid ExprTk statement is a "value returning" expression.
+      Unlike some languages that limit the types of expressions that
+      can be performed in certain situations, in ExprTk any valid
+      expression can be used in any "value consuming" context. Eg:
 
       var y := 3;
       for (var x := switch
                     {
-                     case 1 :  7;
-                     case 2 : -1 + ~{var x{};};
-                     default:  y > 2 ? 3 : 4;
+                      case 1 :  7;
+                      case 2 : -1 + ~{var x{};};
+                      default:  y > 2 ? 3 : 4;
                     };
            x != while (y > 0) { y -= 1; };
            x -= {if(min(x,y) < 2 * max(x,y))
@@ -1292,7 +1449,7 @@ into account when using Exprtk:
 
 
 
-[16 - SIMPLE EXPRTK EXAMPLE]
+[17 - SIMPLE EXPRTK EXAMPLE]
 --- snip ---
 #include <cstdio>
 #include <string>
@@ -1380,7 +1537,7 @@ int main()
 
 
 
-[17 - BUILD OPTIONS]
+[18 - BUILD OPTIONS]
 When building ExprTk there are a number of defines that will enable or
 disable certain features and  capabilities. The defines can  either be
 part of a compiler command line switch or scoped around the include to
@@ -1418,32 +1575,35 @@ in a compilation failure.
 
 
 
-[18 - FILES]
-(00) Makefile
-(01) readme.txt
-(02) exprtk.hpp
-(03) exprtk_test.cpp
-(04) exprtk_benchmark.cpp
-(05) exprtk_simple_example_01.cpp
-(06) exprtk_simple_example_02.cpp
-(07) exprtk_simple_example_03.cpp
-(08) exprtk_simple_example_04.cpp
-(09) exprtk_simple_example_05.cpp
-(10) exprtk_simple_example_06.cpp
-(11) exprtk_simple_example_07.cpp
-(12) exprtk_simple_example_08.cpp
-(13) exprtk_simple_example_09.cpp
-(14) exprtk_simple_example_10.cpp
-(15) exprtk_simple_example_11.cpp
-(16) exprtk_simple_example_12.cpp
-(17) exprtk_simple_example_13.cpp
-(18) exprtk_simple_example_14.cpp
-(19) exprtk_simple_example_15.cpp
-(20) exprtk_simple_example_16.cpp
+[19 - FILES]
+The source distribution of ExprTk is comprised of the following set of
+files:
+
+   (00) Makefile
+   (01) readme.txt
+   (02) exprtk.hpp
+   (03) exprtk_test.cpp
+   (04) exprtk_benchmark.cpp
+   (05) exprtk_simple_example_01.cpp
+   (06) exprtk_simple_example_02.cpp
+   (07) exprtk_simple_example_03.cpp
+   (08) exprtk_simple_example_04.cpp
+   (09) exprtk_simple_example_05.cpp
+   (10) exprtk_simple_example_06.cpp
+   (11) exprtk_simple_example_07.cpp
+   (12) exprtk_simple_example_08.cpp
+   (13) exprtk_simple_example_09.cpp
+   (14) exprtk_simple_example_10.cpp
+   (15) exprtk_simple_example_11.cpp
+   (16) exprtk_simple_example_12.cpp
+   (17) exprtk_simple_example_13.cpp
+   (18) exprtk_simple_example_14.cpp
+   (19) exprtk_simple_example_15.cpp
+   (20) exprtk_simple_example_16.cpp
 
 
 
-[19 - LANGUAGE STRUCTURE]
+[20 - LANGUAGE STRUCTURE]
 +-------------------------------------------------------------+
 |00 - If Statement                                            |
 |                                                             |

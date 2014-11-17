@@ -63,19 +63,24 @@ bool load_expression(exprtk::symbol_table<T>& symbol_table,
                      Sequence<exprtk::expression<T>,Allocator>& expr_seq)
 {
    exprtk::parser<double> parser;
+
    for (std::size_t i = 0; i < expression_list_size; ++i)
    {
       exprtk::expression<double> expression;
       expression.register_symbol_table(symbol_table);
+
       if (!parser.compile(expression_list[i],expression))
       {
          printf("[load_expression] - Parser Error: %s\tExpression: %s\n",
                 parser.error().c_str(),
                 expression_list[i].c_str());
+
          return false;
       }
+
       expr_seq.push_back(expression);
    }
+
    return true;
 }
 
@@ -86,8 +91,10 @@ void run_exprtk_benchmark(T& x, T& y,
 {
    T total = T(0);
    unsigned int count = 0;
+
    exprtk::timer timer;
    timer.start();
+
    for (x = lower_bound_x; x <= upper_bound_x; x += delta)
    {
       for (y = lower_bound_y; y <= upper_bound_y; y += delta)
@@ -96,7 +103,9 @@ void run_exprtk_benchmark(T& x, T& y,
          ++count;
       }
    }
+
    timer.stop();
+
    if (T(0) != total)
       printf("[exprtk] Total Time:%12.8f  Rate:%14.3fevals/sec Expression: %s\n",
              timer.time(),
@@ -113,8 +122,10 @@ void run_native_benchmark(T& x, T& y, NativeFunction f, const std::string& expr_
 {
    T total = T(0);
    unsigned int count = 0;
+
    exprtk::timer timer;
    timer.start();
+
    for (x = lower_bound_x; x <= upper_bound_x; x += delta)
    {
       for (y = lower_bound_y; y <= upper_bound_y; y += delta)
@@ -123,7 +134,9 @@ void run_native_benchmark(T& x, T& y, NativeFunction f, const std::string& expr_
          ++count;
       }
    }
+
    timer.stop();
+
    if (T(0) != total)
       printf("[native] Total Time:%12.8f  Rate:%14.3fevals/sec Expression: %s\n",
              timer.time(),
@@ -146,6 +159,7 @@ bool run_parse_benchmark(exprtk::symbol_table<T>& symbol_table)
    {
       exprtk::timer timer;
       timer.start();
+
       for (std::size_t r = 0; r < rounds; ++r)
       {
          if (!parser.compile(expression_list[i],expression))
@@ -153,15 +167,19 @@ bool run_parse_benchmark(exprtk::symbol_table<T>& symbol_table)
             printf("[run_parse_benchmark] - Parser Error: %s\tExpression: %s\n",
                    parser.error().c_str(),
                    expression_list[i].c_str());
+
             return false;
          }
       }
+
       timer.stop();
+
       printf("[parse] Total Time:%12.8f  Rate:%14.3fparse/sec Expression: %s\n",
              timer.time(),
              rounds / timer.time(),
              expression_list[i].c_str());
    }
+
    return true;
 }
 
@@ -278,10 +296,12 @@ int main(int argc, char* argv[])
    if (argc >= 2)
    {
       const std::string file_name = argv[1];
+
       if (argc == 2)
          perform_file_based_benchmark(file_name);
       else
          perform_file_based_benchmark(file_name,atoi(argv[2]));
+
       return 0;
    }
 
@@ -379,16 +399,20 @@ void pgo_primer()
 std::size_t load_expression_file(const std::string& file_name, std::deque<std::string>& expression_list)
 {
    std::ifstream stream(file_name.c_str());
+
    if (!stream) return 0;
+
    std::string buffer;
    buffer.reserve(1024);
    std::size_t line_count = 0;
+
    while (std::getline(stream,buffer))
    {
       if (buffer.empty())
          continue;
       else if ('#' == buffer[0])
          continue;
+
       ++line_count;
       expression_list.push_back(buffer);
    }
@@ -399,6 +423,7 @@ std::size_t load_expression_file(const std::string& file_name, std::deque<std::s
 void perform_file_based_benchmark(const std::string& file_name, const std::size_t& rounds)
 {
    std::deque<std::string> expr_str_list;
+
    if (0 == load_expression_file(file_name,expr_str_list))
    {
       std::cout << "Failed to load any expressions from: " << file_name << "\n";
@@ -463,17 +488,21 @@ void perform_file_based_benchmark(const std::string& file_name, const std::size_
 
    {
       parser_t parser;
+
       for (std::size_t i = 0; i < expr_str_list.size(); ++i)
       {
          expression_t expression;
          expression.register_symbol_table(symbol_table);
+
          if (!parser.compile(expr_str_list[i],expression))
          {
             printf("[perform_file_based_benchmark] - Parser Error: %s\tExpression: %s\n",
                    parser.error().c_str(),
                    expr_str_list[i].c_str());
+
             return;
          }
+
          expression_list.push_back(expression);
       }
    }
@@ -483,6 +512,7 @@ void perform_file_based_benchmark(const std::string& file_name, const std::size_
    double single_eval_total_time = 0.0;
 
    total_timer.start();
+
    for (std::size_t i = 0; i < expression_list.size(); ++i)
    {
       expression_t& e = expression_list[i];
@@ -499,12 +529,14 @@ void perform_file_based_benchmark(const std::string& file_name, const std::size_
 
       timer.start();
       double sum = 0.0;
+
       for (std::size_t r = 0; r < rounds; ++r)
       {
          sum += e.value();
          std::swap(a,b);
          std::swap(x,y);
       }
+
       timer.stop();
 
       printf("Expression %3d of %3d %9.3f ns\t%10d ns\t(%30.10f)  '%s'\n",
@@ -519,6 +551,7 @@ void perform_file_based_benchmark(const std::string& file_name, const std::size_
 
       single_eval_total_time += (timer.time() * 1000000000.0) / (1.0 * rounds);
    }
+
    total_timer.stop();
 
    printf("[*] Number Of Evals:        %15.0f\n",

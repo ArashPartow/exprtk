@@ -41,6 +41,7 @@
 #include <cstdlib>
 #include <deque>
 #include <exception>
+#include <functional>
 #include <iterator>
 #include <limits>
 #include <list>
@@ -150,8 +151,10 @@ namespace exprtk
                   return false;
                }
             }
+
             return true;
          }
+
          return false;
       }
 
@@ -169,17 +172,22 @@ namespace exprtk
       {
          if (0 == i)
             return std::string("0");
+
          std::string result;
          bool negative = (i < 0);
+
          if (negative) i *= -1;
+
          while (i)
          {
             char digit = '0' + char(i % 10);
             result = (digit + result);
             i /= 10;
          }
+
          if (negative)
             result = "-" + result;
+
          return result;
       }
 
@@ -321,6 +329,7 @@ namespace exprtk
                return true;
             }
          }
+
          return false;
       }
 
@@ -335,17 +344,23 @@ namespace exprtk
                              const typename std::iterator_traits<Iterator>::value_type& zero_or_more,
                              const typename std::iterator_traits<Iterator>::value_type& zero_or_one)
       {
-         if (0 == std::distance(data_begin,data_end)) return false;
+         if (0 == std::distance(data_begin,data_end))
+         {
+            return false;
+         }
+
          Iterator d_itr = data_begin;
          Iterator p_itr = pattern_begin;
          Iterator c_itr = data_begin;
          Iterator m_itr = data_begin;
+
          while ((data_end != d_itr) && (zero_or_more != (*p_itr)))
          {
             if ((!Compare::cmp((*p_itr),(*d_itr))) && (zero_or_one != (*p_itr)))
             {
                return false;
             }
+
             ++p_itr;
             ++d_itr;
          }
@@ -358,6 +373,7 @@ namespace exprtk
                {
                   return true;
                }
+
                m_itr = p_itr;
                c_itr = d_itr;
                ++c_itr;
@@ -374,6 +390,7 @@ namespace exprtk
             }
          }
          while ((p_itr != pattern_end) && (zero_or_more == (*p_itr))) ++p_itr;
+
          return (p_itr == pattern_end);
       }
 
@@ -487,7 +504,7 @@ namespace exprtk
             template <typename T>
             inline bool is_nan_impl(const T v, real_type_tag)
             {
-               return (v != v);
+               return std::not_equal_to<T>()(v,v);
             }
 
             template <typename T>
@@ -505,13 +522,13 @@ namespace exprtk
             template <typename T>
             inline bool is_true_impl(const T v)
             {
-               return (v != T(0));
+               return std::not_equal_to<T>()(T(0),v);
             }
 
             template <typename T>
             inline bool is_false_impl(const T v)
             {
-               return (T(0) == v);
+               return std::equal_to<T>()(T(0),v);
             }
 
             template <typename T>
@@ -935,7 +952,7 @@ namespace exprtk
             template <typename T> inline T   d2r_impl(const T v, real_type_tag) { return (v * T(numeric::constant::pi_180));  }
             template <typename T> inline T   d2g_impl(const T v, real_type_tag) { return (v * T(20.0/9.0)); }
             template <typename T> inline T   g2d_impl(const T v, real_type_tag) { return (v * T(9.0/20.0)); }
-            template <typename T> inline T  notl_impl(const T v, real_type_tag) { return (v != T(0) ? T(0) : T(1)); }
+            template <typename T> inline T  notl_impl(const T v, real_type_tag) { return (std::not_equal_to<T>()(T(0),v) ? T(0) : T(1)); }
             template <typename T> inline T  frac_impl(const T v, real_type_tag) { return (v - static_cast<long long>(v)); }
             template <typename T> inline T trunc_impl(const T v, real_type_tag) { return T(static_cast<long long>(v));    }
 
@@ -972,7 +989,7 @@ namespace exprtk
             template <typename T>
             inline bool is_integer_impl(const T& v, real_type_tag)
             {
-               return (T(0) == std::fmod(v,T(1)));
+               return std::equal_to<T>()(T(0),std::fmod(v,T(1)));
             }
 
             template <typename T>
@@ -980,7 +997,6 @@ namespace exprtk
             {
                return true;
             }
-
          }
 
          template <typename Type>
@@ -2066,7 +2082,7 @@ namespace exprtk
 
          inline void scan_symbol()
          {
-            const char* begin = s_itr_;
+            const char* initial_itr = s_itr_;
 
             while (
                     (!is_end(s_itr_)) &&
@@ -2077,7 +2093,7 @@ namespace exprtk
             }
 
             token_t t;
-            t.set_symbol(begin,s_itr_,base_itr_);
+            t.set_symbol(initial_itr,s_itr_,base_itr_);
             token_list_.push_back(t);
          }
 
@@ -2094,7 +2110,7 @@ namespace exprtk
                7. 123.456e-3
                8. 123.456E-3
             */
-            const char* begin      = s_itr_;
+            const char* initial_itr = s_itr_;
             bool dot_found         = false;
             bool e_found           = false;
             bool post_e_sign_found = false;
@@ -2106,7 +2122,7 @@ namespace exprtk
                {
                   if (dot_found)
                   {
-                     t.set_error(token::e_err_number,begin,s_itr_,base_itr_);
+                     t.set_error(token::e_err_number,initial_itr,s_itr_,base_itr_);
                      token_list_.push_back(t);
                      return;
                   }
@@ -2122,7 +2138,7 @@ namespace exprtk
 
                   if (is_end(s_itr_ + 1))
                   {
-                     t.set_error(token::e_err_number,begin,s_itr_,base_itr_);
+                     t.set_error(token::e_err_number,initial_itr,s_itr_,base_itr_);
                      token_list_.push_back(t);
 
                      return;
@@ -2133,7 +2149,7 @@ namespace exprtk
                             !details::is_digit(c)
                           )
                   {
-                     t.set_error(token::e_err_number,begin,s_itr_,base_itr_);
+                     t.set_error(token::e_err_number,initial_itr,s_itr_,base_itr_);
                      token_list_.push_back(t);
 
                      return;
@@ -2147,7 +2163,7 @@ namespace exprtk
                {
                   if (post_e_sign_found)
                   {
-                     t.set_error(token::e_err_number,begin,s_itr_,base_itr_);
+                     t.set_error(token::e_err_number,initial_itr,s_itr_,base_itr_);
                      token_list_.push_back(t);
 
                      return;
@@ -2163,7 +2179,7 @@ namespace exprtk
                   ++s_itr_;
             }
 
-            t.set_numeric(begin,s_itr_,base_itr_);
+            t.set_numeric(initial_itr,s_itr_,base_itr_);
             token_list_.push_back(t);
 
             return;
@@ -2171,13 +2187,13 @@ namespace exprtk
 
          inline void scan_special_function()
          {
-            const char* begin = s_itr_;
+            const char* initial_itr = s_itr_;
             token_t t;
 
             // $fdd(x,x,x) = at least 11 chars
             if (std::distance(s_itr_,s_end_) < 11)
             {
-               t.set_error(token::e_err_sfunc,begin,s_itr_,base_itr_);
+               t.set_error(token::e_err_sfunc,initial_itr,s_itr_,base_itr_);
                token_list_.push_back(t);
 
                return;
@@ -2190,7 +2206,7 @@ namespace exprtk
                    (details::is_digit(*(s_itr_ + 3))))
                )
             {
-               t.set_error(token::e_err_sfunc,begin,s_itr_,base_itr_);
+               t.set_error(token::e_err_sfunc,initial_itr,s_itr_,base_itr_);
                token_list_.push_back(t);
 
                return;
@@ -2198,7 +2214,7 @@ namespace exprtk
 
             s_itr_ += 4; // $fdd = 4chars
 
-            t.set_symbol(begin,s_itr_,base_itr_);
+            t.set_symbol(initial_itr,s_itr_,base_itr_);
             token_list_.push_back(t);
 
             return;
@@ -2207,7 +2223,7 @@ namespace exprtk
          #ifndef exprtk_disable_string_capabilities
          inline void scan_string()
          {
-            const char* begin = s_itr_ + 1;
+            const char* initial_itr = s_itr_ + 1;
             token_t t;
 
             if (std::distance(s_itr_,s_end_) < 2)
@@ -2245,23 +2261,24 @@ namespace exprtk
 
             if (is_end(s_itr_))
             {
-               t.set_error(token::e_err_string,begin,s_itr_,base_itr_);
+               t.set_error(token::e_err_string,initial_itr,s_itr_,base_itr_);
                token_list_.push_back(t);
 
                return;
             }
 
             if (!escaped_found)
-               t.set_string(begin,s_itr_,base_itr_);
+               t.set_string(initial_itr,s_itr_,base_itr_);
             else
             {
-               std::string parsed_string(begin,s_itr_);
+               std::string parsed_string(initial_itr,s_itr_);
                details::cleanup_escapes(parsed_string);
-               t.set_string(parsed_string, std::distance(base_itr_,begin));
+               t.set_string(parsed_string, std::distance(base_itr_,initial_itr));
             }
 
             token_list_.push_back(t);
             ++s_itr_;
+
             return;
          }
          #endif
@@ -2834,12 +2851,14 @@ namespace exprtk
                      {
                         state_ = false;
                         error_token_ = t;
+
                         return false;
                      }
                      else if (c != stack_.top().first)
                      {
                         state_ = false;
                         error_token_ = t;
+
                         return false;
                      }
                      else
@@ -2974,6 +2993,7 @@ namespace exprtk
                   {
                      t.value = itr->second.first;
                      t.type  = itr->second.second;
+
                      return true;
                   }
                }
@@ -3154,7 +3174,6 @@ namespace exprtk
 
             set_t invalid_comb_;
             std::vector<std::pair<lexer::token,lexer::token> > error_list_;
-
          };
 
          struct helper_assembly
@@ -3465,8 +3484,8 @@ namespace exprtk
                   case e_logn   : return logn<T>(arg0,arg1);
                   case e_lt     : return (arg0 <  arg1) ? T(1) : T(0);
                   case e_lte    : return (arg0 <= arg1) ? T(1) : T(0);
-                  case e_eq     : return (arg0 == arg1) ? T(1) : T(0);
-                  case e_ne     : return (arg0 != arg1) ? T(1) : T(0);
+                  case e_eq     : return std::equal_to<T>()(arg0,arg1) ? T(1) : T(0);
+                  case e_ne     : return std::not_equal_to<T>()(arg0,arg1) ? T(1) : T(0);
                   case e_gte    : return (arg0 >= arg1) ? T(1) : T(0);
                   case e_gt     : return (arg0 >  arg1) ? T(1) : T(0);
                   case e_and    : return and_opr<T> (arg0,arg1);
@@ -3590,11 +3609,6 @@ namespace exprtk
             return std::numeric_limits<T>::quiet_NaN();
          }
 
-         virtual inline bool result() const
-         {
-            return (T(0) != value());
-         }
-
          virtual inline expression_node<T>* branch(const std::size_t& index = 0) const
          {
             return reinterpret_cast<expression_ptr>(index * 0);
@@ -3608,29 +3622,29 @@ namespace exprtk
 
       inline bool is_true(const double v)
       {
-         return (0.0 != v);
+         return std::not_equal_to<double>()(0.0,v);
       }
 
       inline bool is_true(const long double v)
       {
-         return (0.0L != v);
+         return std::not_equal_to<long double>()(0.0L,v);
       }
 
       inline bool is_true(const float v)
       {
-         return (0.0f != v);
+         return std::not_equal_to<float>()(0.0f,v);
       }
 
       template <typename T>
       inline bool is_true(const expression_node<T>* node)
       {
-         return (T(0) != node->value());
+         return std::not_equal_to<T>()(T(0),node->value());
       }
 
       template <typename T>
       inline bool is_false(const expression_node<T>* node)
       {
-         return (T(0) == node->value());
+         return std::equal_to<T>()(T(0),node->value());
       }
 
       template <typename T>
@@ -3997,8 +4011,8 @@ namespace exprtk
 
          typedef expression_node<T>* expression_ptr;
 
-         null_eq_node(expression_ptr branch, const bool equality = true)
-         : branch_(branch),
+         null_eq_node(expression_ptr brnch, const bool equality = true)
+         : branch_(brnch),
            branch_deletable_(branch_deletable(branch_)),
            equality_(equality)
          {}
@@ -4014,8 +4028,8 @@ namespace exprtk
 
          inline T value() const
          {
-            const T value = branch_->value();
-            const bool result = details::numeric::is_nan(value);
+            const T v = branch_->value();
+            const bool result = details::numeric::is_nan(v);
 
             if (result)
                return (equality_) ? T(1) : T(0);
@@ -4050,8 +4064,8 @@ namespace exprtk
       {
       public:
 
-         explicit literal_node(const T& value)
-         : value_(value)
+         explicit literal_node(const T& v)
+         : value_(v)
          {}
 
          inline T value() const
@@ -4088,8 +4102,8 @@ namespace exprtk
       {
       public:
 
-         explicit string_literal_node(const std::string& value)
-         : value_(value)
+         explicit string_literal_node(const std::string& v)
+         : value_(v)
          {}
 
          inline T value() const
@@ -4127,10 +4141,10 @@ namespace exprtk
 
          typedef expression_node<T>* expression_ptr;
 
-         unary_node(const operator_type& operation,
-                    expression_ptr branch)
-         : operation_(operation),
-           branch_(branch),
+         unary_node(const operator_type& opr,
+                    expression_ptr brnch)
+         : operation_(opr),
+           branch_(brnch),
            branch_deletable_(branch_deletable(branch_))
          {}
 
@@ -4246,10 +4260,10 @@ namespace exprtk
          typedef expression_node<T>* expression_ptr;
          typedef std::pair<expression_ptr,bool> branch_t;
 
-         binary_node(const operator_type& operation,
+         binary_node(const operator_type& opr,
                      expression_ptr branch0,
                      expression_ptr branch1)
-         : operation_(operation)
+         : operation_(opr)
          {
             init_branches<2>(branch_,branch0,branch1);
          }
@@ -4350,11 +4364,11 @@ namespace exprtk
          typedef expression_node<T>* expression_ptr;
          typedef std::pair<expression_ptr,bool> branch_t;
 
-         trinary_node(const operator_type& operation,
+         trinary_node(const operator_type& opr,
                       expression_ptr branch0,
                       expression_ptr branch1,
                       expression_ptr branch2)
-         : operation_(operation)
+         : operation_(opr)
          {
             init_branches<3>(branch_,branch0,branch1,branch2);
          }
@@ -4403,12 +4417,12 @@ namespace exprtk
          typedef expression_node<T>* expression_ptr;
          typedef std::pair<expression_ptr,bool> branch_t;
 
-         quaternary_node(const operator_type& operation,
+         quaternary_node(const operator_type& opr,
                          expression_ptr branch0,
                          expression_ptr branch1,
                          expression_ptr branch2,
                          expression_ptr branch3)
-         : operation_(operation)
+         : operation_(opr)
          {
             init_branches<4>(branch_,branch0,branch1,branch2,branch3);
          }
@@ -4452,13 +4466,13 @@ namespace exprtk
          typedef expression_node<T>* expression_ptr;
          typedef std::pair<expression_ptr,bool> branch_t;
 
-         quinary_node(const operator_type& operation,
+         quinary_node(const operator_type& opr,
                       expression_ptr branch0,
                       expression_ptr branch1,
                       expression_ptr branch2,
                       expression_ptr branch3,
                       expression_ptr branch4)
-         : operation_(operation)
+         : operation_(opr)
          {
             init_branches<5>(branch_,branch0,branch1,branch2,branch3,branch4);
          }
@@ -4503,14 +4517,14 @@ namespace exprtk
          typedef expression_node<T>* expression_ptr;
          typedef std::pair<expression_ptr,bool> branch_t;
 
-         senary_node(const operator_type& operation,
+         senary_node(const operator_type& opr,
                      expression_ptr branch0,
                      expression_ptr branch1,
                      expression_ptr branch2,
                      expression_ptr branch3,
                      expression_ptr branch4,
                      expression_ptr branch5)
-         : operation_(operation)
+         : operation_(opr)
          {
             init_branches<6>(branch_,branch0,branch1,branch2,branch3,branch4,branch5);
          }
@@ -5318,8 +5332,8 @@ namespace exprtk
            delete_value_(false)
          {}
 
-         variable_node(T& value)
-         : value_(&value),
+         variable_node(T& v)
+         : value_(&v),
            delete_value_(false)
          {}
 
@@ -5657,11 +5671,11 @@ namespace exprtk
 
          inline T value() const
          {
-            binary_node<T>::branch_[0].first->value();
-            binary_node<T>::branch_[1].first->value();
-
             if (vec0_node_ptr_ && vec1_node_ptr_)
             {
+               binary_node<T>::branch_[0].first->value();
+               binary_node<T>::branch_[1].first->value();
+
                vector_holder<T>& vec0 = vec0_node_ptr_->ref();
                vector_holder<T>& vec1 = vec1_node_ptr_->ref();
 
@@ -5711,8 +5725,8 @@ namespace exprtk
          : value_(&null_value)
          {}
 
-         explicit stringvar_node(std::string& value)
-         : value_(&value)
+         explicit stringvar_node(std::string& v)
+         : value_(&v)
          {}
 
          inline bool operator <(const stringvar_node<T>& v) const
@@ -5760,8 +5774,8 @@ namespace exprtk
 
          static std::string null_value;
 
-         explicit string_range_node(std::string& value, RangePack rp)
-         : value_(&value),
+         explicit string_range_node(std::string& v, RangePack rp)
+         : value_(&v),
            rp_(rp)
          {}
 
@@ -5829,8 +5843,8 @@ namespace exprtk
       {
       public:
 
-         explicit const_string_range_node(const std::string& value, RangePack rp)
-         : value_(value),
+         explicit const_string_range_node(const std::string& v, RangePack rp)
+         : value_(v),
            rp_(rp)
          {}
 
@@ -5874,7 +5888,7 @@ namespace exprtk
          const_string_range_node<T,RangePack>& operator=(const const_string_range_node<T,RangePack>&);
 
          const std::string value_;
-         RangePack    rp_;
+         RangePack rp_;
       };
 
       template <typename T>
@@ -5888,8 +5902,8 @@ namespace exprtk
          : value_(&null_value)
          {}
 
-         explicit stringsize_node(std::string& value)
-         : value_(&value)
+         explicit stringsize_node(std::string& v)
+         : value_(&v)
          {}
 
          inline T value() const
@@ -6137,11 +6151,11 @@ namespace exprtk
 
          typedef expression_node<T>* expression_ptr;
 
-         sf3_node(const operator_type& operation,
+         sf3_node(const operator_type& opr,
                   expression_ptr branch0,
                   expression_ptr branch1,
                   expression_ptr branch2)
-         : trinary_node<T>(operation,branch0,branch1,branch2)
+         : trinary_node<T>(opr,branch0,branch1,branch2)
          {}
 
          inline T value() const
@@ -6161,12 +6175,12 @@ namespace exprtk
 
          typedef expression_node<T>* expression_ptr;
 
-         sf4_node(const operator_type& operation,
+         sf4_node(const operator_type& opr,
                   expression_ptr branch0,
                   expression_ptr branch1,
                   expression_ptr branch2,
                   expression_ptr branch3)
-         : quaternary_node<T>(operation,branch0,branch1,branch2,branch3)
+         : quaternary_node<T>(opr,branch0,branch1,branch2,branch3)
          {}
 
          inline T value() const
@@ -6413,10 +6427,10 @@ namespace exprtk
 
          typedef expression_node<T>* expression_ptr;
 
-         assignment_node(const operator_type& operation,
+         assignment_node(const operator_type& opr,
                          expression_ptr branch0,
                          expression_ptr branch1)
-         : binary_node<T>(operation,branch0,branch1),
+         : binary_node<T>(opr,branch0,branch1),
            var_node_ptr_(0)
          {
             if (is_variable_node(binary_node<T>::branch_[0].first))
@@ -6431,6 +6445,7 @@ namespace exprtk
             {
                T& result = var_node_ptr_->ref();
                result = binary_node<T>::branch_[1].first->value();
+
                return result;
             }
             else
@@ -6449,10 +6464,10 @@ namespace exprtk
 
          typedef expression_node<T>* expression_ptr;
 
-         assignment_vec_elem_node(const operator_type& operation,
+         assignment_vec_elem_node(const operator_type& opr,
                                   expression_ptr branch0,
                                   expression_ptr branch1)
-         : binary_node<T>(operation,branch0,branch1),
+         : binary_node<T>(opr,branch0,branch1),
            vec_node_ptr_(0)
          {
             if (is_vector_elem_node(binary_node<T>::branch_[0].first))
@@ -6467,6 +6482,7 @@ namespace exprtk
             {
                T& result = vec_node_ptr_->ref();
                result = binary_node<T>::branch_[1].first->value();
+
                return result;
             }
             else
@@ -6487,10 +6503,10 @@ namespace exprtk
          typedef expression_node<T>* expression_ptr;
          typedef vector_node<T>*    vector_node_ptr;
 
-         assignment_vec_node(const operator_type& operation,
+         assignment_vec_node(const operator_type& opr,
                              expression_ptr branch0,
                              expression_ptr branch1)
-         : binary_node<T>(operation,branch0,branch1),
+         : binary_node<T>(opr,branch0,branch1),
            vec_node_ptr_(0)
          {
             if (is_vector_node(binary_node<T>::branch_[0].first))
@@ -6503,12 +6519,12 @@ namespace exprtk
          {
             if (vec_node_ptr_)
             {
-               vector_holder<T>& vec = vec_node_ptr_->ref();
+               vector_holder<T>& vec_hldr = vec_node_ptr_->ref();
                const T v = binary_node<T>::branch_[1].first->value();
 
-               for (std::size_t i = 0; i < vec.size(); ++i)
+               for (std::size_t i = 0; i < vec_hldr.size(); ++i)
                {
-                  (*vec[i]) = v;
+                  (*vec_hldr[i]) = v;
                }
 
                return vec_node_ptr_->value();
@@ -6546,10 +6562,10 @@ namespace exprtk
          typedef expression_node<T>* expression_ptr;
          typedef vector_node<T>*     vector_node_ptr;
 
-         assignment_vecvec_node(const operator_type& operation,
+         assignment_vecvec_node(const operator_type& opr,
                                 expression_ptr branch0,
                                 expression_ptr branch1)
-         : binary_node<T>(operation,branch0,branch1),
+         : binary_node<T>(opr,branch0,branch1),
            vec0_node_ptr_(0),
            vec1_node_ptr_(0)
          {
@@ -6623,10 +6639,10 @@ namespace exprtk
 
          typedef expression_node<T>* expression_ptr;
 
-         assignment_op_node(const operator_type& operation,
+         assignment_op_node(const operator_type& opr,
                             expression_ptr branch0,
                             expression_ptr branch1)
-         : binary_node<T>(operation,branch0,branch1),
+         : binary_node<T>(opr,branch0,branch1),
            var_node_ptr_(0)
          {
             if (is_variable_node(binary_node<T>::branch_[0].first))
@@ -6641,6 +6657,7 @@ namespace exprtk
             {
                T& v = var_node_ptr_->ref();
                v = Operation::process(v,binary_node<T>::branch_[1].first->value());
+
                return v;
             }
             else
@@ -6659,10 +6676,10 @@ namespace exprtk
 
          typedef expression_node<T>* expression_ptr;
 
-         assignment_vec_elem_op_node(const operator_type& operation,
+         assignment_vec_elem_op_node(const operator_type& opr,
                                      expression_ptr branch0,
                                      expression_ptr branch1)
-         : binary_node<T>(operation,branch0,branch1),
+         : binary_node<T>(opr,branch0,branch1),
            vec_node_ptr_(0)
          {
             if (is_vector_elem_node(binary_node<T>::branch_[0].first))
@@ -6698,10 +6715,10 @@ namespace exprtk
          typedef expression_node<T>* expression_ptr;
          typedef vector_node<T>*     vector_node_ptr;
 
-         assignment_vec_op_node(const operator_type& operation,
+         assignment_vec_op_node(const operator_type& opr,
                                 expression_ptr branch0,
                                 expression_ptr branch1)
-         : binary_node<T>(operation,branch0,branch1),
+         : binary_node<T>(opr,branch0,branch1),
            vec_node_ptr_(0)
          {
             if (is_vector_node(binary_node<T>::branch_[0].first))
@@ -6714,12 +6731,12 @@ namespace exprtk
          {
             if (vec_node_ptr_)
             {
-               vector_holder<T>& vec = vec_node_ptr_->ref();
+               vector_holder<T>& vec_hldr = vec_node_ptr_->ref();
                const T v = binary_node<T>::branch_[1].first->value();
 
-               for (std::size_t i = 0; i < vec.size(); ++i)
+               for (std::size_t i = 0; i < vec_hldr.size(); ++i)
                {
-                  T& vec_i = *vec[i];
+                  T& vec_i = *vec_hldr[i];
                   vec_i = Operation::process(vec_i,v);
                }
 
@@ -6758,10 +6775,10 @@ namespace exprtk
          typedef expression_node<T>* expression_ptr;
          typedef vector_node<T>*     vector_node_ptr;
 
-         assignment_vecvec_op_node(const operator_type& operation,
+         assignment_vecvec_op_node(const operator_type& opr,
                                 expression_ptr branch0,
                                 expression_ptr branch1)
-         : binary_node<T>(operation,branch0,branch1),
+         : binary_node<T>(opr,branch0,branch1),
            vec0_node_ptr_(0),
            vec1_node_ptr_(0)
          {
@@ -6787,11 +6804,11 @@ namespace exprtk
 
          inline T value() const
          {
-            binary_node<T>::branch_[0].first->value();
-            binary_node<T>::branch_[1].first->value();
-
             if (vec0_node_ptr_ && vec1_node_ptr_)
             {
+               binary_node<T>::branch_[0].first->value();
+               binary_node<T>::branch_[1].first->value();
+
                vector_holder<T>& vec0 = vec0_node_ptr_->ref();
                vector_holder<T>& vec1 = vec1_node_ptr_->ref();
 
@@ -6840,10 +6857,10 @@ namespace exprtk
          typedef expression_node<T>*  expression_ptr;
          typedef vector_node<T>*     vector_node_ptr;
 
-         eqineq_vecvec_node(const operator_type& operation,
+         eqineq_vecvec_node(const operator_type& opr,
                             expression_ptr branch0,
                             expression_ptr branch1)
-         : binary_node<T>(operation,branch0,branch1),
+         : binary_node<T>(opr,branch0,branch1),
            vec0_node_ptr_(0),
            vec1_node_ptr_(0)
          {
@@ -6879,11 +6896,11 @@ namespace exprtk
 
          inline T value() const
          {
-            binary_node<T>::branch_[0].first->value();
-            binary_node<T>::branch_[1].first->value();
-
             if (vec0_node_ptr_ && vec1_node_ptr_)
             {
+               binary_node<T>::branch_[0].first->value();
+               binary_node<T>::branch_[1].first->value();
+
                vector_holder<T>& vec0 = vec0_node_ptr_->ref();
                vector_holder<T>& vec1 = vec1_node_ptr_->ref();
 
@@ -6891,7 +6908,7 @@ namespace exprtk
 
                for (std::size_t i = 0; i < vec_size; ++i)
                {
-                  if (T(0) == Operation::process(*vec0[i],*vec1[i]))
+                  if (std::equal_to<T>()(T(0),Operation::process(*vec0[i],*vec1[i])))
                   {
                      return T(0);
                   }
@@ -6933,10 +6950,10 @@ namespace exprtk
          typedef expression_node<T>*  expression_ptr;
          typedef vector_node<T>*     vector_node_ptr;
 
-         eqineq_vecval_node(const operator_type& operation,
+         eqineq_vecval_node(const operator_type& opr,
                             expression_ptr branch0,
                             expression_ptr branch1)
-         : binary_node<T>(operation,branch0,branch1),
+         : binary_node<T>(opr,branch0,branch1),
            vec_node_ptr_(0)
          {
             if (is_vector_node(binary_node<T>::branch_[0].first))
@@ -6956,18 +6973,18 @@ namespace exprtk
 
          inline T value() const
          {
-                  binary_node<T>::branch_[0].first->value();
-            T v = binary_node<T>::branch_[1].first->value();
-
             if (vec_node_ptr_)
             {
-               vector_holder<T>& vec = vec_node_ptr_->ref();
+                     binary_node<T>::branch_[0].first->value();
+               T v = binary_node<T>::branch_[1].first->value();
 
-               std::size_t vec_size = vec.size();
+               vector_holder<T>& vec_hldr = vec_node_ptr_->ref();
+
+               std::size_t vec_size = vec_hldr.size();
 
                for (std::size_t i = 0; i < vec_size; ++i)
                {
-                  if (T(0) == Operation::process(*vec[i],v))
+                  if (std::equal_to<T>()(T(0),Operation::process(*vec_hldr[i],v)))
                   {
                      return T(0);
                   }
@@ -7008,10 +7025,10 @@ namespace exprtk
          typedef expression_node<T>*  expression_ptr;
          typedef vector_node<T>*     vector_node_ptr;
 
-         eqineq_valvec_node(const operator_type& operation,
+         eqineq_valvec_node(const operator_type& opr,
                             expression_ptr branch0,
                             expression_ptr branch1)
-         : binary_node<T>(operation,branch0,branch1),
+         : binary_node<T>(opr,branch0,branch1),
            vec_node_ptr_(0)
          {
             if (is_vector_node(binary_node<T>::branch_[1].first))
@@ -7031,18 +7048,18 @@ namespace exprtk
 
          inline T value() const
          {
-            T v = binary_node<T>::branch_[0].first->value();
-                  binary_node<T>::branch_[1].first->value();
-
             if (vec_node_ptr_)
             {
-               vector_holder<T>& vec = vec_node_ptr_->ref();
+               T v = binary_node<T>::branch_[0].first->value();
+                     binary_node<T>::branch_[1].first->value();
 
-               std::size_t vec_size = vec.size();
+               vector_holder<T>& vec_hldr = vec_node_ptr_->ref();
+
+               std::size_t vec_size = vec_hldr.size();
 
                for (std::size_t i = 0; i < vec_size; ++i)
                {
-                  if (T(0) == Operation::process(v,*vec[i]))
+                  if (std::equal_to<T>()(T(0),Operation::process(v,*vec_hldr[i])))
                   {
                      return T(0);
                   }
@@ -7084,10 +7101,10 @@ namespace exprtk
          typedef vector_node<T>*       vector_node_ptr;
          typedef vector_holder<T>*   vector_holder_ptr;
 
-         vecarith_vecvec_node(const operator_type& operation,
+         vecarith_vecvec_node(const operator_type& opr,
                               expression_ptr branch0,
                               expression_ptr branch1)
-         : binary_node<T>(operation,branch0,branch1),
+         : binary_node<T>(opr,branch0,branch1),
            vec0_node_ptr_(0),
            vec1_node_ptr_(0),
            vec_size_     (0),
@@ -7144,11 +7161,11 @@ namespace exprtk
 
          inline T value() const
          {
-            binary_node<T>::branch_[0].first->value();
-            binary_node<T>::branch_[1].first->value();
-
             if (vec0_node_ptr_ && vec1_node_ptr_)
             {
+               binary_node<T>::branch_[0].first->value();
+               binary_node<T>::branch_[1].first->value();
+
                vector_holder<T>& vec0 = vec0_node_ptr_->ref();
                vector_holder<T>& vec1 = vec1_node_ptr_->ref();
                vector_holder<T>& vec2 = *temp_;
@@ -7204,10 +7221,10 @@ namespace exprtk
          typedef vector_node<T>*       vector_node_ptr;
          typedef vector_holder<T>*   vector_holder_ptr;
 
-         vecarith_vecval_node(const operator_type& operation,
+         vecarith_vecval_node(const operator_type& opr,
                               expression_ptr branch0,
                               expression_ptr branch1)
-         : binary_node<T>(operation,branch0,branch1),
+         : binary_node<T>(opr,branch0,branch1),
            vec0_node_ptr_(0),
            vec_size_     (0),
            data_         (0),
@@ -7248,11 +7265,11 @@ namespace exprtk
 
          inline T value() const
          {
-                        binary_node<T>::branch_[0].first->value();
-            const T v = binary_node<T>::branch_[1].first->value();
-
             if (vec0_node_ptr_)
             {
+                           binary_node<T>::branch_[0].first->value();
+               const T v = binary_node<T>::branch_[1].first->value();
+
                vector_holder<T>& vec0 = vec0_node_ptr_->ref();
                vector_holder<T>& vec1 = *temp_;
 
@@ -7304,10 +7321,10 @@ namespace exprtk
          typedef vector_node<T>*       vector_node_ptr;
          typedef vector_holder<T>*   vector_holder_ptr;
 
-         vecarith_valvec_node(const operator_type& operation,
+         vecarith_valvec_node(const operator_type& opr,
                               expression_ptr branch0,
                               expression_ptr branch1)
-         : binary_node<T>(operation,branch0,branch1),
+         : binary_node<T>(opr,branch0,branch1),
            vec1_node_ptr_(0),
            vec_size_     (0),
            data_         (0),
@@ -7348,11 +7365,11 @@ namespace exprtk
 
          inline T value() const
          {
-            const T v = binary_node<T>::branch_[0].first->value();
-                        binary_node<T>::branch_[1].first->value();
-
             if (vec1_node_ptr_)
             {
+               const T v = binary_node<T>::branch_[0].first->value();
+                           binary_node<T>::branch_[1].first->value();
+
                vector_holder<T>& vec1 = vec1_node_ptr_->ref();
                vector_holder<T>& vec2 = *temp_;
 
@@ -7404,8 +7421,8 @@ namespace exprtk
          typedef vector_node<T>*       vector_node_ptr;
          typedef vector_holder<T>*   vector_holder_ptr;
 
-         unary_vector_node(const operator_type& operation, expression_ptr branch0)
-         : unary_node<T>(operation,branch0),
+         unary_vector_node(const operator_type& opr, expression_ptr branch0)
+         : unary_node<T>(opr,branch0),
            vec0_node_ptr_(0),
            vec_size_     (0),
            data_         (0),
@@ -7498,17 +7515,19 @@ namespace exprtk
 
          typedef expression_node<T>* expression_ptr;
 
-         scand_node(const operator_type& operation,
+         scand_node(const operator_type& opr,
                     expression_ptr branch0,
                     expression_ptr branch1)
-         : binary_node<T>(operation,branch0,branch1)
+         : binary_node<T>(opr,branch0,branch1)
          {}
 
          inline T value() const
          {
             return (
-                     (T(0) != binary_node<T>::branch_[0].first->value()) &&
-                     (T(0) != binary_node<T>::branch_[1].first->value())
+                     std::not_equal_to<T>()
+                        (T(0),binary_node<T>::branch_[0].first->value()) &&
+                     std::not_equal_to<T>()
+                        (T(0),binary_node<T>::branch_[1].first->value())
                    ) ? T(1) : T(0);
          }
       };
@@ -7520,17 +7539,19 @@ namespace exprtk
 
          typedef expression_node<T>* expression_ptr;
 
-         scor_node(const operator_type& operation,
+         scor_node(const operator_type& opr,
                    expression_ptr branch0,
                    expression_ptr branch1)
-         : binary_node<T>(operation,branch0,branch1)
+         : binary_node<T>(opr,branch0,branch1)
          {}
 
          inline T value() const
          {
             return (
-                     (T(0) != binary_node<T>::branch_[0].first->value()) ||
-                     (T(0) != binary_node<T>::branch_[1].first->value())
+                     std::not_equal_to<T>()
+                        (T(0),binary_node<T>::branch_[0].first->value()) ||
+                     std::not_equal_to<T>()
+                        (T(0),binary_node<T>::branch_[1].first->value())
                    ) ? T(1) : T(0);
          }
       };
@@ -8091,7 +8112,7 @@ namespace exprtk
       struct eq_op : public opr_base<T>
       {
          typedef typename opr_base<T>::Type Type;
-         static inline T process(Type t1, Type t2) { return ((t1 == t2) ? T(1) : T(0)); }
+         static inline T process(Type t1, Type t2) { return (std::equal_to<T>()(t1,t2) ? T(1) : T(0)); }
          static inline T process(const std::string& t1, const std::string& t2) { return ((t1 == t2) ? T(1) : T(0)); }
          static inline typename expression_node<T>::node_type type() { return expression_node<T>::e_eq; }
          static inline details::operator_type operation() { return details::e_eq; }
@@ -8101,7 +8122,7 @@ namespace exprtk
       struct ne_op : public opr_base<T>
       {
          typedef typename opr_base<T>::Type Type;
-         static inline T process(Type t1, Type t2) { return ((t1 != t2) ? T(1) : T(0)); }
+         static inline T process(Type t1, Type t2) { return (std::not_equal_to<T>()(t1,t2) ? T(1) : T(0)); }
          static inline T process(const std::string& t1, const std::string& t2) { return ((t1 != t2) ? T(1) : T(0)); }
          static inline typename expression_node<T>::node_type type() { return expression_node<T>::e_ne; }
          static inline details::operator_type operation() { return details::e_ne; }
@@ -8568,7 +8589,7 @@ namespace exprtk
                          {
                             for (std::size_t i = 0; i < arg_list.size(); ++i)
                             {
-                               if (T(0) == value(arg_list[i]))
+                               if (std::equal_to<T>()(T(0),value(arg_list[i])))
                                   return T(0);
                             }
 
@@ -8580,15 +8601,16 @@ namespace exprtk
          template <typename Sequence>
          static inline T process_1(const Sequence& arg_list)
          {
-            return (T(0) != value(arg_list[0])) ? T(1) : T(0);
+            return std::not_equal_to<T>()
+                      (T(0),value(arg_list[0])) ? T(1) : T(0);
          }
 
          template <typename Sequence>
          static inline T process_2(const Sequence& arg_list)
          {
             return (
-                     (T(0) != value(arg_list[0])) &&
-                     (T(0) != value(arg_list[1]))
+                     std::not_equal_to<T>()(T(0),value(arg_list[0])) &&
+                     std::not_equal_to<T>()(T(0),value(arg_list[1]))
                    ) ? T(1) : T(0);
          }
 
@@ -8596,9 +8618,9 @@ namespace exprtk
          static inline T process_3(const Sequence& arg_list)
          {
             return (
-                     (T(0) != value(arg_list[0])) &&
-                     (T(0) != value(arg_list[1])) &&
-                     (T(0) != value(arg_list[2]))
+                     std::not_equal_to<T>()(T(0),value(arg_list[0])) &&
+                     std::not_equal_to<T>()(T(0),value(arg_list[1])) &&
+                     std::not_equal_to<T>()(T(0),value(arg_list[2]))
                    ) ? T(1) : T(0);
          }
 
@@ -8606,10 +8628,10 @@ namespace exprtk
          static inline T process_4(const Sequence& arg_list)
          {
             return (
-                     (T(0) != value(arg_list[0])) &&
-                     (T(0) != value(arg_list[1])) &&
-                     (T(0) != value(arg_list[2])) &&
-                     (T(0) != value(arg_list[3]))
+                     std::not_equal_to<T>()(T(0),value(arg_list[0])) &&
+                     std::not_equal_to<T>()(T(0),value(arg_list[1])) &&
+                     std::not_equal_to<T>()(T(0),value(arg_list[2])) &&
+                     std::not_equal_to<T>()(T(0),value(arg_list[3]))
                    ) ? T(1) : T(0);
          }
 
@@ -8617,11 +8639,11 @@ namespace exprtk
          static inline T process_5(const Sequence& arg_list)
          {
             return (
-                     (T(0) != value(arg_list[0])) &&
-                     (T(0) != value(arg_list[1])) &&
-                     (T(0) != value(arg_list[2])) &&
-                     (T(0) != value(arg_list[3])) &&
-                     (T(0) != value(arg_list[4]))
+                     std::not_equal_to<T>()(T(0),value(arg_list[0])) &&
+                     std::not_equal_to<T>()(T(0),value(arg_list[1])) &&
+                     std::not_equal_to<T>()(T(0),value(arg_list[2])) &&
+                     std::not_equal_to<T>()(T(0),value(arg_list[3])) &&
+                     std::not_equal_to<T>()(T(0),value(arg_list[4]))
                    ) ? T(1) : T(0);
          }
       };
@@ -8647,7 +8669,7 @@ namespace exprtk
                          {
                             for (std::size_t i = 0; i < arg_list.size(); ++i)
                             {
-                               if (T(0) != value(arg_list[i]))
+                               if (std::not_equal_to<T>()(T(0),value(arg_list[i])))
                                   return T(1);
                             }
 
@@ -8659,15 +8681,16 @@ namespace exprtk
          template <typename Sequence>
          static inline T process_1(const Sequence& arg_list)
          {
-            return (T(0) != value(arg_list[0])) ? T(1) : T(0);
+            return std::not_equal_to<T>()
+                      (T(0),value(arg_list[0])) ? T(1) : T(0);
          }
 
          template <typename Sequence>
          static inline T process_2(const Sequence& arg_list)
          {
             return (
-                     (T(0) != value(arg_list[0])) ||
-                     (T(0) != value(arg_list[1]))
+                     std::not_equal_to<T>()(T(0),value(arg_list[0])) ||
+                     std::not_equal_to<T>()(T(0),value(arg_list[1]))
                    ) ? T(1) : T(0);
          }
 
@@ -8675,9 +8698,9 @@ namespace exprtk
          static inline T process_3(const Sequence& arg_list)
          {
             return (
-                     (T(0) != value(arg_list[0])) ||
-                     (T(0) != value(arg_list[1])) ||
-                     (T(0) != value(arg_list[2]))
+                     std::not_equal_to<T>()(T(0),value(arg_list[0])) ||
+                     std::not_equal_to<T>()(T(0),value(arg_list[1])) ||
+                     std::not_equal_to<T>()(T(0),value(arg_list[2]))
                    ) ? T(1) : T(0);
          }
 
@@ -8685,10 +8708,10 @@ namespace exprtk
          static inline T process_4(const Sequence& arg_list)
          {
             return (
-                     (T(0) != value(arg_list[0])) ||
-                     (T(0) != value(arg_list[1])) ||
-                     (T(0) != value(arg_list[2])) ||
-                     (T(0) != value(arg_list[3]))
+                     std::not_equal_to<T>()(T(0),value(arg_list[0])) ||
+                     std::not_equal_to<T>()(T(0),value(arg_list[1])) ||
+                     std::not_equal_to<T>()(T(0),value(arg_list[2])) ||
+                     std::not_equal_to<T>()(T(0),value(arg_list[3]))
                    ) ? T(1) : T(0);
          }
 
@@ -8696,11 +8719,11 @@ namespace exprtk
          static inline T process_5(const Sequence& arg_list)
          {
             return (
-                     (T(0) != value(arg_list[0])) ||
-                     (T(0) != value(arg_list[1])) ||
-                     (T(0) != value(arg_list[2])) ||
-                     (T(0) != value(arg_list[3])) ||
-                     (T(0) != value(arg_list[4]))
+                     std::not_equal_to<T>()(T(0),value(arg_list[0])) ||
+                     std::not_equal_to<T>()(T(0),value(arg_list[1])) ||
+                     std::not_equal_to<T>()(T(0),value(arg_list[2])) ||
+                     std::not_equal_to<T>()(T(0),value(arg_list[3])) ||
+                     std::not_equal_to<T>()(T(0),value(arg_list[4]))
                    ) ? T(1) : T(0);
          }
       };
@@ -8885,6 +8908,7 @@ namespace exprtk
             for (std::size_t i = 1; i < vec.size(); ++i)
             {
               T v_i = (*vec[i]);
+
               if (v_i < result)
                 result = v_i;
             }
@@ -9068,8 +9092,8 @@ namespace exprtk
          typedef expression_node<T>* expression_ptr;
          typedef Operation operation_t;
 
-         explicit unary_variable_node(const T& v)
-         : v_(v)
+         explicit unary_variable_node(const T& var)
+         : v_(var)
          {}
 
          inline T value() const
@@ -9112,12 +9136,13 @@ namespace exprtk
          typedef typename functor_t::bfunc_t bfunc_t;
          typedef typename functor_t::ufunc_t ufunc_t;
 
-         explicit uvouv_node(const T& v0,const T& v1, ufunc_t u0, ufunc_t u1, bfunc_t f)
-         : v0_(v0),
-           v1_(v1),
-           u0_(u0),
-           u1_(u1),
-           f_ (f )
+         explicit uvouv_node(const T& var0,const T& var1,
+                             ufunc_t uf0, ufunc_t uf1, bfunc_t bf)
+         : v0_(var0),
+           v1_(var1),
+           u0_(uf0),
+           u1_(uf1),
+           f_ (bf)
          {}
 
          inline T value() const
@@ -9180,8 +9205,8 @@ namespace exprtk
          typedef expression_node<T>* expression_ptr;
          typedef Operation operation_t;
 
-         explicit unary_branch_node(expression_ptr branch)
-         : branch_(branch),
+         explicit unary_branch_node(expression_ptr brnch)
+         : branch_(brnch),
            branch_deletable_(branch_deletable(branch_))
          {}
 
@@ -9242,6 +9267,9 @@ namespace exprtk
       template <>
       struct param_to_str<0> { static std::string result() { static const std::string r("c"); return r; } };
 
+      #define exprtk_crtype(Type)                          \
+      param_to_str<is_const_ref< Type >::result>::result() \
+
       template <typename T>
       struct T0oT1oT2process
       {
@@ -9259,9 +9287,9 @@ namespace exprtk
             template <typename T0, typename T1, typename T2>
             static inline std::string id()
             {
-               static const std::string result = "(" + param_to_str<is_const_ref<T0>::result>::result() + "o"   +
-                                                       param_to_str<is_const_ref<T1>::result>::result() + ")o(" +
-                                                       param_to_str<is_const_ref<T2>::result>::result() + ")"   ;
+               static const std::string result = "(" + exprtk_crtype(T0) + "o"   +
+                                                       exprtk_crtype(T1) + ")o(" +
+                                                       exprtk_crtype(T2) + ")"   ;
                return result;
             }
          };
@@ -9277,9 +9305,9 @@ namespace exprtk
             template <typename T0, typename T1, typename T2>
             static inline std::string id()
             {
-               static const std::string result = "(" + param_to_str<is_const_ref<T0>::result>::result() + ")o(" +
-                                                       param_to_str<is_const_ref<T1>::result>::result() + "o"   +
-                                                       param_to_str<is_const_ref<T2>::result>::result() + ")"   ;
+               static const std::string result = "(" + exprtk_crtype(T0) + ")o(" +
+                                                       exprtk_crtype(T1) + "o"   +
+                                                       exprtk_crtype(T2) + ")"   ;
                return result;
             }
          };
@@ -9304,10 +9332,10 @@ namespace exprtk
             template <typename T0, typename T1, typename T2, typename T3>
             static inline std::string id()
             {
-               static const std::string result = "(" + param_to_str<is_const_ref<T0>::result>::result() + "o"  +
-                                                       param_to_str<is_const_ref<T1>::result>::result() + ")o" +
-                                                 "(" + param_to_str<is_const_ref<T2>::result>::result() + "o"  +
-                                                       param_to_str<is_const_ref<T3>::result>::result() + ")"  ;
+               static const std::string result = "(" + exprtk_crtype(T0) + "o"  +
+                                                       exprtk_crtype(T1) + ")o" +
+                                                 "(" + exprtk_crtype(T2) + "o"  +
+                                                       exprtk_crtype(T3) + ")"  ;
                return result;
             }
          };
@@ -9324,10 +9352,10 @@ namespace exprtk
             template <typename T0, typename T1, typename T2, typename T3>
             static inline std::string id()
             {
-               static const std::string result = "(" + param_to_str<is_const_ref<T0>::result>::result() +  ")o((" +
-                                                       param_to_str<is_const_ref<T1>::result>::result() +  ")o("  +
-                                                       param_to_str<is_const_ref<T2>::result>::result() +  "o"    +
-                                                       param_to_str<is_const_ref<T3>::result>::result() +  "))"   ;
+               static const std::string result = "(" + exprtk_crtype(T0) +  ")o((" +
+                                                       exprtk_crtype(T1) +  ")o("  +
+                                                       exprtk_crtype(T2) +  "o"    +
+                                                       exprtk_crtype(T3) +  "))"   ;
                return result;
             }
          };
@@ -9345,10 +9373,10 @@ namespace exprtk
             template <typename T0, typename T1, typename T2, typename T3>
             static inline std::string id()
             {
-               static const std::string result = "(" + param_to_str<is_const_ref<T0>::result>::result() + ")o((" +
-                                                       param_to_str<is_const_ref<T1>::result>::result() + "o"    +
-                                                       param_to_str<is_const_ref<T2>::result>::result() + ")o("  +
-                                                       param_to_str<is_const_ref<T3>::result>::result() + "))"   ;
+               static const std::string result = "(" + exprtk_crtype(T0) + ")o((" +
+                                                       exprtk_crtype(T1) + "o"    +
+                                                       exprtk_crtype(T2) + ")o("  +
+                                                       exprtk_crtype(T3) + "))"   ;
                return result;
             }
          };
@@ -9366,10 +9394,10 @@ namespace exprtk
             template <typename T0, typename T1, typename T2, typename T3>
             static inline std::string id()
             {
-               static const std::string result = "((" + param_to_str<is_const_ref<T0>::result>::result() + "o"    +
-                                                        param_to_str<is_const_ref<T1>::result>::result() + ")o("  +
-                                                        param_to_str<is_const_ref<T2>::result>::result() + "))o(" +
-                                                        param_to_str<is_const_ref<T3>::result>::result() + ")";
+               static const std::string result = "((" + exprtk_crtype(T0) + "o"    +
+                                                        exprtk_crtype(T1) + ")o("  +
+                                                        exprtk_crtype(T2) + "))o(" +
+                                                        exprtk_crtype(T3) + ")";
                return result;
             }
          };
@@ -9387,14 +9415,16 @@ namespace exprtk
             template <typename T0, typename T1, typename T2, typename T3>
             static inline std::string id()
             {
-               static const std::string result = "((" + param_to_str<is_const_ref<T0>::result>::result() + ")o("  +
-                                                        param_to_str<is_const_ref<T1>::result>::result() + "o"    +
-                                                        param_to_str<is_const_ref<T2>::result>::result() + "))o(" +
-                                                        param_to_str<is_const_ref<T3>::result>::result() + ")"    ;
+               static const std::string result = "((" + exprtk_crtype(T0) + ")o("  +
+                                                        exprtk_crtype(T1) + "o"    +
+                                                        exprtk_crtype(T2) + "))o(" +
+                                                        exprtk_crtype(T3) + ")"    ;
                return result;
             }
          };
       };
+
+      #undef exprtk_crtype
 
       template <typename T, typename T0, typename T1>
       struct nodetype_T0oT1 { static const typename expression_node<T>::node_type result; };
@@ -9479,10 +9509,10 @@ namespace exprtk
          typedef T value_type;
          typedef T0oT1<T,T0,T1> node_type;
 
-         T0oT1(T0 t0, T1 t1, const bfunc_t f)
-         : t0_(t0),
-           t1_(t1),
-           f_(f)
+         T0oT1(T0 p0, T1 p1, const bfunc_t p2)
+         : t0_(p0),
+           t1_(p1),
+           f_ (p2)
          {}
 
          inline typename expression_node<T>::node_type type() const
@@ -9518,10 +9548,10 @@ namespace exprtk
 
          template <typename Allocator>
          static inline expression_node<T>* allocate(Allocator& allocator,
-                                                    T0 t0, T1 t1,
-                                                    bfunc_t f)
+                                                    T0 p0, T1 p1,
+                                                    bfunc_t p2)
          {
-            return allocator.template allocate_type<node_type,T0,T1,bfunc_t&>(t0,t1,f);
+            return allocator.template allocate_type<node_type,T0,T1,bfunc_t&>(p0,p1,p2);
          }
 
       private:
@@ -9545,12 +9575,12 @@ namespace exprtk
          typedef T0oT1oT2<T,T0,T1,T2,ProcessMode> node_type;
          typedef ProcessMode process_mode_t;
 
-         T0oT1oT2(T0 t0, T1 t1, T2 t2, const bfunc_t f0, const bfunc_t f1)
-         : t0_(t0),
-           t1_(t1),
-           t2_(t2),
-           f0_(f0),
-           f1_(f1)
+         T0oT1oT2(T0 p0, T1 p1, T2 p2, const bfunc_t p3, const bfunc_t p4)
+         : t0_(p0),
+           t1_(p1),
+           t2_(p2),
+           f0_(p3),
+           f1_(p4)
          {}
 
          inline typename expression_node<T>::node_type type() const
@@ -9605,9 +9635,9 @@ namespace exprtk
          }
 
          template <typename Allocator>
-         static inline expression_node<T>* allocate(Allocator& allocator, T0 t0, T1 t1, T2 t2, bfunc_t f0, bfunc_t f1)
+         static inline expression_node<T>* allocate(Allocator& allocator, T0 p0, T1 p1, T2 p2, bfunc_t p3, bfunc_t p4)
          {
-            return allocator.template allocate_type<node_type,T0,T1,T2,bfunc_t,bfunc_t>(t0,t1,t2,f0,f1);
+            return allocator.template allocate_type<node_type,T0,T1,T2,bfunc_t,bfunc_t>(p0,p1,p2,p3,p4);
          }
 
       private:
@@ -9637,14 +9667,14 @@ namespace exprtk
          typedef T0oT1oT2oT3<T,T0,T1,T2,T3,ProcessMode> node_type;
          typedef ProcessMode process_mode_t;
 
-         T0oT1oT2oT3(T0 t0, T1 t1, T2 t2, T3 t3, bfunc_t f0, bfunc_t f1, bfunc_t f2)
-         : t0_(t0),
-           t1_(t1),
-           t2_(t2),
-           t3_(t3),
-           f0_(f0),
-           f1_(f1),
-           f2_(f2)
+         T0oT1oT2oT3(T0 p0, T1 p1, T2 p2, T3 p3, bfunc_t p4, bfunc_t p5, bfunc_t p6)
+         : t0_(p0),
+           t1_(p1),
+           t2_(p2),
+           t3_(p3),
+           f0_(p4),
+           f1_(p5),
+           f2_(p6)
          {}
 
          inline T value() const
@@ -9699,10 +9729,10 @@ namespace exprtk
 
          template <typename Allocator>
          static inline expression_node<T>* allocate(Allocator& allocator,
-                                                    T0 t0, T1 t1, T2 t2, T3 t3,
-                                                    bfunc_t f0, bfunc_t f1, bfunc_t f2)
+                                                    T0 p0, T1 p1, T2 p2, T3 p3,
+                                                    bfunc_t p4, bfunc_t p5, bfunc_t p6)
          {
-            return allocator.template allocate_type<node_type,T0,T1,T2,T3,bfunc_t,bfunc_t>(t0,t1,t2,t3,f0,f1,f2);
+            return allocator.template allocate_type<node_type,T0,T1,T2,T3,bfunc_t,bfunc_t>(p0,p1,p2,p3,p4,p5,p6);
          }
 
       private:
@@ -9729,11 +9759,11 @@ namespace exprtk
          typedef T value_type;
          typedef T0oT1oT2_sf3<T,T0,T1,T2> node_type;
 
-         T0oT1oT2_sf3(T0 t0, T1 t1, T2 t2, const tfunc_t f)
-         : t0_(t0),
-           t1_(t1),
-           t2_(t2),
-           f_(f)
+         T0oT1oT2_sf3(T0 p0, T1 p1, T2 p2, const tfunc_t p3)
+         : t0_(p0),
+           t1_(p1),
+           t2_(p2),
+           f_(p3)
          {}
 
          inline typename expression_node<T>::node_type type() const
@@ -9783,9 +9813,9 @@ namespace exprtk
          }
 
          template <typename Allocator>
-         static inline expression_node<T>* allocate(Allocator& allocator, T0 t0, T1 t1, T2 t2, tfunc_t f)
+         static inline expression_node<T>* allocate(Allocator& allocator, T0 p0, T1 p1, T2 p2, tfunc_t p3)
          {
-            return allocator.template allocate_type<node_type,T0,T1,T2,tfunc_t>(t0,t1,t2,f);
+            return allocator.template allocate_type<node_type,T0,T1,T2,tfunc_t>(p0,p1,p2,p3);
          }
 
       private:
@@ -9821,10 +9851,10 @@ namespace exprtk
          typedef T value_type;
          typedef T0oT1oT2_sf3ext<T,T0,T1,T2,SF3Operation> node_type;
 
-         T0oT1oT2_sf3ext(T0 t0, T1 t1, T2 t2)
-         : t0_(t0),
-           t1_(t1),
-           t2_(t2)
+         T0oT1oT2_sf3ext(T0 p0, T1 p1, T2 p2)
+         : t0_(p0),
+           t1_(p1),
+           t2_(p2)
          {}
 
          inline typename expression_node<T>::node_type type() const
@@ -9869,9 +9899,9 @@ namespace exprtk
          }
 
          template <typename Allocator>
-         static inline expression_node<T>* allocate(Allocator& allocator, T0 t0, T1 t1, T2 t2)
+         static inline expression_node<T>* allocate(Allocator& allocator, T0 p0, T1 p1, T2 p2)
          {
-            return allocator.template allocate_type<node_type,T0,T1,T2>(t0,t1,t2);
+            return allocator.template allocate_type<node_type,T0,T1,T2>(p0,p1,p2);
          }
 
       private:
@@ -9908,12 +9938,12 @@ namespace exprtk
          typedef T value_type;
          typedef T0oT1oT2oT3_sf4<T,T0,T1,T2,T3> node_type;
 
-         T0oT1oT2oT3_sf4(T0 t0, T1 t1, T2 t2, T3 t3, const qfunc_t f)
-         : t0_(t0),
-           t1_(t1),
-           t2_(t2),
-           t3_(t3),
-           f_(f)
+         T0oT1oT2oT3_sf4(T0 p0, T1 p1, T2 p2, T3 p3, const qfunc_t p4)
+         : t0_(p0),
+           t1_(p1),
+           t2_(p2),
+           t3_(p3),
+           f_(p4)
          {}
 
          inline typename expression_node<T>::node_type type() const
@@ -9968,9 +9998,9 @@ namespace exprtk
          }
 
          template <typename Allocator>
-         static inline expression_node<T>* allocate(Allocator& allocator, T0 t0, T1 t1, T2 t2, T3 t3, qfunc_t f)
+         static inline expression_node<T>* allocate(Allocator& allocator, T0 p0, T1 p1, T2 p2, T3 p3, qfunc_t p4)
          {
-            return allocator.template allocate_type<node_type,T0,T1,T2,T3,qfunc_t>(t0,t1,t2,t3,f);
+            return allocator.template allocate_type<node_type,T0,T1,T2,T3,qfunc_t>(p0,p1,p2,p3,p4);
          }
 
       private:
@@ -9995,11 +10025,11 @@ namespace exprtk
          typedef T value_type;
          typedef T0oT1oT2oT3_sf4ext<T,T0,T1,T2,T3,SF4Operation> node_type;
 
-         T0oT1oT2oT3_sf4ext(T0 t0, T1 t1, T2 t2, T3 t3)
-         : t0_(t0),
-           t1_(t1),
-           t2_(t2),
-           t3_(t3)
+         T0oT1oT2oT3_sf4ext(T0 p0, T1 p1, T2 p2, T3 p3)
+         : t0_(p0),
+           t1_(p1),
+           t2_(p2),
+           t3_(p3)
          {}
 
          inline typename expression_node<T>::node_type type() const
@@ -10049,9 +10079,9 @@ namespace exprtk
          }
 
          template <typename Allocator>
-         static inline expression_node<T>* allocate(Allocator& allocator, T0 t0, T1 t1, T2 t2, T3 t3)
+         static inline expression_node<T>* allocate(Allocator& allocator, T0 p0, T1 p1, T2 p2, T3 p3)
          {
-            return allocator.template allocate_type<node_type,T0,T1,T2,T3>(t0,t1,t2,t3);
+            return allocator.template allocate_type<node_type,T0,T1,T2,T3>(p0,p1,p2,p3);
          }
 
       private:
@@ -10118,9 +10148,9 @@ namespace exprtk
          typedef Operation operation_t;
 
          // variable op variable node
-         explicit vov_node(const T& v0, const T& v1)
-         : v0_(v0),
-           v1_(v1)
+         explicit vov_node(const T& var0, const T& var1)
+         : v0_(var0),
+           v1_(var1)
          {}
 
          inline T value() const
@@ -10168,9 +10198,9 @@ namespace exprtk
          typedef Operation operation_t;
 
          // constant op variable node
-         explicit cov_node(const T& c, const T& v)
-         : c_(c),
-           v_(v)
+         explicit cov_node(const T& const_var, const T& var)
+         : c_(const_var),
+           v_(var)
          {}
 
          inline T value() const
@@ -10218,9 +10248,9 @@ namespace exprtk
          typedef Operation operation_t;
 
          // variable op constant node
-         explicit voc_node(const T& v, const T& c)
-         : v_(v),
-           c_(c)
+         explicit voc_node(const T& var, const T& const_var)
+         : v_(var),
+           c_(const_var)
          {}
 
          inline T value() const
@@ -10264,10 +10294,10 @@ namespace exprtk
          typedef Operation operation_t;
 
          // variable op constant node
-         explicit vob_node(const T& v, const expression_ptr branch)
-         : v_(v)
+         explicit vob_node(const T& var, const expression_ptr brnch)
+         : v_(var)
          {
-            init_branches<1>(branch_,branch);
+            init_branches<1>(branch_,brnch);
          }
 
         ~vob_node()
@@ -10314,10 +10344,10 @@ namespace exprtk
          typedef Operation operation_t;
 
          // variable op constant node
-         explicit bov_node(const expression_ptr branch, const T& v)
-         : v_(v)
+         explicit bov_node(const expression_ptr brnch, const T& var)
+         : v_(var)
          {
-            init_branches<1>(branch_,branch);
+            init_branches<1>(branch_,brnch);
          }
 
         ~bov_node()
@@ -10364,10 +10394,10 @@ namespace exprtk
          typedef Operation operation_t;
 
          // variable op constant node
-         explicit cob_node(const T c, const expression_ptr branch)
-         : c_(c)
+         explicit cob_node(const T const_var, const expression_ptr brnch)
+         : c_(const_var)
          {
-            init_branches<1>(branch_,branch);
+            init_branches<1>(branch_,brnch);
          }
 
         ~cob_node()
@@ -10425,10 +10455,10 @@ namespace exprtk
          typedef Operation operation_t;
 
          // variable op constant node
-         explicit boc_node(const expression_ptr branch, const T c)
-         : c_(c)
+         explicit boc_node(const expression_ptr brnch, const T const_var)
+         : c_(const_var)
          {
-            init_branches<1>(branch_,branch);
+            init_branches<1>(branch_,brnch);
          }
 
         ~boc_node()
@@ -10486,9 +10516,9 @@ namespace exprtk
          typedef Operation operation_t;
 
          // string op string node
-         explicit sos_node(SType0 s0, SType1 s1)
-         : s0_(s0),
-           s1_(s1)
+         explicit sos_node(SType0 p0, SType1 p1)
+         : s0_(p0),
+           s1_(p1)
          {}
 
          inline T value() const
@@ -10536,9 +10566,9 @@ namespace exprtk
          typedef Operation operation_t;
 
          // string-range op string node
-         explicit str_xrox_node(SType0 s0, SType1 s1, RangePack rp0)
-         : s0_(s0),
-           s1_(s1),
+         explicit str_xrox_node(SType0 p0, SType1 p1, RangePack rp0)
+         : s0_(p0),
+           s1_(p1),
            rp0_(rp0)
          {}
 
@@ -10599,9 +10629,9 @@ namespace exprtk
          typedef Operation operation_t;
 
          // string op string range node
-         explicit str_xoxr_node(SType0 s0, SType1 s1, RangePack rp1)
-         : s0_(s0),
-           s1_(s1),
+         explicit str_xoxr_node(SType0 p0, SType1 p1, RangePack rp1)
+         : s0_(p0),
+           s1_(p1),
            rp1_(rp1)
          {}
 
@@ -10662,9 +10692,9 @@ namespace exprtk
          typedef Operation operation_t;
 
          // string-range op string-range node
-         explicit str_xroxr_node(SType0 s0, SType1 s1, RangePack rp0, RangePack rp1)
-         : s0_(s0),
-           s1_(s1),
+         explicit str_xroxr_node(SType0 p0, SType1 p1, RangePack rp0, RangePack rp1)
+         : s0_(p0),
+           s1_(p1),
            rp0_(rp0),
            rp1_(rp1)
          {}
@@ -10737,10 +10767,10 @@ namespace exprtk
          typedef Operation operation_t;
 
          // variable op variable node
-         explicit sosos_node(SType0 s0, SType1 s1, SType2 s2)
-         : s0_(s0),
-           s1_(s1),
-           s2_(s2)
+         explicit sosos_node(SType0 p0, SType1 p1, SType2 p2)
+         : s0_(p0),
+           s1_(p1),
+           s2_(p2)
          {}
 
          inline T value() const
@@ -11481,7 +11511,7 @@ namespace exprtk
          }
 
          template <typename Tie, typename RType>
-         inline bool add_impl(const std::string& symbol_name, RType t, const bool is_constant)
+         inline bool add_impl(const std::string& symbol_name, RType t, const bool is_const)
          {
             if (symbol_name.size() > 1)
             {
@@ -11498,7 +11528,7 @@ namespace exprtk
 
             if (map.end() == itr)
             {
-               map[symbol_name] = Tie::make(t,is_constant);
+               map[symbol_name] = Tie::make(t,is_const);
                ++size;
             }
 
@@ -11507,66 +11537,66 @@ namespace exprtk
 
          struct tie_array
          {
-            static inline std::pair<bool,vector_t*> make(std::pair<T*,std::size_t> v, const bool is_constant = false)
+            static inline std::pair<bool,vector_t*> make(std::pair<T*,std::size_t> v, const bool is_const = false)
             {
-               return std::make_pair(is_constant,new vector_t(v.first,v.second));
+               return std::make_pair(is_const,new vector_t(v.first,v.second));
             }
          };
 
          struct tie_stdvec
          {
             template <typename Allocator>
-            static inline std::pair<bool,vector_t*> make(std::vector<T,Allocator>& v, const bool is_constant = false)
+            static inline std::pair<bool,vector_t*> make(std::vector<T,Allocator>& v, const bool is_const = false)
             {
-               return std::make_pair(is_constant,new vector_t(v));
+               return std::make_pair(is_const,new vector_t(v));
             }
          };
 
          struct tie_stddeq
          {
             template <typename Allocator>
-            static inline std::pair<bool,vector_t*> make(std::deque<T,Allocator>& v, const bool is_constant = false)
+            static inline std::pair<bool,vector_t*> make(std::deque<T,Allocator>& v, const bool is_const = false)
             {
-               return std::make_pair(is_constant,new vector_t(v));
+               return std::make_pair(is_const,new vector_t(v));
             }
          };
 
          template <std::size_t v_size>
-         inline bool add(const std::string& symbol_name, T (&v)[v_size], const bool is_constant = false)
+         inline bool add(const std::string& symbol_name, T (&v)[v_size], const bool is_const = false)
          {
-            return add_impl<tie_array,std::pair<T*,std::size_t> >(symbol_name,std::make_pair(v,v_size),is_constant);
+            return add_impl<tie_array,std::pair<T*,std::size_t> >(symbol_name,std::make_pair(v,v_size),is_const);
          }
 
-         inline bool add(const std::string& symbol_name, T* v, const std::size_t v_size, const bool is_constant = false)
+         inline bool add(const std::string& symbol_name, T* v, const std::size_t v_size, const bool is_const = false)
          {
-            return add_impl<tie_array,std::pair<T*,std::size_t> >(symbol_name,std::make_pair(v,v_size),is_constant);
-         }
-
-         template <typename Allocator>
-         inline bool add(const std::string& symbol_name, std::vector<T,Allocator>& v, const bool is_constant = false)
-         {
-            return add_impl<tie_stdvec,std::vector<T,Allocator>&>(symbol_name,v,is_constant);
+            return add_impl<tie_array,std::pair<T*,std::size_t> >(symbol_name,std::make_pair(v,v_size),is_const);
          }
 
          template <typename Allocator>
-         inline bool add(const std::string& symbol_name, std::deque<T,Allocator>& v, const bool is_constant = false)
+         inline bool add(const std::string& symbol_name, std::vector<T,Allocator>& v, const bool is_const = false)
          {
-            return add_impl<tie_stddeq,std::deque<T,Allocator>&>(symbol_name,v,is_constant);
+            return add_impl<tie_stdvec,std::vector<T,Allocator>&>(symbol_name,v,is_const);
          }
 
-         inline bool add(const std::string& symbol_name, RawType& t, const bool is_constant = false)
+         template <typename Allocator>
+         inline bool add(const std::string& symbol_name, std::deque<T,Allocator>& v, const bool is_const = false)
+         {
+            return add_impl<tie_stddeq,std::deque<T,Allocator>&>(symbol_name,v,is_const);
+         }
+
+         inline bool add(const std::string& symbol_name, RawType& t, const bool is_const = false)
          {
             struct tie
             {
-               static inline std::pair<bool,variable_node_t*> make(T& t,const bool is_constant = false)
+               static inline std::pair<bool,variable_node_t*> make(T& t,const bool is_const = false)
                {
-                  return std::make_pair(is_constant,new variable_node_t(t));
+                  return std::make_pair(is_const,new variable_node_t(t));
                }
 
                #ifndef exprtk_disable_string_capabilities
-               static inline std::pair<bool,stringvar_node_t*> make(std::string& t,const bool is_constant = false)
+               static inline std::pair<bool,stringvar_node_t*> make(std::string& t,const bool is_const = false)
                {
-                  return std::make_pair(is_constant,new stringvar_node_t(t));
+                  return std::make_pair(is_const,new stringvar_node_t(t));
                }
                #endif
 
@@ -11575,9 +11605,9 @@ namespace exprtk
                   return std::make_pair(is_constant,&t);
                }
 
-               static inline std::pair<bool,vararg_function_t*> make(vararg_function_t& t, const bool is_constant = false)
+               static inline std::pair<bool,vararg_function_t*> make(vararg_function_t& t, const bool is_const = false)
                {
-                  return std::make_pair(is_constant,&t);
+                  return std::make_pair(is_const,&t);
                }
             };
 
@@ -11596,7 +11626,7 @@ namespace exprtk
 
             if (map.end() == itr)
             {
-               map[symbol_name] = tie::make(t,is_constant);
+               map[symbol_name] = tie::make(t,is_const);
                ++size;
             }
 
@@ -11974,13 +12004,13 @@ namespace exprtk
             return local_data().variable_store.get(variable_name);
       }
 
-      inline variable_ptr get_variable(const T& variable_ref) const
+      inline variable_ptr get_variable(const T& var_ref) const
       {
          if (!valid())
             return reinterpret_cast<variable_ptr>(0);
          else
             return local_data().variable_store.get_from_varptr(
-                                                  reinterpret_cast<const void*>(&variable_ref));
+                                                  reinterpret_cast<const void*>(&var_ref));
       }
 
       #ifndef exprtk_disable_string_capabilities
@@ -12429,9 +12459,9 @@ namespace exprtk
 
       inline void load_from(const symbol_table<T>& st)
       {
-         std::vector<std::string> name_list;
-
          {
+            std::vector<std::string> name_list;
+
             st.local_data().function_store.get_list(name_list);
 
             if (!name_list.empty())
@@ -12442,8 +12472,6 @@ namespace exprtk
                   add_function(name_list[i],ifunc);
                }
             }
-
-            name_list.clear();
          }
 
          {
@@ -12459,8 +12487,6 @@ namespace exprtk
                   add_vararg_function(name_list[i],ivafunc);
                }
             }
-
-            name_list.clear();
          }
       }
 
@@ -12501,7 +12527,6 @@ namespace exprtk
       }
 
       st_holder* holder_;
-
    };
 
    template <typename T>
@@ -12628,6 +12653,7 @@ namespace exprtk
             expression_holder_->ref_count++;
             symbol_table_ = e.symbol_table_;
          }
+
          return *this;
       }
 
@@ -12889,8 +12915,8 @@ namespace exprtk
       inline bool update_error(type& error, const std::string& expression)
       {
          if (
-              expression.empty()                                              ||
-              (error.token.position > expression.size())                      ||
+              expression.empty()                         ||
+              (error.token.position > expression.size()) ||
               (std::numeric_limits<std::size_t>::max() == error.token.position)
             )
          {
@@ -13305,11 +13331,15 @@ namespace exprtk
          virtual ~unknown_symbol_resolver()
          {}
 
-         virtual bool process(const std::string& /*unknown_symbol*/, symbol_type& st, T& default_value, std::string& error_message)
+         virtual bool process(const std::string& /*unknown_symbol*/,
+                              symbol_type& st,
+                              T& default_value,
+                              std::string& error_message)
          {
             st = e_variable_type;
             default_value = T(0);
             error_message = "";
+
             return true;
          }
       };
@@ -13717,7 +13747,7 @@ namespace exprtk
 
       inline void disable_unknown_symbol_resolver()
       {
-         resolve_unknown_symbol_ = false;
+         resolve_unknown_symbol_  = false;
          unknown_symbol_resolver_ = &default_usr_;
       }
 
@@ -15997,9 +16027,9 @@ namespace exprtk
          const scope_element& se = sem_.get_element(symbol);
 
          if (
-              (se.name != symbol) ||
-              (scope_element::e_vector != se.type) ||
-              (se.depth > scope_depth_)
+              (se.name != symbol)       ||
+              (se.depth > scope_depth_) ||
+              (scope_element::e_vector != se.type)
             )
          {
             if (0 == (vec = symbol_table_.get_vector(symbol)))
@@ -16120,6 +16150,7 @@ namespace exprtk
             for (std::size_t i = 0; i < NumberOfParameters; ++i)
             {
                branch[i] = p.parse_expression();
+
                if (0 == branch[i])
                {
                   return p.error_node();
@@ -16303,7 +16334,8 @@ namespace exprtk
 
          if (
               (vector_size <= T(0)) ||
-              (0 != (vector_size - details::numeric::trunc(vector_size)))
+              std::not_equal_to<T>()
+               (T(0),vector_size - details::numeric::trunc(vector_size))
             )
          {
             set_error(
@@ -16812,7 +16844,7 @@ namespace exprtk
             scope_element& se = sem_.get_element(var0_name);
 
             if (
-                 (se.active) &&
+                 (se.active)            &&
                  (se.name == var0_name) &&
                  (scope_element::e_variable == se.type)
                )
@@ -17086,20 +17118,20 @@ namespace exprtk
 
                if (create_result)
                {
-                  expression_node_ptr variable = symbol_table_.get_variable(symbol);
+                  expression_node_ptr var = symbol_table_.get_variable(symbol);
 
-                  if (variable)
+                  if (var)
                   {
                      cache_symbol(symbol);
 
                      if (symbol_table_.is_constant_node(symbol))
                      {
-                        variable = expression_generator_(variable->value());
+                        var = expression_generator_(var->value());
                      }
 
                      next_token();
 
-                     return variable;
+                     return var;
                   }
                }
 
@@ -17331,7 +17363,7 @@ namespace exprtk
          }
 
          if (
-              branch &&
+              branch                    &&
               (e_level00 == precedence) &&
               token_is(token_t::e_ternary,false)
             )
@@ -17487,9 +17519,9 @@ namespace exprtk
             node_allocator_ = &na;
          }
 
-         inline void set_strength_reduction_state(const bool strength_reduction_enabled)
+         inline void set_strength_reduction_state(const bool enabled)
          {
-            strength_reduction_enabled_ = strength_reduction_enabled;
+            strength_reduction_enabled_ = enabled;
          }
 
          inline bool strength_reduction_enabled() const
@@ -18021,6 +18053,7 @@ namespace exprtk
                return synthesize_null_expression(operation,branch);
 
             expression_node_ptr result = error_node();
+
             #ifndef exprtk_disable_enhanced_features
             if (synthesize_expression(operation,branch,result))
                return result;
@@ -18035,7 +18068,8 @@ namespace exprtk
                   3. c o boc -> boc
                   4. boc o c -> boc
                */
-               expression_node_ptr result = error_node();
+               result = error_node();
+
                if (cocob_optimizable(operation,branch))
                   result = synthesize_cocob_expression::process(*this,operation,branch);
                else if (coboc_optimizable(operation,branch) && (0 == result))
@@ -18966,6 +19000,7 @@ namespace exprtk
                   nse.depth    = parser_->scope_depth_;
                   nse.data     = 0;
                   nse.var_node = new variable_node_t((*v));
+
                   if (!parser_->sem_.add_element(nse))
                   {
                      parser_->set_synthesis_error("Failed to add new local vector element to SEM [1]");
@@ -19295,17 +19330,29 @@ namespace exprtk
             expression_node_ptr result = error_node();
             if (details::is_constant_node(branch[0]))
             {
-               if ((details::e_scand == operation) && (T(0) == branch[0]->value()))
+               if (
+                    (details::e_scand == operation) &&
+                    std::equal_to<T>()(T(0),branch[0]->value())
+                  )
                   result = node_allocator_->allocate_c<literal_node_t>(T(0));
-               else if ((details::e_scor == operation) && (T(0) != branch[0]->value()))
+               else if (
+                         (details::e_scor == operation) &&
+                         std::not_equal_to<T>()(T(0),branch[0]->value())
+                       )
                   result = node_allocator_->allocate_c<literal_node_t>(T(1));
             }
 
             if (details::is_constant_node(branch[1]) && (0 == result))
             {
-               if ((details::e_scand == operation) && (T(0) == branch[1]->value()))
+               if (
+                    (details::e_scand == operation) &&
+                    std::equal_to<T>()(T(0),branch[1]->value())
+                  )
                   result = node_allocator_->allocate_c<literal_node_t>(T(0));
-               else if ((details::e_scor == operation) && (T(0) != branch[1]->value()))
+               else if (
+                         (details::e_scor == operation) &&
+                         std::not_equal_to<T>()(T(0),branch[1]->value())
+                       )
                   result = node_allocator_->allocate_c<literal_node_t>(T(1));
             }
 
@@ -19389,7 +19436,7 @@ namespace exprtk
 
             if (0 == p)
                return node_allocator_->allocate_c<literal_node_t>(T(1));
-            else if (T(2) == c)
+            else if (std::equal_to<T>()(T(2),c))
             {
                return node_allocator_->
                   template allocate_rr<typename details::vov_node<Type,details::mul_op<Type> > >(v,v);
@@ -20289,7 +20336,7 @@ namespace exprtk
 
                if (expr_gen.cardinal_pow_optimizable(operation,c))
                {
-                  if (T(1) == c)
+                  if (std::equal_to<T>()(T(1),c))
                      return branch[0];
                   else
                      return expr_gen.cardinal_pow_optimization(v,c);
@@ -20358,7 +20405,6 @@ namespace exprtk
 
                return true;
             }
-
          };
 
          struct synthesize_sf4ext_expression
@@ -22006,9 +22052,9 @@ namespace exprtk
                   }
                   // (c * v0) +/- (c * v1) --> (covov) c * (v0 +/- v1)
                   else if (
-                            (c0 == c1)             &&
-                            (details::e_mul == o0) &&
-                            (details::e_mul == o2) &&
+                            (std::equal_to<T>()(c0,c1)) &&
+                            (details::e_mul == o0)      &&
+                            (details::e_mul == o2)      &&
                             (
                               (details::e_add == o1) ||
                               (details::e_sub == o1)
@@ -22202,9 +22248,9 @@ namespace exprtk
                   }
                   // (v0 * c) +/- (v1 * c) --> (covov) c * (v0 +/- v1)
                   else if (
-                            (c0 == c1)             &&
-                            (details::e_mul == o0) &&
-                            (details::e_mul == o2) &&
+                            (std::equal_to<T>()(c0,c1)) &&
+                            (details::e_mul == o0)      &&
+                            (details::e_mul == o2)      &&
                             (
                               (details::e_add == o1) ||
                               (details::e_sub == o1)
@@ -22230,9 +22276,9 @@ namespace exprtk
                   }
                   // (v0 / c) +/- (v1 / c) --> (vovoc) (v0 +/- v1) / c
                   else if (
-                            (c0 == c1)             &&
-                            (details::e_div == o0) &&
-                            (details::e_div == o2) &&
+                            (std::equal_to<T>()(c0,c1)) &&
+                            (details::e_div == o0)      &&
+                            (details::e_div == o2)      &&
                             (
                               (details::e_add == o1) ||
                               (details::e_sub == o1)
@@ -22404,9 +22450,9 @@ namespace exprtk
                   }
                   // (c * v0) +/- (v1 * c) --> (covov) c * (v0 +/- v1)
                   else if (
-                            (c0 == c1)             &&
-                            (details::e_mul == o0) &&
-                            (details::e_mul == o2) &&
+                            (std::equal_to<T>()(c0,c1)) &&
+                            (details::e_mul == o0)      &&
+                            (details::e_mul == o2)      &&
                             (
                               (details::e_add == o1) ||
                               (details::e_sub == o1)
@@ -22578,9 +22624,9 @@ namespace exprtk
                   }
                   // (v0 * c) +/- (c * v1) --> (covov) c * (v0 +/- v1)
                   else if (
-                            (c0 == c1)             &&
-                            (details::e_mul == o0) &&
-                            (details::e_mul == o2) &&
+                            (std::equal_to<T>()(c0,c1)) &&
+                            (details::e_mul == o0)      &&
+                            (details::e_mul == o2)      &&
                             (
                               (details::e_add == o1) || (details::e_sub == o1)
                             )
@@ -25960,6 +26006,9 @@ namespace exprtk
 
       struct function
       {
+         function()
+         {}
+
          function(const std::string& n)
          : name_(n)
          {}
@@ -26484,7 +26533,7 @@ namespace exprtk
                 );
       }
 
-      inline bool forward(const std::string& name, const std::size_t& arg_count, symbol_table_t& symbol_table)
+      inline bool forward(const std::string& name, const std::size_t& arg_count, symbol_table_t& sym_table)
       {
          if (arg_count > 6)
             return false;
@@ -26508,7 +26557,7 @@ namespace exprtk
 
             exprtk::ifunction<T>& ifunc = (*(fp_map_[arg_count])[name]);
 
-            return symbol_table.add_function(name,ifunc);
+            return sym_table.add_function(name,ifunc);
          }
       }
 

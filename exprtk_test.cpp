@@ -1129,6 +1129,7 @@ inline bool test_expression(const std::string& expression_string, const T& expec
          printf("test_expression() - Error: %s   Expression: %s\n",
                 parser.error().c_str(),
                 expression_string.c_str());
+
          return false;
       }
    }
@@ -1137,6 +1138,7 @@ inline bool test_expression(const std::string& expression_string, const T& expec
    {
       printf("test_expression() - Error: Expression did not compile to a constant!   Expression: %s\n",
              expression_string.c_str());
+
       return false;
    }
 
@@ -1148,6 +1150,7 @@ inline bool test_expression(const std::string& expression_string, const T& expec
              expression_string.c_str(),
              (double)expected_result,
              (double)result);
+
       return false;
    }
 
@@ -1170,7 +1173,9 @@ inline bool run_test00()
       }
 
       if (!result)
+      {
          return false;
+      }
    }
 
    return true;
@@ -1538,6 +1543,7 @@ inline bool run_test01()
       for (std::size_t r = 0; r < rounds; ++r)
       {
          bool loop_result = true;
+
          for (std::size_t i = 0; i < test_list_size; ++i)
          {
             test_xy<T>& test = const_cast<test_xy<T>&>(test_list[i]);
@@ -1554,12 +1560,15 @@ inline bool run_test01()
 
             {
                exprtk::parser<T> parser;
+
                if (!parser.compile(test.expr,expression))
                {
                   printf("run_test01() - Error: %s   Expression: %s\n",
                          parser.error().c_str(),
                          test.expr.c_str());
+
                   loop_result = false;
+
                   continue;
                }
             }
@@ -1572,6 +1581,7 @@ inline bool run_test01()
                       test.expr.c_str(),
                       (double)test.result,
                       (double)result);
+
                loop_result = false;
             }
          }
@@ -1662,12 +1672,15 @@ inline bool run_test01()
 
             {
                exprtk::parser<T> parser;
+
                if (!parser.compile(test.expr,expression))
                {
                   printf("run_test01() - Error: %s   Expression: %s\n",
                          parser.error().c_str(),
                          test.expr.c_str());
+
                   loop_result = false;
+
                   continue;
                }
             }
@@ -1741,12 +1754,15 @@ inline bool run_test01()
 
             {
                exprtk::parser<T> parser;
+
                if (!parser.compile(expr_list[i],expression))
                {
                   printf("run_test01() - Error: %s   Expression: %s\n",
                          parser.error().c_str(),
                          expr_list[i].c_str());
+
                   loop_result = false;
+
                   continue;
                }
             }
@@ -2077,6 +2093,7 @@ inline bool run_test02()
                printf("run_test02() - Error: %s   Expression: %s\n",
                       parser.error().c_str(),
                       test.expr.c_str());
+
                return false;
             }
          }
@@ -2098,7 +2115,9 @@ inline bool run_test02()
       }
 
       if (!result)
+      {
          return false;
+      }
    }
 
    return true;
@@ -2161,6 +2180,7 @@ inline bool run_test03()
          printf("run_test03() - Error - Invalid number of variables in symbol_table!  Expected: %d  got: %d\n",
                 static_cast<unsigned int>(variable_list_size),
                 static_cast<unsigned int>(symbol_table.variable_count()));
+
          return false;
       }
 
@@ -2176,6 +2196,7 @@ inline bool run_test03()
             printf("run_test03() - Error: %s   Expression: %s\n",
                    parser.error().c_str(),
                    expression_string.c_str());
+
             return false;
          }
       }
@@ -2217,6 +2238,7 @@ inline bool run_test04()
          printf("run_test04() - Error: %s   Expression: %s\n",
                 parser.error().c_str(),
                 expression_string.c_str());
+
          return false;
       }
    }
@@ -2237,6 +2259,7 @@ inline bool run_test04()
                 (double)result2,
                 (double)x,
                 (double)y);
+
          return false;
       }
 
@@ -2277,6 +2300,7 @@ inline bool run_test05()
             printf("run_test05() - Error: %s   Expression: %s\n",
                    parser.error().c_str(),
                    expression_string.c_str());
+
             return false;
          }
       }
@@ -2306,6 +2330,7 @@ inline bool run_test05()
                    (double)x,
                    (double)y,
                    static_cast<unsigned int>(i));
+
             return false;
          }
       }
@@ -2339,6 +2364,7 @@ inline bool run_test06()
          printf("run_test06() - Error: %s   Expression: %s\n",
                 parser.error().c_str(),
                 expression_string.c_str());
+
          return false;
       }
    }
@@ -2358,6 +2384,7 @@ inline bool run_test06()
       printf("run_test06() - Integration Error:  Expected: %19.15f\tResult: %19.15f\n",
              (double)(pi / T(2)),
              (double)total_area1);
+
       return false;
    }
 
@@ -2410,6 +2437,7 @@ inline bool run_test07()
                    (double)x,
                    (double)deriv1_real_result,
                    (double)deriv1_result1);
+
             return false;
          }
       }
@@ -2431,6 +2459,7 @@ inline bool run_test07()
                    (double)x,
                    (double)deriv2_real_result,
                    (double)deriv2_result1);
+
             return false;
          }
       }
@@ -2452,6 +2481,7 @@ inline bool run_test07()
                    (double)x,
                    (double)deriv3_real_result,
                    (double)deriv3_result1);
+
             return false;
          }
       }
@@ -2636,6 +2666,7 @@ inline bool run_test08()
                printf("run_test08() - Error: %s   Expression: %s\n",
                       parser.error().c_str(),
                       expr_str[j].c_str());
+
                return false;
             }
          }
@@ -2716,6 +2747,7 @@ inline bool run_test09()
             printf("run_test09() - Error: %s   Expression: %s\n",
                    parser.error().c_str(),
                    expression_string.c_str());
+
             return false;
          }
       }
@@ -2743,6 +2775,7 @@ inline bool run_test09()
          printf("run_test09() - Error Expected: %19.15f\tResult: %19.15f\n",
                 (double)expected,
                 (double)result);
+
          return false;
       }
    }
@@ -2772,6 +2805,7 @@ inline bool run_test10()
       static inline bool variable(exprtk::symbol_table<T>& symbol_table, const std::string& variable_name, const T& value)
       {
          exprtk::details::variable_node<T>* var = symbol_table.get_variable(variable_name);
+
          if (var)
             return (!not_equal(var->ref(),value));
          else
@@ -2781,6 +2815,7 @@ inline bool run_test10()
       static inline bool string(exprtk::symbol_table<T>& symbol_table, const std::string& string_name, const std::string& str)
       {
          exprtk::details::stringvar_node<T>* str_node = symbol_table.get_stringvar(string_name);
+
          if (str_node)
             return (str_node->ref() == str);
          else
@@ -3173,11 +3208,13 @@ inline bool run_test10()
 
          {
             exprtk::parser<T> parser;
+
             if (!parser.compile(expression_string,expression0))
             {
                printf("run_test10() - Error: %s   Expression: %s\n",
                       parser.error().c_str(),
                       expression_string.c_str());
+
                return false;
             }
          }
@@ -3189,11 +3226,13 @@ inline bool run_test10()
 
             {
                exprtk::parser<T> parser;
+
                if (!parser.compile(expression_string,expression1))
                {
                   printf("run_test10() - Error: %s   Expression: %s\n",
                          parser.error().c_str(),
                          expression_string.c_str());
+
                   return false;
                }
             }
@@ -3230,14 +3269,18 @@ inline bool run_test10()
 
       {
          exprtk::parser<T> parser;
+
          parser.cache_symbols() = true;
+
          if (!parser.compile(expression_string,expression))
          {
             printf("run_test10() - Error: %s   Expression: %s\n",
                    parser.error().c_str(),
                    expression_string.c_str());
+
             return false;
          }
+
          parser.expression_symbols(variable_list);
       }
 
@@ -3553,11 +3596,13 @@ inline bool run_test10()
 
             {
                exprtk::parser<T> parser;
+
                if (!parser.compile(expression_list[i],expression))
                {
                   printf("run_test10() -  swaps  Error: %s   Expression: %s\n",
                          parser.error().c_str(),
                          expression_list[i].c_str());
+
                   return false;
                }
             }
@@ -3573,7 +3618,9 @@ inline bool run_test10()
          }
 
          if (failed)
+         {
             return false;
+         }
       }
    }
 
@@ -3602,11 +3649,13 @@ inline bool run_test11()
    {
       {
          exprtk::parser<T> parser;
+
          if (!parser.compile(expression_string,expression))
          {
             printf("run_test11() - Error: %s   Expression: %s\n",
                    parser.error().c_str(),
                    expression_string.c_str());
+
             return false;
          }
       }
@@ -3627,6 +3676,7 @@ inline bool run_test11()
 
       {
          exprtk::parser<T> parser;
+
          if (!parser.compile(expression_string,expression))
          {
             printf("run_test11() - Error: %s   Expression: %s\n",
@@ -3732,11 +3782,13 @@ inline bool run_test12()
 
          {
             exprtk::parser<T> parser;
+
             if (!parser.compile(expr_str,expression))
             {
                printf("run_test12() - Error: %s   Expression: %s\n",
                       parser.error().c_str(),
                       expr_str.c_str());
+
                return false;
             }
          }
@@ -3827,6 +3879,7 @@ inline bool run_test13()
                printf("run_test13() - Error: %s   Expression: %s\n",
                       parser.error().c_str(),
                       expr_str.c_str());
+
                return false;
             }
          }
@@ -3848,16 +3901,21 @@ inline std::size_t load_expressions(const std::string& file_name,
                                     Sequence<std::string,Allocator>& sequence)
 {
    std::ifstream stream(file_name.c_str());
+
    if (!stream) return 0;
+
    std::string buffer;
    buffer.reserve(1024);
+
    std::size_t line_count = 0;
+
    while (std::getline(stream,buffer))
    {
       if (buffer.empty())
          continue;
       else if ('#' == buffer[0])
          continue;
+
       ++line_count;
       sequence.push_back(buffer);
    }
@@ -3939,6 +3997,7 @@ inline bool run_test14()
             printf("run_test14() - Error: %s   Expression: %s\n",
                    parser.error().c_str(),
                    expr_str_list[i].c_str());
+
             failure = true;
          }
          else
@@ -3951,9 +4010,11 @@ inline bool run_test14()
       for (std::size_t i = 0; i < expression_list.size(); ++i)
       {
          T result = expression_list[i].value();
+
          if (result != T(1))
          {
             failure = true;
+
             printf("run_test14() - Error with evaluation of expression: %s\n",
                    expr_str_list[i].c_str());
          }
@@ -4020,6 +4081,7 @@ inline bool run_test15()
          printf("run_test15() - Error: %s   Expression: %s\n",
                 parser.error().c_str(),
                 expr_str_list[i].c_str());
+
          return false;
       }
       else
@@ -4039,6 +4101,7 @@ inline bool run_test15()
          printf("run_test15() - Error: %s   Expression: %s\n",
                 parser.error().c_str(),
                 base_expr_str.c_str());
+
          return false;
       }
    }
@@ -4056,6 +4119,7 @@ inline bool run_test15()
                 (double)base_result,
                 (double)result,
                 expr_str_list[i].c_str());
+
          failure = true;
       }
    }
@@ -4198,6 +4262,7 @@ inline bool run_test16()
          printf("run_test16() - Error: %s   Expression: %s\n",
                 parser.error().c_str(),
                 expr_str_list[i].c_str());
+
          return false;
       }
       else
@@ -4212,6 +4277,7 @@ inline bool run_test16()
       {
          printf("run_test16() - Error in evaluation! (1) Expression: %s\n",
                 expr_str_list[i].c_str());
+
          failure = true;
       }
    }
@@ -4314,6 +4380,7 @@ inline bool run_test17()
          printf("run_test17() - Error: %s   Expression: %s\n",
                 parser.error().c_str(),
                 expr_str_list[i].c_str());
+
          return false;
       }
       else
@@ -4328,6 +4395,7 @@ inline bool run_test17()
       {
          printf("run_test17() - Error in evaluation! (1) Expression: %s\n",
                 expr_str_list[i].c_str());
+
          failure = true;
       }
    }
@@ -4341,10 +4409,12 @@ struct va_func : public exprtk::ivararg_function<T>
    inline T operator()(const std::vector<T>& arglist)
    {
       T result = T(0);
+
       for (std::size_t i = 0; i < arglist.size(); ++i)
       {
          result += arglist[i];
       }
+
       return result;
    }
 };
@@ -4409,6 +4479,7 @@ inline bool run_test18()
          printf("run_test18() - Error: %s   Expression: %s\n",
                 parser.error().c_str(),
                 expr_str_list[i].c_str());
+
          return false;
       }
       else
@@ -4423,6 +4494,7 @@ inline bool run_test18()
       {
          printf("run_test18() - Error in evaluation! (1) Expression: %s\n",
                 expr_str_list[i].c_str());
+
          failure = true;
       }
    }
@@ -4499,6 +4571,7 @@ inline bool run_test19()
             printf("run_test19() - Error: %s   Expression: %s\n",
                    parser.error().c_str(),
                    expr_str_list[i].c_str());
+
             return false;
          }
          else
@@ -4513,6 +4586,7 @@ inline bool run_test19()
          {
             printf("run_test19() - Error in evaluation! (1) Expression: %s\n",
                    expr_str_list[i].c_str());
+
             failure = true;
          }
       }
@@ -4621,6 +4695,7 @@ inline bool run_test19()
             printf("run_test19() - Error: %s   Expression: %s\n",
                    parser.error().c_str(),
                    expr_str_list[i].c_str());
+
             return false;
          }
 
@@ -4632,6 +4707,7 @@ inline bool run_test19()
                    expr_str_list[i].c_str(),
                    result_list[i],
                    result);
+
             return false;
          }
       }
@@ -4760,6 +4836,7 @@ inline bool run_test19()
                    parser.error().c_str(),
                    static_cast<unsigned int>(i),
                    expression_str[i].c_str());
+
             return false;
          }
          else
@@ -4945,6 +5022,7 @@ inline bool run_test19()
                    parser.error().c_str(),
                    static_cast<unsigned int>(i),
                    expression_str[i].c_str());
+
             return false;
          }
          else
@@ -5066,6 +5144,7 @@ inline bool run_test19()
          printf("run_test19() - Error: %s   Expression: %s\n",
                 parser.error().c_str(),
                 expression_str.c_str());
+
          return false;
       }
 
@@ -5083,6 +5162,7 @@ inline bool run_test19()
                    expression_str.c_str(),
                    (double)std::sqrt(x),
                    (double)result);
+
             failure = true;
          }
       }
@@ -5146,6 +5226,7 @@ inline bool run_test19()
          printf("run_test19() - Error: %s   Expression: %s\n",
                 parser.error().c_str(),
                 expression_str.c_str());
+
          return false;
       }
 
@@ -5186,6 +5267,7 @@ inline bool run_test19()
          printf("run_test19() - Error: %s   Expression: %s\n",
                 parser.error().c_str(),
                 expression_str.c_str());
+
          return false;
       }
 
@@ -5203,6 +5285,7 @@ inline bool run_test19()
                    x,
                    sum,
                    result);
+
             return false;
          }
       }
@@ -5215,7 +5298,6 @@ inline bool run_test19()
 template <typename T>
 struct my_usr : public exprtk::parser<T>::unknown_symbol_resolver
 {
-
    typedef typename exprtk::parser<T>::unknown_symbol_resolver usr_t;
 
    bool process(const std::string& unknown_symbol,
@@ -5228,6 +5310,7 @@ struct my_usr : public exprtk::parser<T>::unknown_symbol_resolver
          st = usr_t::e_variable_type;
          default_value = next_value();
          error_message = "";
+
          return true;
       }
       else if (unknown_symbol[0] == 'c')
@@ -5235,6 +5318,7 @@ struct my_usr : public exprtk::parser<T>::unknown_symbol_resolver
          st = usr_t::e_constant_type;
          default_value = next_value();
          error_message = "";
+
          return true;
       }
       else
@@ -5247,6 +5331,7 @@ struct my_usr : public exprtk::parser<T>::unknown_symbol_resolver
    T next_value(const bool reset = false)
    {
       static T value = 0;
+
       if (reset)
          return (value = 0);
       else
@@ -5282,6 +5367,7 @@ inline bool run_test20()
          printf("run_test20() - Error: %s   Expression: %s\n",
                 parser.error().c_str(),
                 expr_str.c_str());
+
          return false;
       }
 
@@ -5292,6 +5378,7 @@ inline bool run_test20()
       {
          printf("run_test20() - Error in evaluation! (1) Expression: %s\n",
                 expr_str.c_str());
+
          return false;
       }
    }
