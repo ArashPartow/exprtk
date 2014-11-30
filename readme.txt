@@ -618,7 +618,7 @@ current values assigned to the variables will be used.
    y = -9.0;
    expression.value(); // 3.7 * -9 + 3
 
-   // 'x * -9 + 3' for x in range of [0,100] in steps of 0.0001
+   // 'x * -9 + 3' for x in range of [0,100) in steps of 0.0001
    for (var x = 0; x < 100; x += 0.0001)
    {
       expression.value(); // x * -9 + 3
@@ -703,7 +703,7 @@ incorrectly  disjoint in the  string  representation  of the specified
 expression. For example the consecutive tokens of ">" "=" will  become
 ">=" representing  the "greater  than or  equal to"  operator. If  not
 properly resolved the  original form will  cause a compilation  error.
-The  following is  a listing  of the  scenarios that  the joiner  can
+The  following  is  a listing  of the  scenarios that  the joiner  can
 handle:
 
    (a) '>' '='  --->  '>='  (gte)
@@ -1029,7 +1029,8 @@ There are two types of function interface:
 
    (1) ifunction
    (2) ivararg_function
-   (3) function_compositor
+   (3) igeneric_function
+   (4) function_compositor
 
 
 (1) ifunction
@@ -1075,7 +1076,56 @@ example defines a vararg function called 'boo':
    };
 
 
-(3) function_compositor
+(3) igeneric_function
+This interface supports  a variable number  of arguments and  types as
+input  into  the  function. The  function  operator  interface uses  a
+std::vector  specialized  upon  the  type_store  type  to   facilitate
+parameter passing.
+
+The  fundamental  types  that  can  be  passed  into  the  function as
+parameters and their views are as follows:
+
+   (1) scalar - scalar_view
+   (2) vector - vector_view
+   (3) string - string_view
+
+The following example defines a generic function called 'too':
+
+   template <typename T>
+   struct too : public exprtk::igeneric_function<T>
+   {
+      typedef typename exprtk::igeneric_function<T>::parameter_list_t
+                                                     parameter_list_t;
+
+      too()
+      {}
+
+      inline T operator()(parameter_list_t& parameters)
+      {
+         for (std::size_t i = 0; i < parameters.size(); ++i)
+         {
+         }
+         return T(0);
+      }
+   };
+
+
+In  the  above  example,  the  parameter_list_t  type  is  a  type  of
+std::vector  of  type_store.  Each type_store  instance  has  a member
+called 'type'  which holds  the enumeration  pertaining the underlying
+type of the type_store. There are three type enumerations:
+
+   (1) e_scalar - variables, vector elements, general expressions
+       eg: x, y, z, vec[3x + 1], 2x + 3
+
+   (2) e_vector - vectors, vector expressions
+       eg: vec1, 2 * vec1 + vec2 / 3
+
+   (3) e_string - string, string literal and range variants of both
+       eg: 'AString', s0, 'AString'[x:y], s1[1+x:]
+
+
+(4) function_compositor
 The function compositor interface allows  a user to define a  function
 using ExprTk syntax. The functions  are limited to returning a  single
 scalar value and consuming up to six parameters as input.
@@ -1126,7 +1176,7 @@ The following demonstrates how all the pieces are put together:
 
    symbol_table_t symbol_table;
    symbol_table.add_function("foo",f);
-   symbol_table.add_vararg_function("boo",b);
+   symbol_table.add_function("boo",b);
 
    compositor
       .add(function_t()
@@ -1293,48 +1343,48 @@ via the 'unknown symbol resolver' mechanism.
 The following is a list of facts and suggestions one may want to take
 into account when using Exprtk:
 
- (00) Precision and performance of expression evaluations are the
+ (00) Precision  and performance  of expression  evaluations are  the
       dominant principles of the ExprTk library.
 
- (01) ExprTk uses a rudimentary imperative programming model with
+ (01) ExprTk  uses a  rudimentary imperative  programming model  with
       syntax based on languages such as Pascal and C.
 
  (02) Supported types are float, double, long double and MPFR/GMP.
 
  (03) Standard mathematical operator precedence is applied (BEDMAS).
 
- (04) Results of expressions that are deemed as being 'valid' are to
+ (04) Results of expressions that are deemed as being 'valid' are  to
       exist within the set of Real numbers. All other results will be
       of the value: Not-A-Number (NaN).
 
- (05) Supported user defined types are numeric and string variables
+ (05) Supported user defined types  are numeric and string  variables
       and functions.
 
  (06) All reserved and key words, variable, vector and function names
       are case-insensitive.
 
- (07) Variable, vector and function names must begin with a letter
-      (A-Z or a-z), then can be comprised of any combination of
+ (07) Variable, vector and  function names must  begin with a  letter
+      (A-Z  or a-z),  then can  be comprised  of any  combination of
       letters, digits and underscores. (eg: x, var1 or power_func99)
 
  (08) Expression lengths and sub-expression lists are limited only by
       storage capacity.
 
- (09) The life-time of objects registered with or created from a
-      specific symbol-table must span at least the life-time of the
-      compiled expressions which utilize objects, such as variables,
-      of that symbol-table, otherwise the result will be undefined
+ (09) The  life-time of  objects registered  with or  created from  a
+      specific symbol-table must span  at least the life-time  of the
+      compiled expressions which utilize objects, such as  variables,
+      of that  symbol-table, otherwise  the result  will be undefined
       behavior.
 
- (10) Equal/Nequal are normalized equality routines, which use
-      epsilons of 0.0000000001 and 0.000001 for double and float
+ (10) Equal/Nequal  are  normalized  equality  routines,  which   use
+      epsilons  of 0.0000000001  and 0.000001  for double  and float
       types respectively.
 
- (11) All trigonometric functions assume radian input unless
-      stated otherwise.
+ (11) All trigonometric functions  assume radian input  unless stated
+      otherwise.
 
- (12) Expressions may contain white-space characters such as
-      space,  tabs, new-lines, control-feed et al.
+ (12) Expressions may contain  white-space characters such  as space,
+      tabs, new-lines, control-feed et al.
       ('\n', '\r', '\t', '\b', '\v', '\f')
 
  (13) Strings may be comprised of any combination of letters, digits
@@ -1342,22 +1392,22 @@ into account when using Exprtk:
       and must be enclosed with single-quotes.
       eg: 'Frankly my dear, 1 do n0t give a damn!'
 
- (14) User defined normal functions can have up to 20 parameters,
-      where as user defined vararg-functions can have an unlimited
+ (14) User defined  normal functions  can have  up to  20 parameters,
+      where as  user defined  vararg-functions can  have an unlimited
       number of parameters.
 
  (15) The inbuilt polynomial functions can be at most of degree 12.
 
- (16) Where appropriate constant folding optimisations may be
+ (16) Where  appropriate  constant   folding  optimisations  may   be
       applied. (eg: The expression '2+(3-(x/y))' becomes '5-(x/y)')
 
  (17) If the strength reduction compilation option has been enabled,
       then where applicable strength reduction optimisations may be
       applied.
 
- (18) String processing capabilities are available by default.
-      To turn them off, the following needs to be defined at
-      compile time: exprtk_disable_string_capabilities
+ (18) String  processing capabilities  are available  by default.  To
+      turn them  off, the  following needs  to be  defined at compile
+      time: exprtk_disable_string_capabilities
 
  (19) Composited functions can call themselves or any other functions
       that have been defined prior to their own definition.
@@ -1365,11 +1415,11 @@ into account when using Exprtk:
  (20) Recursive calls made from within composited functions will have
       a stack size bound by the stack of the executing architecture.
 
- (21) User defined functions by default are assumed to have side
+ (21) User  defined functions  by default  are assumed  to have  side
       effects. As such an "all constant parameter" invocation of such
-      functions wont result in constant folding. If the function has
-      no side effects then that can be noted during the constructor
-      of the ifunction allowing it to be constant folded where
+      functions wont result in constant folding. If the function  has
+      no side effects then that  can be noted during the  constructor
+      of  the  ifunction  allowing it  to  be  constant folded  where
       appropriate.
 
  (22) The entity relationship between symbol_table and an expression
@@ -1377,10 +1427,10 @@ into account when using Exprtk:
       to have a single symbol table manage the variable and function
       requirements of multiple expressions.
 
- (23) The common use-case for an expression is to have it compiled
-      only ONCE and then subsequently have it evaluated multiple
-      times. An extremely inefficient and suboptimal approach would
-      be to recompile an expression from its string form every time
+ (23) The common use-case  for an expression  is to have  it compiled
+      only  ONCE and  then subsequently  have it  evaluated multiple
+      times. An extremely  inefficient and suboptimal  approach would
+      be to recompile an expression  from its string form every  time
       it requires evaluating.
 
  (24) The following are examples of compliant floating point value
@@ -1395,10 +1445,11 @@ into account when using Exprtk:
       2. #  .... \n
       3. /* .... */
 
- (26) The 'null' value type is a special non-zero type that
-      incorporates specific semantics when undergoing operations
-      with the standard numeric type. The following is a list of
-      type and boolean results associated with the use of 'null':
+ (26) The  'null'  value  type  is  a  special  non-zero  type   that
+      incorporates specific semantics when undergoing operations with
+      the standard numeric type. The following is a list of type  and
+      boolean results associated with the use of 'null':
+
       1. null  +,-,*,/,%  x    --> x
       2. x     +,-,*,/,%  null --> x
       3. null  +,-,*,/,%  null --> null
@@ -1409,10 +1460,10 @@ into account when using Exprtk:
       8. null     !=      null --> false
       9. null     !=      x    --> false
 
- (27) The following is a list of reserved words and symbols used by
-      ExprTk. Attempting to add a variable or custom function to a
-      symbol table using any of the reserved words will result in
-      a failure.
+ (27) The following is a list  of reserved words and symbols  used by
+      ExprTk. Attempting to  add a variable  or custom function  to a
+      symbol table using any of  the reserved words will result  in a
+      failure.
 
       abs, acos, acosh, and, asin, asinh, atan, atan2, atanh, avg,
       break, case,  ceil, clamp,  continue, cosh,  cos, cot,  csc,
@@ -1426,8 +1477,8 @@ into account when using Exprtk:
       while, xnor, xor, xor
 
  (28) Every valid ExprTk statement is a "value returning" expression.
-      Unlike some languages that limit the types of expressions that
-      can be performed in certain situations, in ExprTk any valid
+      Unlike some languages that limit the types of expressions  that
+      can be  performed in  certain situations,  in ExprTk  any valid
       expression can be used in any "value consuming" context. Eg:
 
       var y := 3;

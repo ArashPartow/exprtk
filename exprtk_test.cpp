@@ -4420,86 +4420,533 @@ struct va_func : public exprtk::ivararg_function<T>
 };
 
 template <typename T>
+struct gen_func : public exprtk::igeneric_function<T>
+{
+   typedef typename exprtk::igeneric_function<T>::generic_type generic_type;
+   typedef typename exprtk::igeneric_function<T>::parameter_list_t parameter_list_t;
+
+   typedef typename generic_type::scalar_view scalar_t;
+   typedef typename generic_type::vector_view vector_t;
+   typedef typename generic_type::string_view string_t;
+
+   gen_func()
+   : scalar_count(0),
+     vector_count(0),
+     string_count(0)
+   {}
+
+   inline T operator()(parameter_list_t& params)
+   {
+      for (std::size_t i = 0; i < params.size(); ++i)
+      {
+         generic_type& gt = params[i];
+
+         switch (gt.type)
+         {
+            case generic_type::e_scalar : scalar_count++;
+                                          break;
+
+            case generic_type::e_vector : vector_count++;
+                                          break;
+
+            case generic_type::e_string : {
+                                             if (
+                                                  ("CdEf"   != exprtk::to_str(string_t(gt))) &&
+                                                  ("abc123" != exprtk::to_str(string_t(gt)))
+                                                )
+                                             {
+                                                return std::numeric_limits<T>::quiet_NaN();
+                                             }
+                                             else
+                                                string_count++;
+                                          }
+                                          break;
+
+            default : return std::numeric_limits<T>::quiet_NaN();
+         }
+      }
+
+      return T(0);
+   }
+
+   std::size_t scalar_count;
+   std::size_t vector_count;
+   std::size_t string_count;
+};
+
+template <typename T>
+struct gen_func2 : public exprtk::igeneric_function<T>
+{
+   typedef typename exprtk::igeneric_function<T>::parameter_list_t parameter_list_t;
+
+   gen_func2()
+   {}
+
+   inline T operator()(parameter_list_t&)
+   {
+      return T(0);
+   }
+};
+
+template <typename T>
+struct inc_func : public exprtk::igeneric_function<T>
+{
+   typedef typename exprtk::igeneric_function<T>::generic_type generic_type;
+   typedef typename exprtk::igeneric_function<T>::parameter_list_t parameter_list_t;
+
+   typedef typename generic_type::scalar_view scalar_t;
+   typedef typename generic_type::vector_view vector_t;
+   typedef typename generic_type::string_view string_t;
+
+   inc_func()
+   {}
+
+   inline T operator()(parameter_list_t& params)
+   {
+      for (std::size_t i = 0; i < params.size(); ++i)
+      {
+         generic_type& gt = params[i];
+
+         switch (gt.type)
+         {
+            case generic_type::e_scalar : {
+                                             scalar_t scalar(gt);
+                                             scalar() += T(1);
+                                          }
+                                          break;
+
+            case generic_type::e_vector : {
+                                             vector_t vector(gt);
+                                             for (std::size_t x = 0; x < vector.size(); ++x)
+                                             {
+                                                vector[x] += T(1);
+                                             }
+                                          }
+                                          break;
+
+            case generic_type::e_string : {
+                                             string_t string(gt);
+                                             for (std::size_t x = 0; x < string.size(); ++x)
+                                             {
+                                                string[x] += static_cast<typename string_t::value_t>(1);
+                                             }
+                                          }
+                                          break;
+
+            default : return std::numeric_limits<T>::quiet_NaN();
+         }
+      }
+
+      return T(0);
+   }
+};
+
+
+template <typename T>
 inline bool run_test18()
 {
-   typedef exprtk::expression<T> expression_t;
-
-   T x = T(1.1);
-   T y = T(2.2);
-   T z = T(3.3);
-   T w = T(4.4);
-   T u = T(5.5);
-   T v = T(6.6);
-   T t = T(7.7);
-
-   va_func<T> vaf;
-
-   exprtk::symbol_table<T> symbol_table;
-   symbol_table.add_constants();
-   symbol_table.add_variable("x",x);
-   symbol_table.add_variable("y",y);
-   symbol_table.add_variable("z",z);
-   symbol_table.add_variable("w",w);
-   symbol_table.add_variable("u",u);
-   symbol_table.add_variable("v",v);
-   symbol_table.add_variable("t",t);
-   symbol_table.add_vararg_function("va_func",vaf);
-
-   static const std::string expr_str_list[] =
-                               {
-                                  "equal(va_func,(0))",
-                                  "equal(va_func(),(0))",
-                                  "equal(va_func(1,2,3,4,5,6,7,8,9),(1+2+3+4+5+6+7+8+9))",
-                                  "equal(va_func(1,x,3,y,5,z,7,w,9),(1+x+3+y+5+z+7+w+9))",
-                                  "equal(va_func(x,2,y,4,z,6,w,8,u),(x+2+y+4+z+6+w+8+u))",
-                                  "equal(va_func(x,y,z,w,u,v,t,1,2,3),(x+y+z+w+u+v+t+1+2+3))",
-                                  "equal(va_func(x,y,z,w,u,v,t),(x+y+z+w+u+v+t))",
-                                  "equal(va_func(x+t,y+v,z+u,w+w,u+z,v+y,t+x),2*(x+y+z+w+u+v+t))",
-                                  "equal(1+va_func(1,x,3,y,5,z,7,w,9),(1+x+3+y+5+z+7+w+9)+1)",
-                                  "equal(va_func(va_func(x,y,z,w,u,v,t),va_func(x,y,z,w,u,v,t)),2*(x+y+z+w+u+v+t))",
-                                  "equal(va_func(va_func(x),va_func(y),va_func(z)),va_func(x,y,z))",
-                                  "equal(va_func(va_func(va_func(va_func(va_func(va_func(va_func(va_func(x)))))))),x)",
-                                  "equal(va_func(va_func(va_func(va_func(va_func(va_func(va_func(va_func(123.456)))))))),123.456)",
-                                  "equal(va_func(va_func(va_func(va_func(va_func(va_func(va_func(va_func(x+1)))))))),x+1)",
-                                  "equal(va_func(va_func(va_func(va_func(va_func(va_func(va_func(va_func(x+y)))))))),x+y)"
-                               };
-   static const std::size_t expr_str_list_size = sizeof(expr_str_list) / sizeof(std::string);
-
-   std::deque<expression_t> expression_list;
-
-   for (std::size_t i = 0; i < expr_str_list_size; ++i)
    {
-      expression_t expression;
-      expression.register_symbol_table(symbol_table);
+      typedef exprtk::expression<T> expression_t;
 
-      exprtk::parser<T> parser;
+      T x = T(1.1);
+      T y = T(2.2);
+      T z = T(3.3);
+      T w = T(4.4);
+      T u = T(5.5);
+      T v = T(6.6);
+      T t = T(7.7);
 
-      if (!parser.compile(expr_str_list[i],expression))
+      va_func<T> vaf;
+
+      exprtk::symbol_table<T> symbol_table;
+      symbol_table.add_constants();
+      symbol_table.add_variable("x",x);
+      symbol_table.add_variable("y",y);
+      symbol_table.add_variable("z",z);
+      symbol_table.add_variable("w",w);
+      symbol_table.add_variable("u",u);
+      symbol_table.add_variable("v",v);
+      symbol_table.add_variable("t",t);
+      symbol_table.add_function("va_func",vaf);
+
+      static const std::string expr_str_list[] =
+                                  {
+                                     "equal(va_func,(0))",
+                                     "equal(va_func(),(0))",
+                                     "equal(va_func(1,2,3,4,5,6,7,8,9),(1+2+3+4+5+6+7+8+9))",
+                                     "equal(va_func(1,x,3,y,5,z,7,w,9),(1+x+3+y+5+z+7+w+9))",
+                                     "equal(va_func(x,2,y,4,z,6,w,8,u),(x+2+y+4+z+6+w+8+u))",
+                                     "equal(va_func(x,y,z,w,u,v,t,1,2,3),(x+y+z+w+u+v+t+1+2+3))",
+                                     "equal(va_func(x,y,z,w,u,v,t),(x+y+z+w+u+v+t))",
+                                     "equal(va_func(x+t,y+v,z+u,w+w,u+z,v+y,t+x),2*(x+y+z+w+u+v+t))",
+                                     "equal(1+va_func(1,x,3,y,5,z,7,w,9),(1+x+3+y+5+z+7+w+9)+1)",
+                                     "equal(va_func(va_func(x,y,z,w,u,v,t),va_func(x,y,z,w,u,v,t)),2*(x+y+z+w+u+v+t))",
+                                     "equal(va_func(va_func(x),va_func(y),va_func(z)),va_func(x,y,z))",
+                                     "equal(va_func(va_func(va_func(va_func(va_func(va_func(va_func(va_func(x)))))))),x)",
+                                     "equal(va_func(va_func(va_func(va_func(va_func(va_func(va_func(va_func(123.456)))))))),123.456)",
+                                     "equal(va_func(va_func(va_func(va_func(va_func(va_func(va_func(va_func(x+1)))))))),x+1)",
+                                     "equal(va_func(va_func(va_func(va_func(va_func(va_func(va_func(va_func(x+y)))))))),x+y)"
+                                  };
+      static const std::size_t expr_str_list_size = sizeof(expr_str_list) / sizeof(std::string);
+
+      std::deque<expression_t> expression_list;
+
+      for (std::size_t i = 0; i < expr_str_list_size; ++i)
       {
-         printf("run_test18() - Error: %s   Expression: %s\n",
-                parser.error().c_str(),
-                expr_str_list[i].c_str());
+         expression_t expression;
+         expression.register_symbol_table(symbol_table);
 
+         exprtk::parser<T> parser;
+
+         if (!parser.compile(expr_str_list[i],expression))
+         {
+            printf("run_test18() - VarArg Error: %s   Expression: %s\n",
+                   parser.error().c_str(),
+                   expr_str_list[i].c_str());
+
+            return false;
+         }
+         else
+            expression_list.push_back(expression);
+      }
+
+      bool failure = false;
+
+      for (std::size_t i = 0; i < expression_list.size(); ++i)
+      {
+         if (T(1) != expression_list[i].value())
+         {
+            printf("run_test18() - Error in evaluation! (1) Expression: %s\n",
+                   expr_str_list[i].c_str());
+
+            failure = true;
+         }
+      }
+
+      if (failure)
          return false;
-      }
-      else
-         expression_list.push_back(expression);
    }
 
-   bool failure = false;
-
-   for (std::size_t i = 0; i < expression_list.size(); ++i)
    {
-      if (T(1) != expression_list[i].value())
-      {
-         printf("run_test18() - Error in evaluation! (1) Expression: %s\n",
-                expr_str_list[i].c_str());
+      typedef exprtk::symbol_table<T> symbol_table_t;
+      typedef exprtk::expression<T>     expression_t;
+      typedef exprtk::parser<T>             parser_t;
 
-         failure = true;
+      T x = T(33);
+      T y = T(77);
+
+      T v0[] = { T(1), T(1), T(1), T(1) };
+      T v1[] = { T(1), T(2), T(3), T(4) };
+
+      std::vector<T> v2;
+
+      v2.push_back(T(5));
+      v2.push_back(T(6));
+      v2.push_back(T(7));
+      v2.push_back(T(8));
+
+      std::string s0 = "AbCdEfGhIj";
+
+      gen_func<T> f;
+
+      symbol_table_t symbol_table;
+
+      symbol_table.add_constants();
+
+      symbol_table.add_variable ("x"  , x);
+      symbol_table.add_variable ("y"  , y);
+      symbol_table.add_vector   ("v0" ,v0);
+      symbol_table.add_vector   ("v1" ,v1);
+      symbol_table.add_vector   ("v2" ,v2);
+      symbol_table.add_stringvar("s0", s0);
+      symbol_table.add_function ("gen_func", f);
+
+      std::string expression_list[] =
+                  {
+                    "var z := 3; var w[3] := { 1/3, 1/5, 1/7 }; gen_func(v0,v1 + v2, v0[2], x, 2x + y, z, 2w / 3, 'abc123',s0[2:5]);",
+                    "var z := 3; var w[3] := { 1/3, 1/5, 1/7 }; gen_func(v0,v1 + v2, v0[2], x, 2x + y, z, 2w / 3, 'abc123',s0[2:5]);",
+                    "var z := 3; var w[3] := { 1/3, 1/5, 1/7 }; gen_func(v1 + v2, v0[2], x, 2x + y, z, 2w / 3, 'abc123',s0[2:5],v0);",
+                    "var z := 3; var w[3] := { 1/3, 1/5, 1/7 }; gen_func(v0[2], x, 2x + y, z, 2w / 3, 'abc123',s0[2:5],v0, v1 + v2);",
+                    "var z := 3; var w[3] := { 1/3, 1/5, 1/7 }; gen_func(x, 2x + y, z, 2w / 3, 'abc123',s0[2:5],v0, v1 + v2, v0[2]);",
+                    "var z := 3; var w[3] := { 1/3, 1/5, 1/7 }; gen_func(2x + y, z, 2w / 3, 'abc123',s0[2:5],v0, v1 + v2, v0[2], x);",
+                    "var z := 3; var w[3] := { 1/3, 1/5, 1/7 }; gen_func(z, 2w / 3, 'abc123',s0[2:5],v0, v1 + v2, v0[2], x, 2x + y);",
+                    "var z := 3; var w[3] := { 1/3, 1/5, 1/7 }; gen_func(2w / 3, 'abc123',s0[2:5],v0, v1 + v2, v0[2], x, 2x + y, z);",
+                    "var z := 3; var w[3] := { 1/3, 1/5, 1/7 }; gen_func('abc123', s0[2:5],v0, v1 + v2, v0[2], x, 2x + y, z,2w / 3);",
+                    "var z := 3; var w[3] := { 1/3, 1/5, 1/7 }; gen_func(s0[2:5],v0, v1 + v2, v0[2], x, 2x + y, z,2w / 3, 'abc123');"
+                  };
+
+      static const std::size_t expression_list_size = sizeof(expression_list) / sizeof(std::string);
+
+
+      bool failure = false;
+
+      for (std::size_t i = 0; i < expression_list_size; ++i)
+      {
+         expression_t expression;
+
+         expression.register_symbol_table(symbol_table);
+
+         parser_t parser;
+
+         if (!parser.compile(expression_list[i],expression))
+         {
+            printf("run_test18() - GenFunc Error: %s   Expression: %s\n",
+                   parser.error().c_str(),
+                   expression_list[i].c_str());
+
+            failure = true;
+            continue;
+         }
+
+         f.scalar_count = 0;
+         f.vector_count = 0;
+         f.string_count = 0;
+
+         expression.value();
+
+         if (
+              (4 != f.scalar_count) ||
+              (3 != f.vector_count) ||
+              (2 != f.string_count)
+            )
+         {
+            printf("run_test18() - Error in evaluation! (2) Expression: %s  "
+                   "sc_count = %d  "
+                   "vr_count = %d  "
+                   "st_count = %d\n",
+                   expression_list[i].c_str(),
+                   static_cast<int>(f.scalar_count),
+                   static_cast<int>(f.vector_count),
+                   static_cast<int>(f.string_count));
+
+            failure = true;
+         }
       }
+
+      if (failure)
+         return false;
    }
 
-   return !failure;
+   {
+      typedef exprtk::symbol_table<T> symbol_table_t;
+      typedef exprtk::expression<T>     expression_t;
+      typedef exprtk::parser<T>             parser_t;
+
+      T x = T(33);
+      T y = T(77);
+
+      T v0[] = { T(1), T(1), T(1), T(1) };
+      T v1[] = { T(1), T(2), T(3), T(4) };
+      T v2[] = { T(5), T(6), T(7), T(8) };
+
+      std::string s0 = "AbCdEfGhIj";
+
+      gen_func2<T> f;
+
+      symbol_table_t symbol_table;
+
+      symbol_table.add_constants();
+
+      symbol_table.add_variable ("x"  , x);
+      symbol_table.add_variable ("y"  , y);
+      symbol_table.add_vector   ("v0" ,v0);
+      symbol_table.add_vector   ("v1" ,v1);
+      symbol_table.add_vector   ("v2" ,v2);
+      symbol_table.add_stringvar("s0", s0);
+      symbol_table.add_function ("foo", f);
+
+      std::string expression_list[] =
+                  {
+                    "var z := 3; var w[3] := { 1/3, 1/5, 1/7 }; foo(v0,v1 + v2, v0[2], x, 2x + y, z, 2w / 3, 'abc123',s0[2:5]);",
+                    "var z := 3; var w[3] := { 1/3, 1/5, 1/7 }; foo(v1 + v2, v0[2], x, 2x + y, z, 2w / 3, 'abc123',s0[2:5],v0);",
+                    "var z := 3; var w[3] := { 1/3, 1/5, 1/7 }; foo(v0[2], x, 2x + y, z, 2w / 3, 'abc123',s0[2:5],v0, v1 + v2);",
+                    "var z := 3; var w[3] := { 1/3, 1/5, 1/7 }; foo(x, 2x + y, z, 2w / 3, 'abc123',s0[2:5],v0, v1 + v2, v0[2]);",
+                    "var z := 3; var w[3] := { 1/3, 1/5, 1/7 }; foo(2x + y, z, 2w / 3, 'abc123',s0[2:5],v0, v1 + v2, v0[2], x);",
+                    "var z := 3; var w[3] := { 1/3, 1/5, 1/7 }; foo(z, 2w / 3, 'abc123',s0[2:5],v0, v1 + v2, v0[2], x, 2x + y);",
+                    "var z := 3; var w[3] := { 1/3, 1/5, 1/7 }; foo(2w / 3, 'abc123',s0[2:5],v0, v1 + v2, v0[2], x, 2x + y, z);",
+                    "var z := 3; var w[3] := { 1/3, 1/5, 1/7 }; foo('abc123', s0[2:5],v0, v1 + v2, v0[2], x, 2x + y, z,2w / 3);",
+                    "var z := 3; var w[3] := { 1/3, 1/5, 1/7 }; foo(s0[2:5],v0, v1 + v2, v0[2], x, 2x + y, z,2w / 3, 'abc123');"
+                  };
+
+      static const std::size_t expression_list_size = sizeof(expression_list) / sizeof(std::string);
+
+      std::string parameter_type_list[] =
+                  {
+                    "VVTTTTVSS",
+                    "VTTTTVSSV",
+                    "TTTTVSSVV",
+                    "TTTVSSVVT",
+                    "TTVSSVVT*",
+                    "TVSSVVT*" ,
+                    "VSSVVT*"  ,
+                    "SSVVTTTTV",
+                    "SVVTTTTVS",
+                  };
+
+      bool failure = false;
+
+      for (std::size_t i = 0; i < expression_list_size; ++i)
+      {
+         expression_t expression;
+
+         expression.register_symbol_table(symbol_table);
+
+         parser_t parser;
+
+         f.parameter_sequence = parameter_type_list[i];
+
+         if (!parser.compile(expression_list[i],expression))
+         {
+            printf("run_test18() - GenFunc2 Error: %s   Expression: %s  Parameter Sequence: %s\n",
+                   parser.error().c_str(),
+                   expression_list[i].c_str(),
+                   parameter_type_list[i].c_str());
+
+            failure = true;
+            continue;
+         }
+
+         expression.value();
+      }
+
+      if (failure)
+         return false;
+   }
+
+   {
+      bool failure = false;
+
+      std::string expression_list[] =
+                  {
+                    "foo(v0,v1,v2,x,y,s0);",
+                    "foo(v1,v2,x,y,s0,v0);",
+                    "foo(v2,x,y,s0,v0,v1);",
+                    "foo(x,y,s0,v0,v1,v2);",
+                    "foo(y,s0,v0,v1,v2,x);",
+                    "foo(s0,v0,v1,v2,x,y);"
+                  };
+
+      static const std::size_t expression_list_size = sizeof(expression_list) / sizeof(std::string);
+
+      std::string parameter_type_list[] =
+                  {
+                    "VVVTTS",
+                    "VVTTSV",
+                    "VTTSVV",
+                    "TTSVVV",
+                    "TSVVVT",
+                    "SVVVTT"
+                  };
+
+      for (std::size_t i = 0; i < expression_list_size; ++i)
+      {
+         typedef exprtk::symbol_table<T> symbol_table_t;
+         typedef exprtk::expression<T>     expression_t;
+         typedef exprtk::parser<T>             parser_t;
+
+         T x = T(33);
+         T y = T(77);
+
+         T v0[] = { T(1), T(1), T(1), T(1) };
+         T v1[] = { T(1), T(2), T(3), T(4) };
+         T v2[] = { T(5), T(6), T(7), T(8) };
+
+         std::string s0 = "AbCdEfGhIj";
+
+         T x_inc = T(34);
+         T y_inc = T(78);
+
+         T v0_inc[] = { T(2), T(2), T(2), T(2) };
+         T v1_inc[] = { T(2), T(3), T(4), T(5) };
+         T v2_inc[] = { T(6), T(7), T(8), T(9) };
+
+         std::size_t sizeof_vec = sizeof(v0) / sizeof(T);
+
+         std::string s0_inc = "BcDeFgHiJk";
+
+         inc_func<T> f;
+
+         symbol_table_t symbol_table;
+
+         symbol_table.add_constants();
+
+         symbol_table.add_variable ("x"  , x);
+         symbol_table.add_variable ("y"  , y);
+         symbol_table.add_vector   ("v0" ,v0);
+         symbol_table.add_vector   ("v1" ,v1);
+         symbol_table.add_vector   ("v2" ,v2);
+         symbol_table.add_stringvar("s0", s0);
+         symbol_table.add_function ("foo", f);
+
+         expression_t expression;
+
+         expression.register_symbol_table(symbol_table);
+
+         parser_t parser;
+
+         f.parameter_sequence = parameter_type_list[i];
+
+         if (!parser.compile(expression_list[i],expression))
+         {
+            printf("run_test18() - IncFunc Error: %s   Expression: %s  Parameter Sequence: %s\n",
+                   parser.error().c_str(),
+                   expression_list[i].c_str(),
+                   parameter_type_list[i].c_str());
+
+            failure = true;
+            continue;
+         }
+
+         expression.value();
+
+         if (x != x_inc)
+         {
+            printf("run_test18() - Error in evaluation! (3) Expression: %s  Check: x\n",
+                   expression_list[i].c_str());
+            failure = true;
+         }
+
+         if (y != y_inc)
+         {
+            printf("run_test18() - Error in evaluation! (3) Expression: %s  Check: y\n",
+                   expression_list[i].c_str());
+            failure = true;
+         }
+
+         if (s0 != s0_inc)
+         {
+            printf("run_test18() - Error in evaluation! (3) Expression: %s  Check: y\n",
+                   expression_list[i].c_str());
+            failure = true;
+         }
+
+         if (!std::equal(v0,v0 + sizeof_vec,v0_inc))
+         {
+            printf("run_test18() - Error in evaluation! (3) Expression: %s  Check: v0\n",
+                   expression_list[i].c_str());
+            failure = true;
+         }
+
+         if (!std::equal(v1,v1 + sizeof_vec,v1_inc))
+         {
+            printf("run_test18() - Error in evaluation! (3) Expression: %s  Check: v1\n",
+                   expression_list[i].c_str());
+            failure = true;
+         }
+
+         if (!std::equal(v2,v2 + sizeof_vec,v2_inc))
+         {
+            printf("run_test18() - Error in evaluation! (3) Expression: %s  Check: v2\n",
+                   expression_list[i].c_str());
+            failure = true;
+         }
+      }
+
+      if (failure)
+         return false;
+   }
+
+   return true;
 }
 
 template <typename T>
