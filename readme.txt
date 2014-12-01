@@ -2,10 +2,10 @@ C++ Mathematical Expression Toolkit Library
 
 [00 - INTRODUCTION]
 The C++ Mathematical Expression  Toolkit Library (ExprTk) is  a simple
-to  use,  easy  to  integrate  and  extremely  efficient  mathematical
-expression parsing and evaluation engine. The parsing engine  supports
-numerous forms  of functional  and logic  processing semantics  and is
-easily extendible.
+to  use,   easy  to   integrate  and   extremely  efficient   run-time
+mathematical  expression parsing  and evaluation  engine. The  parsing
+engine  supports numerous  forms  of  functional and  logic processing
+semantics and is easily extendible.
 
 
 
@@ -15,14 +15,14 @@ arithmetic operations, functions and processes:
 
  (00) Basic operators: +, -, *, /, %, ^
 
- (01) Functions:       abs, avg, ceil, clamp, equal, erf, erfc, exp,
-                       expm1, floor, frac, log, log10, log1p, log2,
-                       logn, max, min, mul, ncdf, nequal, root, round,
-                       roundn, sgn, sqrt, sum, swap, trunc
+ (01) Functions:       abs, avg, ceil, clamp, equal, erf, erfc,  exp,
+                       expm1, floor, frac,  log, log10, log1p,  log2,
+                       logn,  max,  min,  mul,  ncdf,  nequal,  root,
+                       round, roundn, sgn, sqrt, sum, swap, trunc
 
- (02) Trigonometry:    acos, acosh, asin, asinh, atan, atanh, atan2,
-                       cos, cosh, cot, csc, sec, sin, sinc, sinh,
-                       tan, tanh, hypot, rad2deg,  deg2grad, deg2rad,
+ (02) Trigonometry:    acos, acosh, asin, asinh, atan, atanh,  atan2,
+                       cos,  cosh, cot,  csc, sec,  sin, sinc,  sinh,
+                       tan, tanh, hypot, rad2deg, deg2grad,  deg2rad,
                        grad2deg
 
  (03) Equalities &
@@ -899,7 +899,7 @@ zero. The following are examples of vector definitions:
    (c) Initialise all values to given expression
        var x[3] := [123 + 3y + sin(w/z)];
 
-   (d) Initialise the first two values, other elements to zero
+   (d) Initialise the first two values, all other elements to zero
        var x[3] := { 1 + x[2], sin(y[0] / x[]) + 3 };
 
    (e) Initialise the first three (all) values
@@ -1019,7 +1019,8 @@ ExprTk provides a means  whereby custom functions can  be defined  and
 utilized within  expressions.  The   concept  requires  the  user   to
 provide a reference  to the function  coupled with an  associated name
 that will be invoked within expressions. Function can take in numerous
-inputs but will always return one value.
+inputs but will always return a single value of the underlying numeric
+type.
 
 During  expression  compilation  when required  the  reference  to the
 function  will be  obtained from  the associated  symbol_table and  be
@@ -1089,7 +1090,9 @@ parameters and their views are as follows:
    (2) vector - vector_view
    (3) string - string_view
 
-The following example defines a generic function called 'too':
+The above denoted type  views provide non-const  reference-like access
+to each parameter.  The following example  defines a generic  function
+called 'too':
 
    template <typename T>
    struct too : public exprtk::igeneric_function<T>
@@ -1104,25 +1107,134 @@ The following example defines a generic function called 'too':
       {
          for (std::size_t i = 0; i < parameters.size(); ++i)
          {
+            ...
          }
          return T(0);
       }
    };
 
 
-In  the  above  example,  the  parameter_list_t  type  is  a  type  of
-std::vector  of  type_store.  Each type_store  instance  has  a member
-called 'type'  which holds  the enumeration  pertaining the underlying
-type of the type_store. There are three type enumerations:
+In the above example, the input 'parameters' to the function operator,
+parameter_list_t,  is  a  type  of  std::vector  of  type_store.  Each
+type_store  instance  has  a  member  called  'type'  which  holds the
+enumeration pertaining  the underlying  type of  the type_store. There
+are three type enumerations:
 
-   (1) e_scalar - variables, vector elements, general expressions
-       eg: x, y, z, vec[3x + 1], 2x + 3
+   (1) e_scalar - literals, variables, vector elements, expressions
+       eg: 123.456, x, vec[3x + 1], 2x + 3
 
    (2) e_vector - vectors, vector expressions
        eg: vec1, 2 * vec1 + vec2 / 3
 
-   (3) e_string - string, string literal and range variants of both
-       eg: 'AString', s0, 'AString'[x:y], s1[1+x:]
+   (3) e_string - strings, string literals and range variants of both
+       eg: 'AString', s0, 'AString'[x:y], s1[1 + x:]
+
+
+Each of the  parameters can be  accessed using its  designated view. A
+typical loop for processing the parameters is as follows:
+
+   inline T operator()(parameter_list_t& parameters)
+   {
+      typedef typename exprtk::igeneric_function<T>::generic_type
+                                                     generic_type;
+
+      typedef typename generic_type::scalar_view scalar_t;
+      typedef typename generic_type::vector_view vector_t;
+      typedef typename generic_type::string_view string_t;
+
+      for (std::size_t i = 0; i < parameters.size(); ++i)
+      {
+         generic_type& gt = parameters[i];
+
+         if (generic_type::e_scalar == gt.type)
+         {
+            scalar_t x(gt);
+            ...
+         }
+         else if (generic_type::e_vector == gt.type)
+         {
+            vector_t vector(gt);
+            ...
+         }
+         else if (generic_type::e_string == gt.type)
+         {
+            string_t string(gt);
+            ...
+         }
+      }
+
+      return T(0);
+   }
+
+
+Most often than not a custom generic function will require a  specific
+sequence of parameters, rather than some arbitrary sequence of  types.
+In those situations, ExprTk can perform compile-time type checking  to
+validate that function invocations  are carried out using  the correct
+sequence of parameters. Furthermore  performing the checks at  compile
+-time rather than at run-time (aka every time the function is invoked)
+will result expression evaluation performance gains.
+
+Compile-time  type  checking  can be  requested  by  passing a  string
+representing the desired parameter  sequence to the constructor of the
+igeneric_function. The following example demonstrates how this can  be
+done:
+
+   template <typename T>
+   struct too : public exprtk::igeneric_function<T>
+   {
+      typedef typename exprtk::igeneric_function<T>::parameter_list_t
+                                                     parameter_list_t;
+
+      too()
+      : exprtk::igeneric_function<T>("SVTT")
+      {}
+
+      inline T operator()(parameter_list_t& parameters)
+      {
+         ...
+      }
+   };
+
+
+In   the  example  above the  custom  generic  function 'too'  expects
+exactly four parameters in the following sequence:
+
+   (a) String
+   (b) Vector
+   (c) Scalar
+   (d) Scalar
+
+
+One further refinement to the type checking facility is possibility of
+a variable number of trailing  common types which can be  accomplished
+by using a wildcard '*' at the end of the sequence definition.
+
+   template <typename T>
+   struct too : public exprtk::igeneric_function<T>
+   {
+      typedef typename exprtk::igeneric_function<T>::parameter_list_t
+                                                     parameter_list_t;
+
+      too()
+      : exprtk::igeneric_function<T>("SVTTV*")
+      {}
+
+      inline T operator()(parameter_list_t& parameters)
+      {
+         ...
+      }
+   };
+
+
+In the example above the generic function 'too' expects at least  five
+parameters in the following sequence:
+
+   (a) String
+   (b) Vector
+   (c) Scalar
+   (d) Scalar
+   (e) One or more vectors
 
 
 (4) function_compositor
@@ -1173,10 +1285,14 @@ The following demonstrates how all the pieces are put together:
 
    foo<double> f;
    boo<double> b;
+   too<double> t;
 
    symbol_table_t symbol_table;
+   compositor_t   compositor(symbol_table);
+
    symbol_table.add_function("foo",f);
    symbol_table.add_function("boo",b);
+   symbol_table.add_function("too",t);
 
    compositor
       .add(function_t()
@@ -1189,7 +1305,11 @@ The following demonstrates how all the pieces are put together:
    expression.register_symbol_table(symbol_table);
 
    std::string expression_str =
-             "foo(1,2,3) + boo(1) / boo(1/2,2/3,3/4,4/5) + koo(3,4)";
+                " if (foo(1,2,3) + boo(1) > boo(1/2,2/3,3/4,4/5)) "
+                "   koo(3,4);                                     "
+                " else                                            "
+                "   too(2 * v1 + v2 / 3, 'abcdef'[2:4], 3.3);     "
+                "                                                 ";
 
    parser_t parser;
    parser.compile(expression_str,expression);
@@ -1357,14 +1477,14 @@ into account when using Exprtk:
       exist within the set of Real numbers. All other results will be
       of the value: Not-A-Number (NaN).
 
- (05) Supported user defined types  are numeric and string  variables
-      and functions.
+ (05) Supported   user  defined   types   are   numeric  and   string
+      variables, numeric vectors and functions.
 
- (06) All reserved and key words, variable, vector and function names
-      are case-insensitive.
+ (06) All reserved words and keywords, variable, vector and  function
+      names are case-insensitive.
 
  (07) Variable, vector and  function names must  begin with a  letter
-      (A-Z  or a-z),  then can  be comprised  of any  combination of
+      (A-Z  or a-z),  then  can  be comprised  of any  combination of
       letters, digits and underscores. (eg: x, var1 or power_func99)
 
  (08) Expression lengths and sub-expression lists are limited only by
@@ -1376,8 +1496,8 @@ into account when using Exprtk:
       of that  symbol-table, otherwise  the result  will be undefined
       behavior.
 
- (10) Equal/Nequal  are  normalized  equality  routines,  which   use
-      epsilons  of 0.0000000001  and 0.000001  for double  and float
+ (10) Equal and  Nequal are  normalized equality  routines, which use
+      epsilons  of 0.0000000001  and 0.000001  for  double  and float
       types respectively.
 
  (11) All trigonometric functions  assume radian input  unless stated
@@ -1398,8 +1518,8 @@ into account when using Exprtk:
 
  (15) The inbuilt polynomial functions can be at most of degree 12.
 
- (16) Where  appropriate  constant   folding  optimisations  may   be
-      applied. (eg: The expression '2+(3-(x/y))' becomes '5-(x/y)')
+ (16) Where appropriate constant folding optimisations may be applied.
+      (eg: The expression '2 + (3 - (x / y))' becomes '5 - (x / y)')
 
  (17) If the strength reduction compilation option has been enabled,
       then where applicable strength reduction optimisations may be
@@ -1422,25 +1542,27 @@ into account when using Exprtk:
       of  the  ifunction  allowing it  to  be  constant folded  where
       appropriate.
 
- (22) The entity relationship between symbol_table and an expression
-      is one-to-many. Hence the intended use case where possible is
-      to have a single symbol table manage the variable and function
+ (22) The entity relationship between symbol_table and an  expression
+      is one-to-many. Hence the  intended use case where  possible is
+      to have a single symbol table manage the variable and  function
       requirements of multiple expressions.
 
  (23) The common use-case  for an expression  is to have  it compiled
-      only  ONCE and  then subsequently  have it  evaluated multiple
+      only  ONCE  and  then subsequently  have it  evaluated multiple
       times. An extremely  inefficient and suboptimal  approach would
       be to recompile an expression  from its string form every  time
       it requires evaluating.
 
  (24) The following are examples of compliant floating point value
       representations:
+
       (a) 12345        (e) -123.456
       (b) +123.456e+12 (f) 123.456E-12
       (c) +012.045e+07 (g) .1234
       (d) 123.456f     (h) -321.654E+3L
 
  (25) Expressions may contain any of the following comment styles:
+
       1. // .... \n
       2. #  .... \n
       3. /* .... */

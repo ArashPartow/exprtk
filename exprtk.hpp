@@ -8344,6 +8344,23 @@ namespace exprtk
       {
       public:
 
+         typedef range_pack<T> range_pack_t;
+
+         struct range_type
+         {
+            range_type()
+            : range(0),
+              data (0),
+              size (0),
+              type_size(0)
+            {}
+
+            range_pack_t* range;
+            void*         data;
+            std::size_t   size;
+            std::size_t   type_size;
+         };
+
          typedef type_store<T>                      type_store_t;
          typedef expression_node<T>*              expression_ptr;
          typedef variable_node<T>                variable_node_t;
@@ -8353,13 +8370,11 @@ namespace exprtk
          typedef vector_elem_node_t*      vector_elem_node_ptr_t;
          typedef vector_node_t*                vector_node_ptr_t;
          typedef range_interface<T>            range_interface_t;
-         typedef range_pack<T>                      range_pack_t;
          typedef std::pair<expression_ptr,bool>         branch_t;
          typedef std::pair<void*,std::size_t>             void_t;
-         typedef std::pair<range_pack_t*,void_t>         range_t;
          typedef std::vector<T>                         tmp_vs_t;
          typedef std::vector<type_store_t>      typestore_list_t;
-         typedef std::vector<range_t>               range_list_t;
+         typedef std::vector<range_type>            range_list_t;
 
          generic_function_node(GenericFunction* func,
                                const std::vector<expression_ptr>& arg_list)
@@ -8383,8 +8398,7 @@ namespace exprtk
          {
             expr_as_vec1_store_.resize(arg_list_.size(),T(0));
 
-            range_list_.resize(arg_list_.size(),
-                               range_t((range_pack_t*)0,void_t((void*)0,0)));
+            range_list_.resize(arg_list_.size(),range_type());
 
             for (std::size_t i = 0; i < arg_list_.size(); ++i)
             {
@@ -8414,8 +8428,9 @@ namespace exprtk
                   ts.data = reinterpret_cast<void*>(const_cast<char*>(sbn->base()));
                   ts.type = type_store_t::e_string;
 
-                  range_list_[i].second.first  = ts.data;
-                  range_list_[i].second.second = sizeof(char);
+                  range_list_[i].data = ts.data;
+                  range_list_[i].size = ts.size;
+                  range_list_[i].type_size = sizeof(char);
 
                   if (
                        is_string_range_node      (arg_list_[i]) ||
@@ -8433,10 +8448,10 @@ namespace exprtk
                      {
                         ts.size = rp.n1_c.second - rp.n0_c.second + 1;
                         ts.data = static_cast<char*>(ts.data) + rp.n0_c.second;
-                        range_list_[i].first = reinterpret_cast<range_pack_t*>(0);
+                        range_list_[i].range = reinterpret_cast<range_pack_t*>(0);
                      }
                      else
-                        range_list_[i].first = &(ri->range_ref());
+                        range_list_[i].range = &(ri->range_ref());
                   }
                }
                else if (is_variable_node(arg_list_[i]))
@@ -8484,11 +8499,13 @@ namespace exprtk
          {
             if (function_)
             {
-               populate_value_list();
-               return (*function_)(fwd_typestore_list_);
+               if (populate_value_list())
+               {
+                  return (*function_)(fwd_typestore_list_);
+               }
             }
-            else
-               return std::numeric_limits<T>::quiet_NaN();
+
+            return std::numeric_limits<T>::quiet_NaN();
          }
 
          inline typename expression_node<T>::node_type type() const
@@ -8498,22 +8515,31 @@ namespace exprtk
 
       private:
 
-         inline void populate_value_list() const
+         inline bool populate_value_list() const
          {
             for (std::size_t i = 0; i < branch_.size(); ++i)
             {
                expr_as_vec1_store_[i] = branch_[i].first->value();
 
-               if (range_list_[i].first)
+               if (range_list_[i].range)
                {
-                  range_pack_t& rp = (*range_list_[i].first);
+                  range_pack_t& rp = (*range_list_[i].range);
+                  std::size_t   r0 = 0;
+                  std::size_t   r1 = 0;
 
-                  typestore_list_[i].size = (rp.cache.second - rp.cache.first) + 1;
-                  typestore_list_[i].data = static_cast<char*>(range_list_[i].second.first) + (rp.cache.first * range_list_[i].second.second);
+                  if (rp(r0,r1,range_list_[i].size))
+                  {
+                     typestore_list_[i].size = (rp.cache.second - rp.cache.first) + 1;
+                     typestore_list_[i].data = static_cast<char*>(range_list_[i].data) + (rp.cache.first * range_list_[i].type_size);
+                  }
+                  else
+                     return false;
                }
             }
 
             fwd_typestore_list_ = typestore_list_;
+
+            return true;
          }
 
          GenericFunction* function_;
@@ -12018,6 +12044,7 @@ namespace exprtk
 
       inline virtual T operator()(const std::vector<T>&)
       {
+         exprtk_debug(("ivararg_function::operator() - Operator has not been overriden.\n"));
          return std::numeric_limits<T>::quiet_NaN();
       }
 
@@ -12044,6 +12071,7 @@ namespace exprtk
 
       inline virtual T operator()(parameter_list_t&)
       {
+         exprtk_debug(("igeneric_function::operator() - Operator has not been overriden.\n"));
          return std::numeric_limits<T>::quiet_NaN();
       }
 
