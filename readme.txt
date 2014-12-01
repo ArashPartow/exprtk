@@ -1173,12 +1173,12 @@ In those situations, ExprTk can perform compile-time type checking  to
 validate that function invocations  are carried out using  the correct
 sequence of parameters. Furthermore  performing the checks at  compile
 -time rather than at run-time (aka every time the function is invoked)
-will result expression evaluation performance gains.
+will result in expression evaluation performance gains.
 
 Compile-time  type  checking  can be  requested  by  passing a  string
 representing the desired parameter  sequence to the constructor of the
 igeneric_function. The following example demonstrates how this can  be
-done:
+achieved:
 
    template <typename T>
    struct too : public exprtk::igeneric_function<T>
@@ -1206,9 +1206,10 @@ exactly four parameters in the following sequence:
    (d) Scalar
 
 
-One further refinement to the type checking facility is possibility of
-a variable number of trailing  common types which can be  accomplished
-by using a wildcard '*' at the end of the sequence definition.
+One  further  refinement  to   the  type  checking  facility   is  the
+possibility of a variable number of trailing common types which can be
+accomplished  by using  a wildcard  '*' at  the  end  of the  sequence
+definition.
 
    template <typename T>
    struct too : public exprtk::igeneric_function<T>
