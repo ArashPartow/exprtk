@@ -2120,6 +2120,56 @@ inline bool run_test02()
       }
    }
 
+   {
+      std::string s0;
+      std::string s1;
+
+      const std::string expression_str =
+                          " s0 := 'abc';                     "
+                          " s0 := (s1 := '0123456789'[2:7]); "
+                          " s1 := 'xyz';                     "
+                          " s0 < s1;                         ";
+
+      exprtk::symbol_table<T> symbol_table;
+      symbol_table.add_stringvar("s0" ,s0);
+      symbol_table.add_stringvar("s1" ,s1);
+
+      exprtk::expression<T> expression;
+      expression.register_symbol_table(symbol_table);
+
+      {
+         exprtk::parser<T> parser;
+
+         if (!parser.compile(expression_str,expression))
+         {
+            printf("run_test02() - [2] Error: %s   Expression: %s\n",
+                   parser.error().c_str(),
+                   expression_str.c_str());
+
+            return false;
+         }
+      }
+
+      if (T(0) == expression.value())
+      {
+         printf("run_test02() - Evaluation Error [2]:  Expression: [%s]\tExpected: True\n",
+                expression_str.c_str());
+         return false;
+      }
+      else if ("234567" != s0)
+      {
+         printf("run_test02() - Evaluation Error [2]:  Expression: [%s]\tInvalid value for s0\n",
+                expression_str.c_str());
+         return false;
+      }
+      else if ("xyz" != s1)
+      {
+         printf("run_test02() - Evaluation Error [2]:  Expression: [%s]\tInvalid value for s1\n",
+                expression_str.c_str());
+         return false;
+      }
+   }
+
    return true;
 }
 
@@ -3263,12 +3313,15 @@ inline bool run_test10()
       expression_t expression;
       expression.register_symbol_table(symbol_table);
 
-      std::string expression_string = "(e == '1234') and (sin(a) + c) / b";
+      std::string expression_string = "(E == '1234') and (sin(a) + C) / b";
 
-      std::deque<std::string> variable_list;
+      typedef exprtk::parser<T> parser_t;
+      typedef typename parser_t::cache_symbol_t cache_symbol_t;
+
+      std::deque<cache_symbol_t> variable_list;
 
       {
-         exprtk::parser<T> parser;
+         parser_t parser;
 
          parser.cache_symbols() = true;
 
@@ -3284,11 +3337,13 @@ inline bool run_test10()
          parser.expression_symbols(variable_list);
       }
 
-      std::deque<std::string> expected_variable_list;
-      expected_variable_list.push_back("a");
-      expected_variable_list.push_back("b");
-      expected_variable_list.push_back("c");
-      expected_variable_list.push_back("e");
+      std::deque<cache_symbol_t> expected_variable_list;
+
+      expected_variable_list.push_back(cache_symbol_t("a"  ,parser_t::e_cs_variable));
+      expected_variable_list.push_back(cache_symbol_t("b"  ,parser_t::e_cs_variable));
+      expected_variable_list.push_back(cache_symbol_t("c"  ,parser_t::e_cs_variable));
+      expected_variable_list.push_back(cache_symbol_t("e"  ,parser_t::e_cs_string  ));
+      expected_variable_list.push_back(cache_symbol_t("sin",parser_t::e_cs_function));
 
       bool result = (variable_list.size() == expected_variable_list.size()) &&
                      std::equal(variable_list.begin(),

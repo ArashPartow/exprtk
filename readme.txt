@@ -400,6 +400,15 @@ of C++ compilers:
 |          | in the event they have fractional components truncation |
 |          | will be performed. (eg: 1.67 --> 1)                     |
 +----------+---------------------------------------------------------+
+|  :=      | Assign the value of x to y. Where x is a mutable string |
+|          | and y is either a string or a string range. eg:         |
+|          | 1. x := y                                               |
+|          | 2. x := 'abc'                                           |
+|          | 3. x := y[:i + j]                                       |
+|          | 4. x := '0123456789'[2:7]                               |
+|          | 5. x := '0123456789'[2i + 1:7]                          |
+|          | 6. x := (y := '0123456789'[2:7])                        |
++----------+---------------------------------------------------------+
 | []       | The string size operator returns the size of the string |
 |          | being actioned.                                         |
 |          | eg:                                                     |
