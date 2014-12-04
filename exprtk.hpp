@@ -4217,21 +4217,10 @@ namespace exprtk
       };
 
       template <typename T>
-      class string_base_node
-      {
-      public:
-
-         virtual std::string str() const = 0;
-
-         virtual const char* base() const = 0;
-
-         virtual void register_base(void*&) {}
-
-         virtual void update_base() {}
-      };
+      struct range_pack;
 
       template <typename T>
-      struct range_pack;
+      struct range_data_type;
 
       template <typename T>
       class range_interface
@@ -4243,6 +4232,18 @@ namespace exprtk
          virtual range_t& range_ref() = 0;
 
          virtual const range_t& range_ref() const = 0;
+      };
+
+      template <typename T>
+      class string_base_node
+      {
+      public:
+
+         typedef range_data_type<T> range_data_type_t;
+
+         virtual std::string str() const = 0;
+
+         virtual const char* base() const = 0;
       };
 
       template <typename T>
@@ -5676,6 +5677,30 @@ namespace exprtk
          mutable cached_range_t             cache;
       };
 
+      template <typename T>
+      class string_base_node;
+
+      template <typename T>
+      struct range_data_type
+      {
+         typedef range_pack<T> range_pack_t;
+         typedef string_base_node<T>* strbase_ptr_t;
+
+         range_data_type()
+         : range(0),
+           data (0),
+           size (0),
+           type_size(0),
+           str_node (0)
+         {}
+
+         range_pack_t* range;
+         void*         data;
+         std::size_t   size;
+         std::size_t   type_size;
+         strbase_ptr_t str_node;
+      };
+
       template <typename T> class vector_node;
 
       template <typename T>
@@ -6032,6 +6057,7 @@ namespace exprtk
       public:
 
          typedef range_pack<T> range_t;
+         typedef range_data_type<T> range_data_type_t;
 
          static std::string null_value;
 
@@ -6093,27 +6119,10 @@ namespace exprtk
            return (*value_).data();
          }
 
-         void register_base(void*& ptr)
-         {
-            base_list_.push_back(&ptr);
-         }
-
-         void update_base()
-         {
-            if (!base_list_.empty())
-            {
-               for (std::size_t i = 0; i < base_list_.size(); ++i)
-               {
-                  (*base_list_[i]) = reinterpret_cast<void*>(const_cast<char*>(base()));
-               }
-            }
-         }
-
       private:
 
          std::string* value_;
          range_t rp_;
-         std::vector<void**> base_list_;
       };
 
       template <typename T>
@@ -6869,10 +6878,6 @@ namespace exprtk
 
                str1_range_ptr_ = &(range_ptr->range_ref());
             }
-
-            rp_.n0_c  = std::make_pair<bool,std::size_t>(true ,0);
-            rp_.n1_c  = std::make_pair<bool,std::size_t>(false,0);
-            rp_.cache = cached_range_t(0,0);
          }
 
          inline T value() const
@@ -6893,10 +6898,14 @@ namespace exprtk
 
                if (range(r0,r1,str1_base_ptr_->str().size()))
                {
+                  range_t& rp = const_cast<range_t&>(range_ref());
+
                   str0_node_ptr_->ref().assign(str1_base_ptr_->str().data() + r0, (r1 - r0) + 1);
-                  rp_.n1_c  = std::make_pair<bool,std::size_t>(true,str0_node_ptr_->ref().size() - 1);
-                  rp_.cache = cached_range_t(0,rp_.n1_c.second);
-                  str0_node_ptr_->update_base();
+
+                  const std::size_t size = str0_node_ptr_->ref().size();
+
+                  rp.n1_c  = std::make_pair(true,size - 1);
+                  rp.cache = cached_range_t(   0,size - 1);
                }
             }
 
@@ -6915,27 +6924,17 @@ namespace exprtk
 
          range_t& range_ref()
          {
-            return rp_;
+            return str0_node_ptr_->range_ref();
          }
 
          const range_t& range_ref() const
          {
-            return rp_;
+            return str0_node_ptr_->range_ref();
          }
 
          inline typename expression_node<T>::node_type type() const
          {
             return expression_node<T>::e_strass;
-         }
-
-         void register_base(void*& ptr)
-         {
-            str0_node_ptr_->register_base(ptr);
-         }
-
-         void update_base()
-         {
-            str0_node_ptr_->update_base();
          }
 
       private:
@@ -6944,7 +6943,6 @@ namespace exprtk
          str_base_ptr    str1_base_ptr_;
          strvar_node_ptr str0_node_ptr_;
          range_ptr       str1_range_ptr_;
-         mutable range_t rp_;
       };
 
       template <typename T>
@@ -8533,21 +8531,6 @@ namespace exprtk
 
          typedef range_pack<T> range_pack_t;
 
-         struct range_type
-         {
-            range_type()
-            : range(0),
-              data (0),
-              size (0),
-              type_size(0)
-            {}
-
-            range_pack_t* range;
-            void*         data;
-            std::size_t   size;
-            std::size_t   type_size;
-         };
-
          typedef type_store<T>                      type_store_t;
          typedef expression_node<T>*              expression_ptr;
          typedef variable_node<T>                variable_node_t;
@@ -8557,11 +8540,12 @@ namespace exprtk
          typedef vector_elem_node_t*      vector_elem_node_ptr_t;
          typedef vector_node_t*                vector_node_ptr_t;
          typedef range_interface<T>            range_interface_t;
+         typedef range_data_type<T>            range_data_type_t;
          typedef std::pair<expression_ptr,bool>         branch_t;
          typedef std::pair<void*,std::size_t>             void_t;
          typedef std::vector<T>                         tmp_vs_t;
          typedef std::vector<type_store_t>      typestore_list_t;
-         typedef std::vector<range_type>            range_list_t;
+         typedef std::vector<range_data_type_t>     range_list_t;
 
          generic_function_node(GenericFunction* func,
                                const std::vector<expression_ptr>& arg_list)
@@ -8583,11 +8567,10 @@ namespace exprtk
 
          bool init_branches()
          {
-            expr_as_vec1_store_.resize(arg_list_.size(),T(0));
-
-            range_list_.resize(arg_list_.size(),range_type());
-
-            typestore_list_.resize(arg_list_.size(),type_store_t());
+            expr_as_vec1_store_.resize(arg_list_.size(),T(0)               );
+            typestore_list_    .resize(arg_list_.size(),type_store_t()     );
+            range_list_        .resize(arg_list_.size(),range_data_type_t());
+            branch_            .resize(arg_list_.size(),branch_t((expression_ptr)0,false));
 
             for (std::size_t i = 0; i < arg_list_.size(); ++i)
             {
@@ -8617,11 +8600,10 @@ namespace exprtk
                   ts.data = reinterpret_cast<void*>(const_cast<char*>(sbn->base()));
                   ts.type = type_store_t::e_string;
 
-                  range_list_[i].data = ts.data;
-                  range_list_[i].size = ts.size;
+                  range_list_[i].data      = ts.data;
+                  range_list_[i].size      = ts.size;
                   range_list_[i].type_size = sizeof(char);
-
-                  sbn->register_base(range_list_[i].data);
+                  range_list_[i].str_node  = sbn;
 
                   if (
                        is_string_range_node      (arg_list_[i]) ||
@@ -8636,7 +8618,10 @@ namespace exprtk
 
                      range_pack_t& rp = ri->range_ref();
 
-                     if (rp.const_range())
+                     if (
+                          rp.const_range() &&
+                          is_const_string_range_node(arg_list_[i])
+                        )
                      {
                         ts.size = rp.const_size();
                         ts.data = static_cast<char*>(ts.data) + rp.n0_c.second;
@@ -8675,7 +8660,7 @@ namespace exprtk
                   ts.type = type_store_t::e_scalar;
                }
 
-               branch_.push_back(std::make_pair(arg_list_[i],branch_deletable(arg_list_[i])));
+               branch_[i] = std::make_pair(arg_list_[i],branch_deletable(arg_list_[i]));
             }
 
             return true;
@@ -8711,17 +8696,28 @@ namespace exprtk
             for (std::size_t i = 0; i < branch_.size(); ++i)
             {
                expr_as_vec1_store_[i] = branch_[i].first->value();
+            }
 
-               if (range_list_[i].range)
+            for (std::size_t i = 0; i < branch_.size(); ++i)
+            {
+               range_data_type_t& rdt = range_list_[i];
+
+               if (rdt.range)
                {
-                  range_pack_t& rp = (*range_list_[i].range);
+                  range_pack_t& rp = (*rdt.range);
                   std::size_t   r0 = 0;
                   std::size_t   r1 = 0;
 
-                  if (rp(r0,r1,range_list_[i].size))
+                  if (rp(r0,r1,rdt.size))
                   {
-                     typestore_list_[i].size = rp.cache_size();
-                     typestore_list_[i].data = static_cast<char*>(range_list_[i].data) + (rp.cache.first * range_list_[i].type_size);
+                     type_store_t& ts = typestore_list_[i];
+
+                     ts.size = rp.cache_size();
+
+                     if (ts.type == type_store_t::e_string)
+                        ts.data = const_cast<char*>(rdt.str_node->base()) + rp.cache.first;
+                     else
+                        ts.data = static_cast<char*>(rdt.data) + (rp.cache.first * rdt.type_size);
                   }
                   else
                      return false;
