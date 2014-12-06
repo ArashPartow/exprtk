@@ -4410,12 +4410,27 @@ namespace exprtk
          construct_branch_pair<T,9,(N > 9)>::process(branch,b9);
       }
 
-      template <typename T, std::size_t N>
       struct cleanup_branches
       {
+         template <typename T, std::size_t N>
          static inline void execute(std::pair<expression_node<T>*,bool> (&branch)[N])
          {
             for (std::size_t i = 0; i < N; ++i)
+            {
+               if (branch[i].first && branch[i].second)
+               {
+                  delete branch[i].first;
+                  branch[i].first = 0;
+               }
+            }
+         }
+
+         template <typename T,
+                   typename Allocator,
+                   template <typename,typename> class Sequence>
+         static inline void execute(Sequence<std::pair<expression_node<T>*,bool>,Allocator>& branch)
+         {
+            for (std::size_t i = 0; i < branch.size(); ++i)
             {
                if (branch[i].first && branch[i].second)
                {
@@ -4444,7 +4459,7 @@ namespace exprtk
 
         ~binary_node()
          {
-            cleanup_branches<T,2>::execute(branch_);
+            cleanup_branches::execute<T,2>(branch_);
          }
 
          inline T value() const
@@ -4495,7 +4510,7 @@ namespace exprtk
 
         ~binary_ext_node()
          {
-            cleanup_branches<T,2>::execute(branch_);
+            cleanup_branches::execute<T,2>(branch_);
          }
 
          inline T value() const
@@ -4549,7 +4564,7 @@ namespace exprtk
 
         ~trinary_node()
          {
-            cleanup_branches<T,3>::execute(branch_);
+            cleanup_branches::execute<T,3>(branch_);
          }
 
          inline T value() const
@@ -4603,7 +4618,7 @@ namespace exprtk
 
         ~quaternary_node()
          {
-            cleanup_branches<T,4>::execute(branch_);
+            cleanup_branches::execute<T,4>(branch_);
          }
 
          inline T value() const
@@ -4653,7 +4668,7 @@ namespace exprtk
 
         ~quinary_node()
          {
-            cleanup_branches<T,5>::execute(branch_);
+            cleanup_branches::execute<T,5>(branch_);
          }
 
          inline T value() const
@@ -4705,7 +4720,7 @@ namespace exprtk
 
         ~senary_node()
          {
-            cleanup_branches<T,6>::execute(branch_);
+            cleanup_branches::execute<T,6>(branch_);
          }
 
          inline T value() const
@@ -8150,7 +8165,7 @@ namespace exprtk
 
         ~function_N_node()
          {
-            cleanup_branches<T,N>::execute(branch_);
+            cleanup_branches::execute<T,N>(branch_);
          }
 
          template <std::size_t NumBranches>
@@ -8555,14 +8570,7 @@ namespace exprtk
 
         ~generic_function_node()
          {
-            for (std::size_t i = 0; i < branch_.size(); ++i)
-            {
-               if (branch_[i].first && branch_[i].second)
-               {
-                  delete branch_[i].first;
-                  branch_[i].first = 0;
-               }
-            }
+            cleanup_branches::execute(branch_);
          }
 
          bool init_branches()
@@ -8738,15 +8746,27 @@ namespace exprtk
          mutable range_list_t range_list_;
       };
 
-      #define exprtk_define_unary_op(OpName)                                                                    \
-      template <typename T>                                                                                     \
-      struct OpName##_op                                                                                        \
-      {                                                                                                         \
-         typedef typename functor_t<T>::Type Type;                                                              \
-         static inline T process(Type v) { return numeric:: OpName (v); }                                       \
-         static inline typename expression_node<T>::node_type type() { return expression_node<T>::e_##OpName; } \
-         static inline details::operator_type operation() { return details::e_##OpName; }                       \
-      };                                                                                                        \
+      #define exprtk_define_unary_op(OpName)                        \
+      template <typename T>                                         \
+      struct OpName##_op                                            \
+      {                                                             \
+         typedef typename functor_t<T>::Type Type;                  \
+                                                                    \
+         static inline T process(Type v)                            \
+         {                                                          \
+            return numeric:: OpName (v);                            \
+         }                                                          \
+                                                                    \
+         static inline typename expression_node<T>::node_type type()\
+         {                                                          \
+            return expression_node<T>::e_##OpName;                  \
+         }                                                          \
+                                                                    \
+         static inline details::operator_type operation()           \
+         {                                                          \
+            return details::e_##OpName;                             \
+         }                                                          \
+      };                                                            \
 
       exprtk_define_unary_op(abs  )
       exprtk_define_unary_op(acos )
@@ -11093,7 +11113,7 @@ namespace exprtk
 
         ~vob_node()
          {
-            cleanup_branches<T,1>::execute(branch_);
+            cleanup_branches::execute<T,1>(branch_);
          }
 
          inline T value() const
@@ -11143,7 +11163,7 @@ namespace exprtk
 
         ~bov_node()
          {
-            cleanup_branches<T,1>::execute(branch_);
+            cleanup_branches::execute<T,1>(branch_);
          }
 
          inline T value() const
@@ -11193,7 +11213,7 @@ namespace exprtk
 
         ~cob_node()
          {
-            cleanup_branches<T,1>::execute(branch_);
+            cleanup_branches::execute<T,1>(branch_);
          }
 
          inline T value() const
@@ -11254,7 +11274,7 @@ namespace exprtk
 
         ~boc_node()
          {
-            cleanup_branches<T,1>::execute(branch_);
+            cleanup_branches::execute<T,1>(branch_);
          }
 
          inline T value() const
@@ -19202,7 +19222,7 @@ namespace exprtk
                                                expression_node_ptr& branch,
                                                const bool brkcont = false) const
          {
-            if (details::is_constant_node(condition))
+            if (!brkcont && details::is_constant_node(condition))
             {
                expression_node_ptr result = error_node();
                if (details::is_true(condition))
@@ -19236,7 +19256,7 @@ namespace exprtk
                                                       expression_node_ptr branch,
                                                       const bool brkcont = false) const
          {
-            if (details::is_constant_node(condition))
+            if (!brkcont && details::is_constant_node(condition))
             {
                if (details::is_true(condition) && details::is_constant_node(branch))
                {
@@ -19272,7 +19292,7 @@ namespace exprtk
                                              expression_node_ptr loop_body,
                                              bool brkcont = false) const
          {
-            if (details::is_constant_node(condition))
+            if (!brkcont && details::is_constant_node(condition))
             {
                expression_node_ptr result = error_node();
 
@@ -26375,8 +26395,10 @@ namespace exprtk
 
       inline void load_binary_operations_map(binary_op_map_t& m)
       {
-         #define register_binary_op(Op,BinaryFunctor)                                  \
-         m.insert(typename binary_op_map_t::value_type(Op,BinaryFunctor<T>::process)); \
+         typedef typename binary_op_map_t::value_type value_type;
+
+         #define register_binary_op(Op,BinaryFunctor)        \
+         m.insert(value_type(Op,BinaryFunctor<T>::process)); \
 
          register_binary_op(details:: e_add,details:: add_op)
          register_binary_op(details:: e_sub,details:: sub_op)
@@ -26401,8 +26423,10 @@ namespace exprtk
 
       inline void load_inv_binary_operations_map(inv_binary_op_map_t& m)
       {
-         #define register_binary_op(Op,BinaryFunctor)                                      \
-         m.insert(typename inv_binary_op_map_t::value_type(BinaryFunctor<T>::process,Op)); \
+         typedef typename inv_binary_op_map_t::value_type value_type;
+
+         #define register_binary_op(Op,BinaryFunctor)        \
+         m.insert(value_type(BinaryFunctor<T>::process,Op)); \
 
          register_binary_op(details:: e_add,details:: add_op)
          register_binary_op(details:: e_sub,details:: sub_op)
