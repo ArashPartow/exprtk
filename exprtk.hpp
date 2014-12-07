@@ -2515,27 +2515,27 @@ namespace exprtk
             return changes;
          }
 
-         virtual inline int insert(const token&, token& )
+         inline virtual int insert(const token&, token& )
          {
             return -1;
          }
 
-         virtual inline int insert(const token&, const token&, token&)
+         inline virtual int insert(const token&, const token&, token&)
          {
             return -1;
          }
 
-         virtual inline int insert(const token&, const token&, const token&, token&)
+         inline virtual int insert(const token&, const token&, const token&, token&)
          {
             return -1;
          }
 
-         virtual inline int insert(const token&, const token&, const token&, const token&, token&)
+         inline virtual int insert(const token&, const token&, const token&, const token&, token&)
          {
             return -1;
          }
 
-         virtual inline int insert(const token&, const token&, const token&, const token&, const token&, token&)
+         inline virtual int insert(const token&, const token&, const token&, const token&, const token&, token&)
          {
             return -1;
          }
@@ -3384,6 +3384,59 @@ namespace exprtk
       void*       data;
       store_type  type;
 
+      class parameter_list
+      {
+      public:
+
+         parameter_list(std::vector<type_store>& pl)
+         : parameter_list_(pl)
+         {}
+
+         inline bool empty() const
+         {
+            return parameter_list_.empty();
+         }
+
+         inline std::size_t size() const
+         {
+            return parameter_list_.size();
+         }
+
+         inline type_store& operator[](const std::size_t& index)
+         {
+            return parameter_list_[index];
+         }
+
+         inline const type_store& operator[](const std::size_t& index) const
+         {
+            return parameter_list_[index];
+         }
+
+         inline type_store& front()
+         {
+            return parameter_list_[0];
+         }
+
+         inline const type_store& front() const
+         {
+            return parameter_list_[0];
+         }
+
+         inline type_store& back()
+         {
+            return parameter_list_[size() - 1];
+         }
+
+         inline const type_store& back() const
+         {
+            return parameter_list_[size() - 1];
+         }
+
+      private:
+
+         std::vector<type_store>& parameter_list_;
+      };
+
       template <typename ViewType>
       struct type_view
       {
@@ -3688,35 +3741,36 @@ namespace exprtk
             e_quinary      , e_senary       , e_vararg       , e_conditional  ,
             e_while        , e_repeat       , e_for          , e_switch       ,
             e_mswitch      , e_variable     , e_stringvar    , e_stringconst  ,
-            e_stringvarrng , e_cstringvarrng, e_stringsize   , e_function     ,
-            e_vafunction   , e_genfunction  , e_add          , e_sub          ,
-            e_mul          , e_div          , e_mod          , e_pow          ,
-            e_lt           , e_lte          , e_gt           , e_gte          ,
-            e_eq           , e_ne           , e_and          , e_nand         ,
-            e_or           , e_nor          , e_xor          , e_xnor         ,
-            e_in           , e_like         , e_ilike        , e_inranges     ,
-            e_ipow         , e_ipowinv      , e_abs          , e_acos         ,
-            e_acosh        , e_asin         , e_asinh        , e_atan         ,
-            e_atanh        , e_ceil         , e_cos          , e_cosh         ,
-            e_exp          , e_expm1        , e_floor        , e_log          ,
-            e_log10        , e_log2         , e_log1p        , e_neg          ,
-            e_pos          , e_round        , e_sin          , e_sinc         ,
-            e_sinh         , e_sqrt         , e_tan          , e_tanh         ,
-            e_cot          , e_sec          , e_csc          , e_r2d          ,
-            e_d2r          , e_d2g          , e_g2d          , e_notl         ,
-            e_sgn          , e_erf          , e_erfc         , e_ncdf         ,
-            e_frac         , e_trunc        , e_uvouv        , e_vov          ,
-            e_cov          , e_voc          , e_vob          , e_bov          ,
-            e_cob          , e_boc          , e_vovov        , e_vovoc        ,
-            e_vocov        , e_covov        , e_covoc        , e_vovovov      ,
-            e_vovovoc      , e_vovocov      , e_vocovov      , e_covovov      ,
-            e_covocov      , e_vocovoc      , e_covovoc      , e_vococov      ,
-            e_sf3ext       , e_sf4ext       , e_nulleq       , e_strass       ,
-            e_vector       , e_vecelem      , e_vecdefass    , e_vecvalass    ,
-            e_vecvecass    , e_vecopvalass  , e_vecopvecass  , e_vecfunc      ,
-            e_vecvecswap   , e_vecvecineq   , e_vecvalineq   , e_valvecineq   ,
-            e_vecvecarith  , e_vecvalarith  , e_valvecarith  , e_vecunaryop   ,
-            e_break        , e_continue     , e_swap
+            e_stringvarrng , e_cstringvarrng, e_strconcat    , e_stringsize   ,
+            e_function     , e_vafunction   , e_genfunction  , e_strfunction  ,
+            e_add          , e_sub          , e_mul          , e_div          ,
+            e_mod          , e_pow          , e_lt           , e_lte          ,
+            e_gt           , e_gte          , e_eq           , e_ne           ,
+            e_and          , e_nand         , e_or           , e_nor          ,
+            e_xor          , e_xnor         , e_in           , e_like         ,
+            e_ilike        , e_inranges     , e_ipow         , e_ipowinv      ,
+            e_abs          , e_acos         , e_acosh        , e_asin         ,
+            e_asinh        , e_atan         , e_atanh        , e_ceil         ,
+            e_cos          , e_cosh         , e_exp          , e_expm1        ,
+            e_floor        , e_log          , e_log10        , e_log2         ,
+            e_log1p        , e_neg          , e_pos          , e_round        ,
+            e_sin          , e_sinc         , e_sinh         , e_sqrt         ,
+            e_tan          , e_tanh         , e_cot          , e_sec          ,
+            e_csc          , e_r2d          , e_d2r          , e_d2g          ,
+            e_g2d          , e_notl         , e_sgn          , e_erf          ,
+            e_erfc         , e_ncdf         , e_frac         , e_trunc        ,
+            e_uvouv        , e_vov          , e_cov          , e_voc          ,
+            e_vob          , e_bov          , e_cob          , e_boc          ,
+            e_vovov        , e_vovoc        , e_vocov        , e_covov        ,
+            e_covoc        , e_vovovov      , e_vovovoc      , e_vovocov      ,
+            e_vocovov      , e_covovov      , e_covocov      , e_vocovoc      ,
+            e_covovoc      , e_vococov      , e_sf3ext       , e_sf4ext       ,
+            e_nulleq       , e_strass       , e_vector       , e_vecelem      ,
+            e_vecdefass    , e_vecvalass    , e_vecvecass    , e_vecopvalass  ,
+            e_vecopvecass  , e_vecfunc      , e_vecvecswap   , e_vecvecineq   ,
+            e_vecvalineq   , e_valvecineq   , e_vecvecarith  , e_vecvalarith  ,
+            e_valvecarith  , e_vecunaryop   , e_break        , e_continue     ,
+            e_swap
          };
 
          typedef T value_type;
@@ -3725,17 +3779,17 @@ namespace exprtk
          virtual ~expression_node()
          {}
 
-         virtual inline T value() const
+         inline virtual T value() const
          {
             return std::numeric_limits<T>::quiet_NaN();
          }
 
-         virtual inline expression_node<T>* branch(const std::size_t& index = 0) const
+         inline virtual expression_node<T>* branch(const std::size_t& index = 0) const
          {
             return reinterpret_cast<expression_ptr>(index * 0);
          }
 
-         virtual inline node_type type() const
+         inline virtual node_type type() const
          {
             return e_none;
          }
@@ -5666,7 +5720,7 @@ namespace exprtk
                  (std::numeric_limits<std::size_t>::max() == r1  )
                )
             {
-               r1 = size;
+               r1 = size - 1;
             }
 
             cache.first  = r0;
@@ -5698,7 +5752,7 @@ namespace exprtk
       template <typename T>
       struct range_data_type
       {
-         typedef range_pack<T> range_pack_t;
+         typedef range_pack<T> range_t;
          typedef string_base_node<T>* strbase_ptr_t;
 
          range_data_type()
@@ -5709,7 +5763,7 @@ namespace exprtk
            str_node (0)
          {}
 
-         range_pack_t* range;
+         range_t*      range;
          void*         data;
          std::size_t   size;
          std::size_t   type_size;
@@ -6072,7 +6126,6 @@ namespace exprtk
       public:
 
          typedef range_pack<T> range_t;
-         typedef range_data_type<T> range_data_type_t;
 
          static std::string null_value;
 
@@ -6096,12 +6149,14 @@ namespace exprtk
 
          inline T value() const
          {
+            rp_.n1_c.second  = (*value_).size() - 1;
+            rp_.cache.second = rp_.n1_c.second;
             return std::numeric_limits<T>::quiet_NaN();
          }
 
          inline std::string str() const
          {
-            return (*value_);
+            return ref();
          }
 
          inline virtual std::string& ref()
@@ -6137,22 +6192,24 @@ namespace exprtk
       private:
 
          std::string* value_;
-         range_t rp_;
+         mutable range_t rp_;
       };
 
       template <typename T>
       std::string stringvar_node<T>::null_value = std::string("");
 
-      template <typename T, typename RangePack>
+      template <typename T>
       class string_range_node :  public expression_node <T>,
                                  public string_base_node<T>,
                                  public range_interface <T>
       {
       public:
 
+         typedef range_pack<T> range_t;
+
          static std::string null_value;
 
-         explicit string_range_node(std::string& v, RangePack rp)
+         explicit string_range_node(std::string& v, range_t rp)
          : value_(&v),
            rp_(rp)
          {}
@@ -6162,7 +6219,7 @@ namespace exprtk
             rp_.free();
          }
 
-         inline bool operator <(const string_range_node<T,RangePack>& v) const
+         inline bool operator <(const string_range_node<T>& v) const
          {
             return this < (&v);
          }
@@ -6177,7 +6234,7 @@ namespace exprtk
             return (*value_);
          }
 
-         inline RangePack range() const
+         inline range_t range() const
          {
             return rp_;
          }
@@ -6192,12 +6249,12 @@ namespace exprtk
             return (*value_);
          }
 
-         inline RangePack& range_ref()
+         inline range_t& range_ref()
          {
             return rp_;
          }
 
-         inline const RangePack& range_ref() const
+         inline const range_t& range_ref() const
          {
             return rp_;
          }
@@ -6215,20 +6272,22 @@ namespace exprtk
       private:
 
          std::string* value_;
-         RangePack    rp_;
+         range_t      rp_;
       };
 
-      template <typename T, typename RangePack>
-      std::string string_range_node<T,RangePack>::null_value = std::string("");
+      template <typename T>
+      std::string string_range_node<T>::null_value = std::string("");
 
-      template <typename T, typename RangePack>
+      template <typename T>
       class const_string_range_node : public expression_node <T>,
                                       public string_base_node<T>,
                                       public range_interface <T>
       {
       public:
 
-         explicit const_string_range_node(const std::string& v, RangePack rp)
+         typedef range_pack<T> range_t;
+
+         explicit const_string_range_node(const std::string& v, range_t rp)
          : value_(v),
            rp_(rp)
          {}
@@ -6248,17 +6307,17 @@ namespace exprtk
             return value_;
          }
 
-         inline RangePack range() const
+         inline range_t range() const
          {
             return rp_;
          }
 
-         inline virtual RangePack& range_ref()
+         inline virtual range_t& range_ref()
          {
             return rp_;
          }
 
-         inline virtual const RangePack& range_ref() const
+         inline virtual const range_t& range_ref() const
          {
             return rp_;
          }
@@ -6275,10 +6334,142 @@ namespace exprtk
 
       private:
 
-         const_string_range_node<T,RangePack>& operator=(const const_string_range_node<T,RangePack>&);
+         const_string_range_node<T>& operator=(const const_string_range_node<T>&);
 
          const std::string value_;
-         RangePack rp_;
+         range_t rp_;
+      };
+
+      template <typename T>
+      class string_concat_node : public binary_node     <T>,
+                                 public string_base_node<T>,
+                                 public range_interface <T>
+      {
+      public:
+
+         typedef expression_node <T>*  expression_ptr;
+         typedef stringvar_node  <T>* strvar_node_ptr;
+         typedef string_base_node<T>*    str_base_ptr;
+         typedef range_pack      <T>          range_t;
+         typedef range_t*                   range_ptr;
+         typedef range_interface<T>          irange_t;
+         typedef irange_t*                 irange_ptr;
+         typedef typename range_t::cached_range_t cached_range_t;
+
+         string_concat_node(const operator_type& opr,
+                            expression_ptr branch0,
+                            expression_ptr branch1)
+         : binary_node<T>(opr,branch0,branch1),
+           str0_base_ptr_ (0),
+           str1_base_ptr_ (0),
+           str0_range_ptr_(0),
+           str1_range_ptr_(0)
+         {
+            range_.n0_c = std::make_pair<bool,std::size_t>(true,0);
+            range_.n1_c = std::make_pair<bool,std::size_t>(true,0);
+            range_.cache.first  = range_.n0_c.second;
+            range_.cache.second = range_.n1_c.second;
+
+            if (is_generally_string_node(binary_node<T>::branch_[0].first))
+            {
+               str0_base_ptr_ = dynamic_cast<str_base_ptr>(binary_node<T>::branch_[0].first);
+
+               if (0 == str0_base_ptr_)
+                  return;
+
+               str0_range_ptr_ = dynamic_cast<irange_ptr>(binary_node<T>::branch_[0].first);
+
+               if (0 == str0_range_ptr_)
+                  return;
+            }
+
+            if (is_generally_string_node(binary_node<T>::branch_[1].first))
+            {
+               str1_base_ptr_ = dynamic_cast<str_base_ptr>(binary_node<T>::branch_[1].first);
+
+               if (0 == str1_base_ptr_)
+                  return;
+
+               str1_range_ptr_ = dynamic_cast<irange_ptr>(binary_node<T>::branch_[1].first);
+
+               if (0 == str1_range_ptr_)
+                  return;
+            }
+         }
+
+         inline T value() const
+         {
+            if (
+                 str0_base_ptr_  &&
+                 str1_base_ptr_  &&
+                 str1_range_ptr_ &&
+                 str1_range_ptr_
+               )
+            {
+               binary_node<T>::branch_[0].first->value();
+               binary_node<T>::branch_[1].first->value();
+
+               std::size_t str0_r0 = 0;
+               std::size_t str0_r1 = 0;
+
+               std::size_t str1_r0 = 0;
+               std::size_t str1_r1 = 0;
+
+               range_t& range0 = str0_range_ptr_->range_ref();
+               range_t& range1 = str1_range_ptr_->range_ref();
+
+               if (
+                    range0(str0_r0,str0_r1,str0_base_ptr_->str().size()) &&
+                    range1(str1_r0,str1_r1,str1_base_ptr_->str().size())
+                  )
+               {
+                  const std::size_t size0 = (str0_r1 - str0_r0) + 1;
+                  const std::size_t size1 = (str1_r1 - str1_r0) + 1;
+
+                  value_.assign(str0_base_ptr_->base() + str0_r0, size0);
+                  value_.append(str1_base_ptr_->base() + str1_r0, size1);
+
+                  range_.n1_c.second  = value_.size() - 1;
+                  range_.cache.second = range_.n1_c.second;
+               }
+            }
+
+            return std::numeric_limits<T>::quiet_NaN();
+         }
+
+         std::string str() const
+         {
+            return value_;
+         }
+
+         const char* base() const
+         {
+           return value_.data();
+         }
+
+         range_t& range_ref()
+         {
+            return range_;
+         }
+
+         const range_t& range_ref() const
+         {
+            return range_;
+         }
+
+         inline typename expression_node<T>::node_type type() const
+         {
+            return expression_node<T>::e_strconcat;
+         }
+
+      private:
+
+         str_base_ptr str0_base_ptr_;
+         str_base_ptr str1_base_ptr_;
+         irange_ptr   str0_range_ptr_;
+         irange_ptr   str1_range_ptr_;
+         mutable range_t     range_;
+         mutable std::string value_;
       };
 
       template <typename T>
@@ -6335,9 +6526,9 @@ namespace exprtk
          typedef typename details::functor_t<T>::Type Type;
          typedef typename details::functor_t<T> functor_t;
          typedef typename functor_t::qfunc_t quaternary_functor_t;
-         typedef typename functor_t::tfunc_t trinary_functor_t;
-         typedef typename functor_t::bfunc_t binary_functor_t;
-         typedef typename functor_t::ufunc_t unary_functor_t;
+         typedef typename functor_t::tfunc_t    trinary_functor_t;
+         typedef typename functor_t::bfunc_t     binary_functor_t;
+         typedef typename functor_t::ufunc_t      unary_functor_t;
       };
 
       #define define_sfop3(NN,OP0,OP1)                   \
@@ -6913,14 +7104,9 @@ namespace exprtk
 
                if (range(r0,r1,str1_base_ptr_->str().size()))
                {
-                  range_t& rp = const_cast<range_t&>(range_ref());
-
                   str0_node_ptr_->ref().assign(str1_base_ptr_->str().data() + r0, (r1 - r0) + 1);
 
-                  const std::size_t size = str0_node_ptr_->ref().size();
-
-                  rp.n1_c  = std::make_pair(true,size - 1);
-                  rp.cache = cached_range_t(   0,size - 1);
+                  binary_node<T>::branch_[0].first->value();
                }
             }
 
@@ -8544,8 +8730,6 @@ namespace exprtk
       {
       public:
 
-         typedef range_pack<T> range_pack_t;
-
          typedef type_store<T>                      type_store_t;
          typedef expression_node<T>*              expression_ptr;
          typedef variable_node<T>                variable_node_t;
@@ -8556,6 +8740,7 @@ namespace exprtk
          typedef vector_node_t*                vector_node_ptr_t;
          typedef range_interface<T>            range_interface_t;
          typedef range_data_type<T>            range_data_type_t;
+         typedef range_pack<T>                           range_t;
          typedef std::pair<expression_ptr,bool>         branch_t;
          typedef std::pair<void*,std::size_t>             void_t;
          typedef std::vector<T>                         tmp_vs_t;
@@ -8573,7 +8758,7 @@ namespace exprtk
             cleanup_branches::execute(branch_);
          }
 
-         bool init_branches()
+         virtual bool init_branches()
          {
             expr_as_vec1_store_.resize(arg_list_.size(),T(0)               );
             typestore_list_    .resize(arg_list_.size(),type_store_t()     );
@@ -8613,18 +8798,14 @@ namespace exprtk
                   range_list_[i].type_size = sizeof(char);
                   range_list_[i].str_node  = sbn;
 
-                  if (
-                       is_string_range_node      (arg_list_[i]) ||
-                       is_const_string_range_node(arg_list_[i]) ||
-                       is_string_assignment_node (arg_list_[i])
-                     )
+                  if (is_generally_string_node(arg_list_[i]))
                   {
                      range_interface_t* ri = reinterpret_cast<range_interface_t*>(0);
 
                      if (0 == (ri = dynamic_cast<range_interface_t*>(arg_list_[i])))
                         return false;
 
-                     range_pack_t& rp = ri->range_ref();
+                     range_t& rp = ri->range_ref();
 
                      if (
                           rp.const_range() &&
@@ -8633,7 +8814,7 @@ namespace exprtk
                      {
                         ts.size = rp.const_size();
                         ts.data = static_cast<char*>(ts.data) + rp.n0_c.second;
-                        range_list_[i].range = reinterpret_cast<range_pack_t*>(0);
+                        range_list_[i].range = reinterpret_cast<range_t*>(0);
                      }
                      else
                         range_list_[i].range = &(ri->range_ref());
@@ -8685,7 +8866,9 @@ namespace exprtk
             {
                if (populate_value_list())
                {
-                  return (*function_)(fwd_typestore_list_);
+                  typedef typename GenericFunction::parameter_list_t parameter_list_t;
+
+                  return (*function_)(parameter_list_t(typestore_list_));
                }
             }
 
@@ -8697,9 +8880,9 @@ namespace exprtk
             return expression_node<T>::e_genfunction;
          }
 
-      private:
+      protected:
 
-         inline bool populate_value_list() const
+         inline virtual bool populate_value_list() const
          {
             for (std::size_t i = 0; i < branch_.size(); ++i)
             {
@@ -8712,7 +8895,7 @@ namespace exprtk
 
                if (rdt.range)
                {
-                  range_pack_t& rp = (*rdt.range);
+                  range_t&      rp = (*rdt.range);
                   std::size_t   r0 = 0;
                   std::size_t   r1 = 0;
 
@@ -8732,18 +8915,96 @@ namespace exprtk
                }
             }
 
-            fwd_typestore_list_ = typestore_list_;
-
             return true;
          }
 
          GenericFunction* function_;
+         mutable typestore_list_t typestore_list_;
+
+      private:
+
          std::vector<expression_ptr> arg_list_;
          std::vector<branch_t> branch_;
-         mutable typestore_list_t typestore_list_;
-         mutable typestore_list_t fwd_typestore_list_;
          mutable tmp_vs_t expr_as_vec1_store_;
          mutable range_list_t range_list_;
+      };
+
+      template <typename T, typename StringFunction>
+      class string_function_node : public generic_function_node<T,StringFunction>,
+                                   public string_base_node<T>,
+                                   public range_interface <T>
+      {
+      public:
+
+         typedef generic_function_node<T, StringFunction> gen_function_t;
+         typedef range_pack<T> range_t;
+
+         string_function_node(StringFunction* func,
+                              const std::vector<typename gen_function_t::expression_ptr>& arg_list)
+         : gen_function_t(func,arg_list)
+         {
+            range_.n0_c = std::make_pair<bool,std::size_t>(true,0);
+            range_.n1_c = std::make_pair<bool,std::size_t>(true,0);
+            range_.cache.first  = range_.n0_c.second;
+            range_.cache.second = range_.n1_c.second;
+         }
+
+         inline bool operator <(const string_function_node<T,StringFunction>& fn) const
+         {
+            return this < (&fn);
+         }
+
+         inline T value() const
+         {
+            T result = std::numeric_limits<T>::quiet_NaN();
+
+            if (gen_function_t::function_)
+            {
+               if (gen_function_t::populate_value_list())
+               {
+                  typedef typename StringFunction::parameter_list_t parameter_list_t;
+
+                  result = (*gen_function_t::function_)(ret_string_,parameter_list_t(gen_function_t::typestore_list_));
+
+                  range_.n1_c.second  = ret_string_.size() - 1;
+                  range_.cache.second = range_.n1_c.second;
+
+                  return result;
+               }
+            }
+
+            return result;
+         }
+
+         inline typename expression_node<T>::node_type type() const
+         {
+            return expression_node<T>::e_strfunction;
+         }
+
+         std::string str() const
+         {
+            return ret_string_;
+         }
+
+         const char* base() const
+         {
+           return ret_string_.data();
+         }
+
+         range_t& range_ref()
+         {
+            return range_;
+         }
+
+         const range_t& range_ref() const
+         {
+            return range_;
+         }
+
+      private:
+
+         mutable range_t     range_;
+         mutable std::string ret_string_;
       };
 
       #define exprtk_define_unary_op(OpName)                        \
@@ -8816,9 +9077,9 @@ namespace exprtk
          typedef typename details::functor_t<T>::Type Type;
          typedef typename details::functor_t<T> functor_t;
          typedef typename functor_t::qfunc_t quaternary_functor_t;
-         typedef typename functor_t::tfunc_t trinary_functor_t;
-         typedef typename functor_t::bfunc_t binary_functor_t;
-         typedef typename functor_t::ufunc_t unary_functor_t;
+         typedef typename functor_t::tfunc_t    trinary_functor_t;
+         typedef typename functor_t::bfunc_t     binary_functor_t;
+         typedef typename functor_t::ufunc_t      unary_functor_t;
       };
 
       template <typename T>
@@ -9944,8 +10205,8 @@ namespace exprtk
 
          typedef expression_node<T>* expression_ptr;
          typedef typename details::functor_t<T> functor_t;
-         typedef typename functor_t::bfunc_t bfunc_t;
-         typedef typename functor_t::ufunc_t ufunc_t;
+         typedef typename functor_t::bfunc_t      bfunc_t;
+         typedef typename functor_t::ufunc_t      ufunc_t;
 
          explicit uvouv_node(const T& var0,const T& var1,
                              ufunc_t uf0, ufunc_t uf1, bfunc_t bf)
@@ -10085,7 +10346,7 @@ namespace exprtk
       struct T0oT1oT2process
       {
          typedef typename details::functor_t<T> functor_t;
-         typedef typename functor_t::bfunc_t bfunc_t;
+         typedef typename functor_t::bfunc_t      bfunc_t;
 
          struct mode0
          {
@@ -10128,7 +10389,7 @@ namespace exprtk
       struct T0oT1oT20T3process
       {
          typedef typename details::functor_t<T> functor_t;
-         typedef typename functor_t::bfunc_t bfunc_t;
+         typedef typename functor_t::bfunc_t      bfunc_t;
 
          struct mode0
          {
@@ -10316,7 +10577,7 @@ namespace exprtk
       public:
 
          typedef typename details::functor_t<T> functor_t;
-         typedef typename functor_t::bfunc_t bfunc_t;
+         typedef typename functor_t::bfunc_t      bfunc_t;
          typedef T value_type;
          typedef T0oT1<T,T0,T1> node_type;
 
@@ -10381,7 +10642,7 @@ namespace exprtk
       public:
 
          typedef typename details::functor_t<T> functor_t;
-         typedef typename functor_t::bfunc_t bfunc_t;
+         typedef typename functor_t::bfunc_t      bfunc_t;
          typedef T value_type;
          typedef T0oT1oT2<T,T0,T1,T2,ProcessMode> node_type;
          typedef ProcessMode process_mode_t;
@@ -10469,7 +10730,7 @@ namespace exprtk
       public:
 
          typedef typename details::functor_t<T> functor_t;
-         typedef typename functor_t::bfunc_t bfunc_t;
+         typedef typename functor_t::bfunc_t      bfunc_t;
          typedef T value_type;
          typedef T0_ T0;
          typedef T1_ T1;
@@ -10566,7 +10827,7 @@ namespace exprtk
       public:
 
          typedef typename details::functor_t<T> functor_t;
-         typedef typename functor_t::tfunc_t tfunc_t;
+         typedef typename functor_t::tfunc_t      tfunc_t;
          typedef T value_type;
          typedef T0oT1oT2_sf3<T,T0,T1,T2> node_type;
 
@@ -10658,7 +10919,7 @@ namespace exprtk
       public:
 
          typedef typename details::functor_t<T> functor_t;
-         typedef typename functor_t::tfunc_t tfunc_t;
+         typedef typename functor_t::tfunc_t      tfunc_t;
          typedef T value_type;
          typedef T0oT1oT2_sf3ext<T,T0,T1,T2,SF3Operation> node_type;
 
@@ -10745,7 +11006,7 @@ namespace exprtk
       public:
 
          typedef typename details::functor_t<T> functor_t;
-         typedef typename functor_t::qfunc_t qfunc_t;
+         typedef typename functor_t::qfunc_t      qfunc_t;
          typedef T value_type;
          typedef T0oT1oT2oT3_sf4<T,T0,T1,T2,T3> node_type;
 
@@ -10832,7 +11093,7 @@ namespace exprtk
       public:
 
          typedef typename details::functor_t<T> functor_t;
-         typedef typename functor_t::tfunc_t tfunc_t;
+         typedef typename functor_t::tfunc_t      tfunc_t;
          typedef T value_type;
          typedef T0oT1oT2oT3_sf4ext<T,T0,T1,T2,T3,SF4Operation> node_type;
 
@@ -11569,6 +11830,115 @@ namespace exprtk
          str_xroxr_node<T,SType0,SType1,RangePack,Operation>& operator=(str_xroxr_node<T,SType0,SType1,RangePack,Operation>&);
       };
 
+      template <typename T, typename Operation>
+      class str_sogens_node : public binary_node<T>
+      {
+      public:
+
+         typedef expression_node <T>*  expression_ptr;
+         typedef string_base_node<T>*    str_base_ptr;
+         typedef range_pack      <T>          range_t;
+         typedef range_t*                   range_ptr;
+         typedef range_interface<T>          irange_t;
+         typedef irange_t*                 irange_ptr;
+
+         str_sogens_node(const operator_type& opr,
+                         expression_ptr branch0,
+                         expression_ptr branch1)
+         : binary_node<T>(opr,branch0,branch1),
+           str0_base_ptr_ (0),
+           str1_base_ptr_ (0),
+           str0_range_ptr_(0),
+           str1_range_ptr_(0)
+         {
+            if (is_generally_string_node(binary_node<T>::branch_[0].first))
+            {
+               str0_base_ptr_ = dynamic_cast<str_base_ptr>(binary_node<T>::branch_[0].first);
+
+               if (0 == str0_base_ptr_)
+                  return;
+
+               irange_ptr range_ptr = dynamic_cast<irange_ptr>(binary_node<T>::branch_[0].first);
+
+               if (0 == range_ptr)
+                  return;
+
+               str0_range_ptr_ = &(range_ptr->range_ref());
+            }
+
+            if (is_generally_string_node(binary_node<T>::branch_[1].first))
+            {
+               str1_base_ptr_ = dynamic_cast<str_base_ptr>(binary_node<T>::branch_[1].first);
+
+               if (0 == str1_base_ptr_)
+                  return;
+
+               irange_ptr range_ptr = dynamic_cast<irange_ptr>(binary_node<T>::branch_[1].first);
+
+               if (0 == range_ptr)
+                  return;
+
+               str1_range_ptr_ = &(range_ptr->range_ref());
+            }
+         }
+
+         inline T value() const
+         {
+            if (
+                 str0_base_ptr_  &&
+                 str1_base_ptr_  &&
+                 str1_range_ptr_ &&
+                 str1_range_ptr_
+               )
+            {
+               binary_node<T>::branch_[0].first->value();
+               binary_node<T>::branch_[1].first->value();
+
+               std::size_t str0_r0 = 0;
+               std::size_t str0_r1 = 0;
+
+               std::size_t str1_r0 = 0;
+               std::size_t str1_r1 = 0;
+
+               range_t& range0 = (*str0_range_ptr_);
+               range_t& range1 = (*str1_range_ptr_);
+
+               if (
+                    range0(str0_r0,str0_r1,str0_base_ptr_->str().size()) &&
+                    range1(str1_r0,str1_r1,str1_base_ptr_->str().size())
+                  )
+               {
+                  return Operation::process(
+                                             str0_base_ptr_->str().substr(str0_r0,(str0_r1 - str0_r0) + 1),
+                                             str1_base_ptr_->str().substr(str1_r0,(str1_r1 - str1_r0) + 1)
+                                           );
+               }
+            }
+
+            return std::numeric_limits<T>::quiet_NaN();
+         }
+
+         inline typename expression_node<T>::node_type type() const
+         {
+            return Operation::type();
+         }
+
+         inline operator_type operation() const
+         {
+            return Operation::operation();
+         }
+
+      private:
+
+         str_sogens_node(str_sogens_node<T,Operation>&);
+         str_sogens_node<T,Operation>& operator=(str_sogens_node<T,Operation>&);
+
+         str_base_ptr str0_base_ptr_;
+         str_base_ptr str1_base_ptr_;
+         range_ptr    str0_range_ptr_;
+         range_ptr    str1_range_ptr_;
+      };
+
       template <typename T, typename SType0, typename SType1, typename SType2, typename Operation>
       class sosos_node : public sosos_base_node<T>
       {
@@ -11766,13 +12136,27 @@ namespace exprtk
       }
 
       template <typename T>
+      inline bool is_string_concat_node(const expression_node<T>* node)
+      {
+         return node && (expression_node<T>::e_strconcat == node->type());
+      }
+
+      template <typename T>
+      inline bool is_string_function_node(const expression_node<T>* node)
+      {
+         return node && (expression_node<T>::e_strfunction == node->type());
+      }
+
+      template <typename T>
       inline bool is_generally_string_node(const expression_node<T>* node)
       {
          return is_string_node            (node) ||
                 is_const_string_node      (node) ||
                 is_string_range_node      (node) ||
                 is_const_string_range_node(node) ||
-                is_string_assignment_node (node) ;
+                is_string_assignment_node (node) ||
+                is_string_concat_node     (node) ||
+                is_string_function_node   (node) ;
       }
 
       class node_allocator
@@ -12272,7 +12656,7 @@ namespace exprtk
 
       typedef T type;
       typedef type_store<T> generic_type;
-      typedef std::vector<generic_type> parameter_list_t;
+      typedef typename generic_type::parameter_list parameter_list_t;
 
       igeneric_function(const std::string& param_seq = "",
                         const bool hse = true)
@@ -12283,9 +12667,15 @@ namespace exprtk
       virtual ~igeneric_function()
       {}
 
-      inline virtual T operator()(parameter_list_t&)
+      inline virtual T operator()(parameter_list_t)
       {
-         exprtk_debug(("igeneric_function::operator() - Operator has not been overriden.\n"));
+         exprtk_debug(("igeneric_function::operator() - Operator has not been overriden. [1]\n"));
+         return std::numeric_limits<T>::quiet_NaN();
+      }
+
+      inline virtual T operator()(std::string&, parameter_list_t)
+      {
+         exprtk_debug(("igeneric_function::operator() - Operator has not been overriden. [2]\n"));
          return std::numeric_limits<T>::quiet_NaN();
       }
 
@@ -12688,6 +13078,7 @@ namespace exprtk
             type_store<ifunction<T>,ifunction<T> > function_store;
             type_store<ivararg_function<T>,ivararg_function<T> > vararg_function_store;
             type_store<igeneric_function<T>,igeneric_function<T> > generic_function_store;
+            type_store<igeneric_function<T>,igeneric_function<T> > string_function_store;
             type_store<vector_holder_t,vector_holder_t> vector_store;
 
             st_data()
@@ -12911,6 +13302,16 @@ namespace exprtk
             return local_data().generic_function_store.get(function_name);
       }
 
+      inline generic_function_ptr get_string_function(const std::string& function_name) const
+      {
+         if (!valid())
+            return reinterpret_cast<generic_function_ptr>(0);
+         else if (!valid_symbol(function_name))
+            return reinterpret_cast<generic_function_ptr>(0);
+         else
+            return local_data().string_function_store.get(function_name);
+      }
+
       typedef vector_holder_t* vector_holder_ptr;
 
       inline vector_holder_ptr get_vector(const std::string& vector_name) const
@@ -13068,7 +13469,14 @@ namespace exprtk
             return local_data().vararg_function_store.add(vararg_function_name,vararg_function);
       }
 
-      inline bool add_function(const std::string& function_name, generic_function_t& function)
+      enum func_type
+      {
+         e_ft_unknown   = 0,
+         e_ft_basicfunc = 1,
+         e_ft_strfunc   = 2
+      };
+
+      inline bool add_function(const std::string& function_name, generic_function_t& function, const func_type ft = e_ft_basicfunc)
       {
          if (!valid())
             return false;
@@ -13076,8 +13484,12 @@ namespace exprtk
             return false;
          else if (symbol_exists(function_name))
             return false;
-         else
+         else if (e_ft_basicfunc == ft)
             return local_data().generic_function_store.add(function_name,function);
+         else if (e_ft_strfunc == ft)
+            return local_data().string_function_store.add(function_name, function);
+         else
+            return false;
       }
 
       template <std::size_t N>
@@ -13378,6 +13790,21 @@ namespace exprtk
                {
                   exprtk::igeneric_function<T>& ifunc = *st.get_generic_function(name_list[i]);
                   add_function(name_list[i],ifunc);
+               }
+            }
+         }
+
+         {
+            std::vector<std::string> name_list;
+
+            st.local_data().string_function_store.get_list(name_list);
+
+            if (!name_list.empty())
+            {
+               for (std::size_t i = 0; i < name_list.size(); ++i)
+               {
+                  exprtk::igeneric_function<T>& ifunc = *st.get_string_function(name_list[i]);
+                  add_function(name_list[i],ifunc,e_ft_strfunc);
                }
             }
          }
@@ -13915,17 +14342,18 @@ namespace exprtk
       typedef details::vector_elem_node<T>               vector_elem_node_t;
       typedef details::vector_node     <T>                    vector_node_t;
       #ifndef exprtk_disable_string_capabilities
-      typedef details::range_pack         <T>                  range_pack_t;
+      typedef details::range_pack         <T>                       range_t;
       typedef details::stringvar_node     <T>              stringvar_node_t;
       typedef details::string_literal_node<T>         string_literal_node_t;
-      typedef details::string_range_node<T,range_pack_t>string_range_node_t;
-      typedef details::const_string_range_node<T,range_pack_t>  const_string_range_node_t;
+      typedef details::string_range_node  <T>           string_range_node_t;
+      typedef details::const_string_range_node<T> const_string_range_node_t;
+      typedef details::string_concat_node <T>          string_concat_node_t;
       #endif
       typedef details::assignment_node<T>                 assignment_node_t;
-      typedef details::assignment_string_node<T>   assignment_string_node_t;
-      typedef details::assignment_vec_elem_node<T>  assignment_vec_elem_node_t;
-      typedef details::assignment_vec_node<T>         assignment_vec_node_t;
-      typedef details::assignment_vecvec_node<T>   assignment_vecvec_node_t;
+      typedef details::assignment_string_node  <T> assignment_string_node_t;
+      typedef details::assignment_vec_elem_node<T> assignment_vec_elem_node_t;
+      typedef details::assignment_vec_node     <T>    assignment_vec_node_t;
+      typedef details::assignment_vecvec_node  <T> assignment_vecvec_node_t;
       typedef details::scand_node<T>                           scand_node_t;
       typedef details::scor_node<T>                             scor_node_t;
       typedef lexer::token                                          token_t;
@@ -13933,17 +14361,22 @@ namespace exprtk
       typedef symbol_table<T>                                symbol_table_t;
       typedef details::vector_holder<T>*                  vector_holder_ptr;
 
-      typedef typename details::functor_t<T> functor_t;
+      typedef typename details::functor_t<T>         functor_t;
       typedef typename functor_t::qfunc_t quaternary_functor_t;
-      typedef typename functor_t::tfunc_t trinary_functor_t;
-      typedef typename functor_t::bfunc_t binary_functor_t;
-      typedef typename functor_t::ufunc_t unary_functor_t;
-      typedef std::map<details::operator_type,unary_functor_t> unary_op_map_t;
-      typedef std::map<details::operator_type,binary_functor_t> binary_op_map_t;
-      typedef std::map<details::operator_type,trinary_functor_t> trinary_op_map_t;
-      typedef std::map<std::string,std::pair<trinary_functor_t,details::operator_type> > sf3_map_t;
-      typedef std::map<std::string,std::pair<quaternary_functor_t,details::operator_type> > sf4_map_t;
-      typedef std::map<binary_functor_t,details::operator_type> inv_binary_op_map_t;
+      typedef typename functor_t::tfunc_t    trinary_functor_t;
+      typedef typename functor_t::bfunc_t     binary_functor_t;
+      typedef typename functor_t::ufunc_t      unary_functor_t;
+
+      typedef details::operator_type operator_t;
+
+      typedef std::map<operator_t,  unary_functor_t>   unary_op_map_t;
+      typedef std::map<operator_t, binary_functor_t>  binary_op_map_t;
+      typedef std::map<operator_t,trinary_functor_t> trinary_op_map_t;
+
+      typedef std::map<std::string,std::pair<trinary_functor_t   ,operator_t> > sf3_map_t;
+      typedef std::map<std::string,std::pair<quaternary_functor_t,operator_t> > sf4_map_t;
+
+      typedef std::map<binary_functor_t,operator_t> inv_binary_op_map_t;
       typedef std::multimap<std::string,details::base_operation_t,details::ilesscompare> base_ops_map_t;
 
       typedef details::T0oT1_define<T, cref_t, cref_t> vov_t;
@@ -14946,11 +15379,12 @@ namespace exprtk
 
             if ((right_branch = parse_expression(current_state.right)))
             {
-               new_expression = expression_generator_(
-                                                       current_state.operation,
-                                                       expression,
-                                                       right_branch
-                                                     );
+               new_expression = expression_generator_
+                                  (
+                                    current_state.operation,
+                                    expression,
+                                    right_branch
+                                  );
             }
 
             if (0 == new_expression)
@@ -16537,7 +16971,7 @@ namespace exprtk
          return result;
       }
 
-      inline bool parse_range(range_pack_t& rp)
+      inline bool parse_range(range_t& rp)
       {
          // Examples of valid ranges:
          // 1. [1:5]     -> 1..5
@@ -16760,7 +17194,7 @@ namespace exprtk
                             (static_cast<details::stringvar_node<T>*>(result)->ref());
             }
 
-            range_pack_t rp;
+            range_t rp;
 
             if (!parse_range(rp))
             {
@@ -16804,7 +17238,7 @@ namespace exprtk
                return expression_generator_(T(const_str.size()));
             }
 
-            range_pack_t rp;
+            range_t rp;
 
             if (!parse_range(rp))
             {
@@ -17057,7 +17491,6 @@ namespace exprtk
                                       return error_node();
                                    }
                                    break;
-
                      }
                   }
 
@@ -17085,6 +17518,136 @@ namespace exprtk
          return result;
       }
 
+      inline expression_node_ptr parse_string_function_call(igeneric_function<T>* function, const std::string& function_name)
+      {
+         std::vector<expression_node_ptr> arg_list;
+
+         scoped_vec_delete<expression_node_t> sdd(*this,arg_list);
+
+         next_token();
+
+         char current_type        = 0;
+         bool one_more_match_mode = false;
+
+         if (token_is(token_t::e_lbracket))
+         {
+            if (!token_is(token_t::e_rbracket))
+            {
+               for ( ; ; )
+               {
+                  expression_node_ptr arg = parse_expression();
+
+                  if (0 == arg)
+                     return error_node();
+
+                  if (!function->parameter_sequence.empty())
+                  {
+                     if (
+                          !one_more_match_mode &&
+                          (arg_list.size() >= function->parameter_sequence.size())
+                        )
+                     {
+                        set_error(
+                           make_error(parser_error::e_syntax,
+                                      current_token_,
+                                      "ERR104 - Invalid number of parameters for call to string function: '" + function_name + "'"));
+
+                        return error_node();
+                     }
+                     else if (
+                               one_more_match_mode ||
+                               (
+                                 (arg_list.size() < function->parameter_sequence.size()) &&
+                                 ('*' == function->parameter_sequence[arg_list.size()])
+                               )
+                             )
+                     {
+                        if (
+                             arg_list.empty() ||
+                             (
+                               !one_more_match_mode &&
+                               (arg_list.size() != (function->parameter_sequence.size() - 1))
+                             )
+                           )
+                        {
+                           set_error(
+                              make_error(parser_error::e_syntax,
+                                         current_token_,
+                                         "ERR105 - Invalid parameter sequence '" + function->parameter_sequence +
+                                         "' for string function: '" + function_name + "'"));
+
+                           return error_node();
+                        }
+
+                        one_more_match_mode = true;
+                     }
+                     else
+                        current_type = std::toupper(function->parameter_sequence[arg_list.size()]);
+
+                     switch (current_type)
+                     {
+                        case 'V' : if (!is_ivector_node(arg))
+                                   {
+                                      set_error(
+                                         make_error(parser_error::e_syntax,
+                                                    current_token_,
+                                                    "ERR106 - Expected parameter " + details::to_str(arg_list.size()) +" to be of type vector "
+                                                    "in call to string function: '" + function_name + "'"));
+
+                                      return error_node();
+                                   }
+                                   break;
+
+                        case 'S' : if (!is_generally_string_node(arg))
+                                   {
+                                      set_error(
+                                         make_error(parser_error::e_syntax,
+                                                    current_token_,
+                                                    "ERR107 - Expected parameter " + details::to_str(arg_list.size()) +" to be of type string "
+                                                    "in call to string function: '" + function_name + "'"));
+
+                                      return error_node();
+                                   }
+                                   break;
+
+                        case 'T' : if (is_ivector_node(arg) || is_generally_string_node(arg))
+                                   {
+                                      set_error(
+                                         make_error(parser_error::e_syntax,
+                                                    current_token_,
+                                                    "ERR108 - Expected parameter " + details::to_str(arg_list.size()) +" to be of type scalar "
+                                                    "in call to string function: '" + function_name + "'"));
+
+                                      return error_node();
+                                   }
+                                   break;
+                     }
+                  }
+
+                  arg_list.push_back(arg);
+
+                  if (token_is(token_t::e_rbracket))
+                     break;
+                  else if (!token_is(token_t::e_comma))
+                  {
+                     set_error(
+                        make_error(parser_error::e_syntax,
+                                   current_token_,
+                                   "ERR109 - Expected ',' for call to string function: " + function_name));
+
+                     return error_node();
+                  }
+               }
+            }
+         }
+
+         expression_node_ptr result = expression_generator_.string_function_call(function,arg_list);
+
+         sdd.delete_ptr = (0 == result);
+
+         return result;
+      }
+
       template <typename Type, std::size_t NumberOfParameters>
       struct parse_special_function_impl
       {
@@ -17102,7 +17665,7 @@ namespace exprtk
                p.set_error(
                     make_error(parser_error::e_syntax,
                                p.current_token(),
-                               "ERR104 - Expected '(' for special function"));
+                               "ERR110 - Expected '(' for special function"));
 
                return error_node();
             }
@@ -17122,7 +17685,7 @@ namespace exprtk
                      p.set_error(
                           make_error(parser_error::e_syntax,
                                      p.current_token(),
-                                     "ERR105 - Expected ',' before next parameter of special function"));
+                                     "ERR111 - Expected ',' before next parameter of special function"));
 
                      return p.error_node();
                   }
@@ -17151,7 +17714,7 @@ namespace exprtk
             set_error(
                make_error(parser_error::e_token,
                           current_token_,
-                          "ERR106 - Invalid special function[1]: " + current_token_.value));
+                          "ERR112 - Invalid special function[1]: " + current_token_.value));
 
             return error_node();
          }
@@ -17163,7 +17726,7 @@ namespace exprtk
             set_error(
                make_error(parser_error::e_token,
                           current_token_,
-                          "ERR107 - Invalid special function[2]: " + current_token_.value));
+                          "ERR113 - Invalid special function[2]: " + current_token_.value));
 
             return error_node();
          }
@@ -17204,7 +17767,7 @@ namespace exprtk
                   set_error(
                      make_error(parser_error::e_syntax,
                                 current_token_,
-                                "ERR108 - Failed to parse return expression for 'break' statement"));
+                                "ERR114 - Failed to parse return expression for 'break' statement"));
 
                   return error_node();
                }
@@ -17213,7 +17776,7 @@ namespace exprtk
                   set_error(
                      make_error(parser_error::e_syntax,
                                 current_token_,
-                                "ERR109 - Expected ']' at the completion of break's return expression"));
+                                "ERR115 - Expected ']' at the completion of break's return expression"));
 
                   free_node(node_allocator_,return_expr);
 
@@ -17228,7 +17791,7 @@ namespace exprtk
             set_error(
                make_error(parser_error::e_syntax,
                           current_token_,
-                          "ERR110 - Invalid use of 'break', allowed only in the scope of a loop"));
+                          "ERR116 - Invalid use of 'break', allowed only in the scope of a loop"));
          }
 
          return error_node();
@@ -17247,7 +17810,7 @@ namespace exprtk
             set_error(
                make_error(parser_error::e_syntax,
                           current_token_,
-                          "ERR111 - Invalid use of 'continue', allowed only in the scope of a loop"));
+                          "ERR117 - Invalid use of 'continue', allowed only in the scope of a loop"));
 
             return error_node();
          }
@@ -17263,7 +17826,7 @@ namespace exprtk
             set_error(
                make_error(parser_error::e_syntax,
                           current_token_,
-                          "ERR112 - Expected '[' as part of vector size definition"));
+                          "ERR118 - Expected '[' as part of vector size definition"));
 
             return error_node();
          }
@@ -17272,7 +17835,7 @@ namespace exprtk
             set_error(
                make_error(parser_error::e_syntax,
                           current_token_,
-                          "ERR113 - Failed to determine size of vector '" + vec_name + "'"));
+                          "ERR119 - Failed to determine size of vector '" + vec_name + "'"));
 
             return error_node();
          }
@@ -17283,7 +17846,7 @@ namespace exprtk
             set_error(
                make_error(parser_error::e_syntax,
                           current_token_,
-                          "ERR114 - Expected a literal number as size of vector '" + vec_name + "'"));
+                          "ERR120 - Expected a literal number as size of vector '" + vec_name + "'"));
 
             return error_node();
          }
@@ -17301,7 +17864,7 @@ namespace exprtk
             set_error(
                make_error(parser_error::e_syntax,
                           current_token_,
-                          "ERR115 - Invalid vector size. Must be an integer greater than zero, size: " +
+                          "ERR121 - Invalid vector size. Must be an integer greater than zero, size: " +
                           details::to_str(details::numeric::to_int32(vector_size))));
 
             return error_node();
@@ -17318,7 +17881,7 @@ namespace exprtk
             set_error(
                make_error(parser_error::e_syntax,
                           current_token_,
-                          "ERR116 - Expected ']' as part of vector size definition"));
+                          "ERR122 - Expected ']' as part of vector size definition"));
 
             return error_node();
          }
@@ -17329,7 +17892,7 @@ namespace exprtk
                set_error(
                   make_error(parser_error::e_syntax,
                              current_token_,
-                             "ERR117 - Expected ':=' as part of vector definition"));
+                             "ERR123 - Expected ':=' as part of vector definition"));
 
                return error_node();
             }
@@ -17342,7 +17905,7 @@ namespace exprtk
                   set_error(
                      make_error(parser_error::e_syntax,
                                 current_token_,
-                                "ERR118 - Failed to parse single vector initialiser"));
+                                "ERR124 - Failed to parse single vector initialiser"));
 
                   return error_node();
                }
@@ -17354,7 +17917,7 @@ namespace exprtk
                   set_error(
                      make_error(parser_error::e_syntax,
                                 current_token_,
-                                "ERR119 - Expected ']' to close single value vector initialiser"));
+                                "ERR125 - Expected ']' to close single value vector initialiser"));
 
                   return error_node();
                }
@@ -17366,7 +17929,7 @@ namespace exprtk
                set_error(
                   make_error(parser_error::e_syntax,
                              current_token_,
-                             "ERR120 - Expected '{' as part of vector initialiser list"));
+                             "ERR126 - Expected '{' as part of vector initialiser list"));
 
                return error_node();
             }
@@ -17381,7 +17944,7 @@ namespace exprtk
                      set_error(
                         make_error(parser_error::e_syntax,
                                    current_token_,
-                                   "ERR121 - Expected '{' as part of vector initialiser list"));
+                                   "ERR127 - Expected '{' as part of vector initialiser list"));
 
                      return error_node();
                   }
@@ -17398,7 +17961,7 @@ namespace exprtk
                      set_error(
                         make_error(parser_error::e_syntax,
                                    current_token_,
-                                   "ERR122 - Expected ',' between vector initialisers"));
+                                   "ERR128 - Expected ',' between vector initialisers"));
 
                      return error_node();
                   }
@@ -17419,7 +17982,7 @@ namespace exprtk
                   set_error(
                      make_error(parser_error::e_syntax,
                                 current_token_,
-                                "ERR123 - Expected ';' at end of vector definition"));
+                                "ERR129 - Expected ';' at end of vector definition"));
 
                   return error_node();
                }
@@ -17430,7 +17993,7 @@ namespace exprtk
                set_error(
                   make_error(parser_error::e_syntax,
                              current_token_,
-                             "ERR124 - Initialiser list larger than the number of elements in the vector: '" + vec_name + "'"));
+                             "ERR130 - Initialiser list larger than the number of elements in the vector: '" + vec_name + "'"));
 
                return error_node();
             }
@@ -17449,7 +18012,7 @@ namespace exprtk
                set_error(
                   make_error(parser_error::e_syntax,
                              current_token_,
-                             "ERR125 - Illegal redefinition of local vector: '" + vec_name + "'"));
+                             "ERR131 - Illegal redefinition of local vector: '" + vec_name + "'"));
 
                return error_node();
             }
@@ -17479,7 +18042,7 @@ namespace exprtk
                set_error(
                   make_error(parser_error::e_syntax,
                              current_token_,
-                             "ERR126 - Failed to add new local vector '" + vec_name + "' to SEM"));
+                             "ERR132 - Failed to add new local vector '" + vec_name + "' to SEM"));
 
                return error_node();
             }
@@ -17519,7 +18082,7 @@ namespace exprtk
             set_error(
                make_error(parser_error::e_syntax,
                           current_token_,
-                          "ERR127 - Illegal variable definition"));
+                          "ERR133 - Illegal variable definition"));
 
             return error_node();
          }
@@ -17539,7 +18102,7 @@ namespace exprtk
             set_error(
                make_error(parser_error::e_syntax,
                           current_token_,
-                          "ERR128 - Expected a symbol for variable definition"));
+                          "ERR134 - Expected a symbol for variable definition"));
 
             return error_node();
          }
@@ -17548,7 +18111,7 @@ namespace exprtk
             set_error(
                make_error(parser_error::e_syntax,
                           current_token_,
-                          "ERR129 - Illegal redefinition of reserved keyword: '" + var_name + "'"));
+                          "ERR135 - Illegal redefinition of reserved keyword: '" + var_name + "'"));
 
             return error_node();
          }
@@ -17557,7 +18120,7 @@ namespace exprtk
             set_error(
                make_error(parser_error::e_syntax,
                           current_token_,
-                          "ERR130 - Illegal redefinition of variable '" + var_name + "'"));
+                          "ERR136 - Illegal redefinition of variable '" + var_name + "'"));
 
             return error_node();
          }
@@ -17566,7 +18129,7 @@ namespace exprtk
             set_error(
                make_error(parser_error::e_syntax,
                           current_token_,
-                          "ERR131 - Illegal redefinition of local variable: '" + var_name + "'"));
+                          "ERR137 - Illegal redefinition of local variable: '" + var_name + "'"));
 
             return error_node();
          }
@@ -17585,7 +18148,7 @@ namespace exprtk
                set_error(
                   make_error(parser_error::e_syntax,
                              current_token_,
-                             "ERR132 - Failed to parse initialisation expression"));
+                             "ERR138 - Failed to parse initialisation expression"));
 
                return error_node();
             }
@@ -17602,7 +18165,7 @@ namespace exprtk
                set_error(
                   make_error(parser_error::e_syntax,
                              current_token_,
-                             "ERR133 - Expected ';' after variable definition"));
+                             "ERR139 - Expected ';' after variable definition"));
 
                free_node(node_allocator_,initialisation_expression);
 
@@ -17621,7 +18184,7 @@ namespace exprtk
                set_error(
                   make_error(parser_error::e_syntax,
                              current_token_,
-                             "ERR134 - Illegal redefinition of local variable: '" + var_name + "'"));
+                             "ERR140 - Illegal redefinition of local variable: '" + var_name + "'"));
 
                free_node(node_allocator_,initialisation_expression);
 
@@ -17651,7 +18214,7 @@ namespace exprtk
                set_error(
                   make_error(parser_error::e_syntax,
                              current_token_,
-                             "ERR135 - Failed to add new local variable '" + var_name + "' to SEM"));
+                             "ERR141 - Failed to add new local variable '" + var_name + "' to SEM"));
 
                free_node(node_allocator_,initialisation_expression);
 
@@ -17683,7 +18246,7 @@ namespace exprtk
             set_error(
                make_error(parser_error::e_syntax,
                           current_token_,
-                          "ERR136 - Expected a '<>' for uninitialised var definition."));
+                          "ERR142 - Expected a '<>' for uninitialised var definition."));
 
             return error_node();
          }
@@ -17692,7 +18255,7 @@ namespace exprtk
             set_error(
                make_error(parser_error::e_syntax,
                           current_token_,
-                          "ERR137 - Expected ';' after uninitialised variable definition"));
+                          "ERR143 - Expected ';' after uninitialised variable definition"));
 
             return error_node();
          }
@@ -17708,7 +18271,7 @@ namespace exprtk
                set_error(
                   make_error(parser_error::e_syntax,
                              current_token_,
-                             "ERR138 - Illegal redefinition of local variable: '" + var_name + "'"));
+                             "ERR144 - Illegal redefinition of local variable: '" + var_name + "'"));
 
                return error_node();
             }
@@ -17737,7 +18300,7 @@ namespace exprtk
                set_error(
                   make_error(parser_error::e_syntax,
                              current_token_,
-                             "ERR139 - Failed to add new local variable '" + var_name + "' to SEM"));
+                             "ERR145 - Failed to add new local variable '" + var_name + "' to SEM"));
 
                return error_node();
             }
@@ -17764,7 +18327,7 @@ namespace exprtk
             set_error(
                make_error(parser_error::e_syntax,
                           current_token_,
-                          "ERR140 - Expected '(' at start of swap statement"));
+                          "ERR146 - Expected '(' at start of swap statement"));
 
             return error_node();
          }
@@ -17782,7 +18345,7 @@ namespace exprtk
             set_error(
                make_error(parser_error::e_syntax,
                           current_token_,
-                          "ERR141 - Expected a symbol for variable or vector element definition"));
+                          "ERR147 - Expected a symbol for variable or vector element definition"));
 
             return error_node();
          }
@@ -17793,7 +18356,7 @@ namespace exprtk
                set_error(
                   make_error(parser_error::e_syntax,
                              current_token_,
-                             "ERR142 - First parameter to swap is an invalid vector element: '" + var0_name + "'"));
+                             "ERR148 - First parameter to swap is an invalid vector element: '" + var0_name + "'"));
 
                return error_node();
             }
@@ -17825,7 +18388,7 @@ namespace exprtk
                set_error(
                   make_error(parser_error::e_syntax,
                              current_token_,
-                             "ERR143 - First parameter to swap is an invalid variable: '" + var0_name + "'"));
+                             "ERR149 - First parameter to swap is an invalid variable: '" + var0_name + "'"));
 
                return error_node();
             }
@@ -17838,7 +18401,7 @@ namespace exprtk
             set_error(
                 make_error(parser_error::e_syntax,
                            current_token(),
-                           "ERR144 - Expected ',' between parameters to swap"));
+                           "ERR150 - Expected ',' between parameters to swap"));
 
             if (variable0_generated)
             {
@@ -17855,7 +18418,7 @@ namespace exprtk
             set_error(
                make_error(parser_error::e_syntax,
                           current_token_,
-                          "ERR145 - Expected a symbol for variable or vector element definition"));
+                          "ERR151 - Expected a symbol for variable or vector element definition"));
 
             if (variable0_generated)
             {
@@ -17871,7 +18434,7 @@ namespace exprtk
                set_error(
                   make_error(parser_error::e_syntax,
                              current_token_,
-                             "ERR146 - Second parameter to swap is an invalid vector element: '" + var1_name + "'"));
+                             "ERR152 - Second parameter to swap is an invalid vector element: '" + var1_name + "'"));
 
                if (variable0_generated)
                {
@@ -17908,7 +18471,7 @@ namespace exprtk
                set_error(
                   make_error(parser_error::e_syntax,
                              current_token_,
-                             "ERR147 - Second parameter to swap is an invalid variable: '" + var1_name + "'"));
+                             "ERR153 - Second parameter to swap is an invalid variable: '" + var1_name + "'"));
 
                if (variable0_generated)
                {
@@ -17926,7 +18489,7 @@ namespace exprtk
             set_error(
                make_error(parser_error::e_syntax,
                           current_token_,
-                          "ERR148 - Expected ')' at end of swap statement"));
+                          "ERR154 - Expected ')' at end of swap statement"));
 
             if (variable0_generated)
             {
@@ -18037,7 +18600,7 @@ namespace exprtk
                   set_error(
                      make_error(parser_error::e_syntax,
                                 current_token_,
-                                "ERR149 - Failed to generate node for function: '" + symbol + "'"));
+                                "ERR155 - Failed to generate node for function: '" + symbol + "'"));
 
                   return error_node();
                }
@@ -18062,7 +18625,7 @@ namespace exprtk
                   set_error(
                      make_error(parser_error::e_syntax,
                                 current_token_,
-                                "ERR150 - Failed to generate node for vararg function: '" + symbol + "'"));
+                                "ERR156 - Failed to generate node for vararg function: '" + symbol + "'"));
 
                   return error_node();
                }
@@ -18070,7 +18633,7 @@ namespace exprtk
          }
 
          {
-            // Are we dealing with a vararg vec-function?
+            // Are we dealing with a vararg generic function?
             igeneric_function<T>* generic_function = symbol_table_.get_generic_function(symbol);
 
             if (generic_function)
@@ -18087,7 +18650,32 @@ namespace exprtk
                   set_error(
                      make_error(parser_error::e_syntax,
                                 current_token_,
-                                "ERR151 - Failed to generate node for generic function: '" + symbol + "'"));
+                                "ERR157 - Failed to generate node for generic function: '" + symbol + "'"));
+
+                  return error_node();
+               }
+            }
+         }
+
+         {
+            // Are we dealing with a vararg string returing function?
+            igeneric_function<T>* string_function = symbol_table_.get_string_function(symbol);
+
+            if (string_function)
+            {
+               cache_symbol(symbol,e_cs_function);
+
+               expression_node_ptr stringfunc_node =
+                                      parse_string_function_call(string_function,symbol);
+
+               if (stringfunc_node)
+                  return stringfunc_node;
+               else
+               {
+                  set_error(
+                     make_error(parser_error::e_syntax,
+                                current_token_,
+                                "ERR158 - Failed to generate node for string function: '" + symbol + "'"));
 
                   return error_node();
                }
@@ -18106,7 +18694,7 @@ namespace exprtk
                set_error(
                   make_error(parser_error::e_syntax,
                              current_token_,
-                             "ERR152 - Invalid use of reserved symbol '" + symbol + "'"));
+                             "ERR159 - Invalid use of reserved symbol '" + symbol + "'"));
 
                return error_node();
          }
@@ -18155,7 +18743,7 @@ namespace exprtk
                set_error(
                   make_error(parser_error::e_symtab,
                              current_token_,
-                             "ERR153 - Failed to create variable: '" + symbol + "'"));
+                             "ERR160 - Failed to create variable: '" + symbol + "'"));
 
                return error_node();
             }
@@ -18164,7 +18752,7 @@ namespace exprtk
          set_error(
             make_error(parser_error::e_syntax,
                        current_token_,
-                       "ERR154 - Undefined variable or function: '" + symbol + "'"));
+                       "ERR161 - Undefined variable or function: '" + symbol + "'"));
 
          return error_node();
       }
@@ -18245,7 +18833,7 @@ namespace exprtk
             set_error(
                make_error(parser_error::e_symtab,
                           current_token_,
-                          "ERR155 - Variable or function detected, yet symbol-table is invalid, Symbol: " + current_token_.value));
+                          "ERR162 - Variable or function detected, yet symbol-table is invalid, Symbol: " + current_token_.value));
 
             return error_node();
          }
@@ -18270,7 +18858,7 @@ namespace exprtk
                set_error(
                   make_error(parser_error::e_numeric,
                              current_token_,
-                             "ERR156 - Failed to convert '" + current_token_.value + "' to a number"));
+                             "ERR163 - Failed to convert '" + current_token_.value + "' to a number"));
 
                return error_node();
             }
@@ -18296,7 +18884,7 @@ namespace exprtk
                set_error(
                   make_error(parser_error::e_syntax,
                              current_token_,
-                             "ERR157 - Expected ')' instead of: '" + current_token_.value + "'"));
+                             "ERR164 - Expected ')' instead of: '" + current_token_.value + "'"));
 
                free_node(node_allocator_,branch);
 
@@ -18314,7 +18902,7 @@ namespace exprtk
                set_error(
                   make_error(parser_error::e_syntax,
                              current_token_,
-                             "ERR158 - Expected ']' instead of: '" + current_token_.value + "'"));
+                             "ERR165 - Expected ']' instead of: '" + current_token_.value + "'"));
 
                free_node(node_allocator_,branch);
 
@@ -18332,7 +18920,7 @@ namespace exprtk
                set_error(
                   make_error(parser_error::e_syntax,
                              current_token_,
-                             "ERR159 - Expected '}' instead of: '" + current_token_.value + "'"));
+                             "ERR166 - Expected '}' instead of: '" + current_token_.value + "'"));
 
                free_node(node_allocator_,branch);
 
@@ -18365,7 +18953,7 @@ namespace exprtk
             set_error(
                make_error(parser_error::e_syntax,
                           current_token_,
-                          "ERR160 - Premature end of expression[1]"));
+                          "ERR167 - Premature end of expression[1]"));
 
             return error_node();
          }
@@ -18374,7 +18962,7 @@ namespace exprtk
             set_error(
                make_error(parser_error::e_syntax,
                           current_token_,
-                          "ERR161 - Premature end of expression[2]"));
+                          "ERR168 - Premature end of expression[2]"));
 
             return error_node();
          }
@@ -18585,12 +19173,12 @@ namespace exprtk
             return node_allocator_->allocate<string_literal_node_t>(s);
          }
 
-         inline expression_node_ptr operator()(std::string& s, range_pack_t& rp) const
+         inline expression_node_ptr operator()(std::string& s, range_t& rp) const
          {
             return node_allocator_->allocate_rr<string_range_node_t>(s,rp);
          }
 
-         inline expression_node_ptr operator()(const std::string& s, range_pack_t& rp) const
+         inline expression_node_ptr operator()(const std::string& s, range_t& rp) const
          {
             return node_allocator_->allocate_tt<const_string_range_node_t>(s,rp);
          }
@@ -20011,6 +20599,42 @@ namespace exprtk
             }
 
             typedef details::generic_function_node<Type,igeneric_function_t> alloc_type;
+
+            expression_node_ptr result = node_allocator_->allocate<alloc_type>(gf,arg_list);
+
+            alloc_type* genfunc_node_ptr = static_cast<alloc_type*>(result);
+
+            if (
+                 !arg_list.empty()      &&
+                 !gf->has_side_effects &&
+                 is_constant_foldable(arg_list)
+               )
+            {
+               genfunc_node_ptr->init_branches();
+               Type v = result->value();
+               details::free_node(*node_allocator_,result);
+               return node_allocator_->allocate<literal_node_t>(v);
+            }
+            else if (genfunc_node_ptr->init_branches())
+               return result;
+            else
+            {
+               details::free_node(*node_allocator_,result);
+               details::free_all_nodes(*node_allocator_,arg_list);
+               return error_node();
+            }
+         }
+
+         inline expression_node_ptr string_function_call(igeneric_function_t* gf,
+                                                         std::vector<expression_node_ptr>& arg_list)
+         {
+            if (!all_nodes_valid(arg_list))
+            {
+               details::free_all_nodes(*node_allocator_,arg_list);
+               return error_node();
+            }
+
+            typedef details::string_function_node<Type,igeneric_function_t> alloc_type;
 
             expression_node_ptr result = node_allocator_->allocate<alloc_type>(gf,arg_list);
 
@@ -25642,14 +26266,14 @@ namespace exprtk
          template <typename T0, typename T1>
          inline expression_node_ptr synthesize_str_xrox_expression_impl(const details::operator_type& opr,
                                                                         T0 s0, T1 s1,
-                                                                        range_pack_t rp0)
+                                                                        range_t rp0)
          {
             switch (opr)
             {
-               #define case_stmt(op0,op1)                                                                            \
-               case op0 : return node_allocator_->                                                                   \
-                             allocate_ttt<typename details::str_xrox_node<Type,T0,T1,range_pack_t,op1<Type> >,T0,T1> \
-                                (s0,s1,rp0);                                                                         \
+               #define case_stmt(op0,op1)                                                                       \
+               case op0 : return node_allocator_->                                                              \
+                             allocate_ttt<typename details::str_xrox_node<Type,T0,T1,range_t,op1<Type> >,T0,T1> \
+                                (s0,s1,rp0);                                                                    \
 
                string_opr_switch_statements
                #undef case_stmt
@@ -25660,14 +26284,14 @@ namespace exprtk
          template <typename T0, typename T1>
          inline expression_node_ptr synthesize_str_xoxr_expression_impl(const details::operator_type& opr,
                                                                         T0 s0, T1 s1,
-                                                                        range_pack_t rp1)
+                                                                        range_t rp1)
          {
             switch (opr)
             {
-               #define case_stmt(op0,op1)                                                                            \
-               case op0 : return node_allocator_->                                                                   \
-                             allocate_ttt<typename details::str_xoxr_node<Type,T0,T1,range_pack_t,op1<Type> >,T0,T1> \
-                                (s0,s1,rp1);                                                                         \
+               #define case_stmt(op0,op1)                                                                       \
+               case op0 : return node_allocator_->                                                              \
+                             allocate_ttt<typename details::str_xoxr_node<Type,T0,T1,range_t,op1<Type> >,T0,T1> \
+                                (s0,s1,rp1);                                                                    \
 
                string_opr_switch_statements
                #undef case_stmt
@@ -25678,14 +26302,14 @@ namespace exprtk
          template <typename T0, typename T1>
          inline expression_node_ptr synthesize_str_xroxr_expression_impl(const details::operator_type& opr,
                                                                          T0 s0, T1 s1,
-                                                                         range_pack_t rp0, range_pack_t rp1)
+                                                                         range_t rp0, range_t rp1)
          {
             switch (opr)
             {
-               #define case_stmt(op0,op1)                                                                              \
-               case op0 : return node_allocator_->                                                                     \
-                             allocate_tttt<typename details::str_xroxr_node<Type,T0,T1,range_pack_t,op1<Type> >,T0,T1> \
-                                (s0,s1,rp0,rp1);                                                                       \
+               #define case_stmt(op0,op1)                                                                         \
+               case op0 : return node_allocator_->                                                                \
+                             allocate_tttt<typename details::str_xroxr_node<Type,T0,T1,range_t,op1<Type> >,T0,T1> \
+                                (s0,s1,rp0,rp1);                                                                  \
 
                string_opr_switch_statements
                #undef case_stmt
@@ -25718,11 +26342,11 @@ namespace exprtk
 
          inline expression_node_ptr synthesize_sros_expression(const details::operator_type& opr, expression_node_ptr (&branch)[2])
          {
-            std::string&   s0 = static_cast<details::string_range_node<Type,range_pack_t>*>(branch[0])->ref  ();
-            std::string&   s1 = static_cast<details::stringvar_node<Type>*>                (branch[1])->ref  ();
-            range_pack_t  rp0 = static_cast<details::string_range_node<Type,range_pack_t>*>(branch[0])->range();
+            std::string&  s0 = static_cast<details::string_range_node<Type>*>(branch[0])->ref  ();
+            std::string&  s1 = static_cast<details::stringvar_node<Type>*>   (branch[1])->ref  ();
+            range_t      rp0 = static_cast<details::string_range_node<Type>*>(branch[0])->range();
 
-            static_cast<details::string_range_node<Type,range_pack_t>*>(branch[0])->range_ref().clear();
+            static_cast<details::string_range_node<Type>*>(branch[0])->range_ref().clear();
 
             free_node(*node_allocator_,branch[0]);
 
@@ -25731,11 +26355,11 @@ namespace exprtk
 
          inline expression_node_ptr synthesize_sosr_expression(const details::operator_type& opr, expression_node_ptr (&branch)[2])
          {
-            std::string&  s0 = static_cast<details::stringvar_node<Type>*>                (branch[0])->ref  ();
-            std::string&  s1 = static_cast<details::string_range_node<Type,range_pack_t>*>(branch[1])->ref  ();
-            range_pack_t rp1 = static_cast<details::string_range_node<Type,range_pack_t>*>(branch[1])->range();
+            std::string&  s0 = static_cast<details::stringvar_node<Type>*>   (branch[0])->ref  ();
+            std::string&  s1 = static_cast<details::string_range_node<Type>*>(branch[1])->ref  ();
+            range_t      rp1 = static_cast<details::string_range_node<Type>*>(branch[1])->range();
 
-            static_cast<details::string_range_node<Type,range_pack_t>*>(branch[1])->range_ref().clear();
+            static_cast<details::string_range_node<Type>*>(branch[1])->range_ref().clear();
 
             free_node(*node_allocator_,branch[1]);
 
@@ -25744,11 +26368,11 @@ namespace exprtk
 
          inline expression_node_ptr synthesize_socsr_expression(const details::operator_type& opr, expression_node_ptr (&branch)[2])
          {
-            std::string&  s0 = static_cast<details::stringvar_node<Type>*>                      (branch[0])->ref  ();
-            std::string   s1 = static_cast<details::const_string_range_node<Type,range_pack_t>*>(branch[1])->str  ();
-            range_pack_t rp1 = static_cast<details::const_string_range_node<Type,range_pack_t>*>(branch[1])->range();
+            std::string&  s0 = static_cast<details::stringvar_node<Type>*>         (branch[0])->ref  ();
+            std::string   s1 = static_cast<details::const_string_range_node<Type>*>(branch[1])->str  ();
+            range_t      rp1 = static_cast<details::const_string_range_node<Type>*>(branch[1])->range();
 
-            static_cast<details::const_string_range_node<Type,range_pack_t>*>(branch[1])->range_ref().clear();
+            static_cast<details::const_string_range_node<Type>*>(branch[1])->range_ref().clear();
 
             free_node(*node_allocator_,branch[1]);
 
@@ -25757,13 +26381,13 @@ namespace exprtk
 
          inline expression_node_ptr synthesize_srosr_expression(const details::operator_type& opr, expression_node_ptr (&branch)[2])
          {
-            std::string&  s0 = static_cast<details::string_range_node<Type,range_pack_t>*>(branch[0])->ref  ();
-            std::string&  s1 = static_cast<details::string_range_node<Type,range_pack_t>*>(branch[1])->ref  ();
-            range_pack_t rp0 = static_cast<details::string_range_node<Type,range_pack_t>*>(branch[0])->range();
-            range_pack_t rp1 = static_cast<details::string_range_node<Type,range_pack_t>*>(branch[1])->range();
+            std::string&  s0 = static_cast<details::string_range_node<Type>*>(branch[0])->ref  ();
+            std::string&  s1 = static_cast<details::string_range_node<Type>*>(branch[1])->ref  ();
+            range_t      rp0 = static_cast<details::string_range_node<Type>*>(branch[0])->range();
+            range_t      rp1 = static_cast<details::string_range_node<Type>*>(branch[1])->range();
 
-            static_cast<details::string_range_node<Type,range_pack_t>*>(branch[0])->range_ref().clear();
-            static_cast<details::string_range_node<Type,range_pack_t>*>(branch[1])->range_ref().clear();
+            static_cast<details::string_range_node<Type>*>(branch[0])->range_ref().clear();
+            static_cast<details::string_range_node<Type>*>(branch[1])->range_ref().clear();
 
             details::free_node(*node_allocator_,branch[0]);
             details::free_node(*node_allocator_,branch[1]);
@@ -25793,11 +26417,11 @@ namespace exprtk
 
          inline expression_node_ptr synthesize_csosr_expression(const details::operator_type& opr, expression_node_ptr (&branch)[2])
          {
-            std::string   s0 = static_cast<details::string_literal_node<Type>*>           (branch[0])->str  ();
-            std::string&  s1 = static_cast<details::string_range_node<Type,range_pack_t>*>(branch[1])->ref  ();
-            range_pack_t rp1 = static_cast<details::string_range_node<Type,range_pack_t>*>(branch[1])->range();
+            std::string   s0 = static_cast<details::string_literal_node<Type>*>(branch[0])->str  ();
+            std::string&  s1 = static_cast<details::string_range_node<Type>*>  (branch[1])->ref  ();
+            range_t      rp1 = static_cast<details::string_range_node<Type>*>  (branch[1])->range();
 
-            static_cast<details::string_range_node<Type,range_pack_t>*>(branch[1])->range_ref().clear();
+            static_cast<details::string_range_node<Type>*>(branch[1])->range_ref().clear();
 
             details::free_node(*node_allocator_,branch[0]);
             details::free_node(*node_allocator_,branch[1]);
@@ -25807,11 +26431,11 @@ namespace exprtk
 
          inline expression_node_ptr synthesize_srocs_expression(const details::operator_type& opr, expression_node_ptr (&branch)[2])
          {
-            std::string&  s0 = static_cast<details::string_range_node<Type,range_pack_t>*>(branch[0])->ref  ();
-            std::string   s1 = static_cast<details::string_literal_node<Type>*>           (branch[1])->str  ();
-            range_pack_t rp0 = static_cast<details::string_range_node<Type,range_pack_t>*>(branch[0])->range();
+            std::string&  s0 = static_cast<details::string_range_node<Type>*>  (branch[0])->ref  ();
+            std::string   s1 = static_cast<details::string_literal_node<Type>*>(branch[1])->str  ();
+            range_t      rp0 = static_cast<details::string_range_node<Type>*>  (branch[0])->range();
 
-            static_cast<details::string_range_node<Type,range_pack_t>*>(branch[0])->range_ref().clear();
+            static_cast<details::string_range_node<Type>*>(branch[0])->range_ref().clear();
 
             details::free_node(*node_allocator_,branch[0]);
             details::free_node(*node_allocator_,branch[1]);
@@ -25821,13 +26445,13 @@ namespace exprtk
 
          inline expression_node_ptr synthesize_srocsr_expression(const details::operator_type& opr, expression_node_ptr (&branch)[2])
          {
-            std::string&  s0 = static_cast<details::string_range_node<Type,range_pack_t>*>      (branch[0])->ref  ();
-            std::string   s1 = static_cast<details::const_string_range_node<Type,range_pack_t>*>(branch[1])->str  ();
-            range_pack_t rp0 = static_cast<details::string_range_node<Type,range_pack_t>*>      (branch[0])->range();
-            range_pack_t rp1 = static_cast<details::const_string_range_node<Type,range_pack_t>*>(branch[1])->range();
+            std::string&  s0 = static_cast<details::string_range_node<Type>*>      (branch[0])->ref  ();
+            std::string   s1 = static_cast<details::const_string_range_node<Type>*>(branch[1])->str  ();
+            range_t      rp0 = static_cast<details::string_range_node<Type>*>      (branch[0])->range();
+            range_t      rp1 = static_cast<details::const_string_range_node<Type>*>(branch[1])->range();
 
-            static_cast<details::string_range_node<Type,range_pack_t>*>      (branch[0])->range_ref().clear();
-            static_cast<details::const_string_range_node<Type,range_pack_t>*>(branch[1])->range_ref().clear();
+            static_cast<details::string_range_node<Type>*>      (branch[0])->range_ref().clear();
+            static_cast<details::const_string_range_node<Type>*>(branch[1])->range_ref().clear();
 
             details::free_node(*node_allocator_,branch[0]);
             details::free_node(*node_allocator_,branch[1]);
@@ -25865,11 +26489,11 @@ namespace exprtk
 
          inline expression_node_ptr synthesize_csocsr_expression(const details::operator_type& opr, expression_node_ptr (&branch)[2])
          {
-            const std::string s0 = static_cast<details::string_literal_node<Type>*>                 (branch[0])->str  ();
-                  std::string s1 = static_cast<details::const_string_range_node<Type,range_pack_t>*>(branch[1])->str  ();
-            range_pack_t     rp1 = static_cast<details::const_string_range_node<Type,range_pack_t>*>(branch[1])->range();
+            const std::string s0 = static_cast<details::string_literal_node<Type>*>    (branch[0])->str  ();
+                  std::string s1 = static_cast<details::const_string_range_node<Type>*>(branch[1])->str  ();
+            range_t          rp1 = static_cast<details::const_string_range_node<Type>*>(branch[1])->range();
 
-            static_cast<details::const_string_range_node<Type,range_pack_t>*>(branch[1])->range_ref().clear();
+            static_cast<details::const_string_range_node<Type>*>(branch[1])->range_ref().clear();
 
             free_node(*node_allocator_,branch[0]);
             free_node(*node_allocator_,branch[1]);
@@ -25879,11 +26503,11 @@ namespace exprtk
 
          inline expression_node_ptr synthesize_csros_expression(const details::operator_type& opr, expression_node_ptr (&branch)[2])
          {
-            std::string   s0 = static_cast<details::const_string_range_node<Type,range_pack_t>*>(branch[0])->str  ();
-            std::string&  s1 = static_cast<details::stringvar_node<Type>*>                      (branch[1])->ref  ();
-            range_pack_t rp0 = static_cast<details::const_string_range_node<Type,range_pack_t>*>(branch[0])->range();
+            std::string   s0 = static_cast<details::const_string_range_node<Type>*>(branch[0])->str  ();
+            std::string&  s1 = static_cast<details::stringvar_node<Type>*>         (branch[1])->ref  ();
+            range_t      rp0 = static_cast<details::const_string_range_node<Type>*>(branch[0])->range();
 
-            static_cast<details::const_string_range_node<Type,range_pack_t>*>(branch[0])->range_ref().clear();
+            static_cast<details::const_string_range_node<Type>*>(branch[0])->range_ref().clear();
 
             free_node(*node_allocator_,branch[0]);
 
@@ -25892,13 +26516,13 @@ namespace exprtk
 
          inline expression_node_ptr synthesize_csrosr_expression(const details::operator_type& opr, expression_node_ptr (&branch)[2])
          {
-            const std::string  s0 = static_cast<details::const_string_range_node<Type,range_pack_t>*>(branch[0])->str  ();
-                  std::string& s1 = static_cast<details::string_range_node<Type,range_pack_t>*>      (branch[1])->ref  ();
-            range_pack_t      rp0 = static_cast<details::const_string_range_node<Type,range_pack_t>*>(branch[0])->range();
-            range_pack_t      rp1 = static_cast<details::string_range_node<Type,range_pack_t>*>      (branch[1])->range();
+            const std::string  s0 = static_cast<details::const_string_range_node<Type>*>(branch[0])->str  ();
+                  std::string& s1 = static_cast<details::string_range_node<Type>*>      (branch[1])->ref  ();
+            range_t           rp0 = static_cast<details::const_string_range_node<Type>*>(branch[0])->range();
+            range_t           rp1 = static_cast<details::string_range_node<Type>*>      (branch[1])->range();
 
-            static_cast<details::const_string_range_node<Type,range_pack_t>*>(branch[0])->range_ref().clear();
-            static_cast<details::string_range_node<Type,range_pack_t>*>      (branch[1])->range_ref().clear();
+            static_cast<details::const_string_range_node<Type>*>(branch[0])->range_ref().clear();
+            static_cast<details::string_range_node<Type>*>      (branch[1])->range_ref().clear();
 
             free_node(*node_allocator_,branch[0]);
             free_node(*node_allocator_,branch[1]);
@@ -25908,11 +26532,11 @@ namespace exprtk
 
          inline expression_node_ptr synthesize_csrocs_expression(const details::operator_type& opr, expression_node_ptr (&branch)[2])
          {
-            std::string       s0 = static_cast<details::const_string_range_node<Type,range_pack_t>*>(branch[0])->str  ();
-            const std::string s1 = static_cast<details::string_literal_node<Type>*>                 (branch[1])->str  ();
-            range_pack_t     rp0 = static_cast<details::const_string_range_node<Type,range_pack_t>*>(branch[0])->range();
+            std::string       s0 = static_cast<details::const_string_range_node<Type>*>(branch[0])->str  ();
+            const std::string s1 = static_cast<details::string_literal_node<Type>*>    (branch[1])->str  ();
+            range_t          rp0 = static_cast<details::const_string_range_node<Type>*>(branch[0])->range();
 
-            static_cast<details::const_string_range_node<Type,range_pack_t>*>(branch[0])->range_ref().clear();
+            static_cast<details::const_string_range_node<Type>*>(branch[0])->range_ref().clear();
 
             details::free_all_nodes(*node_allocator_,branch);
 
@@ -25921,17 +26545,32 @@ namespace exprtk
 
          inline expression_node_ptr synthesize_csrocsr_expression(const details::operator_type& opr, expression_node_ptr (&branch)[2])
          {
-            std::string   s0 = static_cast<details::const_string_range_node<Type,range_pack_t>*>(branch[0])->str  ();
-            std::string   s1 = static_cast<details::const_string_range_node<Type,range_pack_t>*>(branch[1])->str  ();
-            range_pack_t rp0 = static_cast<details::const_string_range_node<Type,range_pack_t>*>(branch[0])->range();
-            range_pack_t rp1 = static_cast<details::const_string_range_node<Type,range_pack_t>*>(branch[1])->range();
+            std::string   s0 = static_cast<details::const_string_range_node<Type>*>(branch[0])->str  ();
+            std::string   s1 = static_cast<details::const_string_range_node<Type>*>(branch[1])->str  ();
+            range_t      rp0 = static_cast<details::const_string_range_node<Type>*>(branch[0])->range();
+            range_t      rp1 = static_cast<details::const_string_range_node<Type>*>(branch[1])->range();
 
-            static_cast<details::const_string_range_node<Type,range_pack_t>*>(branch[0])->range_ref().clear();
-            static_cast<details::const_string_range_node<Type,range_pack_t>*>(branch[1])->range_ref().clear();
+            static_cast<details::const_string_range_node<Type>*>(branch[0])->range_ref().clear();
+            static_cast<details::const_string_range_node<Type>*>(branch[1])->range_ref().clear();
 
             details::free_all_nodes(*node_allocator_,branch);
 
             return synthesize_str_xroxr_expression_impl<const std::string,const std::string>(opr,s0,s1,rp0,rp1);
+         }
+
+         inline expression_node_ptr synthesize_strogen_expression(const details::operator_type& opr, expression_node_ptr (&branch)[2])
+         {
+            switch (opr)
+            {
+               #define case_stmt(op0,op1)                                                       \
+               case op0 : return node_allocator_->                                              \
+                             allocate_ttt<typename details::str_sogens_node<Type,op1<Type> > >  \
+                                (opr,branch[0],branch[1]);                                      \
+
+               string_opr_switch_statements
+               #undef case_stmt
+               default : return error_node();
+            }
          }
          #endif
 
@@ -25954,12 +26593,32 @@ namespace exprtk
             const bool b1_is_sr  = details::is_string_range_node      (branch[1]);
             const bool b1_is_csr = details::is_const_string_range_node(branch[1]);
 
-            if (b0_is_s)
+            const bool b0_is_gen = details::is_string_assignment_node(branch[0]) ||
+                                   details::is_string_concat_node    (branch[0]) ||
+                                   details::is_string_function_node  (branch[0]) ;
+
+            const bool b1_is_gen = details::is_string_assignment_node(branch[1]) ||
+                                   details::is_string_concat_node    (branch[1]) ||
+                                   details::is_string_function_node  (branch[1]) ;
+
+            if (details::e_add == opr)
             {
-                    if (b1_is_s  ) return synthesize_sos_expression  (opr,branch);
-               else if (b1_is_cs ) return synthesize_socs_expression (opr,branch);
-               else if (b1_is_sr ) return synthesize_sosr_expression (opr,branch);
-               else if (b1_is_csr) return synthesize_socsr_expression(opr,branch);
+               if (!b0_is_cs || !b1_is_cs)
+               {
+                  return synthesize_expression<string_concat_node_t,2>(opr,branch);
+               }
+            }
+
+            if (b0_is_gen || b1_is_gen)
+            {
+               return synthesize_strogen_expression(opr,branch);
+            }
+            else if (b0_is_s)
+            {
+                    if (b1_is_s  ) return synthesize_sos_expression   (opr,branch);
+               else if (b1_is_cs ) return synthesize_socs_expression  (opr,branch);
+               else if (b1_is_sr ) return synthesize_sosr_expression  (opr,branch);
+               else if (b1_is_csr) return synthesize_socsr_expression (opr,branch);
             }
             else if (b0_is_cs)
             {
@@ -25982,6 +26641,7 @@ namespace exprtk
                else if (b1_is_cs ) return synthesize_csrocs_expression (opr,branch);
                else if (b1_is_csr) return synthesize_csrocsr_expression(opr,branch);
             }
+
             return error_node();
          }
          #else
@@ -27943,72 +28603,72 @@ namespace exprtk
    public:
 
       #if defined(_WIN32) || defined(__WIN32__) || defined(WIN32)
-         timer()
-         : in_use_(false)
-         {
-            QueryPerformanceFrequency(&clock_frequency_);
-         }
+      timer()
+      : in_use_(false)
+      {
+         QueryPerformanceFrequency(&clock_frequency_);
+      }
 
-         inline void start()
-         {
-            in_use_ = true;
-            QueryPerformanceCounter(&start_time_);
-         }
+      inline void start()
+      {
+         in_use_ = true;
+         QueryPerformanceCounter(&start_time_);
+      }
 
-         inline void stop()
-         {
-            QueryPerformanceCounter(&stop_time_);
-            in_use_ = false;
-         }
+      inline void stop()
+      {
+         QueryPerformanceCounter(&stop_time_);
+         in_use_ = false;
+      }
 
-         inline double time() const
-         {
-            return (1.0 * (stop_time_.QuadPart - start_time_.QuadPart)) / (1.0 * clock_frequency_.QuadPart);
-         }
+      inline double time() const
+      {
+         return (1.0 * (stop_time_.QuadPart - start_time_.QuadPart)) / (1.0 * clock_frequency_.QuadPart);
+      }
 
       #else
 
-         timer()
-         : in_use_(false)
-         {
-            start_time_.tv_sec  = 0;
-            start_time_.tv_usec = 0;
-            stop_time_.tv_sec   = 0;
-            stop_time_.tv_usec  = 0;
-         }
+      timer()
+      : in_use_(false)
+      {
+         start_time_.tv_sec  = 0;
+         start_time_.tv_usec = 0;
+         stop_time_.tv_sec   = 0;
+         stop_time_.tv_usec  = 0;
+      }
 
-         inline void start()
-         {
-            in_use_ = true;
-            gettimeofday(&start_time_,0);
-         }
+      inline void start()
+      {
+         in_use_ = true;
+         gettimeofday(&start_time_,0);
+      }
 
-         inline void stop()
-         {
-            gettimeofday(&stop_time_, 0);
-            in_use_ = false;
-         }
+      inline void stop()
+      {
+         gettimeofday(&stop_time_, 0);
+         in_use_ = false;
+      }
 
-         inline unsigned long long int usec_time() const
+      inline unsigned long long int usec_time() const
+      {
+         if (!in_use_)
          {
-            if (!in_use_)
+            if (stop_time_.tv_sec >= start_time_.tv_sec)
             {
-               if (stop_time_.tv_sec >= start_time_.tv_sec)
-               {
-                  return 1000000 * (stop_time_.tv_sec  - start_time_.tv_sec ) +
-                                   (stop_time_.tv_usec - start_time_.tv_usec);
-               }
-               else
-                  return std::numeric_limits<unsigned long long int>::max();
+               return 1000000 * (stop_time_.tv_sec  - start_time_.tv_sec ) +
+                                (stop_time_.tv_usec - start_time_.tv_usec);
             }
             else
                return std::numeric_limits<unsigned long long int>::max();
          }
+         else
+            return std::numeric_limits<unsigned long long int>::max();
+      }
 
-         inline double time() const
-         {
-            return usec_time() * 0.000001;
-         }
+      inline double time() const
+      {
+         return usec_time() * 0.000001;
+      }
 
       #endif
 

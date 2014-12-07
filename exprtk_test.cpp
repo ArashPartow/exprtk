@@ -1727,7 +1727,6 @@ inline bool run_test01()
 
       const std::size_t expr_list_size = sizeof(expr_list) / sizeof(std::string);
 
-
       const std::size_t rounds = 60;
 
       for (std::size_t r = 0; r < rounds; ++r)
@@ -2047,15 +2046,47 @@ inline bool run_test02()
                               test_ab<T>("{[('!@#$%^&*([{}])-=')]} == [{('!@#$%^&*([{}])-=')}]","","",T(1.0)),
                               test_ab<T>("'1234\\\\abc\nxyz\r890\tqaz\\'567' == a","1234\\abc\nxyz\r890\tqaz'567","",T(1.0)),
                               test_ab<T>("a == '1234\\\\abc\nxyz\r890\tqaz\\'567'","1234\\abc\nxyz\r890\tqaz'567","",T(1.0)),
-                              test_ab<T>("'123'[] == 3"                              ,"","",T(1.0)),
-                              test_ab<T>("3 == '123'[]"                              ,"","",T(1.0)),
-                              test_ab<T>("'123'[] + '1234'[] == 7"                   ,"","",T(1.0)),
-                              test_ab<T>("abs('123'[] - '1234'[]) == 1"              ,"","",T(1.0)),
-                              test_ab<T>("'1234'[] == a[]"                           ,"1234","",T(1.0)),
-                              test_ab<T>("'123'[] + a[] == 7"                        ,"1234","",T(1.0)),
-                              test_ab<T>("abs(a[] - '12345'[]) == 1"                 ,"1234","",T(1.0)),
-                              test_ab<T>("'1234'[] + '12345'[] == a[] + b[]"         ,"1234","12345",T(1.0)),
-                              test_ab<T>("abs('123'[] - '1234'[]) == abs(a[] - b[])" ,"1234","12345",T(1.0))
+                              test_ab<T>("'123'[] == 3"                       ,"",""               ,T(1.0)),
+                              test_ab<T>("3 == '123'[]"                       ,"",""               ,T(1.0)),
+                              test_ab<T>("'123'[] + '1234'[] == 7"            ,"",""               ,T(1.0)),
+                              test_ab<T>("abs('123'[] - '1234'[]) == 1"       ,"",""               ,T(1.0)),
+                              test_ab<T>("'1234'[] == a[]"                    ,"1234",""           ,T(1.0)),
+                              test_ab<T>("'123'[] + a[] == 7"                 ,"1234",""           ,T(1.0)),
+                              test_ab<T>("abs(a[] - '12345'[]) == 1"          ,"1234",""           ,T(1.0)),
+                              test_ab<T>("'1234'[] + '12345'[] == a[] + b[]"  ,"1234","12345"      ,T(1.0)),
+                              test_ab<T>("abs('123'[] -'1234'[]) == abs(a[] - b[])" ,"1234","12345",T(1.0)),
+                              test_ab<T>("(a + b)      == 'abc123'            ","abc","123"        ,T(1.0)),
+                              test_ab<T>("(a + '123')  == 'abc123'            ","abc","123"        ,T(1.0)),
+                              test_ab<T>("('abc' + b)  == 'abc123'            ","abc","123"        ,T(1.0)),
+                              test_ab<T>("(a + '1')    == 'abc1'              ","abc","123"        ,T(1.0)),
+                              test_ab<T>("('a' + b)    == 'a123'              ","abc","123"        ,T(1.0)),
+                              test_ab<T>("(a[2:7] + b) == 'cdefgh0123'        ","abcdefghij","0123",T(1.0)),
+                              test_ab<T>("(a + b[2:7]) == 'abc234567'         ","abc","0123456789" ,T(1.0)),
+                              test_ab<T>("(a[2:7] + '0123') == 'cdefgh0123'   ","abcdefghij","0123",T(1.0)),
+                              test_ab<T>("('abc' + b[2:7])  == 'abc234567'    ","abc","0123456789" ,T(1.0)),
+                              test_ab<T>("(a[2:2] + b[3:3]) == 'c3'           ","abc","0123456789" ,T(1.0)),
+                              test_ab<T>("(a[3:] + b) == 'defghij0123'        ","abcdefghij","0123",T(1.0)),
+                              test_ab<T>("('abc' + b[:7])   == 'abc01234567'  ","abc","0123456789" ,T(1.0)),
+                              test_ab<T>("a + '123'  == 'abc'+ b              ","abc"   , "123"   , T(1.0)),
+                              test_ab<T>("a[0:2] + '123' == 'abc' + b[0:2]    ","abcXYZ", "123XYZ", T(1.0)),
+                              test_ab<T>("a[ :2] + '123' == 'abc' + b[ :2]    ","abcXYZ", "123XYZ", T(1.0)),
+                              test_ab<T>("a[3:       ] + '123' == 'abc' + b[3:       ]","XYZabc", "XYZ123", T(1.0)),
+                              test_ab<T>("a[3:a[] - 1] + '123' == 'abc' + b[3:b[] - 1]","XYZabc", "XYZ123", T(1.0)),
+                              test_ab<T>("(a[r0:r2] + b) == 'cdefgh0123'      ","abcdefghij","0123",T(1.0)),
+                              test_ab<T>("(a + b[r0:r2]) == 'abc234567'       ","abc","0123456789" ,T(1.0)),
+                              test_ab<T>("(a[r0:r2] + '0123') == 'cdefgh0123' ","abcdefghij","0123",T(1.0)),
+                              test_ab<T>("('abc' + b[r0:r2])  == 'abc234567'  ","abc","0123456789" ,T(1.0)),
+                              test_ab<T>("(a[r0:r0] + b[r3:r3]) == 'c3'       ","abc","0123456789" ,T(1.0)),
+                              test_ab<T>("(a[r3:] + b) == 'defghij0123'       ","abcdefghij","0123",T(1.0)),
+                              test_ab<T>("('abc' + b[:r2])   == 'abc01234567' ","abc","0123456789" ,T(1.0)),
+                              test_ab<T>("a[0:r0] + '123' == 'abc' + b[0:r0]  ","abcXYZ", "123XYZ", T(1.0)),
+                              test_ab<T>("a[ :r0] + '123' == 'abc' + b[ :r0]  ","abcXYZ", "123XYZ", T(1.0)),
+                              test_ab<T>("a[r3:       ] + '123' == 'abc' + b[r3:       ]","XYZabc", "XYZ123", T(1.0)),
+                              test_ab<T>("a[r3:a[] - 1] + '123' == 'abc' + b[r3:b[] - 1]","XYZabc", "XYZ123", T(1.0)),
+                              test_ab<T>("(a[r0:r0] + b[r3:r0+1]) == 'c3'     ","abc","0123456789" ,T(1.0)),
+                              test_ab<T>("(a[r0+1:] + b) == 'defghij0123'     ","abcdefghij","0123",T(1.0)),
+                              test_ab<T>("a[r0+1:       ] + '123' == 'abc' + b[r0+1:       ]","XYZabc", "XYZ123", T(1.0)),
+                              test_ab<T>("a[r0+1:a[] - 1] + '123' == 'abc' + b[r0+1:b[] - 1]","XYZabc", "XYZ123", T(1.0))
                            };
 
    static const std::size_t test_list_size = sizeof(test_list) / sizeof(test_ab<T>);
@@ -2074,6 +2105,8 @@ inline bool run_test02()
 
          T r0 = T(2);
          T r1 = T(6);
+         T r2 = T(7);
+         T r3 = T(3);
 
          exprtk::symbol_table<T> symbol_table;
          symbol_table.add_stringvar("a" ,str_a);
@@ -2081,6 +2114,8 @@ inline bool run_test02()
          symbol_table.add_stringvar("c" ,str_c);
          symbol_table.add_variable ("r0",   r0);
          symbol_table.add_variable ("r1",   r1);
+         symbol_table.add_variable ("r2",   r2);
+         symbol_table.add_variable ("r3",   r3);
 
          exprtk::expression<T> expression;
          expression.register_symbol_table(symbol_table);
@@ -4490,7 +4525,7 @@ struct gen_func : public exprtk::igeneric_function<T>
      string_count(0)
    {}
 
-   inline T operator()(parameter_list_t& params)
+   inline T operator()(parameter_list_t params)
    {
       for (std::size_t i = 0; i < params.size(); ++i)
       {
@@ -4556,7 +4591,7 @@ struct inc_func : public exprtk::igeneric_function<T>
    inc_func()
    {}
 
-   inline T operator()(parameter_list_t& params)
+   inline T operator()(parameter_list_t params)
    {
       for (std::size_t i = 0; i < params.size(); ++i)
       {
@@ -4596,6 +4631,35 @@ struct inc_func : public exprtk::igeneric_function<T>
    }
 };
 
+template <typename T>
+struct rem_space_and_uppercase : public exprtk::igeneric_function<T>
+{
+   typedef typename exprtk::igeneric_function<T>::generic_type generic_type;
+   typedef typename exprtk::igeneric_function<T>::parameter_list_t parameter_list_t;
+   typedef typename generic_type::string_view string_t;
+
+   rem_space_and_uppercase()
+   : exprtk::igeneric_function<T>("S")
+   {}
+
+   inline T operator()(std::string& result, parameter_list_t params)
+   {
+      string_t string(params[0]);
+
+      result.reserve(string.size());
+      result.clear();
+
+      char c;
+
+      for (std::size_t i = 0; i < string.size(); ++i)
+      {
+         if (' ' != (c = string[i]))
+            result += std::toupper(c);
+      }
+
+      return T(0);
+   }
+};
 
 template <typename T>
 inline bool run_test18()
@@ -4732,7 +4796,6 @@ inline bool run_test18()
 
       static const std::size_t expression_list_size = sizeof(expression_list) / sizeof(std::string);
 
-
       bool failure = false;
 
       for (std::size_t i = 0; i < expression_list_size; ++i)
@@ -4820,7 +4883,8 @@ inline bool run_test18()
                     "var z := 3; var w[3] := { 1/3, 1/5, 1/7 }; foo(z, 2w / 3, 'abc123',s0[2:5],v0, v1 + v2, v0[2], x, 2x + y);",
                     "var z := 3; var w[3] := { 1/3, 1/5, 1/7 }; foo(2w / 3, 'abc123',s0[2:5],v0, v1 + v2, v0[2], x, 2x + y, z);",
                     "var z := 3; var w[3] := { 1/3, 1/5, 1/7 }; foo('abc123', s0[2:5],v0, v1 + v2, v0[2], x, 2x + y, z,2w / 3);",
-                    "var z := 3; var w[3] := { 1/3, 1/5, 1/7 }; foo(s0[2:5],v0, v1 + v2, v0[2], x, 2x + y, z,2w / 3, 'abc123');"
+                    "var z := 3; var w[3] := { 1/3, 1/5, 1/7 }; foo(s0[2:5],v0, v1 + v2, v0[2], x, 2x + y, z,2w / 3, 'abc123');",
+                    "var z := 3; var w[3] := { 1/3, 1/5, 1/7 }; foo(s0[2:3]+s0[4:5],v0, v1 + v2, v0[2], x, 2x + y, z,2w / 3, 'abc123');"
                   };
 
       static const std::size_t expression_list_size = sizeof(expression_list) / sizeof(std::string);
@@ -4835,6 +4899,7 @@ inline bool run_test18()
                     "TVSSVVT*" ,
                     "VSSVVT*"  ,
                     "SSVVTTTTV",
+                    "SVVTTTTVS",
                     "SVVTTTTVS",
                   };
 
@@ -5001,6 +5066,110 @@ inline bool run_test18()
          return false;
    }
 
+   {
+      bool failure = false;
+
+      rem_space_and_uppercase<T> rsauc;
+
+      std::string s0 = "XXXXXXXXXXXXXXX";
+      std::string s1 = "XXXXXXXXXXXXXXX";
+      std::string s2 = "XXXXXXXXXXXXXXX";
+      std::string s3 = "XXXXXXXXXXXXXXX";
+      std::string s4 = "XXXXXXXXXXXXXXX";
+
+      typedef exprtk::symbol_table<T> symbol_table_t;
+      typedef exprtk::expression<T>     expression_t;
+      typedef exprtk::parser<T>             parser_t;
+
+      symbol_table_t symbol_table;
+
+      symbol_table.add_constants();
+
+      symbol_table.add_stringvar("s0", s0);
+      symbol_table.add_stringvar("s1", s1);
+      symbol_table.add_stringvar("s2", s2);
+      symbol_table.add_stringvar("s3", s3);
+      symbol_table.add_stringvar("s4", s4);
+
+      symbol_table.add_function("remspc_uc",rsauc,symbol_table_t::e_ft_strfunc);
+
+      std::string program = " s0 := 'How now ';                                   "
+                            " s1 := 'brown cow?';                                 "
+                            " s2 := remspc_uc(s0 + s1);                           "
+                            " s3 := remspc_uc(s0) + s1;                           "
+                            " s4 := s0 + remspc_uc(s1);                           "
+                            " remspc_uc(s0 + s1) == remspc_uc(s0) + remspc_uc(s1);";
+
+      expression_t expression;
+
+      expression.register_symbol_table(symbol_table);
+
+      parser_t parser;
+
+      if (!parser.compile(program,expression))
+      {
+         printf("Error: %s\tExpression: %s\n",
+                parser.error().c_str(),
+                program.c_str());
+
+         return false;
+      }
+
+      T result = expression.value();
+
+      if (result != T(1))
+      {
+         printf("run_test18() - Error in evaluation! (4) Expression: %s  Result <> 1\n",
+                program.c_str());
+         failure = true;
+      }
+
+      if (result != T(1))
+      {
+         printf("run_test18() - Error in evaluation! (4) Expression: %s  Check: s0\n",
+                program.c_str());
+         failure = true;
+      }
+
+      if ("How now " != s0)
+      {
+         printf("run_test18() - Error in evaluation! (4) Expression: %s  Check: s0\n",
+                program.c_str());
+         failure = true;
+      }
+
+      if ("brown cow?" != s1)
+      {
+         printf("run_test18() - Error in evaluation! (4) Expression: %s  Check: s1\n",
+                program.c_str());
+         failure = true;
+      }
+
+      if ("HOWNOWBROWNCOW?" != s2)
+      {
+         printf("run_test18() - Error in evaluation! (4) Expression: %s  Check: s2\n",
+                program.c_str());
+         failure = true;
+      }
+
+      if ("HOWNOWbrown cow?" != s3)
+      {
+         printf("run_test18() - Error in evaluation! (4) Expression: %s  Check: s3\n",
+                program.c_str());
+         failure = true;
+      }
+
+      if ("How now BROWNCOW?" != s4)
+      {
+         printf("run_test18() - Error in evaluation! (4) Expression: %s  Check: s4\n",
+                program.c_str());
+         failure = true;
+      }
+
+      if (failure)
+         return false;
+   }
+
    return true;
 }
 
@@ -5139,9 +5308,9 @@ inline bool run_test19()
       compositor
          .add(
             function_t("f6")
-            .expression("17 * (f5(x,y,z,w,u) + f5(y,z,w,u,v) + f5(z,w,u,v,x) + f5(w,u,v,x,y))")
-               .var("x").var("y").var("z")
-               .var("w").var("u").var("v"));
+              .var("x").var("y").var("z")
+              .var("w").var("u").var("v")
+              .expression("17 * (f5(x,y,z,w,u) + f5(y,z,w,u,v) + f5(z,w,u,v,x) + f5(w,u,v,x,y))"));
 
       symbol_table_t& symbol_table = compositor.symbol_table();
       symbol_table.add_constants();
@@ -5493,7 +5662,6 @@ inline bool run_test19()
               "else                                     "
               "  fibonacci5(x - 1) + fibonacci5(x - 2); ",
               "x");
-
 
       symbol_table_t& symbol_table = compositor.symbol_table();
       symbol_table.add_constants();

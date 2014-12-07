@@ -39,7 +39,7 @@ arithmetic operations, functions and processes:
  (07) Assignment:      :=, +=, -=, *=, /=, %=
 
  (08) String
-      processing:      in, like, ilike
+      processing:      in, like, ilike, concatenation
 
  (09) Optimisations:   constant-folding and simple strength reduction
 
@@ -409,6 +409,15 @@ of C++ compilers:
 |          | 5. x := '0123456789'[2i + 1:7]                          |
 |          | 6. x := (y := '0123456789'[2:7])                        |
 +----------+---------------------------------------------------------+
+|  +       | Concatenation of x and y. Where x and y are strings or  |
+|          | string ranges. eg                                       |
+|          | 1. x + y                                                |
+|          | 2. x + 'abc'                                            |
+|          | 3. x + y[:i + j]                                        |
+|          | 4. x[i:j] + y[2:3] + '0123456789'[2:7]                  |
+|          | 5. 'abc' + x + y                                        |
+|          | 6. 'abc' + '1234567'                                    |
++----------+---------------------------------------------------------+
 | []       | The string size operator returns the size of the string |
 |          | being actioned.                                         |
 |          | eg:                                                     |
@@ -424,6 +433,8 @@ of C++ compilers:
 |          | eg:                                                     |
 |          | 1. if(x, y, z)                                          |
 |          | 2. if((x + 1) > 2y, z + 1, w / v)                       |
+|          | 3. if(x > y) z;                                         |
+|          | 4. if(x <= 2*y) { z + w };                              |
 +----------+---------------------------------------------------------+
 | if-else  | The if-else/else-if statement. Subject to the condition |
 |          | branch the statement will return either the value of the|
@@ -635,11 +646,13 @@ current values assigned to the variables will be used.
 
 
 (2) Expression
-A structure that holds an AST  for a specified expression and is  used
-to evaluate said expression.  If a compiled Expression  uses variables
-or user defined functions, it will then also have an associated Symbol
-Table, which will contain  references to said variables,  functions et
-al. An example AST structure for the denoted expression is as follows:
+A structure that holds an abstract syntax tree or AST for a  specified
+expression and is used to evaluate said expression. Evaluation of  the
+expression is accomplished by performing a post-order traversal of the
+AST.  If  a  compiled  Expression  uses  variables  or  user   defined
+functions, it will have an associated Symbol Table, which will contain
+references  to said  variables, functions  or string.  An example  AST
+structure for the denoted expression is as follows:
 
 Expression:  z := (x + y^-2.345) * sin(pi / min(w - 7.3,v))
 
@@ -1040,7 +1053,8 @@ There are two types of function interface:
    (1) ifunction
    (2) ivararg_function
    (3) igeneric_function
-   (4) function_compositor
+   (4) igeneric_function II
+   (5) function_compositor
 
 
 (1) ifunction
@@ -1112,7 +1126,7 @@ called 'too':
       too()
       {}
 
-      inline T operator()(parameter_list_t& parameters)
+      inline T operator()(parameter_list_t parameters)
       {
          for (std::size_t i = 0; i < parameters.size(); ++i)
          {
@@ -1142,7 +1156,7 @@ are three type enumerations:
 Each of the  parameters can be  accessed using its  designated view. A
 typical loop for processing the parameters is as follows:
 
-   inline T operator()(parameter_list_t& parameters)
+   inline T operator()(parameter_list_t parameters)
    {
       typedef typename exprtk::igeneric_function<T>::generic_type
                                                      generic_type;
@@ -1199,7 +1213,7 @@ achieved:
       : exprtk::igeneric_function<T>("SVTT")
       {}
 
-      inline T operator()(parameter_list_t& parameters)
+      inline T operator()(parameter_list_t parameters)
       {
          ...
       }
@@ -1230,7 +1244,7 @@ definition.
       : exprtk::igeneric_function<T>("SVTTV*")
       {}
 
-      inline T operator()(parameter_list_t& parameters)
+      inline T operator()(parameter_list_t parameters)
       {
          ...
       }
@@ -1247,7 +1261,64 @@ parameters in the following sequence:
    (e) One or more vectors
 
 
-(4) function_compositor
+(4) igeneric_function II
+This interface is identical to  the igeneric_function, in that in  can
+consume an  arbitrary number  of parameters  of varying  type, but the
+difference being  that the  function returns  a string  and as such is
+treated as a string when  invoked within expressions. As a  result the
+function call can  alias a string  and interact with  other strings in
+situations such as concatenation and equality operations.
+
+The following example defines an generic function named 'toupper' with
+the string return type function operator being explicitly overriden:
+
+   template <typename T>
+   struct toupper : public exprtk::igeneric_function<T>
+   {
+      typedef exprtk::igeneric_function<T> igenfunct_t
+      typedef typename igenfunct_t::generic_type generic_t;
+      typedef typename igenfunct_t::parameter_list_t parameter_list_t;
+      typedef typename generic_t::string_view string_t;
+
+      toupper()
+      : exprtk::igeneric_function<T>("S")
+      {}
+
+      inline T operator()(std::string& result,
+                          parameter_list_t parameters)
+      {
+         result.clear();
+         for (std::size_t i = 0; i < string.size(); ++i)
+         {
+            result += std::toupper(string[i]);
+         }
+         return T(0);
+      }
+   };
+
+
+In the example above the  generic function 'toupper' expects only  one
+input parameter  of type  string, as noted by  the parameter  sequence
+string passed during the constructor. When executed, the function will
+return as a result a copy  of the input string converted to  uppercase
+form.
+
+When  adding a  string type  returning generic  function to  a  symbol
+table,  the  'add_function'  is   invoked  with  an  extra   parameter
+(e_ft_strfunc) that denotes the function should be treated as a string
+returning function type. The  following example demonstrates how  this
+is done:
+
+   toupper<T> tu;
+
+   exprtk::symbol_table<T> symbol_table;
+
+   symbol_table.add_function("toupper",
+                             tu,
+                             symbol_table_t::e_ft_strfunc);
+
+
+(5) function_compositor
 The function compositor interface allows  a user to define a  function
 using ExprTk syntax. The functions  are limited to returning a  single
 scalar value and consuming up to six parameters as input.
@@ -1296,6 +1367,7 @@ The following demonstrates how all the pieces are put together:
    foo<double> f;
    boo<double> b;
    too<double> t;
+   toupper<double> tu;
 
    symbol_table_t symbol_table;
    compositor_t   compositor(symbol_table);
@@ -1303,6 +1375,10 @@ The following demonstrates how all the pieces are put together:
    symbol_table.add_function("foo",f);
    symbol_table.add_function("boo",b);
    symbol_table.add_function("too",t);
+
+   symbol_table.add_function("toupper",
+                             tu,
+                             symbol_table_t::e_ft_strfunc);
 
    compositor
       .add(function_t()
@@ -1523,8 +1599,8 @@ into account when using Exprtk:
       eg: 'Frankly my dear, 1 do n0t give a damn!'
 
  (14) User defined  normal functions  can have  up to  20 parameters,
-      where as  user defined  vararg-functions can  have an unlimited
-      number of parameters.
+      where as  user defined  generic-functions and  vararg-functions
+      can have an unlimited number of parameters.
 
  (15) The inbuilt polynomial functions can be at most of degree 12.
 
