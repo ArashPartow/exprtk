@@ -417,12 +417,15 @@ of C++ compilers:
 |          | 4. x[i:j] + y[2:3] + '0123456789'[2:7]                  |
 |          | 5. 'abc' + x + y                                        |
 |          | 6. 'abc' + '1234567'                                    |
+|          | 7. (x + 'a1B2c3D4' + y)[i:2j]                           |
 +----------+---------------------------------------------------------+
 | []       | The string size operator returns the size of the string |
 |          | being actioned.                                         |
 |          | eg:                                                     |
 |          | 1. 'abc'[] == 3                                         |
 |          | 2. var max_str_length := max(s0[],s1[],s2[],s3[])       |
+|          | 3. ('abc' + 'xyz')[] == 3                               |
+|          | 4. (('abc' + 'xyz')[1:4])[] == 4                        |
 +----------+---------------------------------------------------------+
 
 (6) Control Structures
