@@ -426,6 +426,9 @@ of C++ compilers:
 |          | 3. x += y[:i + j] + 'abc'                               |
 |          | 4. x += '0123456789'[2:7]                               |
 +----------+---------------------------------------------------------+
+| <=>      | Swap the values of x and y. Where x and y are mutable   |
+|          | strings.  (eg: x <=> y)                                 |
++----------+---------------------------------------------------------+
 | []       | The string size operator returns the size of the string |
 |          | being actioned.                                         |
 |          | eg:                                                     |

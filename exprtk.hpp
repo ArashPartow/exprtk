@@ -5659,9 +5659,13 @@ namespace exprtk
             {
                n0_e.first = false;
 
-               if (!details::is_variable_node(n0_e.second))
+               if (
+                    !is_variable_node(n0_e.second) &&
+                    !is_string_node  (n0_e.second)
+                  )
                {
                   delete n0_e.second;
+                  n0_e.second = expression_node_ptr(0);
                }
             }
 
@@ -5669,9 +5673,13 @@ namespace exprtk
             {
                n1_e.first = false;
 
-               if (!details::is_variable_node(n1_e.second))
+               if (
+                    !is_variable_node(n1_e.second) &&
+                    !is_string_node  (n1_e.second)
+                  )
                {
                   delete n1_e.second;
+                  n1_e.second = expression_node_ptr(0);
                }
             }
          }
@@ -6387,7 +6395,7 @@ namespace exprtk
 
         ~generic_string_range_node()
          {
-            range_.free();
+            base_range_.free();
 
             if (branch_ && branch_deletable_)
             {
