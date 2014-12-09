@@ -419,6 +419,13 @@ of C++ compilers:
 |          | 6. 'abc' + '1234567'                                    |
 |          | 7. (x + 'a1B2c3D4' + y)[i:2j]                           |
 +----------+---------------------------------------------------------+
+|  +=      | Append to x the value of y. Where x is a mutable string |
+|          | and y is either a string or a string range. eg:         |
+|          | 1. x += y                                               |
+|          | 2. x += 'abc'                                           |
+|          | 3. x += y[:i + j] + 'abc'                               |
+|          | 4. x += '0123456789'[2:7]                               |
++----------+---------------------------------------------------------+
 | []       | The string size operator returns the size of the string |
 |          | being actioned.                                         |
 |          | eg:                                                     |

@@ -4033,7 +4033,10 @@ namespace exprtk
       {
          if (0 != node)
          {
-            if (is_variable_node(node) && !force_delete)
+            if (
+                 (is_variable_node(node) || is_string_node(node)) ||
+                 force_delete
+               )
                return;
 
             node_allocator.free(node);
@@ -6407,9 +6410,11 @@ namespace exprtk
 
                range_t& range = str_range_ptr_->range_ref();
 
+               const std::size_t base_str_size = str_base_ptr_->str().size();
+
                if (
-                    range (str_r0,str_r1,str_base_ptr_->str().size()) &&
-                    base_range_(r0,r1)
+                    range      (str_r0,str_r1,base_str_size) &&
+                    base_range_(    r0,    r1,base_str_size)
                   )
                {
                   const std::size_t size = (r1 - r0) + 1;
@@ -7293,7 +7298,19 @@ namespace exprtk
          variable_node<T>* var_node_ptr_;
       };
 
-      template <typename T>
+      struct asn_assignment
+      {
+         static inline void execute(std::string& s, const char* data, const std::size_t size)
+         { s.assign(data,size); }
+      };
+
+      struct asn_addassignment
+      {
+         static inline void execute(std::string& s, const char* data, const std::size_t size)
+         { s.append(data,size); }
+      };
+
+      template <typename T, typename AssignmentProcess = asn_assignment>
       class assignment_string_node : public binary_node     <T>,
                                      public string_base_node<T>,
                                      public range_interface <T>
@@ -7359,7 +7376,9 @@ namespace exprtk
 
                if (range(r0,r1,str1_base_ptr_->str().size()))
                {
-                  str0_node_ptr_->ref().assign(str1_base_ptr_->str().data() + r0, (r1 - r0) + 1);
+                  AssignmentProcess::execute(str0_node_ptr_->ref(),
+                                             str1_base_ptr_->str().data() + r0,
+                                             (r1 - r0) + 1);
 
                   binary_node<T>::branch_[0].first->value();
                }
@@ -19627,6 +19646,7 @@ namespace exprtk
                    (details::e_like   == operation) ||
                    (details::e_ilike  == operation) ||
                    (details::e_assign == operation) ||
+                   (details::e_addass == operation) ||
                    (details::e_swap   == operation) ;
          }
          #else
@@ -19836,15 +19856,22 @@ namespace exprtk
 
          inline bool is_invalid_assignment_op(const details::operator_type& operation, expression_node_ptr (&branch)[2])
          {
-            return is_assignment_operation(operation) &&
-                   (
-                     (
-                       !details::is_variable_node   (branch[0]) &&
-                       !details::is_vector_elem_node(branch[0]) &&
-                       !details::is_vector_node     (branch[0])
-                     ) ||
-                     is_generally_string_node(branch[1])
-                   );
+            if (is_assignment_operation(operation))
+            {
+               const bool b1_is_genstring = details::is_generally_string_node(branch[1]);
+
+               if (details::is_string_node(branch[0]))
+                  return !b1_is_genstring;
+               else
+                  return (
+                           !details::is_variable_node   (branch[0]) &&
+                           !details::is_vector_elem_node(branch[0]) &&
+                           !details::is_vector_node     (branch[0])
+                         )
+                         || b1_is_genstring;
+            }
+            else
+               return false;
          }
 
          inline bool is_invalid_break_continue_op(expression_node_ptr (&branch)[2])
@@ -20170,8 +20197,8 @@ namespace exprtk
             #endif
          }
 
-         inline expression_node_ptr repeat_until_loop(expression_node_ptr condition,
-                                                      expression_node_ptr branch,
+         inline expression_node_ptr repeat_until_loop(expression_node_ptr& condition,
+                                                      expression_node_ptr& branch,
                                                       const bool brkcont = false) const
          {
             if (!brkcont && details::is_constant_node(condition))
@@ -20204,10 +20231,10 @@ namespace exprtk
             #endif
          }
 
-         inline expression_node_ptr for_loop(expression_node_ptr initialiser,
-                                             expression_node_ptr condition,
-                                             expression_node_ptr incrementor,
-                                             expression_node_ptr loop_body,
+         inline expression_node_ptr for_loop(expression_node_ptr& initialiser,
+                                             expression_node_ptr& condition,
+                                             expression_node_ptr& incrementor,
+                                             expression_node_ptr& loop_body,
                                              bool brkcont = false) const
          {
             if (!brkcont && details::is_constant_node(condition))
@@ -20935,7 +20962,7 @@ namespace exprtk
             alloc_type* genfunc_node_ptr = static_cast<alloc_type*>(result);
 
             if (
-                 !arg_list.empty()      &&
+                 !arg_list.empty()     &&
                  !gf->has_side_effects &&
                  is_constant_foldable(arg_list)
                )
@@ -20971,7 +20998,7 @@ namespace exprtk
             alloc_type* genfunc_node_ptr = static_cast<alloc_type*>(result);
 
             if (
-                 !arg_list.empty()      &&
+                 !arg_list.empty()     &&
                  !gf->has_side_effects &&
                  is_constant_foldable(arg_list)
                )
@@ -21168,6 +21195,15 @@ namespace exprtk
                      default : return error_node();
                   }
                }
+            }
+            else if (
+                      (details::e_addass == operation) &&
+                      details::is_string_node(branch[0])
+                    )
+            {
+               typedef details::assignment_string_node<T,details::asn_addassignment> addass_t;
+
+               return synthesize_expression<addass_t,2>(operation,branch);
             }
             else
             {
@@ -28917,6 +28953,89 @@ namespace exprtk
       return true;
    }
 
+   namespace helper
+   {
+      namespace details
+      {
+         template <typename T>
+         struct print_impl
+         {
+            typedef typename igeneric_function<T>::generic_type generic_type;
+            typedef typename igeneric_function<T>::parameter_list_t parameter_list_t;
+            typedef typename generic_type::scalar_view scalar_t;
+            typedef typename generic_type::vector_view vector_t;
+            typedef typename generic_type::string_view string_t;
+
+            static void process(const std::string& scalar_format, parameter_list_t parameters)
+            {
+               for (std::size_t i = 0; i < parameters.size(); ++i)
+               {
+                  generic_type& gt = parameters[i];
+
+                  switch (gt.type)
+                  {
+                     case generic_type::e_scalar : printf(scalar_format.c_str(),scalar_t(gt)());
+                                                   break;
+
+                     case generic_type::e_vector : {
+                                                      vector_t vector(gt);
+
+                                                      for (std::size_t x = 0; x < vector.size(); ++x)
+                                                      {
+                                                         printf(scalar_format.c_str(),vector[x]);
+                                                         if ((x + 1) < vector.size())
+                                                            printf(" ");
+                                                      }
+                                                   }
+                                                   break;
+
+                     case generic_type::e_string : printf("%s",to_str(string_t(gt)).c_str());
+                                                   break;
+
+                     default                     : continue;
+                  }
+               }
+            }
+         };
+      }
+
+      template <typename T>
+      struct print : public exprtk::igeneric_function<T>
+      {
+         typedef typename igeneric_function<T>::parameter_list_t parameter_list_t;
+
+         print(const std::string& scalar_format = "%10.5f")
+         : scalar_format_(scalar_format)
+         {}
+
+         inline T operator()(parameter_list_t parameters)
+         {
+            details::print_impl<T>::process(scalar_format_,parameters);
+            return T(0);
+         }
+
+         std::string scalar_format_;
+      };
+
+      template <typename T>
+      struct println : public exprtk::igeneric_function<T>
+      {
+         typedef typename igeneric_function<T>::parameter_list_t parameter_list_t;
+
+         println(const std::string& scalar_format = "%10.5f")
+         : scalar_format_(scalar_format)
+         {}
+
+         inline T operator()(parameter_list_t parameters)
+         {
+            details::print_impl<T>::process(scalar_format_,parameters);
+            printf("\n");
+            return T(0);
+         }
+
+         std::string scalar_format_;
+      };
+   }
 }
 
 #if defined(_WIN32) || defined(__WIN32__) || defined(WIN32)
