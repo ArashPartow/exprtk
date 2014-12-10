@@ -13,17 +13,11 @@ semantics and is easily extendible.
 The  ExprTk expression  evaluator supports  the following  fundamental
 arithmetic operations, functions and processes:
 
- (00) Basic operators: +, -, *, /, %, ^
+ (00) Types:           Scalar, Vector, String
 
- (01) Functions:       abs, avg, ceil, clamp, equal, erf, erfc,  exp,
-                       expm1, floor, frac,  log, log10, log1p,  log2,
-                       logn,  max,  min,  mul,  ncdf,  nequal,  root,
-                       round, roundn, sgn, sqrt, sum, swap, trunc
+ (01) Basic operators: +, -, *, /, %, ^
 
- (02) Trigonometry:    acos, acosh, asin, asinh, atan, atanh,  atan2,
-                       cos,  cosh, cot,  csc, sec,  sin, sinc,  sinh,
-                       tan, tanh, hypot, rad2deg, deg2grad,  deg2rad,
-                       grad2deg
+ (02) Assignment:      :=, +=, -=, *=, /=, %=
 
  (03) Equalities &
       Inequalities:    =, ==, <>, !=, <, <=, >, >=
@@ -31,19 +25,27 @@ arithmetic operations, functions and processes:
  (04) Boolean logic:   and, mand, mor, nand, nor, not, or, shl, shr,
                        xnor, xor, true, false
 
- (05) Control
+ (05) Functions:       abs, avg, ceil, clamp, equal, erf, erfc,  exp,
+                       expm1, floor, frac,  log, log10, log1p,  log2,
+                       logn,  max,  min,  mul,  ncdf,  nequal,  root,
+                       round, roundn, sgn, sqrt, sum, swap, trunc
+
+ (06) Trigonometry:    acos, acosh, asin, asinh, atan, atanh,  atan2,
+                       cos,  cosh, cot,  csc, sec,  sin, sinc,  sinh,
+                       tan, tanh, hypot, rad2deg, deg2grad,  deg2rad,
+                       grad2deg
+
+ (07) Control
       structures:      if-then-else, ternary conditional, switch-case
 
- (06) Loop statements: while, for, repeat-until, break, continue
+ (08) Loop statements: while, for, repeat-until, break, continue
 
- (07) Assignment:      :=, +=, -=, *=, /=, %=
-
- (08) String
+ (09) String
       processing:      in, like, ilike, concatenation
 
- (09) Optimisations:   constant-folding and simple strength reduction
+ (10) Optimisations:   constant-folding and simple strength reduction
 
- (10) Calculus:        numerical integration and differentiation
+ (11) Calculus:        numerical integration and differentiation
 
 
 
@@ -69,7 +71,7 @@ expressions that can be parsed and evaluated using the ExprTk library.
   (16) (avg(x,y) <= x + y ? x - y : x * y) + 2.345 * pi / x
   (17) while (x <= 100) { x -= 1; }
   (18) x <= 'abc123' and (y in 'AString') or ('1x2y3z' != z)
-  (19) (x like '*123*') or ('a123b' ilike y)
+  (19) ((x + 'abc') like '*123*') or ('a123b' ilike y)
   (20) sgn(+1.2^3.4z / -5.6y) <= {-7.8^9 / -10.11x }
 
 
@@ -579,11 +581,43 @@ appropriate may represent any of one the following:
    2. A variable
    3. A vector element
    4. A vector
+   5. A string
    5. An expression comprised of [1], [2] or [3] (eg: 2 + x / vec[3])
 
 
 
-[09 - COMPONENTS]
+[09 - Fundamental Types]
+ExprTk supports three fundamental types which can be used freely in
+expressions. The types are as follows:
+
+   1. Scalar
+   2. Vector
+   3. String
+
+
+(1) Scalar Type
+The scalar type  is a singular  numeric value. The  underlying type is
+that used  to specialize  the ExprTk  components (float,  double, long
+double MPFR et al).
+
+
+(2) Vector Type
+The vector type is  a fixed size sequence  of scalar values. A  vector
+can  be indexed  resulting in  a scalar  value. Operations  between a
+vector and scalar will result in a vector with a size equal to that of
+the original vector, whereas operations between vectors will result in
+a vector of size equal to that of the smaller of the two.
+
+
+(3) String Type
+The string type is a variable length sequence of 8-bit chars.  Strings
+can be  assigned and  concatenated to  one another,  they can  also be
+manipulated via sub-ranges using the range definition syntax.  Strings
+however can not interact with scalar or vector types.
+
+
+
+[10 - COMPONENTS]
 There are three primary components, that are specialized upon a  given
 numeric type, which make up the core of ExprTk. The components are  as
 follows:
@@ -695,17 +729,17 @@ Expression:  z := (x + y^-2.345) * sin(pi / min(w - 7.3,v))
 
 
 (3) Parser
-A  structure  which  takes  as input  a  string  representation  of an
-expression and attempts to compile said input with the result being an
-instance  of  Expression.  If  an  error  is  encountered  during  the
-compilation  process, the  parser will  stop compiling  and return  an
-error status code,  with a more  detailed description of  the error(s)
-and  its  location  within  the  input  provided  by  the  'get_error'
-interface.
+A structure which takes as input a string representation of  an
+expression and attempts to  compile said input with  the result
+being an  instance of  Expression. If  an error  is encountered
+during the compilation process, the parser will stop  compiling
+and  return  an  error  status  code,  with  a  more   detailed
+description of the error(s)  and its location within  the input
+provided by the 'get_error' interface.
 
 
 
-[10 - COMPILATION OPTIONS]
+[11 - COMPILATION OPTIONS]
 The exprtk::parser  when being  instantiated takes  as input  a set of
 options  to be  used during  the compilation  process of  expressions.
 An  example instantiation  of exprtk::parser  where only  the  joiner,
@@ -826,7 +860,7 @@ larger numerical bound.
 
 
 
-[11 - SPECIAL FUNCTIONS]
+[12 - SPECIAL FUNCTIONS]
 The purpose  of special  functions in  ExprTk is  to provide  compiler
 generated equivalents of common mathematical expressions which can  be
 invoked by  using the  'special function'  syntax (eg:  $f12(x,y,z) or
@@ -897,7 +931,7 @@ correctly optimize such expressions for a given architecture.
 
 
 
-[12 - VARIABLE & VECTOR DEFINITION]
+[13 - VARIABLE & VECTOR DEFINITION]
 ExprTk  supports  the  definition of  expression  local  variables and
 vectors. The definitions  must be unique  as shadowing is  not allowed
 and  object  life-times  are  based  on  scope.  Definitions  use  the
@@ -974,7 +1008,7 @@ vector expression can be assigned to a variable.
 
 
 
-[13 - VECTOR PROCESSING]
+[14 - VECTOR PROCESSING]
 ExprTk  provides  support  for   various  forms  of  vector   oriented
 arithmetic, inequalities and  processing. The various  supported pairs
 are as follows:
@@ -1049,7 +1083,7 @@ not a vector but rather a single value.
 
 
 
-[14 - USER DEFINED FUNCTIONS]
+[15 - USER DEFINED FUNCTIONS]
 ExprTk provides a means  whereby custom functions can  be defined  and
 utilized within  expressions.  The   concept  requires  the  user   to
 provide a reference  to the function  coupled with an  associated name
@@ -1119,16 +1153,20 @@ input  into  the  function. The  function  operator  interface uses  a
 std::vector  specialized  upon  the  type_store  type  to   facilitate
 parameter passing.
 
+    Scalar <-- function(i_0, i_1, i_2....., i_N)
+
+
 The  fundamental  types  that  can  be  passed  into  the  function as
 parameters and their views are as follows:
 
-   (1) scalar - scalar_view
-   (2) vector - vector_view
-   (3) string - string_view
+   (1) Scalar - scalar_view
+   (2) Vector - vector_view
+   (3) String - string_view
 
-The above denoted type  views provide non-const  reference-like access
-to each parameter.  The following example  defines a generic  function
-called 'too':
+The above denoted type  views provide non-const reference-like  access
+to each parameter, as such modifications made to the input  parameters
+will  persist after  the function  call has  completed. The  following
+example defines a generic function called 'too':
 
    template <typename T>
    struct too : public exprtk::igeneric_function<T>
@@ -1163,7 +1201,7 @@ are three type enumerations:
        eg: vec1, 2 * vec1 + vec2 / 3
 
    (3) e_string - strings, string literals and range variants of both
-       eg: 'AString', s0, 'AString'[x:y], s1[1 + x:]
+       eg: 'AString', s0, 'AString'[x:y], s1[1 + x:] + 'AString'
 
 
 Each of the  parameters can be  accessed using its  designated view. A
@@ -1211,10 +1249,12 @@ sequence of parameters. Furthermore  performing the checks at  compile
 -time rather than at run-time (aka every time the function is invoked)
 will result in expression evaluation performance gains.
 
-Compile-time  type  checking  can be  requested  by  passing a  string
-representing the desired parameter  sequence to the constructor of the
-igeneric_function. The following example demonstrates how this can  be
-achieved:
+Compile-time type  checking of  input parameters  can be  requested by
+passing  a string  to the  constructor of  the igeneric_function  that
+represents the required sequence of parameter types. When no parameter
+sequence is provided, it is implied the function can accept a variable
+number of parameters  comprised of any  of the fundemental  types. The
+following example demonstrates how this can be achieved:
 
    template <typename T>
    struct too : public exprtk::igeneric_function<T>
@@ -1271,7 +1311,7 @@ parameters in the following sequence:
    (b) Vector
    (c) Scalar
    (d) Scalar
-   (e) One or more vectors
+   (e) One or more Vectors
 
 
 (4) igeneric_function II
@@ -1281,6 +1321,9 @@ difference being  that the  function returns  a string  and as such is
 treated as a string when  invoked within expressions. As a  result the
 function call can  alias a string  and interact with  other strings in
 situations such as concatenation and equality operations.
+
+    String <-- function(i_0, i_1, i_2....., i_N)
+
 
 The following example defines an generic function named 'toupper' with
 the string return type function operator being explicitly overriden:
@@ -1449,7 +1492,7 @@ zero input parameters the calling styles are as follows:
 
 
 
-[15 - COMPILATION ERRORS]
+[16 - COMPILATION ERRORS]
 When attempting to compile  a malformed or otherwise  erroneous ExprTk
 expression, the  compilation process  will result  in an  error, as is
 indicated  by  the  'compile'  method  returning  a  false  value.   A
@@ -1558,7 +1601,7 @@ via the 'unknown symbol resolver' mechanism.
 
 
 
-[16 - EXPRTK NOTES]
+[17 - EXPRTK NOTES]
 The following is a list of facts and suggestions one may want to take
 into account when using Exprtk:
 
@@ -1566,7 +1609,9 @@ into account when using Exprtk:
       dominant principles of the ExprTk library.
 
  (01) ExprTk  uses a  rudimentary imperative  programming model  with
-      syntax based on languages such as Pascal and C.
+      syntax based  on languages  such as  Pascal and  C. Furthermore
+      ExprTk  is  an LL(2)  type  grammar and  is  processed using  a
+      recursive descent parsing algorithm.
 
  (02) Supported types are float, double, long double and MPFR/GMP.
 
@@ -1579,8 +1624,8 @@ into account when using Exprtk:
  (05) Supported   user  defined   types   are   numeric  and   string
       variables, numeric vectors and functions.
 
- (06) All reserved words and keywords, variable, vector and  function
-      names are case-insensitive.
+ (06) All  reserved words,  keywords, variable,  vector, string   and
+      function names are case-insensitive.
 
  (07) Variable, vector and  function names must  begin with a  letter
       (A-Z  or a-z),  then  can  be comprised  of any  combination of
@@ -1595,9 +1640,9 @@ into account when using Exprtk:
       of that  symbol-table, otherwise  the result  will be undefined
       behavior.
 
- (10) Equal and  Nequal are  normalized equality  routines, which use
-      epsilons  of 0.0000000001  and 0.000001  for  double  and float
-      types respectively.
+ (10) Equal  and  Nequal  are  normalised-epsilon  equality routines,
+      which use epsilons of 0.0000000001 and 0.000001 for double  and
+      float types respectively.
 
  (11) All trigonometric functions  assume radian input  unless stated
       otherwise.
@@ -1721,7 +1766,7 @@ into account when using Exprtk:
 
 
 
-[17 - SIMPLE EXPRTK EXAMPLE]
+[18 - SIMPLE EXPRTK EXAMPLE]
 --- snip ---
 #include <cstdio>
 #include <string>
@@ -1809,7 +1854,7 @@ int main()
 
 
 
-[18 - BUILD OPTIONS]
+[19 - BUILD OPTIONS]
 When building ExprTk there are a number of defines that will enable or
 disable certain features and  capabilities. The defines can  either be
 part of a compiler command line switch or scoped around the include to
@@ -1847,7 +1892,7 @@ in a compilation failure.
 
 
 
-[19 - FILES]
+[20 - FILES]
 The source distribution of ExprTk is comprised of the following set of
 files:
 
@@ -2013,8 +2058,17 @@ files:
 |   |                                                         |
 |   |                   +--------->---------+                 |
 |   |                   |                   |                 |
-|   +--> [:=] ---> [{] -+-+-> [expression] -+-> [}] -+-> [;]  |
+|   +--> [:=] ---> [{] -+-+-> [expression] -+-> [}] ---> [;]  |
 |                         |                 |                 |
 |                         +--<--- [,] <-----+                 |
+|                                                             |
++-------------------------------------------------------------+
+|11 - Range Statement                                         |
+|                                                             |
+|      +-------->--------+                                    |
+|      |                 |                                    |
+| [[] -+-> [expression] -+-> [:] -+-> [expression] -+--> []]  |
+|                                 |                 |         |
+|                                 +-------->--------+         |
 |                                                             |
 +-------------------------------------------------------------+

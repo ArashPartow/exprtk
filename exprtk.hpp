@@ -15656,7 +15656,10 @@ namespace exprtk
             }
 
             if (break_loop)
+            {
+               parse_pending_string_rangesize(expression);
                break;
+            }
             else if (current_state.left < precedence)
                break;
 
@@ -15701,13 +15704,8 @@ namespace exprtk
                {
                   expression = parse_ternary_conditional_statement(expression);
                }
-               else if (
-                         token_is(token_t::e_lsqrbracket,false) &&
-                         is_generally_string_node(expression)
-                       )
-               {
-                  expression = parse_string_range_statement(expression);
-               }
+
+               parse_pending_string_rangesize(expression);
             }
          }
 
@@ -17209,6 +17207,24 @@ namespace exprtk
          rp.clear();
 
          return result;
+      }
+
+      inline void parse_pending_string_rangesize(expression_node_ptr& expression)
+      {
+         const std::size_t max_rangesize_parses = 100;
+         std::size_t i = 0;
+
+         while
+            (
+               (0 != expression)                      &&
+               (i++ < max_rangesize_parses)           &&
+               error_list_.empty()                    &&
+               token_is(token_t::e_lsqrbracket,false) &&
+               is_generally_string_node(expression)
+            )
+         {
+            expression = parse_string_range_statement(expression);
+         }
       }
 
       template <typename Allocator,
@@ -19316,13 +19332,8 @@ namespace exprtk
          {
             branch = parse_ternary_conditional_statement(branch);
          }
-         else if (
-                   token_is(token_t::e_lsqrbracket,false) &&
-                   is_generally_string_node(branch)
-                 )
-         {
-            branch = parse_string_range_statement(branch);
-         }
+
+         parse_pending_string_rangesize(branch);
 
          return branch;
       }
