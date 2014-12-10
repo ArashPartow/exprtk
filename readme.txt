@@ -582,7 +582,7 @@ appropriate may represent any of one the following:
    3. A vector element
    4. A vector
    5. A string
-   5. An expression comprised of [1], [2] or [3] (eg: 2 + x / vec[3])
+   6. An expression comprised of [1], [2] or [3] (eg: 2 + x / vec[3])
 
 
 
@@ -1560,7 +1560,7 @@ demonstrated by the following example:
    }
 
 
-Note: The  are five  distinct error  modes in  ExprTk which denote the
+Note: There are five  distinct error modes in  ExprTk which denote the
 class of an error. These classes are as follows:
 
    (a) Syntax
