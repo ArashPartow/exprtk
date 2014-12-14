@@ -4617,6 +4617,11 @@ struct gen_func2 : public exprtk::igeneric_function<T>
    {
       return T(0);
    }
+
+   inline T operator()(const std::size_t&, parameter_list_t params)
+   {
+      return this->operator()(params);
+   }
 };
 
 template <typename T>
@@ -4670,6 +4675,11 @@ struct inc_func : public exprtk::igeneric_function<T>
 
       return T(0);
    }
+
+   inline T operator()(const std::size_t&, parameter_list_t params)
+   {
+      return this->operator()(params);
+   }
 };
 
 template <typename T>
@@ -4699,6 +4709,14 @@ struct rem_space_and_uppercase : public exprtk::igeneric_function<T>
       }
 
       return T(0);
+   }
+
+   inline T operator()(const std::size_t& param_seq_index, std::string& result, parameter_list_t params)
+   {
+      if (1 == param_seq_index)
+         return this->operator()(result,params);
+      else
+         return T(0);
    }
 };
 
@@ -4849,7 +4867,7 @@ inline bool run_test18()
 
          if (!parser.compile(expression_list[i],expression))
          {
-            printf("run_test18() - GenFunc Error: %s   Expression: %s\n",
+            printf("run_test18() - GenFunc Error: %s   Expression: %s [2]\n",
                    parser.error().c_str(),
                    expression_list[i].c_str());
 
@@ -4925,7 +4943,18 @@ inline bool run_test18()
                     "var z := 3; var w[3] := { 1/3, 1/5, 1/7 }; foo(2w / 3, 'abc123',s0[2:5],v0, v1 + v2, v0[2], x, 2x + y, z);",
                     "var z := 3; var w[3] := { 1/3, 1/5, 1/7 }; foo('abc123', s0[2:5],v0, v1 + v2, v0[2], x, 2x + y, z,2w / 3);",
                     "var z := 3; var w[3] := { 1/3, 1/5, 1/7 }; foo(s0[2:5],v0, v1 + v2, v0[2], x, 2x + y, z,2w / 3, 'abc123');",
-                    "var z := 3; var w[3] := { 1/3, 1/5, 1/7 }; foo(s0[2:3]+s0[4:5],v0, v1 + v2, v0[2], x, 2x + y, z,2w / 3, 'abc123');"
+                    "var z := 3; var w[3] := { 1/3, 1/5, 1/7 }; foo(s0[2:3]+s0[4:5],v0, v1 + v2, v0[2], x, 2x + y, z,2w / 3, 'abc123');",
+                    "var z := 3; var w[3] := { 1/3, 1/5, 1/7 }; foo(v0,v1 + v2, v0[2], x, 2x + y, z, 2w / 3, 'abc123',s0[2:5]);",
+                    "var z := 3; var w[3] := { 1/3, 1/5, 1/7 }; foo(v0,v1 + v2, v0[2], x, 2x + y, z, 2w / 3, 'abc123',s0[2:5]);",
+                    "var z := 3; var w[3] := { 1/3, 1/5, 1/7 }; foo(v0,v1 + v2, v0[2], x, 2x + y, z, 2w / 3, 'abc123',s0[2:5]);",
+                    "var z := 3; var w[3] := { 1/3, 1/5, 1/7 }; foo(v0,v1 + v2, v0[2], x, 2x + y, z, 2w / 3, 'abc123',s0[2:5]);",
+
+                    "var z := 3; var w[3] := { 1/3, 1/5, 1/7 }; foo(v0,v1 + v2, v0[2], x, 2x + y, z, 2w / 3, 'abc123',s0[2:5]);",
+                    "var z := 3; var w[3] := { 1/3, 1/5, 1/7 }; foo(v0,v1 + v2, v0[2], x, 2x + y, z, 2w / 3, 'abc123',s0[2:5]);",
+                    "var z := 3; var w[3] := { 1/3, 1/5, 1/7 }; foo(v0,v1 + v2, v0[2], x, 2x + y, z, 2w / 3, 'abc123',s0[2:5]);",
+                    "var z := 3; var w[3] := { 1/3, 1/5, 1/7 }; foo(v0,v1 + v2, v0[2], x, 2x + y, z, 2w / 3, 'abc123',s0[2:5]);"
+
+
                   };
 
       static const std::size_t expression_list_size = sizeof(expression_list) / sizeof(std::string);
@@ -4942,6 +4971,14 @@ inline bool run_test18()
                     "SSVVTTTTV",
                     "SVVTTTTVS",
                     "SVVTTTTVS",
+                    "V*T*VS*"  ,
+                    "V*TTTTVSS",
+                    "VVT*VSS"  ,
+                    "VVTTTTVS*",
+                    "TTTTTTT|STSTSTS|V*T*VS*"  ,
+                    "TTTTTTT|STSTSTS|V*TTTTVSS",
+                    "TTTTTTT|STSTSTS|VVT*VSS"  ,
+                    "TTTTTTT|STSTSTS|VVTTTTVS*"
                   };
 
       bool failure = false;
@@ -4958,7 +4995,7 @@ inline bool run_test18()
 
          if (!parser.compile(expression_list[i],expression))
          {
-            printf("run_test18() - GenFunc2 Error: %s   Expression: %s  Parameter Sequence: %s\n",
+            printf("run_test18() - GenFunc2 Error: %s   Expression: %s  Parameter Sequence: %s [3]\n",
                    parser.error().c_str(),
                    expression_list[i].c_str(),
                    parameter_type_list[i].c_str());
@@ -5049,7 +5086,7 @@ inline bool run_test18()
 
          if (!parser.compile(expression_list[i],expression))
          {
-            printf("run_test18() - IncFunc Error: %s   Expression: %s  Parameter Sequence: %s\n",
+            printf("run_test18() - IncFunc Error: %s   Expression: %s  Parameter Sequence: %s [4]\n",
                    parser.error().c_str(),
                    expression_list[i].c_str(),
                    parameter_type_list[i].c_str());
@@ -5141,70 +5178,88 @@ inline bool run_test18()
                             " s4 := s0 + remspc_uc(s1);                           "
                             " remspc_uc(s0 + s1) == remspc_uc(s0) + remspc_uc(s1);";
 
-      expression_t expression;
+      std::string parameter_type_list[] =
+                  {
+                    "VVVTTT|S",
+                    "VVTTTV|S",
+                    "VTTTVV|S",
+                    "TTTVVV|S",
+                    "TTVVVT|S",
+                    "TVVVTT|S"
+                  };
 
-      expression.register_symbol_table(symbol_table);
+      std::size_t parameter_type_list_size = sizeof(parameter_type_list) / sizeof(std::string);
 
-      parser_t parser;
 
-      if (!parser.compile(program,expression))
+      for (std::size_t i = 0; i < parameter_type_list_size; ++i)
       {
-         printf("Error: %s\tExpression: %s\n",
-                parser.error().c_str(),
-                program.c_str());
+         expression_t expression;
 
-         return false;
-      }
+         expression.register_symbol_table(symbol_table);
 
-      T result = expression.value();
+         parser_t parser;
 
-      if (result != T(1))
-      {
-         printf("run_test18() - Error in evaluation! (4) Expression: %s  Result <> 1\n",
-                program.c_str());
-         failure = true;
-      }
+         rsauc.parameter_sequence = parameter_type_list[i];
 
-      if (result != T(1))
-      {
-         printf("run_test18() - Error in evaluation! (4) Expression: %s  Check: s0\n",
-                program.c_str());
-         failure = true;
-      }
+         if (!parser.compile(program,expression))
+         {
+            printf("Error: %s\tExpression: %s\n",
+                   parser.error().c_str(),
+                   program.c_str());
 
-      if ("How now " != s0)
-      {
-         printf("run_test18() - Error in evaluation! (4) Expression: %s  Check: s0\n",
-                program.c_str());
-         failure = true;
-      }
+            return false;
+         }
 
-      if ("brown cow?" != s1)
-      {
-         printf("run_test18() - Error in evaluation! (4) Expression: %s  Check: s1\n",
-                program.c_str());
-         failure = true;
-      }
+         T result = expression.value();
 
-      if ("HOWNOWBROWNCOW?" != s2)
-      {
-         printf("run_test18() - Error in evaluation! (4) Expression: %s  Check: s2\n",
-                program.c_str());
-         failure = true;
-      }
+         if (result != T(1))
+         {
+            printf("run_test18() - Error in evaluation! (4) Expression: %s  Result <> 1\n",
+                   program.c_str());
+            failure = true;
+         }
 
-      if ("HOWNOWbrown cow?" != s3)
-      {
-         printf("run_test18() - Error in evaluation! (4) Expression: %s  Check: s3\n",
-                program.c_str());
-         failure = true;
-      }
+         if (result != T(1))
+         {
+            printf("run_test18() - Error in evaluation! (4) Expression: %s  Check: s0\n",
+                   program.c_str());
+            failure = true;
+         }
 
-      if ("How now BROWNCOW?" != s4)
-      {
-         printf("run_test18() - Error in evaluation! (4) Expression: %s  Check: s4\n",
-                program.c_str());
-         failure = true;
+         if ("How now " != s0)
+         {
+            printf("run_test18() - Error in evaluation! (4) Expression: %s  Check: s0\n",
+                   program.c_str());
+            failure = true;
+         }
+
+         if ("brown cow?" != s1)
+         {
+            printf("run_test18() - Error in evaluation! (4) Expression: %s  Check: s1\n",
+                   program.c_str());
+            failure = true;
+         }
+
+         if ("HOWNOWBROWNCOW?" != s2)
+         {
+            printf("run_test18() - Error in evaluation! (4) Expression: %s  Check: s2\n",
+                   program.c_str());
+            failure = true;
+         }
+
+         if ("HOWNOWbrown cow?" != s3)
+         {
+            printf("run_test18() - Error in evaluation! (4) Expression: %s  Check: s3\n",
+                   program.c_str());
+            failure = true;
+         }
+
+         if ("How now BROWNCOW?" != s4)
+         {
+            printf("run_test18() - Error in evaluation! (4) Expression: %s  Check: s4\n",
+                   program.c_str());
+            failure = true;
+         }
       }
 
       if (failure)

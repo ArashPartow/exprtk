@@ -50,7 +50,7 @@ arithmetic operations, functions and processes:
 
 
 [02 - EXAMPLE EXPRESSIONS]
-The  following  is  a  short listing  of  the types  of  mathematical
+The  following  is  a  short listing  of  the  types  of  mathematical
 expressions that can be parsed and evaluated using the ExprTk library.
 
   (01) sqrt(1 - (3 / x^2))
@@ -1253,16 +1253,37 @@ Compile-time type  checking of  input parameters  can be  requested by
 passing  a string  to the  constructor of  the igeneric_function  that
 represents the required sequence of parameter types. When no parameter
 sequence is provided, it is implied the function can accept a variable
-number of parameters  comprised of any  of the fundemental  types. The
-following example demonstrates how this can be achieved:
+number of parameters comprised of any of the fundamental types.
+
+Each fundamental type has an  associated character. The following is a
+listing of said characters and their meanings:
+
+   (1) T - Scalar
+   (2) V - Vector
+   (3) S - String
+   (4) ? - Any type (Scalar, Vector or String)
+   (5) * - Wildcard operator
+   (6) | - Parameter sequence delimiter
+
+
+No other characters other than  the six denoted above may  be included
+in the parameter sequence  definition. If any such  invalid characters
+do exist, registration of the associated generic function to a  symbol
+table ('add_function' method) will fail. If the parameter sequence  is
+modified resulting in it becoming  invalid after having been added  to
+the symbol table but before the compilation step, a compilation  error
+will be incurred.
+
+The  following   example  demonstrates   a  simple   generic  function
+implementation with a user specified parameter sequence:
 
    template <typename T>
-   struct too : public exprtk::igeneric_function<T>
+   struct moo : public exprtk::igeneric_function<T>
    {
       typedef typename exprtk::igeneric_function<T>::parameter_list_t
                                                      parameter_list_t;
 
-      too()
+      moo()
       : exprtk::igeneric_function<T>("SVTT")
       {}
 
@@ -1273,45 +1294,13 @@ following example demonstrates how this can be achieved:
    };
 
 
-In   the  example  above the  custom  generic  function 'too'  expects
-exactly four parameters in the following sequence:
-
-   (a) String
-   (b) Vector
-   (c) Scalar
-   (d) Scalar
-
-
-One  further  refinement  to   the  type  checking  facility   is  the
-possibility of a variable number of trailing common types which can be
-accomplished  by using  a wildcard  '*' at  the  end  of the  sequence
-definition.
-
-   template <typename T>
-   struct too : public exprtk::igeneric_function<T>
-   {
-      typedef typename exprtk::igeneric_function<T>::parameter_list_t
-                                                     parameter_list_t;
-
-      too()
-      : exprtk::igeneric_function<T>("SVTTV*")
-      {}
-
-      inline T operator()(parameter_list_t parameters)
-      {
-         ...
-      }
-   };
-
-
-In the example above the generic function 'too' expects at least  five
+In the example above the  generic function 'moo' expects exactly  four
 parameters in the following sequence:
 
-   (a) String
-   (b) Vector
-   (c) Scalar
-   (d) Scalar
-   (e) One or more Vectors
+   (1) String
+   (2) Vector
+   (3) Scalar
+   (4) Scalar
 
 
 (4) igeneric_function II
@@ -1326,7 +1315,7 @@ situations such as concatenation and equality operations.
 
 
 The following example defines an generic function named 'toupper' with
-the string return type function operator being explicitly overriden:
+the string return type function operator being explicitly overridden:
 
    template <typename T>
    struct toupper : public exprtk::igeneric_function<T>
@@ -1354,12 +1343,16 @@ the string return type function operator being explicitly overriden:
 
 
 In the example above the  generic function 'toupper' expects only  one
-input parameter  of type  string, as noted by  the parameter  sequence
+input parameter  of type  string, as  noted by  the parameter sequence
 string passed during the constructor. When executed, the function will
 return as a result a copy  of the input string converted to  uppercase
-form.
+form. An example expression  using the toupper function  registered as
+the symbol 'toupper' is as follows:
 
-When  adding a  string type  returning generic  function to  a  symbol
+   "'ABCDEF' == toupper('aBc') + toupper('DeF')"
+
+
+Note: When adding a string type returning generic function to a symbol
 table,  the  'add_function'  is   invoked  with  an  extra   parameter
 (e_ft_strfunc) that denotes the function should be treated as a string
 returning function type. The  following example demonstrates how  this
@@ -1372,6 +1365,99 @@ is done:
    symbol_table.add_function("toupper",
                              tu,
                              symbol_table_t::e_ft_strfunc);
+
+
+Note: There are two further refinements to the type checking  facility
+are the possibilities of a  variable number of common types  which can
+be accomplished by using a wildcard '*' and a special 'any type' which
+is done using the '?' character. It should be noted that the  wildcard
+operator is  associated with  the previous  type in  the sequence  and
+implies one or more of that type.
+
+   template <typename T>
+   struct zoo : public exprtk::igeneric_function<T>
+   {
+      typedef typename exprtk::igeneric_function<T>::parameter_list_t
+                                                     parameter_list_t;
+
+      zoo()
+      : exprtk::igeneric_function<T>("SVT*V?")
+      {}
+
+      inline T operator()(parameter_list_t parameters)
+      {
+         ...
+      }
+   };
+
+
+In the example above the generic function 'zoo' expects at least  five
+parameters in the following sequence:
+
+   (1) String
+   (2) Vector
+   (3) One or more Scalars
+   (4) Vector
+   (5) Any type (one type of either a scalar, vector or string)
+
+
+A final  piece of  type checking  functionality is  available for  the
+scenarios where  a single function name  is intended  to be  used for
+multiple distinct parameter sequences.  Two specific overrides of  the
+function operator are provided one for standard generic functions  and
+one for string returning functions. The overrides are as follows:
+
+      // f(psi,i_0,i_1,....,i_N) --> Scalar
+      inline T operator()(const std::size_t& ps_index,
+                          parameter_list_t parameters)
+      {
+         ...
+      }
+
+      // f(psi,i_0,i_1,....,i_N) --> String
+      inline T operator()(const std::size_t& ps_index,
+                          std::string& result,
+                          parameter_list_t parameters)
+      {
+         ...
+      }
+
+
+When the function  operator is invoked  the 'ps_index' parameter  will
+have as its value the index of the parameter sequence that matches the
+specific invocation. This way complex and time consuming type checking
+conditions need not  be executed in  the function itself  but rather a
+simple and efficient  dispatch to a  specific implementation for  that
+particular parameter sequence can be performed.
+
+   template <typename T>
+   struct roo : public exprtk::igeneric_function<T>
+   {
+      typedef typename exprtk::igeneric_function<T>::parameter_list_t
+                                                     parameter_list_t;
+
+      moo()
+      : exprtk::igeneric_function<T>("SVTT|SS|TTV|S?V*S")
+      {}
+
+      inline T operator()(parameter_list_t parameters)
+      {
+         ...
+      }
+   };
+
+
+In the above example there are four distinct parameter sequences  that
+can be processed  by the generic  function 'roo'. Any  other parameter
+sequences will cause a compilation error. The valid four sequences are
+as follows:
+
+    Sequence-0     Sequence-1     Sequence-2     Sequence-3
+      'SVTT'          'SS'           'TTV'        'S?V*S'
+   (1) String     (1) String     (1) Scalar     (1) String
+   (2) Vector     (2) String     (2) Scalar     (2) Any Type
+   (3) Scalar                    (3) Vector     (3) One or more Vectors
+   (4) Scalar                                   (4) String
 
 
 (5) function_compositor
@@ -1745,7 +1831,7 @@ into account when using Exprtk:
  (28) Every valid ExprTk statement is a "value returning" expression.
       Unlike some languages that limit the types of expressions  that
       can be  performed in  certain situations,  in ExprTk  any valid
-      expression can be used in any "value consuming" context. Eg:
+      expression can be used in any "value consuming" context. eg:
 
       var y := 3;
       for (var x := switch
@@ -2045,7 +2131,9 @@ files:
 +-------------------------------------------------------------+
 |09 - Variable Definition Statement                           |
 |                                                             |
-|   [var] ---> [symbol] -+-> [:=] ---> [expression] -+-> [;]  |
+|   [var] ---> [symbol] -+-> [:=] -+-> [expression] -+-> [;]  |
+|                        |         |                 |        |
+|                        |         +-----> [{}] -->--+        |
 |                        |                           |        |
 |                        +------------->-------------+        |
 |                                                             |
