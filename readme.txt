@@ -1449,15 +1449,15 @@ particular parameter sequence can be performed.
 
 In the above example there are four distinct parameter sequences  that
 can be processed  by the generic  function 'roo'. Any  other parameter
-sequences will cause a compilation error. The valid four sequences are
+sequences will cause a compilation error. The four valid sequences are
 as follows:
 
-    Sequence-0     Sequence-1     Sequence-2     Sequence-3
-      'SVTT'          'SS'           'TTV'        'S?V*S'
-   (1) String     (1) String     (1) Scalar     (1) String
-   (2) Vector     (2) String     (2) Scalar     (2) Any Type
-   (3) Scalar                    (3) Vector     (3) One or more Vectors
-   (4) Scalar                                   (4) String
+    Sequence-0    Sequence-1    Sequence-2    Sequence-3
+      'SVTT'         'SS'          'TTV'       'S?V*S'
+   (1) String    (1) String    (1) Scalar    (1) String
+   (2) Vector    (2) String    (2) Scalar    (2) Any Type
+   (3) Scalar                  (3) Vector    (3) One or more Vectors
+   (4) Scalar                                (4) String
 
 
 (5) function_compositor

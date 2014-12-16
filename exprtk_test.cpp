@@ -1270,6 +1270,12 @@ inline bool run_test01()
                                  test_xy<T>("2x + 3y    ==   2*x + 3*y" ,T(2.0),T(3.0),T(1.0)),
                                  test_xy<T>("2(x +  y)  ==   2*x + 2*y" ,T(2.0),T(3.0),T(1.0)),
                                  test_xy<T>(" (x +  y)3 ==   3*x + 3*y" ,T(2.0),T(3.0),T(1.0)),
+                                 test_xy<T>(" (x)y    == (x*y)" ,T(2.0),T(3.0),T(1.0)),
+                                 test_xy<T>(" x(y)    == (x*y)" ,T(2.0),T(3.0),T(1.0)),
+                                 test_xy<T>(" (x) y   == (x*y)" ,T(2.0),T(3.0),T(1.0)),
+                                 test_xy<T>(" x (y)   == (x*y)" ,T(2.0),T(3.0),T(1.0)),
+                                 test_xy<T>(" ((x) y) == (x*y)" ,T(2.0),T(3.0),T(1.0)),
+                                 test_xy<T>(" (x (y)) == (x*y)" ,T(2.0),T(3.0),T(1.0)),
                                  test_xy<T>("equal(x^2.2^1.1,17.15193942371376191362)" ,T(3.3),T(0.0),T(1.0)),
                                  test_xy<T>("equal(3.3^x^1.1,17.15193942371376191362)" ,T(2.2),T(0.0),T(1.0)),
                                  test_xy<T>("equal(3.3^2.2^x,17.15193942371376191362)" ,T(1.1),T(0.0),T(1.0)),
@@ -1693,6 +1699,7 @@ inline bool run_test01()
                       test.expr.c_str(),
                       (double)test.result,
                       (double)result);
+
                loop_result = false;
             }
          }
@@ -3392,14 +3399,15 @@ inline bool run_test10()
       std::string expression_string = "(E == '1234') and (sin(a) + C) / b";
 
       typedef exprtk::parser<T> parser_t;
-      typedef typename parser_t::cache_symbol_t cache_symbol_t;
+      typedef typename parser_t::dependent_entity_collector::symbol_t symbol_t;
 
-      std::deque<cache_symbol_t> variable_list;
+      std::deque<symbol_t> symbol_list;
 
       {
          parser_t parser;
 
-         parser.cache_symbols() = true;
+         parser.dec().collect_variables() = true;
+         parser.dec().collect_functions() = true;
 
          if (!parser.compile(expression_string,expression))
          {
@@ -3410,24 +3418,88 @@ inline bool run_test10()
             return false;
          }
 
-         parser.expression_symbols(variable_list);
+         parser.dec().symbols(symbol_list);
       }
 
-      std::deque<cache_symbol_t> expected_variable_list;
+      std::deque<symbol_t> expected_symbol_list;
 
-      expected_variable_list.push_back(cache_symbol_t("a"  ,parser_t::e_cs_variable));
-      expected_variable_list.push_back(cache_symbol_t("b"  ,parser_t::e_cs_variable));
-      expected_variable_list.push_back(cache_symbol_t("c"  ,parser_t::e_cs_variable));
-      expected_variable_list.push_back(cache_symbol_t("e"  ,parser_t::e_cs_string  ));
-      expected_variable_list.push_back(cache_symbol_t("sin",parser_t::e_cs_function));
+      expected_symbol_list.push_back(symbol_t("a"  ,parser_t::e_st_variable));
+      expected_symbol_list.push_back(symbol_t("b"  ,parser_t::e_st_variable));
+      expected_symbol_list.push_back(symbol_t("c"  ,parser_t::e_st_variable));
+      expected_symbol_list.push_back(symbol_t("e"  ,parser_t::e_st_string  ));
+      expected_symbol_list.push_back(symbol_t("sin",parser_t::e_st_function));
 
-      bool result = (variable_list.size() == expected_variable_list.size()) &&
-                     std::equal(variable_list.begin(),
-                                variable_list.end(),
-                                expected_variable_list.begin());
+      bool result = (symbol_list.size() == expected_symbol_list.size()) &&
+                     std::equal(symbol_list.begin(),
+                                symbol_list.end(),
+                                expected_symbol_list.begin());
       if (!result)
       {
          printf("run_test10() - Failed variable list comparison.(5)\n");
+         return false;
+      }
+   }
+
+   {
+      T a = T(1);
+      T b = T(2);
+      T c = T(3);
+      T d = T(4);
+
+      std::string e = "string";
+
+      exprtk::symbol_table<T> symbol_table;
+
+      symbol_table.add_variable ("a",a);
+      symbol_table.add_variable ("b",b);
+      symbol_table.add_variable ("c",c);
+      symbol_table.add_variable ("d",d);
+      symbol_table.add_stringvar("e",e);
+
+      expression_t expression;
+      expression.register_symbol_table(symbol_table);
+
+      std::string expression_string = "a := b + c;     "
+                                      "b := c + d;     "
+                                      "c := d + 1;     "
+                                      "e := e + 'abc'; ";
+
+      typedef exprtk::parser<T> parser_t;
+      typedef typename parser_t::dependent_entity_collector::symbol_t symbol_t;
+
+      std::deque<symbol_t> variable_list;
+
+      {
+         parser_t parser;
+
+         parser.dec().collect_assignments() = true;
+
+         if (!parser.compile(expression_string,expression))
+         {
+            printf("run_test10() - Error: %s   Expression: %s\n",
+                   parser.error().c_str(),
+                   expression_string.c_str());
+
+            return false;
+         }
+
+         parser.dec().assignment_symbols(variable_list);
+      }
+
+      std::deque<symbol_t> expected_assignment_list;
+
+      expected_assignment_list.push_back(symbol_t("a",parser_t::e_st_variable));
+      expected_assignment_list.push_back(symbol_t("b",parser_t::e_st_variable));
+      expected_assignment_list.push_back(symbol_t("c",parser_t::e_st_variable));
+      expected_assignment_list.push_back(symbol_t("e",parser_t::e_st_string  ));
+
+      bool result = (variable_list.size() == expected_assignment_list.size()) &&
+                     std::equal(variable_list.begin(),
+                                variable_list.end(),
+                                expected_assignment_list.begin());
+      if (!result)
+      {
+         printf("run_test10() - Failed variable list comparison.(6)\n");
          return false;
       }
    }
@@ -6067,13 +6139,13 @@ struct my_usr : public exprtk::parser<T>::unknown_symbol_resolver
    typedef typename exprtk::parser<T>::unknown_symbol_resolver usr_t;
 
    bool process(const std::string& unknown_symbol,
-                typename usr_t::symbol_type& st,
+                typename usr_t::usr_symbol_type& st,
                 T& default_value,
                 std::string& error_message)
    {
       if (unknown_symbol[0] == 'v')
       {
-         st = usr_t::e_variable_type;
+         st = usr_t::e_usr_variable_type;
          default_value = next_value();
          error_message = "";
 
@@ -6081,7 +6153,7 @@ struct my_usr : public exprtk::parser<T>::unknown_symbol_resolver
       }
       else if (unknown_symbol[0] == 'c')
       {
-         st = usr_t::e_constant_type;
+         st = usr_t::e_usr_constant_type;
          default_value = next_value();
          error_message = "";
 
