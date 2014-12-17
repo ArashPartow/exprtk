@@ -825,6 +825,7 @@ such transformations:
    (e) 5foo(x,y)      --->  5 * foo(x,y)
    (f) foo(x,y)6 + 1  --->  foo(x,y) * 6 + 1
    (g) (4((2x)3))     --->  4 * ((2 * x) * 3)
+   (h) w(x) + (y)z    --->  w * x + y * z
 
 
 (7) Strength Reduction Check (e_strength_reduction)
@@ -1577,8 +1578,138 @@ zero input parameters the calling styles are as follows:
    (2)  x + sin(foo  - 2) / y
 
 
+[16 - EXPRESSION DEPENDENTS]
+Any  expression  that  is  not  a  literal  (aka  constant)  will have
+dependencies. The types of  'dependencies' an expression can  have are
+as follows:
 
-[16 - COMPILATION ERRORS]
+   (a) Variables
+   (b) Vectors
+   (c) Strings
+   (d) Functions
+   (e) Assignments
+
+
+In  the  following  example the  denoted  expression  has its  various
+dependencies listed:
+
+   z := abs(x + sin(2 * pi / y))
+
+   (a) Variables:   x, y, z and pi
+   (b) Functions:   abs, sin
+   (c) Assignments: z
+
+
+ExprTk allows for  the derivation of  expression dependencies via  the
+'dependent_entity_collector'  (DEC).  When  activated  either  through
+'compile_options' at the construction  of the parser or  through calls
+to enabler methods just prior to compilation, the DEC will proceed  to
+collect any  of the  relevant types  that are  encountered during  the
+parsing  phase.   Once  the   compilation  process   has  successfully
+completed, the  caller can  then obtain  a list  of symbols  and their
+associated types from the DEC.
+
+The following example demonstrates usage of the DEC in determining the
+dependents of the given expression:
+
+   typedef typename parser_t::
+      dependent_entity_collector::symbol_t symbol_t;
+
+   std::string expression_string =
+                  "z := abs(x + sin(2 * pi / y))";
+
+   parser_t parser;
+   symbol_table_t symbol_table;
+
+   expression_t expression;
+   expression.register_symbol_table(symbol_table);
+
+   //Collect only variable and function symbols
+   parser.dec().collect_variables() = true;
+   parser.dec().collect_functions() = true;
+
+   if (!parser.compile(expression_string,expression))
+   {
+      // error....
+   }
+
+   std::deque<symbol_t> symbol_list;
+
+   parser.dec().symbols(symbol_list);
+
+   for (std::size_t i = 0; i < symbol_list.size(); ++i)
+   {
+      symbol_t& symbol = symbol_list[i];
+
+      switch (symbol.second)
+      {
+         case parser_t::e_st_variable: ... break;
+         case parser_t::e_st_vector  : ... break;
+         case parser_t::e_st_string  : ... break;
+         case parser_t::e_st_function: ... break;
+      }
+   }
+
+
+Note: The  'symbol_t' type  is a  pair comprising  of the  symbol name
+(std::string) and the associated type of the symbol as denoted by  the
+cases in the switch statement.
+
+Having  particular  symbols  (variable  or  function)  present  in  an
+expression is one form of dependency. Another and just as  interesting
+and important type of  dependency is that of  assignments. Assignments
+are the set of dependent symbols that 'may' have their values modified
+within an expression. The following are example expressions and  their
+associated assignments:
+
+      Assignments   Expression
+   1. x             x := y + z
+   2. x, y          x += y += z
+   3. x, y, z       x := y += sin(z := w + 2)
+   4. z, w          if (x > y, z := x + 2, w := 'A String')
+   5. None          x + y + z
+
+
+Note: In expression 4, both variables 'z' and 'w' are denoted as being
+assignments even though only one of  them can be modified at the  time
+of  evaluation.  Furthermore the  determination  of which  of  the two
+variables the  modification will  occur upon  can only  be known  with
+certainty at evaluation time and not beforehand.
+
+The following builds upon the previous example demonstrating the usage
+of the DEC in determining the 'assignments' of the given expression:
+
+   //Collect assignments
+   parser.dec().collect_assignments() = true;
+
+   if (!parser.compile(expression_string,expression))
+   {
+      // error....
+   }
+
+   std::deque<symbol_t> symbol_list;
+
+   parser.dec().assignment_symbols(symbol_list);
+
+   for (std::size_t i = 0; i < symbol_list.size(); ++i)
+   {
+      symbol_t& symbol = symbol_list[i];
+
+      switch (symbol.second)
+      {
+         case parser_t::e_st_variable: ... break;
+         case parser_t::e_st_vector  : ... break;
+         case parser_t::e_st_string  : ... break;
+      }
+   }
+
+
+Note: The assignments will only consist of variable types and as  such
+will not contain symbols denoting functions.
+
+
+
+[17 - COMPILATION ERRORS]
 When attempting to compile  a malformed or otherwise  erroneous ExprTk
 expression, the  compilation process  will result  in an  error, as is
 indicated  by  the  'compile'  method  returning  a  false  value.   A
@@ -1687,7 +1818,7 @@ via the 'unknown symbol resolver' mechanism.
 
 
 
-[17 - EXPRTK NOTES]
+[18 - EXPRTK NOTES]
 The following is a list of facts and suggestions one may want to take
 into account when using Exprtk:
 
@@ -1852,7 +1983,7 @@ into account when using Exprtk:
 
 
 
-[18 - SIMPLE EXPRTK EXAMPLE]
+[19 - SIMPLE EXPRTK EXAMPLE]
 --- snip ---
 #include <cstdio>
 #include <string>
@@ -1940,7 +2071,7 @@ int main()
 
 
 
-[19 - BUILD OPTIONS]
+[20 - BUILD OPTIONS]
 When building ExprTk there are a number of defines that will enable or
 disable certain features and  capabilities. The defines can  either be
 part of a compiler command line switch or scoped around the include to
@@ -1978,7 +2109,7 @@ in a compilation failure.
 
 
 
-[20 - FILES]
+[21 - FILES]
 The source distribution of ExprTk is comprised of the following set of
 files:
 
@@ -2006,7 +2137,7 @@ files:
 
 
 
-[20 - LANGUAGE STRUCTURE]
+[22 - LANGUAGE STRUCTURE]
 +-------------------------------------------------------------+
 |00 - If Statement                                            |
 |                                                             |

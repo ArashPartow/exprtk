@@ -29539,6 +29539,12 @@ namespace exprtk
       namespace details
       {
          template <typename T>
+         inline void print_type(const std::string& fmt, const T v, exprtk::details::numeric::details::real_type_tag)
+         {
+            printf(fmt.c_str(),v);
+         }
+
+         template <typename T>
          struct print_impl
          {
             typedef typename igeneric_function<T>::generic_type generic_type;
@@ -29553,9 +29559,11 @@ namespace exprtk
                {
                   generic_type& gt = parameters[i];
 
+                  typename exprtk::details::numeric::details::number_type<T>::type num_type;
+
                   switch (gt.type)
                   {
-                     case generic_type::e_scalar : printf(scalar_format.c_str(),scalar_t(gt)());
+                     case generic_type::e_scalar : print_type(scalar_format.c_str(),scalar_t(gt)(),num_type);
                                                    break;
 
                      case generic_type::e_vector : {
@@ -29563,7 +29571,8 @@ namespace exprtk
 
                                                       for (std::size_t x = 0; x < vector.size(); ++x)
                                                       {
-                                                         printf(scalar_format.c_str(),vector[x]);
+                                                         print_type(scalar_format.c_str(),vector[x],num_type);
+
                                                          if ((x + 1) < vector.size())
                                                             printf(" ");
                                                       }
