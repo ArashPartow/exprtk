@@ -1441,7 +1441,8 @@ particular parameter sequence can be performed.
       : exprtk::igeneric_function<T>("SVTT|SS|TTV|S?V*S")
       {}
 
-      inline T operator()(parameter_list_t parameters)
+      inline T operator()(const std::size_t& ps_index,
+                          parameter_list_t parameters)
       {
          ...
       }
@@ -1643,10 +1644,10 @@ dependents of the given expression:
 
       switch (symbol.second)
       {
-         case parser_t::e_st_variable: ... break;
-         case parser_t::e_st_vector  : ... break;
-         case parser_t::e_st_string  : ... break;
-         case parser_t::e_st_function: ... break;
+         case parser_t::e_st_variable : ... break;
+         case parser_t::e_st_vector   : ... break;
+         case parser_t::e_st_string   : ... break;
+         case parser_t::e_st_function : ... break;
       }
    }
 
@@ -1674,7 +1675,8 @@ Note: In expression 4, both variables 'z' and 'w' are denoted as being
 assignments even though only one of  them can be modified at the  time
 of  evaluation.  Furthermore the  determination  of which  of  the two
 variables the  modification will  occur upon  can only  be known  with
-certainty at evaluation time and not beforehand.
+certainty at evaluation time and not beforehand, hence both are listed
+as being candidates for assignment.
 
 The following builds upon the previous example demonstrating the usage
 of the DEC in determining the 'assignments' of the given expression:
@@ -1697,9 +1699,9 @@ of the DEC in determining the 'assignments' of the given expression:
 
       switch (symbol.second)
       {
-         case parser_t::e_st_variable: ... break;
-         case parser_t::e_st_vector  : ... break;
-         case parser_t::e_st_string  : ... break;
+         case parser_t::e_st_variable : ... break;
+         case parser_t::e_st_vector   : ... break;
+         case parser_t::e_st_string   : ... break;
       }
    }
 
