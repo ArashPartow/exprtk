@@ -15467,7 +15467,9 @@ namespace exprtk
          brkcnt_list_    .clear();
          synthesis_error_.clear();
          sem_            .cleanup();
+
          expression_generator_.set_allocator(node_allocator_);
+
          scope_depth_ = 0;
 
          if (expression_string.empty())
@@ -15524,7 +15526,7 @@ namespace exprtk
                              "ERR02 - Invalid expression encountered"));
             }
 
-            dec_.clear();
+            dec_.clear  ();
             sem_.cleanup();
 
             if (0 != e)
@@ -24673,6 +24675,17 @@ namespace exprtk
 
                      return (synthesis_result) ? result : error_node();
                   }
+                  // (c0 / v0) / (c1 / v1) --> (covov) ((c0 / c1) * v1) / v0
+                  else if ((details::e_div == o0) && (details::e_div == o1) && (details::e_div == o2))
+                  {
+                     const bool synthesis_result =
+                        synthesize_sf3ext_expression::
+                           template compile<ctype,vtype,vtype>(expr_gen,"(t*t)/t",(c0 / c1),v1,v0,result);
+
+                     exprtk_debug(("(c0 / v0) / (c1 / v1) --> (covov) ((c0 / c1) * v1) / v0\n"));
+
+                     return (synthesis_result) ? result : error_node();
+                  }
                   // (c0 * v0) / (c1 / v1) --> (covov) (c0 / c1) * (v0 * v1)
                   else if ((details::e_mul == o0) && (details::e_div == o1) && (details::e_div == o2))
                   {
@@ -24844,6 +24857,17 @@ namespace exprtk
                            template compile<ctype,vtype,vtype>(expr_gen,"(t*t)*t",Type(1) / (c0 * c1),v0,v1,result);
 
                      exprtk_debug(("(v0 / c0) * (v1 / c1) --> (covov) (1 / (c0 * c1)) * v0 * v1\n"));
+
+                     return (synthesis_result) ? result : error_node();
+                  }
+                  // (v0 / c0) / (v1 / c1) --> (covov) ((c1 / c0) * v0) / v1
+                  else if ((details::e_div == o0) && (details::e_div == o1) && (details::e_div == o2))
+                  {
+                     const bool synthesis_result =
+                        synthesize_sf3ext_expression::
+                           template compile<ctype,vtype,vtype>(expr_gen,"(t*t)/t",(c1 / c0),v0,v1,result);
+
+                     exprtk_debug(("(v0 / c0) / (v1 / c1) --> (covov) ((c1 / c0) * v0) / v1\n"));
 
                      return (synthesis_result) ? result : error_node();
                   }
@@ -25071,6 +25095,17 @@ namespace exprtk
 
                      return (synthesis_result) ? result : error_node();
                   }
+                  // (c0 / v0) / (v1 / c1) --> (covov) (c0 * c1) / (v0 * v1)
+                  else if ((details::e_div == o0) && (details::e_div == o1) && (details::e_div == o2))
+                  {
+                     const bool synthesis_result =
+                        synthesize_sf3ext_expression::
+                           template compile<ctype,vtype,vtype>(expr_gen,"t/(t*t)",(c0 * c1),v0,v1,result);
+
+                     exprtk_debug(("(c0 / v0) / (v1 / c1) --> (covov) (c0 * c1) / (v0 * v1)\n"));
+
+                     return (synthesis_result) ? result : error_node();
+                  }
                   // (c0 * v0) / (v1 / c1) --> (covov) (c0 * c1) * (v0 / v1)
                   else if ((details::e_mul == o0) && (details::e_div == o1) && (details::e_div == o2))
                   {
@@ -25264,6 +25299,17 @@ namespace exprtk
                            template compile<ctype,vtype,vtype>(expr_gen,"(t*t)/t",Type(1) / (c0 * c1),v0,v1,result);
 
                      exprtk_debug(("(v0 / c0) / (c1 * v1) --> (covov) (1 / (c0 * c1)) * (v0 / v1)\n"));
+
+                     return (synthesis_result) ? result : error_node();
+                  }
+                  // (v0 / c0) / (c1 / v1) --> (vovoc) (v0 * v1) * (1 / (c0 * c1))
+                  else if ((details::e_div == o0) && (details::e_div == o1) && (details::e_div == o2))
+                  {
+                     const bool synthesis_result =
+                        synthesize_sf3ext_expression::
+                           template compile<vtype,vtype,ctype>(expr_gen,"(t*t)*t",v0,v1,Type(1) / (c0 * c1),result);
+
+                     exprtk_debug(("(v0 / c0) / (c1 / v1) --> (vovoc) (v0 * v1) * (1 / (c0 * c1))\n"));
 
                      return (synthesis_result) ? result : error_node();
                   }
