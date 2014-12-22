@@ -1276,6 +1276,42 @@ inline bool run_test01()
                                  test_xy<T>(" x (y)   == (x*y)" ,T(2.0),T(3.0),T(1.0)),
                                  test_xy<T>(" ((x) y) == (x*y)" ,T(2.0),T(3.0),T(1.0)),
                                  test_xy<T>(" (x (y)) == (x*y)" ,T(2.0),T(3.0),T(1.0)),
+                                 test_xy<T>(" (x)3    == (x*3)" ,T(2.0),T(3.0),T(1.0)),
+                                 test_xy<T>(" x(3)    == (x*3)" ,T(2.0),T(3.0),T(1.0)),
+                                 test_xy<T>(" (x) 3   == (x*3)" ,T(2.0),T(3.0),T(1.0)),
+                                 test_xy<T>(" x (3)   == (x*3)" ,T(2.0),T(3.0),T(1.0)),
+                                 test_xy<T>(" ((x) 3) == (x*3)" ,T(2.0),T(3.0),T(1.0)),
+                                 test_xy<T>(" (x (3)) == (x*3)" ,T(2.0),T(3.0),T(1.0)),
+                                 test_xy<T>(" (2)y    == (2*y)" ,T(2.0),T(3.0),T(1.0)),
+                                 test_xy<T>(" 2(y)    == (2*y)" ,T(2.0),T(3.0),T(1.0)),
+                                 test_xy<T>(" (2) y   == (2*y)" ,T(2.0),T(3.0),T(1.0)),
+                                 test_xy<T>(" 2 (y)   == (2*y)" ,T(2.0),T(3.0),T(1.0)),
+                                 test_xy<T>(" ((2) y) == (2*y)" ,T(2.0),T(3.0),T(1.0)),
+                                 test_xy<T>(" (2 (y)) == (2*y)" ,T(2.0),T(3.0),T(1.0)),
+                                 test_xy<T>("var a := 2; (a)(3) == 6" ,T(2.0),T(3.0),T(1.0)),
+                                 test_xy<T>("var a := 2; (a){3} == 6" ,T(2.0),T(3.0),T(1.0)),
+                                 test_xy<T>("var a := 2; (a)[3] == 6" ,T(2.0),T(3.0),T(1.0)),
+                                 test_xy<T>("var a := 2; {a}(3) == 6" ,T(2.0),T(3.0),T(1.0)),
+                                 test_xy<T>("var a := 2; {a}{3} == 6" ,T(2.0),T(3.0),T(1.0)),
+                                 test_xy<T>("var a := 2; {a}[3] == 6" ,T(2.0),T(3.0),T(1.0)),
+                                 test_xy<T>("var a := 2; var b := 3; (a)(b) == 6" ,T(2.0),T(3.0),T(1.0)),
+                                 test_xy<T>("var a := 2; var b := 3; (a){b} == 6" ,T(2.0),T(3.0),T(1.0)),
+                                 test_xy<T>("var a := 2; var b := 3; (a)[b] == 6" ,T(2.0),T(3.0),T(1.0)),
+                                 test_xy<T>("var a := 2; var b := 3; {a}(b) == 6" ,T(2.0),T(3.0),T(1.0)),
+                                 test_xy<T>("var a := 2; var b := 3; {a}{b} == 6" ,T(2.0),T(3.0),T(1.0)),
+                                 test_xy<T>("var a := 2; var b := 3; {a}[b] == 6" ,T(2.0),T(3.0),T(1.0)),
+                                 test_xy<T>("var a := 2; (a)(a+1) == 6" ,T(2.0),T(3.0),T(1.0)),
+                                 test_xy<T>("var a := 2; (a){a+1} == 6" ,T(2.0),T(3.0),T(1.0)),
+                                 test_xy<T>("var a := 2; (a)[a+1] == 6" ,T(2.0),T(3.0),T(1.0)),
+                                 test_xy<T>("var a := 2; {a}(a+1) == 6" ,T(2.0),T(3.0),T(1.0)),
+                                 test_xy<T>("var a := 2; {a}{a+1} == 6" ,T(2.0),T(3.0),T(1.0)),
+                                 test_xy<T>("var a := 2; {a}[a+1] == 6" ,T(2.0),T(3.0),T(1.0)),
+                                 test_xy<T>("var a := 2; var b := 3; (b-1)(b) == 6" ,T(2.0),T(3.0),T(1.0)),
+                                 test_xy<T>("var a := 2; var b := 3; (b-1){b} == 6" ,T(2.0),T(3.0),T(1.0)),
+                                 test_xy<T>("var a := 2; var b := 3; (b-1)[b] == 6" ,T(2.0),T(3.0),T(1.0)),
+                                 test_xy<T>("var a := 2; var b := 3; {b-1}(b) == 6" ,T(2.0),T(3.0),T(1.0)),
+                                 test_xy<T>("var a := 2; var b := 3; {b-1}{b} == 6" ,T(2.0),T(3.0),T(1.0)),
+                                 test_xy<T>("var a := 2; var b := 3; {b-1}[b] == 6" ,T(2.0),T(3.0),T(1.0)),
                                  test_xy<T>("equal(x^2.2^1.1,17.15193942371376191362)" ,T(3.3),T(0.0),T(1.0)),
                                  test_xy<T>("equal(3.3^x^1.1,17.15193942371376191362)" ,T(2.2),T(0.0),T(1.0)),
                                  test_xy<T>("equal(3.3^2.2^x,17.15193942371376191362)" ,T(1.1),T(0.0),T(1.0)),
@@ -4725,6 +4761,7 @@ struct inc_func : public exprtk::igeneric_function<T>
 
             case generic_type::e_vector : {
                                              vector_t vector(gt);
+
                                              for (std::size_t x = 0; x < vector.size(); ++x)
                                              {
                                                 vector[x] += T(1);
@@ -4734,6 +4771,7 @@ struct inc_func : public exprtk::igeneric_function<T>
 
             case generic_type::e_string : {
                                              string_t string(gt);
+
                                              for (std::size_t x = 0; x < string.size(); ++x)
                                              {
                                                 string[x] += static_cast<typename string_t::value_t>(1);
@@ -5021,12 +5059,23 @@ inline bool run_test18()
                     "var z := 3; var w[3] := { 1/3, 1/5, 1/7 }; foo(v0,v1 + v2, v0[2], x, 2x + y, z, 2w / 3, 'abc123',s0[2:5]);",
                     "var z := 3; var w[3] := { 1/3, 1/5, 1/7 }; foo(v0,v1 + v2, v0[2], x, 2x + y, z, 2w / 3, 'abc123',s0[2:5]);",
 
+                    "var z := 3; var w[3] := { 1/3, 1/5, 1/7 }; foo(x);",
+                    "var z := 3; var w[3] := { 1/3, 1/5, 1/7 }; foo(x,x);",
+                    "var z := 3; var w[3] := { 1/3, 1/5, 1/7 }; foo(x,x,x);",
+                    "var z := 3; var w[3] := { 1/3, 1/5, 1/7 }; foo(x,x,x,x);",
+                    "var z := 3; var w[3] := { 1/3, 1/5, 1/7 }; foo(s0);",
+                    "var z := 3; var w[3] := { 1/3, 1/5, 1/7 }; foo(s0,s0);",
+                    "var z := 3; var w[3] := { 1/3, 1/5, 1/7 }; foo(s0,s0,s0);",
+                    "var z := 3; var w[3] := { 1/3, 1/5, 1/7 }; foo(s0,s0,s0,s0);",
+                    "var z := 3; var w[3] := { 1/3, 1/5, 1/7 }; foo(v0);",
+                    "var z := 3; var w[3] := { 1/3, 1/5, 1/7 }; foo(v0,v0);",
+                    "var z := 3; var w[3] := { 1/3, 1/5, 1/7 }; foo(v0,v0,v0);",
+                    "var z := 3; var w[3] := { 1/3, 1/5, 1/7 }; foo(v0,v0,v0,v0);",
+
                     "var z := 3; var w[3] := { 1/3, 1/5, 1/7 }; foo(v0,v1 + v2, v0[2], x, 2x + y, z, 2w / 3, 'abc123',s0[2:5]);",
                     "var z := 3; var w[3] := { 1/3, 1/5, 1/7 }; foo(v0,v1 + v2, v0[2], x, 2x + y, z, 2w / 3, 'abc123',s0[2:5]);",
                     "var z := 3; var w[3] := { 1/3, 1/5, 1/7 }; foo(v0,v1 + v2, v0[2], x, 2x + y, z, 2w / 3, 'abc123',s0[2:5]);",
                     "var z := 3; var w[3] := { 1/3, 1/5, 1/7 }; foo(v0,v1 + v2, v0[2], x, 2x + y, z, 2w / 3, 'abc123',s0[2:5]);"
-
-
                   };
 
       static const std::size_t expression_list_size = sizeof(expression_list) / sizeof(std::string);
@@ -5047,10 +5096,24 @@ inline bool run_test18()
                     "V*TTTTVSS",
                     "VVT*VSS"  ,
                     "VVTTTTVS*",
+
+                    "T*",
+                    "T*",
+                    "T*",
+                    "T*",
+                    "S*",
+                    "S*",
+                    "S*",
+                    "S*",
+                    "V*",
+                    "V*",
+                    "V*",
+                    "V*",
+
                     "TTTTTTT|STSTSTS|V*T*VS*"  ,
                     "TTTTTTT|STSTSTS|V*TTTTVSS",
                     "TTTTTTT|STSTSTS|VVT*VSS"  ,
-                    "TTTTTTT|STSTSTS|VVTTTTVS*"
+                    "TTTTTTT|STSTSTS|VVTTTTVS*",
                   };
 
       bool failure = false;
@@ -5261,7 +5324,6 @@ inline bool run_test18()
                   };
 
       std::size_t parameter_type_list_size = sizeof(parameter_type_list) / sizeof(std::string);
-
 
       for (std::size_t i = 0; i < parameter_type_list_size; ++i)
       {

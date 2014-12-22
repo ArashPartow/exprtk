@@ -1026,8 +1026,8 @@ with vectors:
    (c) Assignment:       :=, +=, -=, *=, /=, %=, <=>
    (d) Inequalities:     <, <=, >, >=, ==, =
    (e) Unary operations:
-       abs, acos, acosh, asin, asinh, atan, atanh, ceil, cos, cosh,
-       cot, csc, deg2grad, deg2rad, erf, erfc, exp, expm1, floor,
+       abs, acos, acosh, asin, asinh, atan, atanh, ceil, cos,  cosh,
+       cot, csc,  deg2grad, deg2rad,  erf, erfc,  exp, expm1, floor,
        frac, grad2deg, log, log10, log1p, log2, rad2deg, round, sec,
        sgn, sin, sinc, sinh, sqrt, swap, tan, tanh, trunc
    (f) Aggregate and Reduce operations:
@@ -1403,10 +1403,12 @@ parameters in the following sequence:
 
 
 A final  piece of  type checking  functionality is  available for  the
-scenarios where  a single function name  is intended  to be  used for
-multiple distinct parameter sequences.  Two specific overrides of  the
-function operator are provided one for standard generic functions  and
-one for string returning functions. The overrides are as follows:
+scenarios where  a single  function name  is intended  to be  used for
+multiple  distinct parameter  sequences. The  parameter sequences  are
+passed to the constructor as a single string delimited by the pipe '|'
+character.  Two  specific  overrides  of  the  function  operator  are
+provided  one  for  standard  generic  functions  and  one  for string
+returning functions. The overrides are as follows:
 
       // f(psi,i_0,i_1,....,i_N) --> Scalar
       inline T operator()(const std::size_t& ps_index,
