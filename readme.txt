@@ -1404,11 +1404,12 @@ parameters in the following sequence:
 
 A final  piece of  type checking  functionality is  available for  the
 scenarios where  a single  function name  is intended  to be  used for
-multiple  distinct parameter  sequences. The  parameter sequences  are
-passed to the constructor as a single string delimited by the pipe '|'
-character.  Two  specific  overrides  of  the  function  operator  are
-provided  one  for  standard  generic  functions  and  one  for string
-returning functions. The overrides are as follows:
+multiple distinct parameter sequences,  another name for this  feature
+is function  overloading. The  parameter sequences  are passed  to the
+constructor as a  single string delimited  by the pipe  '|' character.
+Two specific overrides of the  function operator are provided one  for
+standard generic functions and one for string returning functions. The
+overrides are as follows:
 
       // f(psi,i_0,i_1,....,i_N) --> Scalar
       inline T operator()(const std::size_t& ps_index,
@@ -1918,7 +1919,13 @@ into account when using Exprtk:
       be to recompile an expression  from its string form every  time
       it requires evaluating.
 
- (24) The following are examples of compliant floating point value
+ (24) Where appropriate the return values of method invocations  from
+      the  parser  and  symbol_table should  be  taken  into account.
+      Specifically  the  'compile'  method  of  the  parser  and  the
+      'add_xxx' set  of methods  of the  symbol table  as they denote
+      success or failure of the invoked call.
+
+ (25) The following are examples of compliant floating point value
       representations:
 
       (a) 12345        (e) -123.456
@@ -1926,13 +1933,13 @@ into account when using Exprtk:
       (c) +012.045e+07 (g) .1234
       (d) 123.456f     (h) -321.654E+3L
 
- (25) Expressions may contain any of the following comment styles:
+ (26) Expressions may contain any of the following comment styles:
 
       1. // .... \n
       2. #  .... \n
       3. /* .... */
 
- (26) The  'null'  value  type  is  a  special  non-zero  type   that
+ (27) The  'null'  value  type  is  a  special  non-zero  type   that
       incorporates specific semantics when undergoing operations with
       the standard numeric type. The following is a list of type  and
       boolean results associated with the use of 'null':
@@ -1947,7 +1954,7 @@ into account when using Exprtk:
       8. null     !=      null --> false
       9. null     !=      x    --> false
 
- (27) The following is a list  of reserved words and symbols  used by
+ (28) The following is a list  of reserved words and symbols  used by
       ExprTk. Attempting to  add a variable  or custom function  to a
       symbol table using any of  the reserved words will result  in a
       failure.
@@ -1963,7 +1970,7 @@ into account when using Exprtk:
       sum,  swap,  switch,  tanh, tan,  true,  trunc,  until, var,
       while, xnor, xor, xor
 
- (28) Every valid ExprTk statement is a "value returning" expression.
+ (29) Every valid ExprTk statement is a "value returning" expression.
       Unlike some languages that limit the types of expressions  that
       can be  performed in  certain situations,  in ExprTk  any valid
       expression can be used in any "value consuming" context. eg:
@@ -1971,9 +1978,9 @@ into account when using Exprtk:
       var y := 3;
       for (var x := switch
                     {
-                      case 1 :  7;
-                      case 2 : -1 + ~{var x{};};
-                      default:  y > 2 ? 3 : 4;
+                      case 1  :  7;
+                      case 2  : -1 + ~{var x{};};
+                      default :  y > 2 ? 3 : 4;
                     };
            x != while (y > 0) { y -= 1; };
            x -= {if(min(x,y) < 2 * max(x,y))
