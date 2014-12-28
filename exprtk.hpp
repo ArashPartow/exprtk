@@ -2393,7 +2393,7 @@ namespace exprtk
 
       private:
 
-         token_list_t token_list_;
+         token_list_t     token_list_;
          token_list_itr_t token_itr_;
          token_list_itr_t store_token_itr_;
          token_t eof_token_;
@@ -2436,7 +2436,7 @@ namespace exprtk
 
          inline std::size_t process(generator& g)
          {
-            if (!g.token_list_.empty())
+            if (g.token_list_.size() >= stride_)
             {
                for (std::size_t i = 0; i < (g.token_list_.size() - stride_ + 1); ++i)
                {
@@ -2560,6 +2560,8 @@ namespace exprtk
          inline std::size_t process(generator& g)
          {
             if (g.token_list_.empty())
+               return 0;
+            else if (g.token_list_.size() < stride_)
                return 0;
 
             std::size_t changes = 0;
@@ -4380,9 +4382,11 @@ namespace exprtk
 
          typedef range_data_type<T> range_data_type_t;
 
-         virtual std::string str() const = 0;
+         virtual std::string str () const = 0;
 
          virtual const char* base() const = 0;
+
+         virtual std::size_t size() const = 0;
       };
 
       template <typename T>
@@ -4426,6 +4430,11 @@ namespace exprtk
          const char* base() const
          {
            return value_.data();
+         }
+
+         std::size_t size() const
+         {
+            return value_.size();
          }
 
          range_t& range_ref()
@@ -5383,9 +5392,9 @@ namespace exprtk
                        expression_ptr incrementor,
                        expression_ptr loop_body)
          : initialiser_(initialiser),
-           condition_  (condition),
+           condition_  (condition  ),
            incrementor_(incrementor),
-           loop_body_  (loop_body),
+           loop_body_  (loop_body  ),
            initialiser_deletable_(branch_deletable(initialiser_)),
            condition_deletable_  (branch_deletable(condition_  )),
            incrementor_deletable_(branch_deletable(incrementor_)),
@@ -6247,24 +6256,29 @@ namespace exprtk
             return std::numeric_limits<T>::quiet_NaN();
          }
 
-         inline std::string str() const
+         std::string str() const
          {
             return ref();
          }
 
-         inline virtual std::string& ref()
+         const char* base() const
+         {
+           return (*value_).data();
+         }
+
+         std::size_t size() const
+         {
+            return ref().size();
+         }
+
+         std::string& ref()
          {
             return (*value_);
          }
 
-         inline virtual const std::string& ref() const
+         const std::string& ref() const
          {
             return (*value_);
-         }
-
-         inline typename expression_node<T>::node_type type() const
-         {
-            return expression_node<T>::e_stringvar;
          }
 
          range_t& range_ref()
@@ -6277,9 +6291,9 @@ namespace exprtk
             return rp_;
          }
 
-         const char* base() const
+         inline typename expression_node<T>::node_type type() const
          {
-           return (*value_).data();
+            return expression_node<T>::e_stringvar;
          }
 
       private:
@@ -6327,6 +6341,16 @@ namespace exprtk
             return (*value_);
          }
 
+         const char* base() const
+         {
+           return (*value_).data();
+         }
+
+         std::size_t size() const
+         {
+            return ref().size();
+         }
+
          inline range_t range() const
          {
             return rp_;
@@ -6355,11 +6379,6 @@ namespace exprtk
          inline typename expression_node<T>::node_type type() const
          {
             return expression_node<T>::e_stringvarrng;
-         }
-
-         const char* base() const
-         {
-           return (*value_).data();
          }
 
       private:
@@ -6395,22 +6414,32 @@ namespace exprtk
             return std::numeric_limits<T>::quiet_NaN();
          }
 
-         inline std::string str() const
+         std::string str() const
          {
             return value_;
          }
 
-         inline range_t range() const
+         const char* base() const
+         {
+           return value_.data();
+         }
+
+         std::size_t size() const
+         {
+            return value_.size();
+         }
+
+         range_t range() const
          {
             return rp_;
          }
 
-         inline virtual range_t& range_ref()
+         range_t& range_ref()
          {
             return rp_;
          }
 
-         inline virtual const range_t& range_ref() const
+         const range_t& range_ref() const
          {
             return rp_;
          }
@@ -6418,11 +6447,6 @@ namespace exprtk
          inline typename expression_node<T>::node_type type() const
          {
             return expression_node<T>::e_cstringvarrng;
-         }
-
-         const char* base() const
-         {
-           return value_.data();
          }
 
       private:
@@ -6500,7 +6524,7 @@ namespace exprtk
 
                range_t& range = str_range_ptr_->range_ref();
 
-               const std::size_t base_str_size = str_base_ptr_->str().size();
+               const std::size_t base_str_size = str_base_ptr_->size();
 
                if (
                     range      (str_r0,str_r1,base_str_size) &&
@@ -6527,6 +6551,11 @@ namespace exprtk
          const char* base() const
          {
            return value_.data();
+         }
+
+         std::size_t size() const
+         {
+            return value_.size();
          }
 
          range_t& range_ref()
@@ -6634,8 +6663,8 @@ namespace exprtk
                range_t& range1 = str1_range_ptr_->range_ref();
 
                if (
-                    range0(str0_r0,str0_r1,str0_base_ptr_->str().size()) &&
-                    range1(str1_r0,str1_r1,str1_base_ptr_->str().size())
+                    range0(str0_r0,str0_r1,str0_base_ptr_->size()) &&
+                    range1(str1_r0,str1_r1,str1_base_ptr_->size())
                   )
                {
                   const std::size_t size0 = (str0_r1 - str0_r0) + 1;
@@ -6660,6 +6689,11 @@ namespace exprtk
          const char* base() const
          {
            return value_.data();
+         }
+
+         std::size_t size() const
+         {
+            return value_.size();
          }
 
          range_t& range_ref()
@@ -6743,6 +6777,11 @@ namespace exprtk
          const char* base() const
          {
            return str0_node_ptr_->base();
+         }
+
+         std::size_t size() const
+         {
+            return str0_node_ptr_->size();
          }
 
          range_t& range_ref()
@@ -6837,7 +6876,7 @@ namespace exprtk
             if (str_base_ptr_)
             {
                branch_->value();
-               result = T(str_base_ptr_->str().size());
+               result = T(str_base_ptr_->size());
             }
 
             return result;
@@ -6853,6 +6892,266 @@ namespace exprtk
          expression_ptr branch_;
          bool branch_deletable_;
          str_base_ptr str_base_ptr_;
+      };
+
+      struct asn_assignment
+      {
+         static inline void execute(std::string& s, const char* data, const std::size_t size)
+         { s.assign(data,size); }
+      };
+
+      struct asn_addassignment
+      {
+         static inline void execute(std::string& s, const char* data, const std::size_t size)
+         { s.append(data,size); }
+      };
+
+      template <typename T, typename AssignmentProcess = asn_assignment>
+      class assignment_string_node : public binary_node     <T>,
+                                     public string_base_node<T>,
+                                     public range_interface <T>
+      {
+      public:
+
+         typedef expression_node <T>*  expression_ptr;
+         typedef stringvar_node  <T>* strvar_node_ptr;
+         typedef string_base_node<T>*    str_base_ptr;
+         typedef range_pack      <T>          range_t;
+         typedef range_t*                   range_ptr;
+         typedef range_interface<T>          irange_t;
+         typedef irange_t*                 irange_ptr;
+         typedef typename range_t::cached_range_t cached_range_t;
+
+         assignment_string_node(const operator_type& opr,
+                                expression_ptr branch0,
+                                expression_ptr branch1)
+         : binary_node<T>(opr,branch0,branch1),
+           str0_base_ptr_ (0),
+           str1_base_ptr_ (0),
+           str0_node_ptr_ (0),
+           str1_range_ptr_(0)
+         {
+            if (is_string_node(binary_node<T>::branch_[0].first))
+            {
+               str0_node_ptr_ = static_cast<strvar_node_ptr>(binary_node<T>::branch_[0].first);
+
+               str0_base_ptr_ = dynamic_cast<str_base_ptr>(binary_node<T>::branch_[0].first);
+            }
+
+            if (is_generally_string_node(binary_node<T>::branch_[1].first))
+            {
+               str1_base_ptr_ = dynamic_cast<str_base_ptr>(binary_node<T>::branch_[1].first);
+
+               if (0 == str1_base_ptr_)
+                  return;
+
+               irange_ptr range_ptr = dynamic_cast<irange_ptr>(binary_node<T>::branch_[1].first);
+
+               if (0 == range_ptr)
+                  return;
+
+               str1_range_ptr_ = &(range_ptr->range_ref());
+            }
+         }
+
+         inline T value() const
+         {
+            if (
+                 str0_base_ptr_ &&
+                 str1_base_ptr_ &&
+                 str0_node_ptr_ &&
+                 str1_range_ptr_
+               )
+            {
+               binary_node<T>::branch_[1].first->value();
+
+               std::size_t r0 = 0;
+               std::size_t r1 = 0;
+
+               range_t& range = (*str1_range_ptr_);
+
+               if (range(r0,r1,str1_base_ptr_->size()))
+               {
+                  AssignmentProcess::execute(str0_node_ptr_->ref(),
+                                             str1_base_ptr_->base() + r0,
+                                             (r1 - r0) + 1);
+
+                  binary_node<T>::branch_[0].first->value();
+               }
+            }
+
+            return std::numeric_limits<T>::quiet_NaN();
+         }
+
+         std::string str() const
+         {
+            return str0_node_ptr_->str();
+         }
+
+         const char* base() const
+         {
+           return str0_node_ptr_->base();
+         }
+
+         std::size_t size() const
+         {
+            return str0_node_ptr_->size();
+         }
+
+         range_t& range_ref()
+         {
+            return str0_node_ptr_->range_ref();
+         }
+
+         const range_t& range_ref() const
+         {
+            return str0_node_ptr_->range_ref();
+         }
+
+         inline typename expression_node<T>::node_type type() const
+         {
+            return expression_node<T>::e_strass;
+         }
+
+      private:
+
+         str_base_ptr    str0_base_ptr_;
+         str_base_ptr    str1_base_ptr_;
+         strvar_node_ptr str0_node_ptr_;
+         range_ptr       str1_range_ptr_;
+      };
+
+      template <typename T, typename AssignmentProcess = asn_assignment>
+      class assignment_string_range_node : public binary_node     <T>,
+                                           public string_base_node<T>,
+                                           public range_interface <T>
+      {
+      public:
+
+         typedef expression_node <T>*  expression_ptr;
+         typedef stringvar_node  <T>* strvar_node_ptr;
+         typedef string_base_node<T>*    str_base_ptr;
+         typedef range_pack      <T>          range_t;
+         typedef range_t*                   range_ptr;
+         typedef range_interface<T>          irange_t;
+         typedef irange_t*                 irange_ptr;
+         typedef typename range_t::cached_range_t cached_range_t;
+
+         assignment_string_range_node(const operator_type& opr,
+                                      expression_ptr branch0,
+                                      expression_ptr branch1)
+         : binary_node<T>(opr,branch0,branch1),
+           str0_base_ptr_ (0),
+           str1_base_ptr_ (0),
+           str0_node_ptr_ (0),
+           str0_range_ptr_(0),
+           str1_range_ptr_(0)
+         {
+            if (is_string_range_node(binary_node<T>::branch_[0].first))
+            {
+               str0_node_ptr_ = static_cast<strvar_node_ptr>(binary_node<T>::branch_[0].first);
+
+               str0_base_ptr_ = dynamic_cast<str_base_ptr>(binary_node<T>::branch_[0].first);
+
+               irange_ptr range_ptr = dynamic_cast<irange_ptr>(binary_node<T>::branch_[0].first);
+
+               if (0 == range_ptr)
+                  return;
+
+               str0_range_ptr_ = &(range_ptr->range_ref());
+            }
+
+            if (is_generally_string_node(binary_node<T>::branch_[1].first))
+            {
+               str1_base_ptr_ = dynamic_cast<str_base_ptr>(binary_node<T>::branch_[1].first);
+
+               if (0 == str1_base_ptr_)
+                  return;
+
+               irange_ptr range_ptr = dynamic_cast<irange_ptr>(binary_node<T>::branch_[1].first);
+
+               if (0 == range_ptr)
+                  return;
+
+               str1_range_ptr_ = &(range_ptr->range_ref());
+            }
+         }
+
+         inline T value() const
+         {
+            if (
+                 str0_base_ptr_  &&
+                 str1_base_ptr_  &&
+                 str0_node_ptr_  &&
+                 str0_range_ptr_ &&
+                 str1_range_ptr_
+               )
+            {
+               binary_node<T>::branch_[0].first->value();
+               binary_node<T>::branch_[1].first->value();
+
+               std::size_t s0_r0 = 0;
+               std::size_t s0_r1 = 0;
+
+               std::size_t s1_r0 = 0;
+               std::size_t s1_r1 = 0;
+
+               range_t& range0 = (*str0_range_ptr_);
+               range_t& range1 = (*str1_range_ptr_);
+
+               if (
+                    range0(s0_r0,s0_r1,str0_base_ptr_->size()) &&
+                    range1(s1_r0,s1_r1,str1_base_ptr_->size())
+                  )
+               {
+                  std::size_t size = std::min((s0_r1 - s0_r0),(s1_r1 - s1_r0)) + 1;
+
+                  std::copy(str1_base_ptr_->base() + s1_r0,
+                            str1_base_ptr_->base() + s1_r0 + size,
+                            const_cast<char*>(base() + s0_r0));
+               }
+            }
+
+            return std::numeric_limits<T>::quiet_NaN();
+         }
+
+         std::string str() const
+         {
+            return str0_node_ptr_->str();
+         }
+
+         const char* base() const
+         {
+           return str0_node_ptr_->base();
+         }
+
+         std::size_t size() const
+         {
+            return str0_node_ptr_->size();
+         }
+
+         range_t& range_ref()
+         {
+            return str0_node_ptr_->range_ref();
+         }
+
+         const range_t& range_ref() const
+         {
+            return str0_node_ptr_->range_ref();
+         }
+
+         inline typename expression_node<T>::node_type type() const
+         {
+            return expression_node<T>::e_strass;
+         }
+
+      private:
+
+         str_base_ptr    str0_base_ptr_;
+         str_base_ptr    str1_base_ptr_;
+         strvar_node_ptr str0_node_ptr_;
+         range_ptr       str0_range_ptr_;
+         range_ptr       str1_range_ptr_;
       };
       #endif
 
@@ -7386,128 +7685,6 @@ namespace exprtk
       private:
 
          variable_node<T>* var_node_ptr_;
-      };
-
-      struct asn_assignment
-      {
-         static inline void execute(std::string& s, const char* data, const std::size_t size)
-         { s.assign(data,size); }
-      };
-
-      struct asn_addassignment
-      {
-         static inline void execute(std::string& s, const char* data, const std::size_t size)
-         { s.append(data,size); }
-      };
-
-      template <typename T, typename AssignmentProcess = asn_assignment>
-      class assignment_string_node : public binary_node     <T>,
-                                     public string_base_node<T>,
-                                     public range_interface <T>
-      {
-      public:
-
-         typedef expression_node <T>*  expression_ptr;
-         typedef stringvar_node  <T>* strvar_node_ptr;
-         typedef string_base_node<T>*    str_base_ptr;
-         typedef range_pack      <T>          range_t;
-         typedef range_t*                   range_ptr;
-         typedef range_interface<T>          irange_t;
-         typedef irange_t*                 irange_ptr;
-         typedef typename range_t::cached_range_t cached_range_t;
-
-         assignment_string_node(const operator_type& opr,
-                                expression_ptr branch0,
-                                expression_ptr branch1)
-         : binary_node<T>(opr,branch0,branch1),
-           str0_base_ptr_ (0),
-           str1_base_ptr_ (0),
-           str0_node_ptr_ (0),
-           str1_range_ptr_(0)
-         {
-            if (is_string_node(binary_node<T>::branch_[0].first))
-            {
-               str0_node_ptr_ = static_cast<strvar_node_ptr>(binary_node<T>::branch_[0].first);
-
-               str0_base_ptr_ = dynamic_cast<str_base_ptr>(binary_node<T>::branch_[0].first);
-            }
-
-            if (is_generally_string_node(binary_node<T>::branch_[1].first))
-            {
-               str1_base_ptr_ = dynamic_cast<str_base_ptr>(binary_node<T>::branch_[1].first);
-
-               if (0 == str1_base_ptr_)
-                  return;
-
-               irange_ptr range_ptr = dynamic_cast<irange_ptr>(binary_node<T>::branch_[1].first);
-
-               if (0 == range_ptr)
-                  return;
-
-               str1_range_ptr_ = &(range_ptr->range_ref());
-            }
-         }
-
-         inline T value() const
-         {
-            if (
-                 str0_base_ptr_ &&
-                 str1_base_ptr_ &&
-                 str0_node_ptr_ &&
-                 str1_range_ptr_
-               )
-            {
-               binary_node<T>::branch_[1].first->value();
-
-               std::size_t r0 = 0;
-               std::size_t r1 = 0;
-
-               range_t& range = (*str1_range_ptr_);
-
-               if (range(r0,r1,str1_base_ptr_->str().size()))
-               {
-                  AssignmentProcess::execute(str0_node_ptr_->ref(),
-                                             str1_base_ptr_->str().data() + r0,
-                                             (r1 - r0) + 1);
-
-                  binary_node<T>::branch_[0].first->value();
-               }
-            }
-
-            return std::numeric_limits<T>::quiet_NaN();
-         }
-
-         std::string str() const
-         {
-            return str0_node_ptr_->str();
-         }
-
-         const char* base() const
-         {
-           return str0_node_ptr_->base();
-         }
-
-         range_t& range_ref()
-         {
-            return str0_node_ptr_->range_ref();
-         }
-
-         const range_t& range_ref() const
-         {
-            return str0_node_ptr_->range_ref();
-         }
-
-         inline typename expression_node<T>::node_type type() const
-         {
-            return expression_node<T>::e_strass;
-         }
-
-      private:
-
-         str_base_ptr    str0_base_ptr_;
-         str_base_ptr    str1_base_ptr_;
-         strvar_node_ptr str0_node_ptr_;
-         range_ptr       str1_range_ptr_;
       };
 
       template <typename T>
@@ -9153,7 +9330,7 @@ namespace exprtk
                   if (0 == (sbn = dynamic_cast<string_base_node<T>*>(arg_list_[i])))
                      return false;
 
-                  ts.size = sbn->str().size();
+                  ts.size = sbn->size();
                   ts.data = reinterpret_cast<void*>(const_cast<char*>(sbn->base()));
                   ts.type = type_store_t::e_string;
 
@@ -9328,7 +9505,8 @@ namespace exprtk
                {
                   typedef typename StringFunction::parameter_list_t parameter_list_t;
 
-                  result = (*gen_function_t::function_)(ret_string_,parameter_list_t(gen_function_t::typestore_list_));
+                  result = (*gen_function_t::function_)(ret_string_,
+                                                        parameter_list_t(gen_function_t::typestore_list_));
 
                   range_.n1_c.second  = ret_string_.size() - 1;
                   range_.cache.second = range_.n1_c.second;
@@ -9353,6 +9531,11 @@ namespace exprtk
          const char* base() const
          {
            return ret_string_.data();
+         }
+
+         std::size_t size() const
+         {
+            return ret_string_.size();
          }
 
          range_t& range_ref()
@@ -9396,7 +9579,8 @@ namespace exprtk
                {
                   typedef typename GenericFunction::parameter_list_t parameter_list_t;
 
-                  return (*gen_function_t::function_)(param_seq_index_,parameter_list_t(gen_function_t::typestore_list_));
+                  return (*gen_function_t::function_)(param_seq_index_,
+                                                      parameter_list_t(gen_function_t::typestore_list_));
                }
             }
 
@@ -9462,27 +9646,27 @@ namespace exprtk
          std::size_t param_seq_index_;
       };
 
-      #define exprtk_define_unary_op(OpName)                        \
-      template <typename T>                                         \
-      struct OpName##_op                                            \
-      {                                                             \
-         typedef typename functor_t<T>::Type Type;                  \
-                                                                    \
-         static inline T process(Type v)                            \
-         {                                                          \
-            return numeric:: OpName (v);                            \
-         }                                                          \
-                                                                    \
-         static inline typename expression_node<T>::node_type type()\
-         {                                                          \
-            return expression_node<T>::e_##OpName;                  \
-         }                                                          \
-                                                                    \
-         static inline details::operator_type operation()           \
-         {                                                          \
-            return details::e_##OpName;                             \
-         }                                                          \
-      };                                                            \
+      #define exprtk_define_unary_op(OpName)                         \
+      template <typename T>                                          \
+      struct OpName##_op                                             \
+      {                                                              \
+         typedef typename functor_t<T>::Type Type;                   \
+                                                                     \
+         static inline T process(Type v)                             \
+         {                                                           \
+            return numeric:: OpName (v);                             \
+         }                                                           \
+                                                                     \
+         static inline typename expression_node<T>::node_type type() \
+         {                                                           \
+            return expression_node<T>::e_##OpName;                   \
+         }                                                           \
+                                                                     \
+         static inline details::operator_type operation()            \
+         {                                                           \
+            return details::e_##OpName;                              \
+         }                                                           \
+      };                                                             \
 
       exprtk_define_unary_op(abs  )
       exprtk_define_unary_op(acos )
@@ -10373,6 +10557,7 @@ namespace exprtk
          static inline T process(const ivector_ptr v)
          {
             vector_holder<T>& vec = v->vec()->ref();
+
             T result = T(0);
 
             for (std::size_t i = 0; i < vec.size(); ++i)
@@ -10392,6 +10577,7 @@ namespace exprtk
          static inline T process(const ivector_ptr v)
          {
             vector_holder<T>& vec = v->vec()->ref();
+
             T result = (*vec[0]);
 
             for (std::size_t i = 1; i < vec.size(); ++i)
@@ -10411,6 +10597,7 @@ namespace exprtk
          static inline T process(const ivector_ptr v)
          {
             vector_holder<T>& vec = v->vec()->ref();
+
             T result = T(0);
 
             for (std::size_t i = 0; i < vec.size(); ++i)
@@ -10430,6 +10617,7 @@ namespace exprtk
          static inline T process(const ivector_ptr v)
          {
             vector_holder<T>& vec = v->vec()->ref();
+
             T result = (*vec[0]);
 
             for (std::size_t i = 1; i < vec.size(); ++i)
@@ -10452,6 +10640,7 @@ namespace exprtk
          static inline T process(const ivector_ptr v)
          {
             vector_holder<T>& vec = v->vec()->ref();
+
             T result = (*vec[0]);
 
             for (std::size_t i = 1; i < vec.size(); ++i)
@@ -12290,12 +12479,12 @@ namespace exprtk
       {
       public:
 
-         typedef expression_node <T>*  expression_ptr;
-         typedef string_base_node<T>*    str_base_ptr;
-         typedef range_pack      <T>          range_t;
-         typedef range_t*                   range_ptr;
-         typedef range_interface<T>          irange_t;
-         typedef irange_t*                 irange_ptr;
+         typedef expression_node <T>* expression_ptr;
+         typedef string_base_node<T>*   str_base_ptr;
+         typedef range_pack      <T>         range_t;
+         typedef range_t*                  range_ptr;
+         typedef range_interface<T>         irange_t;
+         typedef irange_t*                irange_ptr;
 
          str_sogens_node(const operator_type& opr,
                          expression_ptr branch0,
@@ -12359,8 +12548,8 @@ namespace exprtk
                range_t& range1 = (*str1_range_ptr_);
 
                if (
-                    range0(str0_r0,str0_r1,str0_base_ptr_->str().size()) &&
-                    range1(str1_r0,str1_r1,str1_base_ptr_->str().size())
+                    range0(str0_r0,str0_r1,str0_base_ptr_->size()) &&
+                    range1(str1_r0,str1_r1,str1_base_ptr_->size())
                   )
                {
                   return Operation::process(
@@ -14883,9 +15072,10 @@ namespace exprtk
       typedef details::const_string_range_node<T> const_string_range_node_t;
       typedef details::generic_string_range_node<T> generic_string_range_node_t;
       typedef details::string_concat_node <T>          string_concat_node_t;
+      typedef details::assignment_string_node<T>   assignment_string_node_t;
+      typedef details::assignment_string_range_node<T> assignment_string_range_node_t;
       #endif
       typedef details::assignment_node<T>                 assignment_node_t;
-      typedef details::assignment_string_node  <T> assignment_string_node_t;
       typedef details::assignment_vec_elem_node<T> assignment_vec_elem_node_t;
       typedef details::assignment_vec_node     <T>    assignment_vec_node_t;
       typedef details::assignment_vecvec_node  <T> assignment_vecvec_node_t;
@@ -15051,7 +15241,7 @@ namespace exprtk
             for (std::size_t j = 0; j < element_.size(); ++j)
             {
                if (
-                    (element_[j].name ==  se.name ) &&
+                    (element_[j].name  == se.name ) &&
                     (element_[j].depth <= se.depth) &&
                     (element_[j].index == se.index) &&
                     (element_[j].size  == se.size )
@@ -16780,6 +16970,7 @@ namespace exprtk
                make_error(parser_error::e_syntax,
                           current_token_,
                           "ERR38 - Expected '?' after condition of ternary if-statement"));
+
             result = false;
          }
          else if (0 == (consequent = parse_expression()))
@@ -16788,6 +16979,7 @@ namespace exprtk
                make_error(parser_error::e_syntax,
                           current_token_,
                           "ERR39 - Failed to parse consequent for if-statement"));
+
             result = false;
          }
          else if (!token_is(token_t::e_colon))
@@ -16796,6 +16988,7 @@ namespace exprtk
                make_error(parser_error::e_syntax,
                           current_token_,
                           "ERR40 - Expected ':' between ternary if-statement consequent and alternative"));
+
             result = false;
          }
          else if (0 == (alternative = parse_expression()))
@@ -16804,6 +16997,7 @@ namespace exprtk
                make_error(parser_error::e_syntax,
                           current_token_,
                           "ERR41 - Failed to parse alternative for if-statement"));
+
             result = false;
          }
 
@@ -17944,7 +18138,7 @@ namespace exprtk
                {
                   free_node(node_allocator_,result);
 
-                  return expression_generator_(T(const_str_node->str().size()));
+                  return expression_generator_(T(const_str_node->size()));
                }
                else
                   return node_allocator_.allocate<details::stringvar_size_node<T> >
@@ -21759,6 +21953,12 @@ namespace exprtk
                lodge_assignment(e_st_string,branch[0]);
 
                return synthesize_expression<assignment_string_node_t,2>(operation,branch);
+            }
+            else if (details::is_string_range_node(branch[0]))
+            {
+               lodge_assignment(e_st_string,branch[0]);
+
+               return synthesize_expression<assignment_string_range_node_t,2>(operation,branch);
             }
             else if (details::is_vector_node(branch[0]))
             {

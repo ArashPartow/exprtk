@@ -403,13 +403,19 @@ of C++ compilers:
 |          | will be performed. (eg: 1.67 --> 1)                     |
 +----------+---------------------------------------------------------+
 |  :=      | Assign the value of x to y. Where x is a mutable string |
-|          | and y is either a string or a string range. eg:         |
+|          | or string range and y is either a string or a string    |
+|          | range. eg:                                              |
 |          | 1. x := y                                               |
 |          | 2. x := 'abc'                                           |
 |          | 3. x := y[:i + j]                                       |
 |          | 4. x := '0123456789'[2:7]                               |
 |          | 5. x := '0123456789'[2i + 1:7]                          |
 |          | 6. x := (y := '0123456789'[2:7])                        |
+|          | 7. x[i:j] := y                                          |
+|          | 8. x[i:j] := (y + 'abcdefg'[8 / 4:5])[m:n]              |
+|          |                                                         |
+|          | Note: For options 7 and 8 the shorter of the two ranges |
+|          | will denote the number characters that are to be copied.|
 +----------+---------------------------------------------------------+
 |  +       | Concatenation of x and y. Where x and y are strings or  |
 |          | string ranges. eg                                       |
@@ -840,6 +846,7 @@ following are examples of the various transformations that can occur:
    (c) (2 * x) - (2 * y)  --->  2 * (x - y)
    (d) (2 / x) / (3 / y)  --->  (2 / 3) / (x * y)
    (e) (2 * x) * (3 * y)  --->  (2 * 3) * (x * y)
+
 
 Note:
 When using  strength reduction  in conjunction  with expressions whose
@@ -1919,11 +1926,14 @@ into account when using Exprtk:
       be to recompile an expression  from its string form every  time
       it requires evaluating.
 
- (24) Where appropriate the return values of method invocations  from
-      the  parser  and  symbol_table should  be  taken  into account.
-      Specifically  the  'compile'  method  of  the  parser  and  the
-      'add_xxx' set  of methods  of the  symbol table  as they denote
-      success or failure of the invoked call.
+ (24) It is  strongly recommended  that  the  return value  of method
+      invocations from  the parser  and symbol_table  types be  taken
+      into account. Specifically the  'compile' method of the  parser
+      and the 'add_xxx'  set of methods  of the symbol_table  as they
+      denote either the success or failure state of the invoked call.
+      Cointinued processing from  a failed state without having first
+      rectified the underlying issue  will in turn result  in further
+      failures and undefined behaviours.
 
  (25) The following are examples of compliant floating point value
       representations:
