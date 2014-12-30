@@ -192,6 +192,45 @@ namespace exprtk
          return result;
       }
 
+      inline bool is_hex_digit(const std::string::value_type digit)
+      {
+         return (('0' <= digit) && (digit <= '9')) ||
+                (('A' <= digit) && (digit <= 'F')) ||
+                (('a' <= digit) && (digit <= 'f')) ;
+      }
+
+      inline unsigned char hex_to_bin(unsigned char h)
+      {
+         if (('0' <= h) && (h <= '9'))
+            return (h - '0');
+         else
+            return (std::toupper(h) - 'A');
+      }
+
+      template <typename Iterator>
+      inline void parse_hex(Iterator& itr, Iterator end, std::string::value_type& result)
+      {
+         if (
+              (end !=  (itr    )) &&
+              (end !=  (itr + 1)) &&
+              (end !=  (itr + 2)) &&
+              (end !=  (itr + 3)) &&
+              ('0' == *(itr    )) &&
+              (
+                ('x' == *(itr + 1)) ||
+                ('X' == *(itr + 1))
+              ) &&
+              (is_hex_digit(*(itr + 2))) &&
+              (is_hex_digit(*(itr + 3)))
+            )
+         {
+            result = hex_to_bin(*(itr + 2)) << 4 | hex_to_bin(*(itr + 3));
+            itr += 3;
+         }
+         else
+            result = '\0';
+      }
+
       inline void cleanup_escapes(std::string& s)
       {
          std::string::iterator itr1 = s.begin();
@@ -214,6 +253,9 @@ namespace exprtk
                      case 'n' : (*itr1) = '\n'; break;
                      case 'r' : (*itr1) = '\r'; break;
                      case 't' : (*itr1) = '\t'; break;
+                     case '0' : parse_hex(itr1,end,(*itr1));
+                                removal_count += 3;
+                                break;
                   }
 
                   continue;
@@ -2362,7 +2404,31 @@ namespace exprtk
                      break;
                }
                else if (escaped)
+               {
+                  if (!is_end(s_itr_) && ('0' == *(s_itr_)))
+                  {
+                     if (
+                          is_end(s_itr_ + 1) ||
+                          is_end(s_itr_ + 2) ||
+                          is_end(s_itr_ + 3) ||
+                          (
+                            ('x' != *(s_itr_ + 1)) &&
+                            ('X' != *(s_itr_ + 1))
+                          ) ||
+                          (!details::is_hex_digit(*(s_itr_ + 2))) ||
+                          (!details::is_hex_digit(*(s_itr_ + 3)))
+                        )
+                     {
+                        t.set_error(token::e_err_string,initial_itr,s_itr_,base_itr_);
+                        token_list_.push_back(t);
+                        return;
+                     }
+                     else
+                        s_itr_ += 3;
+                  }
+
                   escaped = false;
+               }
 
                ++s_itr_;
             }

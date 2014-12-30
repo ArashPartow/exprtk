@@ -2237,7 +2237,13 @@ inline bool run_test02()
                               test_ab<T>("(a[3:9] := b); (a == '012ABCDE89');", "0123456789","ABCDE"     ,T(1.0)),
                               test_ab<T>("(a[3:9] := b); (a == '012ABCDEF9');", "0123456789","ABCDEF"    ,T(1.0)),
                               test_ab<T>("(a[r1 / r0:r2] := b[3:b[] - r3]);  (a == '012ABCDE89');", "0123456789","xyzABCDEFGHIJxyz",T(1.0)),
-                              test_ab<T>("(a[r0:r2 + 1]  := b[r3:b[] - r3]); (a == '01ABCDEFG9');", "0123456789","xyzABCDEFGHIJxyz",T(1.0))
+                              test_ab<T>("(a[r0:r2 + 1]  := b[r3:b[] - r3]); (a == '01ABCDEFG9');", "0123456789","xyzABCDEFGHIJxyz",T(1.0)),
+                              test_ab<T>("'\\0x30\\0x31\\0x32\\0x33\\0x34\\0x35\\0x36\\0x37\\0x38\\0x39' == '0123456789'","","",T(1.0)),
+                              test_ab<T>("'abc\\0x30\\0x31\\0x32\\0x33xyz' == 'abc0123xyz'"       ,"","",T(1.0)),
+                              test_ab<T>("'\\0x30\\n\\0x31\\n\\0x32\\n\\0x33' == '0\\n1\\n2\\n3'" ,"","",T(1.0)),
+                              test_ab<T>("('\\0x30' + '') == '0'"                                 ,"","",T(1.0)),
+                              test_ab<T>("('\\0x30' + '\\0x31\\0x32') == '012'"                   ,"","",T(1.0)),
+                              test_ab<T>("('\\0x30' + '\\0x31\\0x32' + '\\0x33\\0x34\\0x35') == '012345'" ,"","",T(1.0))
                            };
 
    static const std::size_t test_list_size = sizeof(test_list) / sizeof(test_ab<T>);
@@ -2246,6 +2252,7 @@ inline bool run_test02()
    for (std::size_t r = 0; r < rounds; ++r)
    {
       bool result = true;
+
       for (std::size_t i = 0; i < test_list_size; ++i)
       {
          test_ab<T>& test = const_cast<test_ab<T>&>(test_list[i]);

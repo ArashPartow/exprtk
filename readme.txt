@@ -1881,9 +1881,10 @@ into account when using Exprtk:
       ('\n', '\r', '\t', '\b', '\v', '\f')
 
  (13) Strings may be comprised of any combination of letters, digits
-      or special characters including (~!@#$%^&*()[]|=+ ,./?<>;:"`~_),
-      and must be enclosed with single-quotes.
-      eg: 'Frankly my dear, 1 do n0t give a damn!'
+      special characters including (~!@#$%^&*()[]|=+ ,./?<>;:"`~_) or
+      hexadecimal escaped sequences (eg: \0x30) and must be enclosed
+      with single-quotes.
+      eg: 'Frankly my dear, \0x49 do n0t give a damn!'
 
  (14) User defined  normal functions  can have  up to  20 parameters,
       where as  user defined  generic-functions and  vararg-functions
