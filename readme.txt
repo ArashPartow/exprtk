@@ -145,13 +145,13 @@ of C++ compilers:
 |  :=      | Assign the value of x to y. Where y is either a variable|
 |          | or vector type.  (eg: y := x)                           |
 +----------+---------------------------------------------------------+
-|  +=      | Increment x to by the value of the expression on the    |
-|          | right-hand side. Where x is either a variable or vector |
-|          | type.  (eg: x += abs(y - z))                            |
+|  +=      | Increment x by the value of the expression on the right |
+|          | hand side. Where x is either a variable or vector type. |
+|          | (eg: x += abs(y - z))                                   |
 +----------+---------------------------------------------------------+
-|  -=      | Decrement x to by the value of the expression on the    |
-|          | right-hand side. Where x is either a variable or vector |
-|          | type.  (eg: x[i] -= abs(y + z))                         |
+|  -=      | Decrement x by the value of the expression on the right |
+|          | hand side. Where x is either a variable or vector type. |
+|          | (eg: x[i] -= abs(y + z))                                |
 +----------+---------------------------------------------------------+
 |  *=      | Assign the multiplication of x by the value of the      |
 |          | expression on the righthand side to x. Where x is either|
