@@ -6286,6 +6286,63 @@ inline bool run_test19()
 
    }
 
+   {
+      symbol_table_t symbol_table;
+
+      symbol_table.add_constants();
+
+      std::string expression_str =
+                     " var sieve[10^7] := [false];                     "
+                     " var m := trunc(sqrt(sieve[]));                  "
+                     "                                                 "
+                     " sieve[0] := true;                               "
+                     " sieve[1] := true;                               "
+                     "                                                 "
+                     " for (var i := 0; i <= m; i += 1)                "
+                     " {                                               "
+                     "   if (false == sieve[i])                        "
+                     "   {                                             "
+                     "     for (var j := (i * i); j < sieve[]; j += i) "
+                     "     {                                           "
+                     "       sieve[j] := true;                         "
+                     "     }                                           "
+                     "   }                                             "
+                     " };                                              "
+                     "                                                 "
+                     " var prime_count := 0;                           "
+                     " for (var i := 0; i < sieve[]; i += 1)           "
+                     " {                                               "
+                     "   if (false == sieve[i])                        "
+                     "   {                                             "
+                     "     prime_count += 1;                           "
+                     "   };                                            "
+                     " };                                              "
+                     "                                                 "
+                     " prime_count == 664579;                          ";
+
+      expression_t expression;
+
+      expression.register_symbol_table(symbol_table);
+
+      parser_t parser;
+
+      if (!parser.compile(expression_str,expression))
+      {
+         printf("run_test19() - Error: %s   Expression: %s\n",
+                parser.error().c_str(),
+                expression_str.c_str());
+
+         return false;
+      }
+
+      if (T(1) != expression.value())
+      {
+         printf("run_test19() - Prime Sieve Computation Error");
+
+         return false;
+      }
+   }
+
    return true;
 }
 
