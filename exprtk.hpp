@@ -2,7 +2,7 @@
  ******************************************************************
  *           C++ Mathematical Expression Toolkit Library          *
  *                                                                *
- * Author: Arash Partow (1999-2014)                               *
+ * Author: Arash Partow (1999-2015)                               *
  * URL: http://www.partow.net/programming/exprtk/index.html       *
  *                                                                *
  * Copyright notice:                                              *
@@ -6540,7 +6540,8 @@ namespace exprtk
          typedef typename range_t::cached_range_t cached_range_t;
 
          generic_string_range_node(expression_ptr str_branch, range_t brange)
-         : branch_(str_branch),
+         : initialised_(false),
+           branch_(str_branch),
            branch_deletable_(branch_deletable(branch_)),
            str_base_ptr_ (0),
            str_range_ptr_(0),
@@ -6563,6 +6564,8 @@ namespace exprtk
                if (0 == str_range_ptr_)
                   return;
             }
+
+            initialised_ = (str_base_ptr_ && str_range_ptr_);
          }
 
         ~generic_string_range_node()
@@ -6578,7 +6581,7 @@ namespace exprtk
 
          inline T value() const
          {
-            if (str_base_ptr_ && str_range_ptr_)
+            if (initialised_)
             {
                branch_->value();
 
@@ -6641,8 +6644,9 @@ namespace exprtk
 
       private:
 
-         expression_ptr branch_;
-         bool branch_deletable_;
+         bool               initialised_;
+         expression_ptr          branch_;
+         bool          branch_deletable_;
          str_base_ptr      str_base_ptr_;
          irange_ptr       str_range_ptr_;
          mutable range_t     base_range_;
@@ -6670,6 +6674,7 @@ namespace exprtk
                             expression_ptr branch0,
                             expression_ptr branch1)
          : binary_node<T>(opr,branch0,branch1),
+           initialised_(false),
            str0_base_ptr_ (0),
            str1_base_ptr_ (0),
            str0_range_ptr_(0),
@@ -6705,16 +6710,16 @@ namespace exprtk
                if (0 == str1_range_ptr_)
                   return;
             }
+
+            initialised_ = str0_base_ptr_  &&
+                           str1_base_ptr_  &&
+                           str0_range_ptr_ &&
+                           str1_range_ptr_ ;
          }
 
          inline T value() const
          {
-            if (
-                 str0_base_ptr_  &&
-                 str1_base_ptr_  &&
-                 str0_range_ptr_ &&
-                 str1_range_ptr_
-               )
+            if (initialised_)
             {
                binary_node<T>::branch_[0].first->value();
                binary_node<T>::branch_[1].first->value();
@@ -6779,6 +6784,7 @@ namespace exprtk
 
       private:
 
+         bool initialised_;
          str_base_ptr str0_base_ptr_;
          str_base_ptr str1_base_ptr_;
          irange_ptr   str0_range_ptr_;
@@ -6805,6 +6811,7 @@ namespace exprtk
 
          swap_string_node(expression_ptr branch0, expression_ptr branch1)
          : binary_node<T>(details::e_swap,branch0,branch1),
+           initialised_(false),
            str0_node_ptr_(0),
            str1_node_ptr_(0)
          {
@@ -6817,14 +6824,13 @@ namespace exprtk
             {
                str1_node_ptr_ = static_cast<strvar_node_ptr>(binary_node<T>::branch_[1].first);
             }
+
+            initialised_ = (str0_node_ptr_ && str1_node_ptr_);
          }
 
          inline T value() const
          {
-            if (
-                 str0_node_ptr_ &&
-                 str1_node_ptr_
-               )
+            if (initialised_)
             {
                binary_node<T>::branch_[0].first->value();
                binary_node<T>::branch_[1].first->value();
@@ -6867,6 +6873,7 @@ namespace exprtk
 
       private:
 
+         bool initialised_;
          strvar_node_ptr str0_node_ptr_;
          strvar_node_ptr str1_node_ptr_;
       };
@@ -6992,6 +6999,7 @@ namespace exprtk
                                 expression_ptr branch0,
                                 expression_ptr branch1)
          : binary_node<T>(opr,branch0,branch1),
+           initialised_(false),
            str0_base_ptr_ (0),
            str1_base_ptr_ (0),
            str0_node_ptr_ (0),
@@ -7018,16 +7026,16 @@ namespace exprtk
 
                str1_range_ptr_ = &(range_ptr->range_ref());
             }
+
+            initialised_ = str0_base_ptr_  &&
+                           str1_base_ptr_  &&
+                           str0_node_ptr_  &&
+                           str1_range_ptr_ ;
          }
 
          inline T value() const
          {
-            if (
-                 str0_base_ptr_ &&
-                 str1_base_ptr_ &&
-                 str0_node_ptr_ &&
-                 str1_range_ptr_
-               )
+            if (initialised_)
             {
                binary_node<T>::branch_[1].first->value();
 
@@ -7081,6 +7089,7 @@ namespace exprtk
 
       private:
 
+         bool            initialised_;
          str_base_ptr    str0_base_ptr_;
          str_base_ptr    str1_base_ptr_;
          strvar_node_ptr str0_node_ptr_;
@@ -7107,6 +7116,7 @@ namespace exprtk
                                       expression_ptr branch0,
                                       expression_ptr branch1)
          : binary_node<T>(opr,branch0,branch1),
+           initialised_(false),
            str0_base_ptr_ (0),
            str1_base_ptr_ (0),
            str0_node_ptr_ (0),
@@ -7141,17 +7151,17 @@ namespace exprtk
 
                str1_range_ptr_ = &(range_ptr->range_ref());
             }
+
+            initialised_ = str0_base_ptr_  &&
+                           str1_base_ptr_  &&
+                           str0_node_ptr_  &&
+                           str0_range_ptr_ &&
+                           str1_range_ptr_ ;
          }
 
          inline T value() const
          {
-            if (
-                 str0_base_ptr_  &&
-                 str1_base_ptr_  &&
-                 str0_node_ptr_  &&
-                 str0_range_ptr_ &&
-                 str1_range_ptr_
-               )
+            if (initialised_)
             {
                binary_node<T>::branch_[0].first->value();
                binary_node<T>::branch_[1].first->value();
@@ -7213,6 +7223,7 @@ namespace exprtk
 
       private:
 
+         bool            initialised_;
          str_base_ptr    str0_base_ptr_;
          str_base_ptr    str1_base_ptr_;
          strvar_node_ptr str0_node_ptr_;
@@ -30138,8 +30149,8 @@ namespace exprtk
    namespace information
    {
       static const char* library = "Mathematical Expression Toolkit";
-      static const char* version = "2.7182818284590452353602874713526624977572470936999";
-      static const char* date    = "20141101";
+      static const char* version = "2.7182818284590452353602874713526624977572470936999595";
+      static const char* date    = "20150111";
 
       static inline std::string data()
       {

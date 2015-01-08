@@ -1171,6 +1171,7 @@ parameters and their views are as follows:
    (2) Vector - vector_view
    (3) String - string_view
 
+
 The above denoted type  views provide non-const reference-like  access
 to each parameter, as such modifications made to the input  parameters
 will  persist after  the function  call has  completed. The  following
@@ -1418,14 +1419,14 @@ Two specific overrides of the  function operator are provided one  for
 standard generic functions and one for string returning functions. The
 overrides are as follows:
 
-      // f(psi,i_0,i_1,....,i_N) --> Scalar
+      // Scalar <-- function(psi,i_0,i_1,....,i_N)
       inline T operator()(const std::size_t& ps_index,
                           parameter_list_t parameters)
       {
          ...
       }
 
-      // f(psi,i_0,i_1,....,i_N) --> String
+      // String <-- function(psi,i_0,i_1,....,i_N)
       inline T operator()(const std::size_t& ps_index,
                           std::string& result,
                           parameter_list_t parameters)
@@ -1587,6 +1588,7 @@ zero input parameters the calling styles are as follows:
 
    (1)  x + sin(foo()- 2) / y
    (2)  x + sin(foo  - 2) / y
+
 
 
 [16 - EXPRESSION DEPENDENTS]
@@ -1816,6 +1818,7 @@ more of the following checkers:
    (2) Numeric Checker
    (3) Sequence Checker
 
+
 (c) Numeric Errors
 This class of  error is related  to conversion of  numeric values from
 their  string form  to the  underlying numerical  type (float,  double
@@ -1994,10 +1997,12 @@ into account when using Exprtk:
                       default :  y > 2 ? 3 : 4;
                     };
            x != while (y > 0) { y -= 1; };
-           x -= {if(min(x,y) < 2 * max(x,y))
-                  x + 2;
-                 else
-                  x + y - 3;}
+           x -= {
+                  if(min(x,y) < 2 * max(x,y))
+                    x + 2;
+                  else
+                    x + y - 3;
+                }
           )
       {
         (x + y) / (x - y);
