@@ -113,14 +113,14 @@ include path (e.g: /usr/include/).
 ExprTk has been built error and warning free using the following set
 of C++ compilers:
 
- (*) GNU Compiler Collection (3.3+)
- (*) Intel C++ Compiler (8.x+)
- (*) Clang/LLVM (1.1+)
- (*) PGI C++ (10.x+)
- (*) Microsoft Visual Studio C++ Compiler (8.1+)
- (*) Comeau C++ Compiler (4.3+)
- (*) IBM XL C/C++ (9.x+)
- (*) C++ Builder (XE4+)
+  (*) GNU Compiler Collection (3.3+)
+  (*) Intel C++ Compiler (8.x+)
+  (*) Clang/LLVM (1.1+)
+  (*) PGI C++ (10.x+)
+  (*) Microsoft Visual Studio C++ Compiler (8.1+)
+  (*) Comeau C++ Compiler (4.3+)
+  (*) IBM XL C/C++ (9.x+)
+  (*) C++ Builder (XE4+)
 
 
 
@@ -442,7 +442,7 @@ of C++ compilers:
 |          | eg:                                                     |
 |          | 1. 'abc'[] == 3                                         |
 |          | 2. var max_str_length := max(s0[],s1[],s2[],s3[])       |
-|          | 3. ('abc' + 'xyz')[] == 3                               |
+|          | 3. ('abc' + 'xyz')[] == 6                               |
 |          | 4. (('abc' + 'xyz')[1:4])[] == 4                        |
 +----------+---------------------------------------------------------+
 
@@ -604,12 +604,12 @@ expressions. The types are as follows:
 (1) Scalar Type
 The scalar type  is a singular  numeric value. The  underlying type is
 that used  to specialize  the ExprTk  components (float,  double, long
-double MPFR et al).
+double, MPFR et al).
 
 
 (2) Vector Type
 The vector type is  a fixed size sequence  of scalar values. A  vector
-can  be indexed  resulting in  a scalar  value. Operations  between a
+can  be indexed  resulting  in  a scalar  value. Operations  between a
 vector and scalar will result in a vector with a size equal to that of
 the original vector, whereas operations between vectors will result in
 a vector of size equal to that of the smaller of the two.
@@ -628,9 +628,9 @@ There are three primary components, that are specialized upon a  given
 numeric type, which make up the core of ExprTk. The components are  as
 follows:
 
-   1. Symbol Table  exprtk::symbol_table<NumericType>
-   2. Expression    exprtk::expression<NumericType>
-   3. Parser        exprtk::parser<NumericType>
+   (1) Symbol Table  exprtk::symbol_table<NumericType>
+   (2) Expression    exprtk::expression<NumericType>
+   (3) Parser        exprtk::parser<NumericType>
 
 
 (1) Symbol Table
@@ -735,13 +735,13 @@ Expression:  z := (x + y^-2.345) * sin(pi / min(w - 7.3,v))
 
 
 (3) Parser
-A structure which takes as input a string representation of  an
-expression and attempts to  compile said input with  the result
-being an  instance of  Expression. If  an error  is encountered
-during the compilation process, the parser will stop  compiling
-and  return  an  error  status  code,  with  a  more   detailed
-description of the error(s)  and its location within  the input
-provided by the 'get_error' interface.
+A  structure  which  takes  as input  a  string  representation  of an
+expression and attempts to compile said input with the result being an
+instance  of  Expression.  If  an  error  is  encountered  during  the
+compilation  process, the  parser will  stop compiling  and return  an
+error status code,  with a more  detailed description of  the error(s)
+and  its  location  within  the  input  provided  by  the  'get_error'
+interface.
 
 
 
@@ -751,17 +751,26 @@ options  to be  used during  the compilation  process of  expressions.
 An  example instantiation  of exprtk::parser  where only  the  joiner,
 commutative and strength reduction options are enabled is as  follows:
 
-   typedef exprtk::parser<NumericType> parser_t;
+   typedef exprtk::parser<NumericType>::settings_t settings_t;
 
-   std::size_t compile_options = parser_t::e_joiner            +
-                                 parser_t::e_commutative_check +
-                                 parser_t::e_strength_reduction;
+   std::size_t compile_options = settings_t::e_joiner            +
+                                 settings_t::e_commutative_check +
+                                 settings_t::e_strength_reduction;
 
    parser_t parser(compile_options);
 
 
 Currently  seven  types of  compile  time options  are  supported, and
 enabled by default. The options and their explanations are as follows:
+
+   (1) Replacer
+   (2) Joiner
+   (3) Numeric Check
+   (4) Bracket Check
+   (5) Sequence Check
+   (6) Commutative Check
+   (7) Strength Reduction Check
+
 
 (1) Replacer (e_replacer)
 Enable replacement of specific  tokens with other tokens.  For example
@@ -1084,6 +1093,7 @@ not a vector but rather a single value.
 
    var x[3] := { 1, 2, 3 };
 
+   sum(x)      ==  6
    sum(1 + 2x) == 15
    avg(3x + 1) ==  7
    min(1 / x)  == (1 / 3)
@@ -1095,7 +1105,7 @@ not a vector but rather a single value.
 ExprTk provides a means  whereby custom functions can  be defined  and
 utilized within  expressions.  The   concept  requires  the  user   to
 provide a reference  to the function  coupled with an  associated name
-that will be invoked within expressions. Function can take in numerous
+that  will be invoked within  expressions. Functions may take numerous
 inputs but will always return a single value of the underlying numeric
 type.
 
@@ -1103,7 +1113,7 @@ During  expression  compilation  when required  the  reference  to the
 function  will be  obtained from  the associated  symbol_table and  be
 embedded into the expression.
 
-There are two types of function interface:
+There are five types of function interface:
 
    (1) ifunction
    (2) ivararg_function
@@ -1323,7 +1333,7 @@ situations such as concatenation and equality operations.
     String <-- function(i_0, i_1, i_2....., i_N)
 
 
-The following example defines an generic function named 'toupper' with
+The following example defines a generic function  named 'toupper' with
 the string return type function operator being explicitly overridden:
 
    template <typename T>
@@ -1376,10 +1386,10 @@ is done:
                              symbol_table_t::e_ft_strfunc);
 
 
-Note: There are two further refinements to the type checking  facility
-are the possibilities of a  variable number of common types  which can
-be accomplished by using a wildcard '*' and a special 'any type' which
-is done using the '?' character. It should be noted that the  wildcard
+Note: Two further  refinements to the  type checking facility  are the
+possibilities  of  a variable  number  of common  types  which can  be
+accomplished by using a wildcard '*' and a special 'any type' which is
+done using  the '?'  character. It  should be  noted that the wildcard
 operator is  associated with  the previous  type in  the sequence  and
 implies one or more of that type.
 
@@ -1507,7 +1517,7 @@ symbol table.
          .expression("1 + cos(x * y) / z;"));
 
 
-(4) Using Functions In Expressions
+(6) Using Functions In Expressions
 For the above denoted custom and composited functions to be used in an
 expression, an instance of each function needs to be registered with a
 symbol_table that  has been  associated with  the expression instance.
@@ -1558,7 +1568,7 @@ The following demonstrates how all the pieces are put together:
    expression.value();
 
 
-(5) Function Side-Effects
+(7) Function Side-Effects
 All function calls are assumed  to have side-effects by default.  This
 assumption implicitly disables constant folding optimisations when all
 parameters being passed to the function are deduced as being constants
@@ -1580,7 +1590,7 @@ to the constructor to denote the lack of side-effects.
    };
 
 
-(6) Zero Parameter Functions
+(8) Zero Parameter Functions
 When either an ifunction  or ivararg_function derived type  is defined
 with  zero number  of parameters,  there are  two calling  conventions
 within expressions that are allowed.  For a function named 'foo'  with
@@ -1675,12 +1685,12 @@ are the set of dependent symbols that 'may' have their values modified
 within an expression. The following are example expressions and  their
 associated assignments:
 
-      Assignments   Expression
-   1. x             x := y + z
-   2. x, y          x += y += z
-   3. x, y, z       x := y += sin(z := w + 2)
-   4. z, w          if (x > y, z := x + 2, w := 'A String')
-   5. None          x + y + z
+       Assignments   Expression
+   (1) x             x := y + z
+   (2) x, y          x += y += z
+   (3) x, y, z       x := y += sin(z := w + 2)
+   (4) z, w          if (x > y, z := x + 2, w := 'A String')
+   (5) None          x + y + z
 
 
 Note: In expression 4, both variables 'z' and 'w' are denoted as being
@@ -1835,7 +1845,7 @@ via the 'unknown symbol resolver' mechanism.
 
 [18 - EXPRTK NOTES]
 The following is a list of facts and suggestions one may want to take
-into account when using Exprtk:
+into account when using ExprTk:
 
  (00) Precision  and performance  of expression  evaluations are  the
       dominant principles of the ExprTk library.
@@ -1935,38 +1945,38 @@ into account when using Exprtk:
       into account. Specifically the  'compile' method of the  parser
       and the 'add_xxx'  set of methods  of the symbol_table  as they
       denote either the success or failure state of the invoked call.
-      Cointinued processing from  a failed state without having first
+      Continued processing from  a failed  state without having first
       rectified the underlying issue  will in turn result  in further
       failures and undefined behaviours.
 
  (25) The following are examples of compliant floating point value
       representations:
 
-      (a) 12345        (e) -123.456
-      (b) +123.456e+12 (f) 123.456E-12
-      (c) +012.045e+07 (g) .1234
-      (d) 123.456f     (h) -321.654E+3L
+      (1) 12345         (5) -123.456
+      (2) +123.456e+12  (6) 123.456E-12
+      (3) +012.045e+07  (7) .1234
+      (4) 123.456f      (8) -321.654E+3L
 
  (26) Expressions may contain any of the following comment styles:
 
-      1. // .... \n
-      2. #  .... \n
-      3. /* .... */
+      (1) // .... \n
+      (2) #  .... \n
+      (3) /* .... */
 
  (27) The  'null'  value  type  is  a  special  non-zero  type   that
       incorporates specific semantics when undergoing operations with
       the standard numeric type. The following is a list of type  and
       boolean results associated with the use of 'null':
 
-      1. null  +,-,*,/,%  x    --> x
-      2. x     +,-,*,/,%  null --> x
-      3. null  +,-,*,/,%  null --> null
-      4. null     ==      null --> true
-      5. null     ==      x    --> true
-      6. x        ==      null --> true
-      7. x        !=      null --> false
-      8. null     !=      null --> false
-      9. null     !=      x    --> false
+      (1) null  +,-,*,/,%  x    --> x
+      (2) x     +,-,*,/,%  null --> x
+      (3) null  +,-,*,/,%  null --> null
+      (4) null     ==      null --> true
+      (5) null     ==      x    --> true
+      (6) x        ==      null --> true
+      (7) x        !=      null --> false
+      (8) null     !=      null --> false
+      (9) null     !=      x    --> false
 
  (28) The following is a list  of reserved words and symbols  used by
       ExprTk. Attempting to  add a variable  or custom function  to a
@@ -1979,9 +1989,9 @@ into account when using Exprtk:
       expm1, false, floor, for, frac, grad2deg, hypot, iclamp, if,
       ilike, in, inrange, in, like, log, log10, log1p, log2, logn,
       mand,  max,  min,  mod,  mor,  mul,  nand,  ncdf,  nor, not,
-      not_equal,  not,  null,  or,  pow,  rad2deg,  repeat,  root,
-      roundn, round, sec,  sgn, shl, shr,  sinc, sinh, sin,  sqrt,
-      sum,  swap,  switch,  tanh, tan,  true,  trunc,  until, var,
+      not_equal,  not,  null, or,  pow,  rad2deg, repeat,  return,
+      root, roundn, round,  sec, sgn, shl,  shr, sinc, sinh,  sin,
+      sqrt, sum, swap, switch, tanh, tan, true, trunc, until, var,
       while, xnor, xor, xor
 
  (29) Every valid ExprTk statement is a "value returning" expression.

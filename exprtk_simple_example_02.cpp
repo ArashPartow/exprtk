@@ -24,6 +24,10 @@
 template <typename T>
 void square_wave()
 {
+   typedef exprtk::symbol_table<T> symbol_table_t;
+   typedef exprtk::expression<T>     expression_t;
+   typedef exprtk::parser<T>             parser_t;
+
    std::string expr_string = "a*(4/pi)*"
                              "((1 /1)*sin( 2*pi*f*t)+(1 /3)*sin( 6*pi*f*t)+"
                              " (1 /5)*sin(10*pi*f*t)+(1 /7)*sin(14*pi*f*t)+"
@@ -39,16 +43,16 @@ void square_wave()
    T t = T(0);
    T a = T(10);
 
-   exprtk::symbol_table<T> symbol_table;
+   symbol_table_t symbol_table;
    symbol_table.add_variable("f",f);
    symbol_table.add_variable("t",t);
    symbol_table.add_variable("a",a);
    symbol_table.add_constants();
 
-   exprtk::expression<T> expression;
+   expression_t expression;
    expression.register_symbol_table(symbol_table);
 
-   exprtk::parser<T> parser;
+   parser_t parser;
    parser.compile(expr_string,expression);
 
    const T delta = (T(4) * pi) / T(1000);

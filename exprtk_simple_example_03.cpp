@@ -24,19 +24,23 @@
 template <typename T>
 void polynomial()
 {
+   typedef exprtk::symbol_table<T> symbol_table_t;
+   typedef exprtk::expression<T>     expression_t;
+   typedef exprtk::parser<T>             parser_t;
+
    std::string expression_string = "25x^5 - 35x^4 - 15x^3 + 40x^2 - 15x + 1";
 
    T r0 = T(0);
    T r1 = T(1);
    T  x = T(0);
 
-   exprtk::symbol_table<T> symbol_table;
+   symbol_table_t symbol_table;
    symbol_table.add_variable("x",x);
 
-   exprtk::expression<T> expression;
+   expression_t expression;
    expression.register_symbol_table(symbol_table);
 
-   exprtk::parser<T> parser;
+   parser_t parser;
    parser.compile(expression_string,expression);
 
    const T delta = T(1.0 / 100.0);

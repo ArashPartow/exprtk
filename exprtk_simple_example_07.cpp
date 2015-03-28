@@ -24,10 +24,13 @@
 template <typename T>
 void logic()
 {
-   typedef exprtk::expression<T> expression_t;
+   typedef exprtk::symbol_table<T> symbol_table_t;
+   typedef exprtk::expression<T>     expression_t;
+   typedef exprtk::parser<T>             parser_t;
+
    std::string expression_string = "not(A and B) or C";
 
-   exprtk::symbol_table<T> symbol_table;
+   symbol_table_t symbol_table;
    symbol_table.create_variable("A");
    symbol_table.create_variable("B");
    symbol_table.create_variable("C");
@@ -35,7 +38,7 @@ void logic()
    expression_t expression;
    expression.register_symbol_table(symbol_table);
 
-   exprtk::parser<T> parser;
+   parser_t parser;
    parser.compile(expression_string,expression);
 
    printf(" # | A | B | C | %s\n"
