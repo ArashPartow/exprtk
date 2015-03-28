@@ -13465,7 +13465,7 @@ namespace exprtk
 
       inline virtual T operator()(const std::vector<T>&)
       {
-         exprtk_debug(("ivararg_function::operator() - Operator has not been overriden.\n"));
+         exprtk_debug(("ivararg_function::operator() - Operator has not been overridden.\n"));
          return std::numeric_limits<T>::quiet_NaN();
       }
 
@@ -13493,28 +13493,28 @@ namespace exprtk
       // f(i_0,i_1,....,i_N) --> Number
       inline virtual T operator()(parameter_list_t)
       {
-         exprtk_debug(("igeneric_function::operator() - Operator has not been overriden. [1]\n"));
+         exprtk_debug(("igeneric_function::operator() - Operator has not been overridden. [1]\n"));
          return std::numeric_limits<T>::quiet_NaN();
       }
 
       // f(i_0,i_1,....,i_N) --> String
       inline virtual T operator()(std::string&, parameter_list_t)
       {
-         exprtk_debug(("igeneric_function::operator() - Operator has not been overriden. [2]\n"));
+         exprtk_debug(("igeneric_function::operator() - Operator has not been overridden. [2]\n"));
          return std::numeric_limits<T>::quiet_NaN();
       }
 
       // f(psi,i_0,i_1,....,i_N) --> Number
       inline virtual T operator()(const std::size_t&, parameter_list_t)
       {
-         exprtk_debug(("igeneric_function::operator() - Operator has not been overriden. [3]\n"));
+         exprtk_debug(("igeneric_function::operator() - Operator has not been overridden. [3]\n"));
          return std::numeric_limits<T>::quiet_NaN();
       }
 
       // f(psi,i_0,i_1,....,i_N) --> String
       inline virtual T operator()(const std::size_t&, std::string&, parameter_list_t)
       {
-         exprtk_debug(("igeneric_function::operator() - Operator has not been overriden. [4]\n"));
+         exprtk_debug(("igeneric_function::operator() - Operator has not been overridden. [4]\n"));
          return std::numeric_limits<T>::quiet_NaN();
       }
 
