@@ -948,10 +948,10 @@ correctly optimize such expressions for a given architecture.
 
 
 
-[13 - VARIABLE & VECTOR DEFINITION]
-ExprTk  supports  the  definition of  expression  local  variables and
-vectors. The definitions  must be unique  as shadowing is  not allowed
-and  object  life-times  are  based  on  scope.  Definitions  use  the
+[13 - VARIABLE , VECTOR & STRING DEFINITION]
+ExprTk supports the definition of expression local variables,  vectors
+and  strings.  The definitions  must  be unique  as  shadowing is  not
+allowed and object life-times are based on scope. Definitions use  the
 following general form:
 
    var <name> := <initialiser>;
@@ -998,14 +998,45 @@ zero. The following are examples of vector definitions:
        var x[0];
 
 
-(3) Return Value
+(3) String Definition
+Strings are a sequence of  8-bit characters. They can only  be defined
+with an explicit initialisation  value. The following are  examples of
+string variable definitions:
+
+   (a) Initialise to a string
+       var x := 'abc';
+
+   (b) Initialise to a string expression
+       var x := 'abc' + '123';
+
+   (c) Initialise to a string range
+       var x := 'abc123'[2:4];
+
+   (d) Initialise to another string variable
+       var x := 'abc';
+       var y := x;
+
+   (e) Initialise to another string variable range
+       var x := 'abc123';
+       var y := x[2:4];
+
+   (f) Initialise to a string expression
+       var x := 'abc';
+       var y := x + '123';
+
+   (f) Initialise to a string expression range
+       var x := 'abc';
+       var y := (x + '123')[1:3];
+
+
+(4) Return Value
 Variable and vector  definitions have a  return value. In  the case of
 variable definitions, the value  to which the variable  is initialised
 will be returned. Where as for vectors, the value of the first element
 (eg: v[0]) will be returned.
 
 
-(4) Variable/Vector Assignment
+(5) Variable/Vector Assignment
 The value of a variable can be assigned to a vector and a vector or  a
 vector expression can be assigned to a variable.
 
