@@ -19,6 +19,7 @@
 #include <cmath>
 #include <cstddef>
 #include <cstdio>
+#include <cstdlib>
 #include <deque>
 #include <fstream>
 #include <iostream>
@@ -1911,6 +1912,26 @@ inline bool run_test02()
                              test_ab<T>("inrange(a,b,'ccc')"          ,"aaa","bbb",T(1.0)),
                              test_ab<T>("inrange('aaa',b,c)"          ,"aaa","bbb",T(1.0)),
                              test_ab<T>("inrange('aaa',b,c)"          ,"aaa","bbb",T(1.0)),
+                             test_ab<T>("(a < b ? a : b) == a"           ,"aaa","bbb",T(1.0)),
+                             test_ab<T>("(a > b ? a : b) == b"           ,"aaa","bbb",T(1.0)),
+                             test_ab<T>("(a == (a + '1') ? a : b) == b"  ,"aaa","bbb",T(1.0)),
+                             test_ab<T>("((a + '2') != a ? a : b) == a"  ,"aaa","bbb",T(1.0)),
+                             test_ab<T>("(a < b ? a + '1' : b) == 'aaa1'","aaa","bbb",T(1.0)),
+                             test_ab<T>("(a > b ? a : b + '2') == 'bbb2'","aaa","bbb",T(1.0)),
+                             test_ab<T>("b == (a == (a + '1') ? a : b)  ","aaa","bbb",T(1.0)),
+                             test_ab<T>("a == (a != (a + '2') ? a : b)  ","aaa","bbb",T(1.0)),
+                             test_ab<T>("'aaa1' == (a < b ? a + '1' : b)","aaa","bbb",T(1.0)),
+                             test_ab<T>("'bbb2' == (a > b ? a : b + '2')","aaa","bbb",T(1.0)),
+                             test_ab<T>("~{var x := 'xxx'; var y := 'yyy';~{(x < y ? x : y) == x           }}","","",T(1.0)),
+                             test_ab<T>("~{var x := 'xxx'; var y := 'yyy';~{(x > y ? x : y) == y           }}","","",T(1.0)),
+                             test_ab<T>("~{var x := 'xxx'; var y := 'yyy';~{(x == (x + '1') ? x : y) == y  }}","","",T(1.0)),
+                             test_ab<T>("~{var x := 'xxx'; var y := 'yyy';~{((x + '2') != x ? x : y) == x  }}","","",T(1.0)),
+                             test_ab<T>("~{var x := 'xxx'; var y := 'yyy';~{(x < y ? x + '1' : y) == 'xxx1'}}","","",T(1.0)),
+                             test_ab<T>("~{var x := 'xxx'; var y := 'yyy';~{(x > y ? x : y + '2') == 'yyy2'}}","","",T(1.0)),
+                             test_ab<T>("~{var x := 'xxx'; var y := 'yyy';~{y == (x == (x + '1') ? x : y)  }}","","",T(1.0)),
+                             test_ab<T>("~{var x := 'xxx'; var y := 'yyy';~{x == (x != (x + '2') ? x : y)  }}","","",T(1.0)),
+                             test_ab<T>("~{var x := 'xxx'; var y := 'yyy';~{'xxx1' == (x < y ? x + '1' : y)}}","","",T(1.0)),
+                             test_ab<T>("~{var x := 'xxx'; var y := 'yyy';~{'yyy2' == (x > y ? x : y + '2')}}","","",T(1.0)),
                              test_ab<T>("'01234567890123456789'[0:9] == '0123456789'    ","","",T(1.0)),
                              test_ab<T>("'01234567890123456789'[0:9] == '0123456789'[:] ","","",T(1.0)),
                              test_ab<T>("'01234567890123456789'[0:9] == '0123456789'[0:]","","",T(1.0)),
@@ -6583,6 +6604,7 @@ int main()
       {                                                                        \
          printf("run_test"#Number" (%s) *** FAILED! ***\n",                    \
                 type_name<Type>::value().c_str());                             \
+         result = EXIT_FAILURE;                                                \
       }                                                                        \
       else                                                                     \
       {                                                                        \
@@ -6592,6 +6614,8 @@ int main()
                 timer.time());                                                 \
       }                                                                        \
    }                                                                           \
+
+   int result = 0;
 
    perform_test(numeric_type,00)
    perform_test(numeric_type,01)
@@ -6617,5 +6641,5 @@ int main()
 
    #undef perform_test
 
-   return 0;
+   return result;
 }
