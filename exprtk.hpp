@@ -17039,7 +17039,9 @@ namespace exprtk
 
       parser(const settings_t& settings = settings_t())
       : settings_(settings),
-        return_stmt_present_(false),
+        parsing_return_stmt_   (false),
+        parsing_break_stmt_    (false),
+        return_stmt_present_   (false),
         resolve_unknown_symbol_(false),
         scope_depth_(0),
         results_context_(0),
@@ -20344,9 +20346,7 @@ namespace exprtk
       #ifndef exprtk_disable_break_continue
       inline expression_node_ptr parse_break_statement()
       {
-         static bool parsing_break_stmt = false;
-
-         if (parsing_break_stmt)
+         if (parsing_break_stmt_)
          {
             set_error(
                make_error(parser_error::e_syntax,
@@ -20356,7 +20356,7 @@ namespace exprtk
             return error_node();
          }
 
-         scoped_bool_negator sbn(parsing_break_stmt);
+         scoped_bool_negator sbn(parsing_break_stmt_);
 
          if (!brkcnt_list_.empty())
          {
@@ -21224,9 +21224,7 @@ namespace exprtk
 
       inline expression_node_ptr parse_return_statement()
       {
-         static bool parsing_return_stmt = false;
-
-         if (parsing_return_stmt)
+         if (parsing_return_stmt_)
          {
             set_error(
                make_error(parser_error::e_syntax,
@@ -21236,7 +21234,7 @@ namespace exprtk
             return error_node();
          }
 
-         scoped_bool_negator sbn(parsing_return_stmt);
+         scoped_bool_negator sbn(parsing_return_stmt_);
 
          std::vector<expression_node_ptr> arg_list;
 
@@ -30408,6 +30406,8 @@ namespace exprtk
       dependent_entity_collector dec_;
       std::deque<parser_error::type> error_list_;
       std::deque<bool> brkcnt_list_;
+      bool parsing_return_stmt_;
+      bool parsing_break_stmt_;
       bool return_stmt_present_;
       bool resolve_unknown_symbol_;
       std::size_t scope_depth_;
