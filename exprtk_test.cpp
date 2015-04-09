@@ -1918,10 +1918,12 @@ inline bool run_test02()
                              test_ab<T>("((a + '2') != a ? a : b) == a"  ,"aaa","bbb",T(1.0)),
                              test_ab<T>("(a < b ? a + '1' : b) == 'aaa1'","aaa","bbb",T(1.0)),
                              test_ab<T>("(a > b ? a : b + '2') == 'bbb2'","aaa","bbb",T(1.0)),
-                             test_ab<T>("b == (a == (a + '1') ? a : b)  ","aaa","bbb",T(1.0)),
-                             test_ab<T>("a == (a != (a + '2') ? a : b)  ","aaa","bbb",T(1.0)),
+                             test_ab<T>("b == (a == (a + '1') ? a : b)"  ,"aaa","bbb",T(1.0)),
+                             test_ab<T>("a == (a != (a + '2') ? a : b)"  ,"aaa","bbb",T(1.0)),
                              test_ab<T>("'aaa1' == (a < b ? a + '1' : b)","aaa","bbb",T(1.0)),
                              test_ab<T>("'bbb2' == (a > b ? a : b + '2')","aaa","bbb",T(1.0)),
+                             test_ab<T>("(a < b ? a[1:2] : b) == '23'"   ,"1234","67890",T(1.0)),
+                             test_ab<T>("(a > b ? a : b[0:3]) == '6789'" ,"1234","67890",T(1.0)),
                              test_ab<T>("~{var x := 'xxx'; var y := 'yyy';~{(x < y ? x : y) == x           }}","","",T(1.0)),
                              test_ab<T>("~{var x := 'xxx'; var y := 'yyy';~{(x > y ? x : y) == y           }}","","",T(1.0)),
                              test_ab<T>("~{var x := 'xxx'; var y := 'yyy';~{(x == (x + '1') ? x : y) == y  }}","","",T(1.0)),
@@ -6589,6 +6591,137 @@ inline bool run_test20()
 }
 
 template <typename T>
+inline std::string results_to_string(const exprtk::results_context<T>& results)
+{
+   typedef exprtk::results_context<T> results_context_t;
+   typedef typename results_context_t::type_store_t type_t;
+
+   std::string res_str;
+
+   for (std::size_t i = 0; i < results.count(); ++i)
+   {
+      type_t t = results[i];
+
+      switch (t.type)
+      {
+         case type_t::e_scalar : res_str += 'T';
+                                 break;
+
+         case type_t::e_vector : res_str += 'V';
+                                 break;
+
+         case type_t::e_string : res_str += 'S';
+                                 break;
+
+         default               : continue;
+      }
+   }
+
+   return res_str;
+}
+
+template <typename T>
+inline bool run_test21()
+{
+   typedef exprtk::symbol_table<T> symbol_table_t;
+   typedef exprtk::expression<T>     expression_t;
+   typedef exprtk::parser<T>             parser_t;
+
+   T x = T(1.1);
+   T y = T(2.2);
+   T z = T(3.3);
+
+   symbol_table_t symbol_table;
+   symbol_table.add_constants();
+   symbol_table.add_variable("x",x);
+   symbol_table.add_variable("y",y);
+   symbol_table.add_variable("z",z);
+
+   {
+      static const std::string expression_list[] =
+         {
+           "return[]; x;",
+           "return[x]; x;",
+           "return[x,y]; x;",
+           "return[x + y,y - x]; x;",
+           "return[x + y,y - x,'abc']; x;",
+           "if (x < y) return [1,'abc1']; else return [2,'abc2',x];"      ,
+           "if (x > y) return [1,'abc1']; else return [2,'abc2',x];"      ,
+           "if (x < y) { return [1,'abc1'];} else { return [2,'abc2',x];}",
+           "if (x > y) { return [1,'abc1'];} else { return [2,'abc2',x];}",
+           "for(var i := 0; i < 10; i += 1) { if (i == 5) return [1]; }        ",
+           "for(var i := 0; i < 10; i += 1) { if (i == 5) return [1,'abc']; }  ",
+           "for(var i := 0; i < 10; i += 1) { if (i == 5) return [1,'abc',x]; }",
+           "for(var i := 0; i < 10; i += 1) { if (i == 5) return [1,'abc',x,y]; }",
+           "for(var i := 0; i < 10; i += 1) { if (i == 5) return [1,'abc',x,y,z]; }",
+           "for(var i := 0; i < 10; i += 1) { if (i == 5) return [2,'abc2',x]; else x += 1; }",
+           "for(var i := 0; i < 10; i += 1) { if (i == 5) { return [1,'abc1'];} else x += 1; }"
+         };
+
+      static const std::string result_list[] =
+         {
+           ""   ,
+           "T"  ,
+           "TT" ,
+           "TT" ,
+           "TTS",
+           "TS" ,
+           "TST",
+           "TS" ,
+           "TST",
+           "T"  ,
+           "TS" ,
+           "TST",
+           "TSTT",
+           "TSTTT",
+           "TST",
+           "TS"
+         };
+
+      static const std::size_t expression_list_size = sizeof(expression_list) / sizeof(std::string);
+
+      bool failure = false;
+
+      for (std::size_t i = 0; i < expression_list_size; ++i)
+      {
+         expression_t expression;
+         expression.register_symbol_table(symbol_table);
+
+         parser_t parser;
+
+         if (!parser.compile(expression_list[i],expression))
+         {
+            printf("run_test21() - Error: %s   Expression: %s  [1]\n",
+                   parser.error().c_str(),
+                   expression_list[i].c_str());
+
+            failure = true;
+            continue;
+         }
+
+         expression.value();
+
+         std::string pattern = results_to_string<T>(expression.results());
+
+         if (result_list[i] != results_to_string<T>(expression.results()))
+         {
+            printf("run_test21() - Invalid return results [1] Expected %s  Got: %s  Expression: %s\n",
+                   result_list[i].c_str(),
+                   pattern.c_str(),
+                   expression_list[i].c_str());
+
+            failure = true;
+         }
+      }
+
+      if (failure)
+         return false;
+   }
+
+   return true;
+}
+
+template <typename T>
 struct type_name { static inline std::string value() { return "unknown"; } };
 template <> struct type_name<float>       { static inline std::string value() { return "float";       } };
 template <> struct type_name<double>      { static inline std::string value() { return "double";      } };
@@ -6638,6 +6771,7 @@ int main()
    perform_test(numeric_type,18)
    perform_test(numeric_type,19)
    perform_test(numeric_type,20)
+   perform_test(numeric_type,21)
 
    #undef perform_test
 

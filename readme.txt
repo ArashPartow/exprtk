@@ -36,7 +36,8 @@ arithmetic operations, functions and processes:
                        grad2deg
 
  (07) Control
-      structures:      if-then-else, ternary conditional, switch-case
+      structures:      if-then-else, ternary conditional, switch-case,
+                       return-statement
 
  (08) Loop statements: while, for, repeat-until, break, continue
 
@@ -548,6 +549,18 @@ of C++ compilers:
 |          |   j -= i + 2;                                           |
 |          | }                                                       |
 +----------+---------------------------------------------------------+
+| return   | Return immediately from within the current expression.  |
+|          | With the option of passing back a variable number of    |
+|          | values (scalar, vector or string). eg:                  |
+|          | 1. return [1];                                          |
+|          | 2. return [x, 'abx'];                                   |
+|          | 3. return [x, x + y,'abx'];                             |
+|          | 4. return [];                                           |
+|          | 5. if (x < y)                                           |
+|          |     return [x, x - y, 'result-set1', 123.456];          |
+|          |    else                                                 |
+|          |     return [y, x + y, 'result-set2'];                   |
++----------+---------------------------------------------------------+
 | ?:       | Ternary conditional statement, similar to that of the   |
 |          | above denoted if-statement.                             |
 |          | eg:                                                     |
@@ -698,13 +711,45 @@ current values assigned to the variables will be used.
    }
 
 
+Note: It is possible to register multiple symbol_tables with a  single
+expression  object. In  the event  an expression  has multiple  symbol
+tables,  and  where  there  exists  conflicts  between  symbols,   the
+compilation stage  will resolve  the conflicts  based on  the order of
+registration of the symbol_tables to the expression.
+
+   typedef exprtk::symbol_table<double> symbol_table_t;
+   typedef exprtk::expression<double>     expression_t;
+   typedef exprtk::parser<double>             parser_t;
+
+   symbol_table_t symbol_table0;
+   symbol_table_t symbol_table1;
+
+   expression_t   expression;
+   parser_t       parser;
+
+   double x0 = 123.0;
+   double x1 = 678.0;
+
+   std::string expression_string = "x + 1";
+
+   symbol_table0.add_variable("x",x0);
+   symbol_table1.add_variable("x",x1);
+
+   expression.register_symbol_table(symbol_table0);
+   expression.register_symbol_table(symbol_table1);
+
+   parser.compile(expression_string,expression);
+
+   expression.value(); // 123 + 1
+
+
 (2) Expression
 A structure that holds an abstract syntax tree or AST for a  specified
 expression and is used to evaluate said expression. Evaluation of  the
 expression is accomplished by performing a post-order traversal of the
 AST.  If  a  compiled  Expression  uses  variables  or  user   defined
 functions, it will have an associated Symbol Table, which will contain
-references  to said  variables, functions  or string.  An example  AST
+references  to said  variables, functions  or strings. An example  AST
 structure for the denoted expression is as follows:
 
 Expression:  z := (x + y^-2.345) * sin(pi / min(w - 7.3,v))
@@ -732,6 +777,19 @@ Expression:  z := (x + y^-2.345) * sin(pi / min(w - 7.3,v))
                                    ____/      \____
                                   /                \
                              Variable(w)      Constant(7.3)
+
+
+The above denoted AST will be evaluated in the following order:
+
+   (01) Load Variable  (z)        (10) Load Constant  (7.3)
+   (02) Load Variable  (x)        (11) Subtraction    (09 & 10)
+   (03) Load Variable  (y)        (12) Load Variable  (v)
+   (04) Load Constant  (2.345)    (13) Min            (11 & 12)
+   (05) Negation       (04)       (14) Division       (10 & 13)
+   (06) Exponentiation (03 & 05)  (15) Sin            (14)
+   (07) Addition       (02 & 06)  (16) Multiplication (07 & 15)
+   (08) Load Constant  (pi)       (17) Assignment     (01 & 16)
+   (09) Load Variable  (w)
 
 
 (3) Parser
@@ -1024,7 +1082,7 @@ string variable definitions:
        var x := 'abc';
        var y := x + '123';
 
-   (f) Initialise to a string expression range
+   (g) Initialise to a string expression range
        var x := 'abc';
        var y := (x + '123')[1:3];
 
@@ -1053,6 +1111,17 @@ vector expression can be assigned to a variable.
       var x    := 3;
       var y[3] := { 1, 2, 3 };
       x := y + 1;
+
+
+Note: During the expression  compilation phase, tokens are  classified
+based on the following priorities:
+
+   (a) Reserved keywords or operators (+, -, and, or, etc)
+   (b) Base functions (abs, sin, cos, min, max etc)
+   (c) Symbol table variables
+   (d) Expression local defined variables
+   (e) Symbol table functions
+   (f) Unknown symbol resolver based variables
 
 
 
@@ -1764,7 +1833,299 @@ will not contain symbols denoting functions.
 
 
 
-[17 - COMPILATION ERRORS]
+[17 - ENABLING AND DISABLING FEATURES]
+The parser can be configured via its settings instance to either allow
+or  disallow certain  features that  are available  within the  ExprTk
+grammar. The features fall into one of the following three categories:
+
+   (1) Base Functions
+   (2) Control Flow Structures
+   (3) Logical Operators
+
+
+(1) Base Functions
+The list of available base functions is as follows:
+
+   abs, acos, acosh, asin,  asinh, atan, atanh, atan2,  avg, ceil,
+   clamp,  cos,  cosh, cot,  csc,  equal, erf,  erfc,  exp, expm1,
+   floor,  frac,  hypot,  iclamp, like,  log,  log10,  log2, logn,
+   log1p, mand, max, min, mod,  mor, mul, ncdf, pow, root,  round,
+   roundn, sec, sgn, sin, sinc, sinh, sqrt, sum, swap, tan,  tanh,
+   trunc, not_equal, inrange, deg2grad, deg2rad, rad2deg, grad2deg
+
+
+The above mentioned base functions  can be either enabled or  disabled
+'all' at once, as is demonstrated below:
+
+    parser_t parser;
+    expression_t expression;
+
+    parser.settings().disable_all_base_functions();
+
+    parser
+      .compile("2 * abs(2 - 3)",expression); // compilation failure
+
+    parser.settings().enable_all_base_functions();
+
+    parser
+      .compile("2 * abs(2 - 3)",expression); // compilation success
+
+
+One can also enable or disable specific base functions. The  following
+example  demonstrates  the disabling  of  the trigonometric  functions
+'sin' and 'cos':
+
+    parser_t parser;
+    expression_t expression;
+
+    parser.settings()
+      .disable_base_function(settings_t::e_bf_sin)
+      .disable_base_function(settings_t::e_bf_cos);
+
+    parser
+      .compile("(sin(x) / cos(x)) == tan(x)",expression); // failure
+
+    parser.settings()
+      .enable_base_function(settings_t::e_bf_sin)
+      .enable_base_function(settings_t::e_bf_cos);
+
+    parser
+      .compile("(sin(x) / cos(x)) == tan(x)",expression); // success
+
+
+(2) Control Flow Structures
+The list of available control flow structures is as follows:
+
+   (a) If or If-Else
+   (b) Switch statement
+   (c) For Loop
+   (d) While Loop
+   (e) Repeat Loop
+
+
+The  above  mentioned  control flow structures  can be  either enabled
+or disabled 'all' at once, as is demonstrated below:
+
+    parser_t parser;
+    expression_t expression;
+
+    std::string program =
+       " var x := 0;                      "
+       " for (var i := 0; i < 10; i += 1) "
+       " {                                "
+       "   x += i;                        "
+       " }                                ";
+
+    parser.settings().disable_all_control_structures();
+
+    parser
+      .compile(program,expression); // compilation failure
+
+    parser.settings().enable_all_control_structures();
+
+    parser
+      .compile(program,expression); // compilation success
+
+
+One can also enable or  disable specific control flow structures.  The
+following example demonstrates the  disabling of the for-loop  control
+flow structure:
+
+    parser_t parser;
+    expression_t expression;
+
+    std::string program =
+       " var x := 0;                      "
+       " for (var i := 0; i < 10; i += 1) "
+       " {                                "
+       "   x += i;                        "
+       " }                                ";
+
+    parser.settings()
+      .disable_all_control_structures(settings_t::e_ctrl_for_loop);
+
+    parser
+      .compile(program,expression); // failure
+
+    parser.settings()
+      .enable_all_control_structures(settings_t::e_ctrl_for_loop);
+
+    parser
+      .compile(program,expression); // success
+
+
+(3) Logical Operators
+The list of available logical operators is as follows:
+
+   and, nand, nor, not, or, xnor, xor, &, |
+
+
+The  above  mentioned  logical  operators  can  be  either  enabled or
+disabled 'all' at once, as is demonstrated below:
+
+    parser_t parser;
+    expression_t expression;
+
+    parser.settings().disable_all_logic_ops();
+
+    parser
+      .compile("1 or not(0 and 1)",expression); // compilation failure
+
+    parser.settings().enable_all_logic_ops();
+
+    parser
+      .compile("1 or not(0 and 1)",expression); // compilation success
+
+
+One can also enable or disable specific logical operators. The  following
+example  demonstrates  the disabling  of  the 'and' logical operator:
+
+    parser_t parser;
+    expression_t expression;
+
+    parser.settings()
+      .disable_base_function(settings_t::e_logic_and);
+
+    parser
+      .compile("1 or not(0 and 1)",expression); // failure
+
+    parser.settings()
+      .enable_base_function(settings_t::e_logic_and);
+
+    parser
+      .compile("1 or not(0 and 1)",expression); // success
+
+
+Note: In the event of a base function being disabled, one can redefine
+the  base  function  using  the  standard  custom  function definition
+process. In the  following example the 'sin' function is disabled then
+redefined as a function taking degree input.
+
+    template <typename T>
+    struct sine_deg : public exprtk::ifunction<T>
+    {
+       sine_deg() : exprtk::ifunction<T>(1) {}
+
+       inline T operator()(const T& v)
+       {
+          const T pi = exprtk::details::numeric::constant::pi;
+          return std::sin((v * T(pi)) / T(180));
+       }
+    };
+
+    .
+    .
+    .
+
+    typedef exprtk::symbol_table<T> symbol_table_t;
+    typedef exprtk::expression<T>     expression_t;
+    typedef exprtk::parser<T>             parser_t;
+
+    typedef typename parser_t::settings_store settings_t;
+
+    sine_deg<T> sine;
+
+    symbol_table.add_reserved_function("sin",sine);
+
+    expression_t expression;
+
+    expression.register_symbol_table(symbol_table);
+
+    parser_t parser;
+
+    parser.settings()
+       .disable_base_function(settings_t::e_bf_sin);
+
+    parser.compile("1 + sin(30)",expression);
+
+
+In the above example, the custom 'sin' function is registered with the
+symbol_table using the method 'add_reserved_function'. This is done so
+as to bypass the checks for reserved words that are carried out on the
+provided symbol names when calling the standard 'add_function' method.
+Normally if  a user  specified symbol  name conflicts  with any of the
+ExprTk reserved words, the add_function call will fail.
+
+
+
+[18 - EXPRESSION RETURN VALUES]
+ExprTk expressions can return immediately from any point by  utilizing
+the return call. Furthermore the  return call can be used  to transfer
+out multiple return values from within the expression.
+
+If an expression evaluation exits using a return point, the result  of
+the call to the 'value' method will be NaN, and it's expected that the
+return values will be available from the results_context.
+
+In  the  following example  there  are  three  return  points  in  the
+expression.  If  neither  of  the  return  points  are  hit,  then the
+expression will return normally.
+
+   std::string expression_string =
+                  " if (x < y)                                   "
+                  "   return [x + 1,'return-call 1'];            "
+                  " else if (x > y)                              "
+                  "   return [y / 2, y + 1, 'return-call 2'];    "
+                  " else if (equal(x,y))                         "
+                  "   x + y;                                     "
+                  " return [x, y, x + y, x - y, 'return-call 3'] ";
+
+   typedef exprtk::symbol_table<double> symbol_table_t;
+   typedef exprtk::expression<double>     expression_t;
+   typedef exprtk::parser<double>             parser_t;
+
+   symbol_table_t symbol_table;
+   expression_t   expression;
+   parser_t       parser;
+
+   double x = 0;
+   double y = 0;
+
+   symbol_table.add_variable("x",x);
+   symbol_table.add_variable("y",y);
+
+   expression.register_symbol_table(symbol_table);
+
+   parser.compile(expression_string,expression);
+
+   T result = expression.value();
+
+   if (expression.results().count())
+   {
+      typedef exprtk::results_context<T> results_context_t;
+      typedef typename results_context_t::type_store_t type_t;
+      typedef typename type_t::scalar_view scalar_t;
+      typedef typename type_t::vector_view vector_t;
+      typedef typename type_t::string_view string_t;
+
+      const results_context_t& result = expression.results();
+
+      for (std::size_t i = 0; i < results.count(); ++i)
+      {
+         type_t t = results[i];
+
+         switch (t.type)
+         {
+            case type_t::e_scalar : ...
+                                    break;
+
+            case type_t::e_vector : ...
+                                    break;
+
+            case type_t::e_string : ...
+                                    break;
+
+            default               : continue;
+         }
+   }
+
+
+Note: Processing of the return results is very similar to that of  the
+generic function call parameters.
+
+
+
+[19 - COMPILATION ERRORS]
 When attempting to compile  a malformed or otherwise  erroneous ExprTk
 expression, the  compilation process  will result  in an  error, as is
 indicated  by  the  'compile'  method  returning  a  false  value.   A
@@ -1874,7 +2235,7 @@ via the 'unknown symbol resolver' mechanism.
 
 
 
-[18 - EXPRTK NOTES]
+[20 - EXPRTK NOTES]
 The following is a list of facts and suggestions one may want to take
 into account when using ExprTk:
 
@@ -1961,9 +2322,9 @@ into account when using ExprTk:
       appropriate.
 
  (22) The entity relationship between symbol_table and an  expression
-      is one-to-many. Hence the  intended use case where  possible is
-      to have a single symbol table manage the variable and  function
-      requirements of multiple expressions.
+      is many-to-many. However the intended 'typical' use-case  where
+      possible, is to have a single symbol table manage the  variable
+      and function requirements of multiple expressions.
 
  (23) The common use-case  for an expression  is to have  it compiled
       only  ONCE  and  then subsequently  have it  evaluated multiple
@@ -2051,7 +2412,7 @@ into account when using ExprTk:
 
 
 
-[19 - SIMPLE EXPRTK EXAMPLE]
+[21 - SIMPLE EXPRTK EXAMPLE]
 --- snip ---
 #include <cstdio>
 #include <string>
@@ -2139,7 +2500,7 @@ int main()
 
 
 
-[20 - BUILD OPTIONS]
+[22 - BUILD OPTIONS]
 When building ExprTk there are a number of defines that will enable or
 disable certain features and  capabilities. The defines can  either be
 part of a compiler command line switch or scoped around the include to
@@ -2177,7 +2538,7 @@ in a compilation failure.
 
 
 
-[21 - FILES]
+[23 - FILES]
 The source distribution of ExprTk is comprised of the following set of
 files:
 
@@ -2205,7 +2566,7 @@ files:
 
 
 
-[22 - LANGUAGE STRUCTURE]
+[24 - LANGUAGE STRUCTURE]
 +-------------------------------------------------------------+
 |00 - If Statement                                            |
 |                                                             |
@@ -2350,12 +2711,24 @@ files:
 |                         +--<--- [,] <-----+                 |
 |                                                             |
 +-------------------------------------------------------------+
-|11 - Range Statement                                         |
+|11 - String Definition Statement                             |
+|                                                             |
+|   [var] --> [symbol] --> [:=] --> [str-expression] ---> [;] |
+|                                                             |
++-------------------------------------------------------------+
+|12 - Range Statement                                         |
 |                                                             |
 |      +-------->--------+                                    |
 |      |                 |                                    |
 | [[] -+-> [expression] -+-> [:] -+-> [expression] -+--> []]  |
 |                                 |                 |         |
 |                                 +-------->--------+         |
+|                                                             |
++-------------------------------------------------------------+
+|13 - Return Statement                                        |
+|                                                             |
+|   [return] ---> [[] -+-> [expression] -+-> []] ---> [;]     |
+|                      |                 |                    |
+|                      +--<--- [,] <-----+                    |
 |                                                             |
 +-------------------------------------------------------------+
