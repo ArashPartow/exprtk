@@ -581,9 +581,9 @@ of C++ compilers:
 |          | eg:                                                     |
 |          | [*]                                                     |
 |          | {                                                       |
-|          |   case (x + 1) > (y - 2)   : x := z / 2 + sin(y / pi);  |
-|          |   case (x + 2) < abs(y + 3): w / 4 + min(5y,9);         |
-|          |   case (x + 3) = (y * 4)   : y := abs(z / 6) + 7y;      |
+|          |   case (x + 1) > (y - 2)    : x := z / 2 + sin(y / pi); |
+|          |   case (x + 2) < abs(y + 3) : w / 4 + min(5y,9);        |
+|          |   case (x + 3) == (y * 4)   : y := abs(z / 6) + 7y;     |
 |          | }                                                       |
 +----------+---------------------------------------------------------+
 | []       | The vector size operator returns the size of the vector |
@@ -705,7 +705,7 @@ current values assigned to the variables will be used.
    expression.value(); // 3.7 * -9 + 3
 
    // 'x * -9 + 3' for x in range of [0,100) in steps of 0.0001
-   for (var x = 0; x < 100; x += 0.0001)
+   for (x = 0; x < 100; x += 0.0001)
    {
       expression.value(); // x * -9 + 3
    }
@@ -785,7 +785,7 @@ The above denoted AST will be evaluated in the following order:
    (02) Load Variable  (x)        (11) Subtraction    (09 & 10)
    (03) Load Variable  (y)        (12) Load Variable  (v)
    (04) Load Constant  (2.345)    (13) Min            (11 & 12)
-   (05) Negation       (04)       (14) Division       (10 & 13)
+   (05) Negation       (04)       (14) Division       (08 & 13)
    (06) Exponentiation (03 & 05)  (15) Sin            (14)
    (07) Addition       (02 & 06)  (16) Multiplication (07 & 15)
    (08) Load Constant  (pi)       (17) Assignment     (01 & 16)
