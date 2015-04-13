@@ -9842,27 +9842,24 @@ namespace exprtk
                   range_list_[i].type_size = sizeof(char);
                   range_list_[i].str_node  = sbn;
 
-                  if (is_generally_string_node(arg_list_[i]))
+                  range_interface_t* ri = reinterpret_cast<range_interface_t*>(0);
+
+                  if (0 == (ri = dynamic_cast<range_interface_t*>(arg_list_[i])))
+                     return false;
+
+                  range_t& rp = ri->range_ref();
+
+                  if (
+                       rp.const_range() &&
+                       is_const_string_range_node(arg_list_[i])
+                     )
                   {
-                     range_interface_t* ri = reinterpret_cast<range_interface_t*>(0);
-
-                     if (0 == (ri = dynamic_cast<range_interface_t*>(arg_list_[i])))
-                        return false;
-
-                     range_t& rp = ri->range_ref();
-
-                     if (
-                          rp.const_range() &&
-                          is_const_string_range_node(arg_list_[i])
-                        )
-                     {
-                        ts.size = rp.const_size();
-                        ts.data = static_cast<char*>(ts.data) + rp.n0_c.second;
-                        range_list_[i].range = reinterpret_cast<range_t*>(0);
-                     }
-                     else
-                        range_list_[i].range = &(ri->range_ref());
+                     ts.size = rp.const_size();
+                     ts.data = static_cast<char*>(ts.data) + rp.n0_c.second;
+                     range_list_[i].range = reinterpret_cast<range_t*>(0);
                   }
+                  else
+                     range_list_[i].range = &(ri->range_ref());
                }
                else if (is_variable_node(arg_list_[i]))
                {
