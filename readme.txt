@@ -403,17 +403,17 @@ of C++ compilers:
 |          | in the event they have fractional components truncation |
 |          | will be performed. (eg: 1.67 --> 1)                     |
 +----------+---------------------------------------------------------+
-|  :=      | Assign the value of x to y. Where x is a mutable string |
-|          | or string range and y is either a string or a string    |
+|  :=      | Assign the value of x to y. Where y is a mutable string |
+|          | or string range and x is either a string or a string    |
 |          | range. eg:                                              |
-|          | 1. x := y                                               |
-|          | 2. x := 'abc'                                           |
-|          | 3. x := y[:i + j]                                       |
-|          | 4. x := '0123456789'[2:7]                               |
-|          | 5. x := '0123456789'[2i + 1:7]                          |
-|          | 6. x := (y := '0123456789'[2:7])                        |
-|          | 7. x[i:j] := y                                          |
-|          | 8. x[i:j] := (y + 'abcdefg'[8 / 4:5])[m:n]              |
+|          | 1. y := x                                               |
+|          | 2. y := 'abc'                                           |
+|          | 3. y := x[:i + j]                                       |
+|          | 4. y := '0123456789'[2:7]                               |
+|          | 5. y := '0123456789'[2i + 1:7]                          |
+|          | 6. y := (x := '0123456789'[2:7])                        |
+|          | 7. y[i:j] := x                                          |
+|          | 8. y[i:j] := (x + 'abcdefg'[8 / 4:5])[m:n]              |
 |          |                                                         |
 |          | Note: For options 7 and 8 the shorter of the two ranges |
 |          | will denote the number characters that are to be copied.|
@@ -593,7 +593,7 @@ of C++ compilers:
 |          | 2. max_size := max(v0[],v1[],v2[],v3[])                 |
 +----------+---------------------------------------------------------+
 
-Note: In  the  above  tables, the  symbols x, y, z, w, u  and v  where
+Note: In  the  tables  above, the  symbols x, y, z, w, u  and v  where
 appropriate may represent any of one the following:
 
    1. Literal numeric/string value
@@ -1307,10 +1307,10 @@ example defines a generic function called 'too':
    };
 
 
-In the above example, the input 'parameters' to the function operator,
+In the example above, the input 'parameters' to the function operator,
 parameter_list_t,  is  a  type  of  std::vector  of  type_store.  Each
 type_store  instance  has  a  member  called  'type'  which  holds the
-enumeration pertaining  the underlying  type of  the type_store. There
+enumeration pertaining to the underlying type of the type_store. There
 are three type enumerations:
 
    (1) e_scalar - literals, variables, vector elements, expressions
@@ -1570,7 +1570,7 @@ particular parameter sequence can be performed.
    };
 
 
-In the above example there are four distinct parameter sequences  that
+In the example above there are four distinct parameter sequences  that
 can be processed  by the generic  function 'roo'. Any  other parameter
 sequences will cause a compilation error. The four valid sequences are
 as follows:
@@ -2039,7 +2039,7 @@ redefined as a function taking degree input.
     parser.compile("1 + sin(30)",expression);
 
 
-In the above example, the custom 'sin' function is registered with the
+In the example above, the custom 'sin' function is registered with the
 symbol_table using the method 'add_reserved_function'. This is done so
 as to bypass the checks for reserved words that are carried out on the
 provided symbol names when calling the standard 'add_function' method.
@@ -2261,9 +2261,10 @@ into account when using ExprTk:
  (06) All  reserved words,  keywords, variable,  vector, string   and
       function names are case-insensitive.
 
- (07) Variable, vector and  function names must  begin with a  letter
-      (A-Z  or a-z),  then  can  be comprised  of any  combination of
-      letters, digits and underscores. (eg: x, var1 or power_func99)
+ (07) Variable, vector, string variable and function names must begin
+      with  a  letter  (A-Z or  a-z), then  can be  comprised of  any
+      combination of letters, digits and underscores. (eg: x, var1 or
+      power_func99)
 
  (08) Expression lengths and sub-expression lists are limited only by
       storage capacity.

@@ -23810,7 +23810,10 @@ namespace exprtk
                default            : return;
             }
 
-            parser_->dec_.add_assignment(symbol_name,cst);
+            if (!symbol_name.empty())
+            {
+               parser_->dec_.add_assignment(symbol_name,cst);
+            }
          }
 
          inline expression_node_ptr synthesize_assignment_expression(const details::operator_type& operation, expression_node_ptr (&branch)[2])
