@@ -15984,7 +15984,7 @@ namespace exprtk
             {
                scope_element& se = element_[i];
 
-               if (se.depth > parser_.scope_depth_)
+               if (se.depth > parser_.state_.scope_depth)
                   return null_element_;
                else if (
                          (se.name  == var_name) &&
@@ -16003,7 +16003,7 @@ namespace exprtk
             {
                scope_element& se = element_[i];
 
-               if (se.depth > parser_.scope_depth_)
+               if (se.depth > parser_.state_.scope_depth)
                   return null_element_;
                else if (
                          (se.name   == var_name) &&
@@ -16041,7 +16041,8 @@ namespace exprtk
 
          inline void deactivate(const std::size_t& scope_depth)
          {
-            exprtk_debug(("deactivate() - Scope depth: %d\n",static_cast<int>(parser_.scope_depth_)));
+            exprtk_debug(("deactivate() - Scope depth: %d\n",
+                          static_cast<int>(parser_.state_.scope_depth)));
 
             for (std::size_t i = 0; i < element_.size(); ++i)
             {
@@ -16137,20 +16138,24 @@ namespace exprtk
          scope_handler(parser<T>& p)
          : parser_(p)
          {
-            parser_.scope_depth_++;
+            parser_.state_.scope_depth++;
             #ifdef exprtk_enable_debugging
-            std::string depth(2 * parser_.scope_depth_,'-');
-            exprtk_debug(("%s> Scope Depth: %02d\n",depth.c_str(),static_cast<int>(parser_.scope_depth_)));
+            std::string depth(2 * parser_.state_.scope_depth,'-');
+            exprtk_debug(("%s> Scope Depth: %02d\n",
+                          depth.c_str(),
+                          static_cast<int>(parser_.state_.scope_depth)));
             #endif
          }
 
         ~scope_handler()
          {
-            parser_.sem_.deactivate(parser_.scope_depth_);
-            parser_.scope_depth_--;
+            parser_.sem_.deactivate(parser_.state_.scope_depth);
+            parser_.state_.scope_depth--;
             #ifdef exprtk_enable_debugging
-            std::string depth(2 * parser_.scope_depth_,'-');
-            exprtk_debug(("<%s Scope Depth: %02d\n",depth.c_str(),static_cast<int>(parser_.scope_depth_)));
+            std::string depth(2 * parser_.state_.scope_depth,'-');
+            exprtk_debug(("<%s Scope Depth: %02d\n",
+                          depth.c_str(),
+                          static_cast<int>(parser_.state_.scope_depth)));
             #endif
          }
 
@@ -16571,6 +16576,29 @@ namespace exprtk
          {
             return symtab_list_[index];
          }
+      };
+
+      struct parser_state
+      {
+         parser_state()
+         : parsing_return_stmt(false),
+           parsing_break_stmt (false),
+           return_stmt_present(false),
+           scope_depth(0)
+         {}
+
+         void reset()
+         {
+            parsing_return_stmt = false;
+            parsing_break_stmt  = false;
+            return_stmt_present = false;
+            scope_depth         = 0;
+         }
+
+         bool parsing_return_stmt;
+         bool parsing_break_stmt;
+         bool return_stmt_present;
+         std::size_t scope_depth;
       };
 
    public:
@@ -17065,11 +17093,7 @@ namespace exprtk
 
       parser(const settings_t& settings = settings_t())
       : settings_(settings),
-        parsing_return_stmt_   (false),
-        parsing_break_stmt_    (false),
-        return_stmt_present_   (false),
         resolve_unknown_symbol_(false),
-        scope_depth_(0),
         results_context_(0),
         unknown_symbol_resolver_(reinterpret_cast<unknown_symbol_resolver*>(0)),
         #ifdef _MSC_VER
@@ -17170,15 +17194,15 @@ namespace exprtk
 
       inline bool compile(const std::string& expression_string, expression<T>& expr)
       {
+         state_          .reset();
          error_list_     .clear();
          brkcnt_list_    .clear();
          synthesis_error_.clear();
          sem_            .cleanup();
+
          return_cleanup();
 
          expression_generator_.set_allocator(node_allocator_);
-
-         scope_depth_ = 0;
 
          if (expression_string.empty())
          {
@@ -17219,7 +17243,7 @@ namespace exprtk
 
          if ((0 != e) && (token_t::e_eof == current_token_.type))
          {
-            if (return_stmt_present_)
+            if (state_.return_stmt_present)
             {
                e = expression_generator_.return_envelope(e,results_context_);
             }
@@ -17506,7 +17530,7 @@ namespace exprtk
       {
          std::string ct_str = current_token_.value;
          current_token_ = lexer_.next_token();
-         std::string depth(2 * scope_depth_,' ');
+         std::string depth(2 * state_.scope_depth,' ');
          exprtk_debug(("%s"
                        "prev[%s] --> curr[%s]\n",
                        depth.c_str(),
@@ -17560,6 +17584,7 @@ namespace exprtk
          result = simplify(arg_list);
 
          sdd.delete_ptr = (0 == result);
+
          return result;
       }
 
@@ -18888,7 +18913,7 @@ namespace exprtk
                      nse.active    = true;
                      nse.ref_count = 1;
                      nse.type      = scope_element::e_variable;
-                     nse.depth     = scope_depth_;
+                     nse.depth     = state_.scope_depth;
                      nse.data      = new T(T(0));
                      nse.var_node  = new variable_node_t(*(T*)(nse.data));
 
@@ -19831,8 +19856,8 @@ namespace exprtk
          const scope_element& se = sem_.get_active_element(symbol);
 
          if (
-              (se.name != symbol)       ||
-              (se.depth > scope_depth_) ||
+              (se.name != symbol)             ||
+              (se.depth > state_.scope_depth) ||
               (scope_element::e_vector != se.type)
             )
          {
@@ -20373,7 +20398,7 @@ namespace exprtk
       #ifndef exprtk_disable_break_continue
       inline expression_node_ptr parse_break_statement()
       {
-         if (parsing_break_stmt_)
+         if (state_.parsing_break_stmt)
          {
             set_error(
                make_error(parser_error::e_syntax,
@@ -20383,7 +20408,7 @@ namespace exprtk
             return error_node();
          }
 
-         scoped_bool_negator sbn(parsing_break_stmt_);
+         scoped_bool_negator sbn(state_.parsing_break_stmt);
 
          if (!brkcnt_list_.empty())
          {
@@ -20656,7 +20681,7 @@ namespace exprtk
             {
                vec_holder = se.vec_node;
                se.active  = true;
-               se.depth   = scope_depth_;
+               se.depth   = state_.scope_depth;
                se.ref_count++;
             }
          }
@@ -20668,7 +20693,7 @@ namespace exprtk
             nse.active    = true;
             nse.ref_count = 1;
             nse.type      = scope_element::e_vector;
-            nse.depth     = scope_depth_;
+            nse.depth     = state_.scope_depth;
             nse.size      = vec_size;
             nse.data      = new T[vec_size];
             nse.vec_node  = new typename scope_element::vector_holder_t((T*)(nse.data),nse.size);
@@ -20731,7 +20756,7 @@ namespace exprtk
             {
                str_node  = se.str_node;
                se.active = true;
-               se.depth  = scope_depth_;
+               se.depth  = state_.scope_depth;
                se.ref_count++;
             }
          }
@@ -20743,7 +20768,7 @@ namespace exprtk
             nse.active    = true;
             nse.ref_count = 1;
             nse.type      = scope_element::e_string;
-            nse.depth     = scope_depth_;
+            nse.depth     = state_.scope_depth;
             nse.data      = new std::string;
             nse.str_node  = new stringvar_node_t(*(std::string*)(nse.data));
 
@@ -20915,7 +20940,7 @@ namespace exprtk
             {
                var_node  = se.var_node;
                se.active = true;
-               se.depth  = scope_depth_;
+               se.depth  = state_.scope_depth;
                se.ref_count++;
             }
          }
@@ -20927,7 +20952,7 @@ namespace exprtk
             nse.active    = true;
             nse.ref_count = 1;
             nse.type      = scope_element::e_variable;
-            nse.depth     = scope_depth_;
+            nse.depth     = state_.scope_depth;
             nse.data      = new T(T(0));
             nse.var_node  = new variable_node_t(*(T*)(nse.data));
 
@@ -21014,7 +21039,7 @@ namespace exprtk
             nse.active    = true;
             nse.ref_count = 1;
             nse.type      = scope_element::e_variable;
-            nse.depth     = scope_depth_;
+            nse.depth     = state_.scope_depth;
             nse.ip_index  = sem_.next_ip_index();
             nse.data      = new T(T(0));
             nse.var_node  = new variable_node_t(*(T*)(nse.data));
@@ -21259,7 +21284,7 @@ namespace exprtk
 
       inline expression_node_ptr parse_return_statement()
       {
-         if (parsing_return_stmt_)
+         if (state_.parsing_return_stmt)
          {
             set_error(
                make_error(parser_error::e_syntax,
@@ -21269,7 +21294,7 @@ namespace exprtk
             return error_node();
          }
 
-         scoped_bool_negator sbn(parsing_return_stmt_);
+         scoped_bool_negator sbn(state_.parsing_return_stmt);
 
          std::vector<expression_node_ptr> arg_list;
 
@@ -21336,7 +21361,7 @@ namespace exprtk
 
          sdd.delete_ptr = (0 == result);
 
-         return_stmt_present_ = true;
+         state_.return_stmt_present = true;
 
          return result;
       }
@@ -23761,7 +23786,7 @@ namespace exprtk
                   nse.ref_count = 1;
                   nse.type      = scope_element::e_vecelem;
                   nse.index     = i;
-                  nse.depth     = parser_->scope_depth_;
+                  nse.depth     = parser_->state_.scope_depth;
                   nse.data      = 0;
                   nse.var_node  = new variable_node_t((*v));
 
@@ -30427,7 +30452,7 @@ namespace exprtk
             results_context_ = 0;
          }
 
-         return_stmt_present_ = false;
+         state_.return_stmt_present = false;
       }
 
    private:
@@ -30445,11 +30470,8 @@ namespace exprtk
       dependent_entity_collector dec_;
       std::deque<parser_error::type> error_list_;
       std::deque<bool> brkcnt_list_;
-      bool parsing_return_stmt_;
-      bool parsing_break_stmt_;
-      bool return_stmt_present_;
+      parser_state state_;
       bool resolve_unknown_symbol_;
-      std::size_t scope_depth_;
       results_context_t* results_context_;
       unknown_symbol_resolver* unknown_symbol_resolver_;
       unknown_symbol_resolver default_usr_;
