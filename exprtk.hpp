@@ -3703,8 +3703,15 @@ namespace exprtk
          inline const value_t* begin() const { return data_; }
          inline       value_t* begin()       { return data_; }
 
-         inline const value_t* end() const   { return data_ + ts_.size; }
-         inline       value_t* end()         { return data_ + ts_.size; }
+         inline const value_t* end() const
+         {
+            return static_cast<value_t*>(data_ + ts_.size);
+         }
+
+         inline value_t* end()
+         {
+            return static_cast<value_t*>(data_ + ts_.size);
+         }
 
          type_store_t& ts_;
          value_t* data_;
@@ -15906,6 +15913,24 @@ namespace exprtk
                return (name < se.name);
          }
 
+         void clear()
+         {
+            name   = "???";
+            size   = std::numeric_limits<std::size_t>::max();
+            index  = std::numeric_limits<std::size_t>::max();
+            depth  = std::numeric_limits<std::size_t>::max();
+            type   = e_none;
+            active = false;
+            ref_count = 0;
+            ip_index  = 0;
+            data      = 0;
+            var_node  = 0;
+            vec_node  = 0;
+            #ifndef exprtk_disable_string_capabilities
+            str_node  = 0;
+            #endif
+         }
+
          std::string  name;
          std::size_t  size;
          std::size_t  index;
@@ -16033,32 +16058,36 @@ namespace exprtk
             }
          }
 
-         void cleanup()
+         inline void free_element(scope_element& se)
+         {
+            switch (se.type)
+            {
+               case scope_element::e_variable: if (se.data    ) delete (T*) se.data;
+                                               if (se.var_node) delete se.var_node;
+                                               break;
+
+               case scope_element::e_vector  : if (se.data    ) delete[] (T*) se.data;
+                                               if (se.vec_node) delete se.vec_node;
+                                               break;
+
+               case scope_element::e_vecelem : if (se.var_node) delete se.var_node;
+                                               break;
+
+               case scope_element::e_string  : if (se.data    ) delete (std::string*) se.data;
+                                               if (se.str_node) delete se.str_node;
+                                               break;
+
+               default                       : return;
+            }
+
+            se.clear();
+         }
+
+         inline void cleanup()
          {
             for (std::size_t i = 0; i < element_.size(); ++i)
             {
-               if (element_[i].var_node)
-               {
-                  delete element_[i].var_node;
-               }
-
-               if (element_[i].vec_node)
-               {
-                  delete element_[i].vec_node;
-               }
-
-               switch (element_[i].type)
-               {
-                  case scope_element::e_variable : delete (T*)(element_[i].data);
-                                                   break;
-
-                  case scope_element::e_vector   : delete [] (T*)(element_[i].data);
-                                                   break;
-
-                  case scope_element::e_string   : delete (std::string*)(element_[i].data);
-
-                  default                        : break;
-               }
+               free_element(element_[i]);
             }
 
             element_.clear();
@@ -18870,8 +18899,9 @@ namespace exprtk
                                       current_token_,
                                       "ERR61 - Failed to add new local variable '" + loop_counter_symbol + "' to SEM"));
 
-                        result = false;
+                        sem_.free_element(nse);
 
+                        result = false;
                      }
                      else
                         exprtk_debug(("parse_for_loop() - INFO - Added new local variable: %s\n",nse.name.c_str()));
@@ -20650,6 +20680,8 @@ namespace exprtk
                              current_token_,
                              "ERR136 - Failed to add new local vector '" + vec_name + "' to SEM"));
 
+               sem_.free_element(nse);
+
                return error_node();
             }
 
@@ -20723,6 +20755,8 @@ namespace exprtk
                              "ERR138 - Failed to add new local string variable '" + str_name + "' to SEM"));
 
                free_node(node_allocator_,initialisation_expression);
+
+               sem_.free_element(nse);
 
                return error_node();
             }
@@ -20906,6 +20940,8 @@ namespace exprtk
 
                free_node(node_allocator_,initialisation_expression);
 
+               sem_.free_element(nse);
+
                return error_node();
             }
 
@@ -20989,6 +21025,8 @@ namespace exprtk
                   make_error(parser_error::e_syntax,
                              current_token_,
                              "ERR151 - Failed to add new local variable '" + var_name + "' to SEM"));
+
+               sem_.free_element(nse);
 
                return error_node();
             }
@@ -21294,9 +21332,7 @@ namespace exprtk
             }
          }
 
-         expression_node_ptr result = error_node();
-
-         result = expression_generator_.return_call(arg_list);
+         expression_node_ptr result = expression_generator_.return_call(arg_list);
 
          sdd.delete_ptr = (0 == result);
 
@@ -23677,9 +23713,8 @@ namespace exprtk
 
             typedef details::return_node<Type> alloc_type;
 
-            expression_node_ptr result = error_node();
-
-            result = node_allocator_->allocate_rr<alloc_type>(arg_list,parser_->results_ctx());
+            expression_node_ptr result = node_allocator_->
+                                            allocate_rr<alloc_type>(arg_list,parser_->results_ctx());
 
             alloc_type* return_node_ptr = static_cast<alloc_type*>(result);
 
@@ -23733,12 +23768,16 @@ namespace exprtk
                   if (!parser_->sem_.add_element(nse))
                   {
                      parser_->set_synthesis_error("Failed to add new local vector element to SEM [1]");
+
+                     parser_->sem_.free_element(nse);
+
                      result = error_node();
                   }
                   else
+                  {
                      exprtk_debug(("vector_element() - INFO - Added new local vector element: %s\n",nse.name.c_str()));
-
-                  result = nse.var_node;
+                     result = nse.var_node;
+                  }
                }
             }
             else
@@ -31834,7 +31873,7 @@ namespace exprtk
 
                   switch (gt.type)
                   {
-                     case generic_type::e_scalar : print_type(scalar_format.c_str(),scalar_t(gt)(),num_type);
+                     case generic_type::e_scalar : print_type(scalar_format,scalar_t(gt)(),num_type);
                                                    break;
 
                      case generic_type::e_vector : {
@@ -31842,7 +31881,7 @@ namespace exprtk
 
                                                       for (std::size_t x = 0; x < vector.size(); ++x)
                                                       {
-                                                         print_type(scalar_format.c_str(),vector[x],num_type);
+                                                         print_type(scalar_format,vector[x],num_type);
 
                                                          if ((x + 1) < vector.size())
                                                             printf(" ");
