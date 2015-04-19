@@ -44,7 +44,8 @@ arithmetic operations, functions and processes:
  (09) String
       processing:      in, like, ilike, concatenation
 
- (10) Optimisations:   constant-folding and simple strength reduction
+ (10) Optimisations:   constant-folding, simple strength reduction and
+                       dead code elimination
 
  (11) Calculus:        numerical integration and differentiation
 

@@ -2118,6 +2118,13 @@ namespace exprtk
             }
          }
 
+         inline std::string substr(const std::size_t& begin, const std::size_t& end)
+         {
+            const char* begin_itr = ((base_itr_ + begin) < s_end_) ? (base_itr_ + begin) : s_end_;
+            const char* end_itr   = ((base_itr_ +   end) < s_end_) ? (base_itr_ +   end) : s_end_;
+            return std::string(begin_itr,end_itr);
+         }
+
       private:
 
          inline bool is_end(const char* itr)
@@ -16584,6 +16591,7 @@ namespace exprtk
          : parsing_return_stmt(false),
            parsing_break_stmt (false),
            return_stmt_present(false),
+           side_effect_present(false),
            scope_depth(0)
          {}
 
@@ -16592,12 +16600,14 @@ namespace exprtk
             parsing_return_stmt = false;
             parsing_break_stmt  = false;
             return_stmt_present = false;
+            side_effect_present = false;
             scope_depth         = 0;
          }
 
          bool parsing_return_stmt;
          bool parsing_break_stmt;
          bool return_stmt_present;
+         bool side_effect_present;
          std::size_t scope_depth;
       };
 
@@ -17547,12 +17557,21 @@ namespace exprtk
       inline expression_node_ptr parse_corpus()
       {
          std::vector<expression_node_ptr> arg_list;
+         std::vector<bool> side_effect_list;
+
          expression_node_ptr result = error_node();
 
          scoped_vec_delete<expression_node_t> sdd(*this,arg_list);
 
+         lexer::token begin_token;
+         lexer::token   end_token;
+
          for (;;)
          {
+            state_.side_effect_present = false;
+
+            begin_token = current_token();
+
             expression_node_ptr arg = parse_expression();
 
             if (0 == arg)
@@ -17568,7 +17587,25 @@ namespace exprtk
                return error_node();
             }
             else
+            {
                arg_list.push_back(arg);
+
+               side_effect_list.push_back(state_.side_effect_present);
+
+               end_token = current_token();
+
+               std::string sub_expr = construct_subexpr(begin_token,end_token);
+
+               exprtk_debug(("parse_corpus(%02d) Subexpr: %s\n",
+                             static_cast<int>(arg_list.size() - 1),
+                             sub_expr.c_str()));
+
+               exprtk_debug(("parse_corpus(%02d) - Side effect present: %s\n",
+                             static_cast<int>(arg_list.size() - 1),
+                             state_.side_effect_present ? "true" : "false"));
+
+               exprtk_debug(("-------------------------------------------------\n"));
+            }
 
             if (lexer_.finished())
                break;
@@ -17581,9 +17618,21 @@ namespace exprtk
             }
          }
 
-         result = simplify(arg_list);
+         result = simplify(arg_list,side_effect_list);
 
          sdd.delete_ptr = (0 == result);
+
+         return result;
+      }
+
+      std::string construct_subexpr(lexer::token& begin_token, lexer::token& end_token)
+      {
+         std::string result = lexer_.substr(begin_token.position,end_token.position);
+
+         for (std::size_t i = 0; i < result.size(); ++i)
+         {
+            if (details::is_whitespace(result[i])) result[i] = ' ';
+         }
 
          return result;
       }
@@ -17978,6 +18027,22 @@ namespace exprtk
          bool& b;
       };
 
+      struct scoped_bool_or_restorer
+      {
+         scoped_bool_or_restorer(bool& bb)
+         : b(bb),
+           original_value_(bb)
+         {}
+
+        ~scoped_bool_or_restorer()
+         {
+            b = b || original_value_;
+         }
+
+         bool& b;
+         bool original_value_;
+      };
+
       inline expression_node_ptr parse_function_invocation(ifunction<T>* function, const std::string& function_name)
       {
          expression_node_ptr func_node = reinterpret_cast<expression_node_ptr>(0);
@@ -18106,7 +18171,11 @@ namespace exprtk
       inline expression_node_ptr parse_function_call_0(ifunction<T>* function, const std::string& function_name)
       {
          expression_node_ptr result = expression_generator_.function(function);
+
+         state_.side_effect_present = function->has_side_effects;
+
          next_token();
+
          if (
                token_is(token_t::e_lbracket) &&
               !token_is(token_t::e_rbracket)
@@ -18699,6 +18768,8 @@ namespace exprtk
          next_token();
 
          std::vector<expression_node_ptr> arg_list;
+         std::vector<bool> side_effect_list;
+
          scoped_vec_delete<expression_node_t> sdd(*this,arg_list);
 
          brkcnt_list_.push_front(false);
@@ -18714,14 +18785,21 @@ namespace exprtk
 
             scope_handler sh(*this);
 
+            scoped_bool_or_restorer sbr(state_.side_effect_present);
+
             for (;;)
             {
+               state_.side_effect_present = false;
+
                expression_node_ptr arg = parse_expression();
 
                if (0 == arg)
                   return error_node();
                else
+               {
                   arg_list.push_back(arg);
+                  side_effect_list.push_back(state_.side_effect_present);
+               }
 
                if (details::imatch(current_token_.value,"until"))
                {
@@ -18749,7 +18827,7 @@ namespace exprtk
                }
             }
 
-            branch = simplify(arg_list);
+            branch = simplify(arg_list,side_effect_list);
 
             if ((sdd.delete_ptr = (0 == branch)))
             {
@@ -18929,7 +19007,11 @@ namespace exprtk
                         result = false;
                      }
                      else
+                     {
                         exprtk_debug(("parse_for_loop() - INFO - Added new local variable: %s\n",nse.name.c_str()));
+
+                        state_.side_effect_present = true;
+                     }
                   }
                }
             }
@@ -19434,16 +19516,18 @@ namespace exprtk
          }
       }
 
-      template <typename Allocator,
+      template <typename Allocator1,
+                typename Allocator2,
                 template <typename,typename> class Sequence>
-      inline expression_node_ptr simplify(Sequence<expression_node_ptr,Allocator>& expression_list)
+      inline expression_node_ptr simplify(Sequence<expression_node_ptr,Allocator1>& expression_list,
+                                          Sequence<bool,Allocator2>& side_effect_list)
       {
          if (expression_list.empty())
             return error_node();
          else if (1 == expression_list.size())
             return expression_list[0];
 
-         Sequence<expression_node_ptr,Allocator> tmp_expression_list;
+         Sequence<expression_node_ptr,Allocator1> tmp_expression_list;
 
          for (std::size_t i = 0; i < (expression_list.size() - 1); ++i)
          {
@@ -19451,7 +19535,8 @@ namespace exprtk
                continue;
             else if (
                       is_constant_node(expression_list[i]) ||
-                      is_null_node    (expression_list[i])
+                      is_null_node    (expression_list[i]) ||
+                      !side_effect_list[i]
                     )
             {
                free_node(node_allocator_,expression_list[i]);
@@ -19463,6 +19548,16 @@ namespace exprtk
 
          tmp_expression_list.push_back(expression_list.back());
          expression_list.swap(tmp_expression_list);
+
+         if ((expression_list.size() > 1) || side_effect_list.back())
+            state_.side_effect_present = true;
+
+         if (tmp_expression_list.size() > expression_list.size())
+         {
+            exprtk_debug(("simplify() - Reduced subexpressions from %d to %d\n",
+                          static_cast<int>(tmp_expression_list.size()),
+                          static_cast<int>(expression_list    .size())));
+         }
 
          if (1 == expression_list.size())
             return expression_list[0];
@@ -19499,20 +19594,29 @@ namespace exprtk
          }
 
          std::vector<expression_node_ptr> arg_list;
+         std::vector<bool> side_effect_list;
+
          expression_node_ptr result = error_node();
 
          scoped_vec_delete<expression_node_t> sdd(*this,arg_list);
 
          scope_handler sh(*this);
 
+         scoped_bool_or_restorer sbr(state_.side_effect_present);
+
          for (;;)
          {
+            state_.side_effect_present = false;
+
             expression_node_ptr arg = parse_expression();
 
             if (0 == arg)
                return error_node();
             else
+            {
                arg_list.push_back(arg);
+               side_effect_list.push_back(state_.side_effect_present);
+            }
 
             if (token_is(close_bracket))
                break;
@@ -19533,7 +19637,7 @@ namespace exprtk
                break;
          }
 
-         result = simplify(arg_list);
+         result = simplify(arg_list,side_effect_list);
 
          sdd.delete_ptr = (0 == result);
          return result;
@@ -20715,6 +20819,8 @@ namespace exprtk
             exprtk_debug(("parse_define_vector_statement() - INFO - Added new local vector: %s[%d]\n",
                           nse.name.c_str(),
                           static_cast<int>(nse.size)));
+
+            state_.side_effect_present = true;
          }
 
          lodge_symbol(vec_name,e_st_local_vector);
@@ -20789,6 +20895,8 @@ namespace exprtk
             str_node = nse.str_node;
 
             exprtk_debug(("parse_define_string_statement() - INFO - Added new local string variable: %s\n",nse.name.c_str()));
+
+            state_.side_effect_present = true;
          }
 
          lodge_symbol(str_name,e_st_local_string);
@@ -20973,6 +21081,8 @@ namespace exprtk
             var_node = nse.var_node;
 
             exprtk_debug(("parse_define_var_statement() - INFO - Added new local variable: %s\n",nse.name.c_str()));
+
+            state_.side_effect_present = true;
          }
 
          lodge_symbol(var_name,e_st_local_variable);
@@ -21057,6 +21167,8 @@ namespace exprtk
             }
 
             exprtk_debug(("parse_uninitialised_var_statement() - INFO - Added new local variable: %s\n",nse.name.c_str()));
+
+            state_.side_effect_present = true;
          }
 
          lodge_symbol(var_name,e_st_local_variable);
@@ -21259,12 +21371,14 @@ namespace exprtk
          variable_node_ptr v0 = variable_node_ptr(0);
          variable_node_ptr v1 = variable_node_ptr(0);
 
+         expression_node_ptr result = error_node();
+
          if (
               (0 != (v0 = dynamic_cast<variable_node_ptr>(variable0))) &&
               (0 != (v1 = dynamic_cast<variable_node_ptr>(variable1)))
             )
          {
-            expression_node_ptr result = node_allocator_.allocate<details::swap_node<T> >(v0,v1);
+            result = node_allocator_.allocate<details::swap_node<T> >(v0,v1);
 
             if (variable0_generated)
             {
@@ -21275,11 +21389,13 @@ namespace exprtk
             {
                free_node(node_allocator_,variable1);
             }
-
-            return result;
          }
          else
-            return node_allocator_.allocate<details::swap_generic_node<T> >(variable0,variable1);
+            result = node_allocator_.allocate<details::swap_generic_node<T> >(variable0,variable1);
+
+         state_.side_effect_present = true;
+
+         return result;
       }
 
       inline expression_node_ptr parse_return_statement()
@@ -23635,6 +23751,8 @@ namespace exprtk
                result = node_allocator_->allocate<literal_node_t>(v);
             }
 
+            parser_->state_.side_effect_present = true;
+
             return result;
          }
 
@@ -23674,7 +23792,10 @@ namespace exprtk
                return node_allocator_->allocate<literal_node_t>(v);
             }
             else if (genfunc_node_ptr->init_branches())
+            {
+               parser_->state_.side_effect_present = true;
                return result;
+            }
             else
             {
                details::free_node(*node_allocator_,result);
@@ -23719,7 +23840,10 @@ namespace exprtk
                return node_allocator_->allocate<literal_node_t>(v);
             }
             else if (strfunc_node_ptr->init_branches())
+            {
+               parser_->state_.side_effect_present = true;
                return result;
+            }
             else
             {
                details::free_node(*node_allocator_,result);
@@ -23744,7 +23868,10 @@ namespace exprtk
             alloc_type* return_node_ptr = static_cast<alloc_type*>(result);
 
             if (return_node_ptr->init_branches())
+            {
+               parser_->state_.side_effect_present = true;
                return result;
+            }
             else
             {
                details::free_node(*node_allocator_,result);
@@ -23798,11 +23925,12 @@ namespace exprtk
 
                      result = error_node();
                   }
-                  else
-                  {
-                     exprtk_debug(("vector_element() - INFO - Added new local vector element: %s\n",nse.name.c_str()));
-                     result = nse.var_node;
-                  }
+
+                  exprtk_debug(("vector_element() - INFO - Added new local vector element: %s\n",nse.name.c_str()));
+
+                  parser_->state_.side_effect_present = true;
+
+                  result = nse.var_node;
                }
             }
             else
@@ -23845,6 +23973,8 @@ namespace exprtk
 
          void lodge_assignment(symbol_type cst, expression_node_ptr node)
          {
+            parser_->state_.side_effect_present = true;
+
             if (!parser_->dec_.collect_assignments())
                return;
 
@@ -24167,6 +24297,8 @@ namespace exprtk
             const bool v1_is_str = details::is_generally_string_node(branch[1]);
             #endif
 
+            expression_node_ptr result = error_node();
+
             if (v0_is_ivar && v1_is_ivar)
             {
                typedef details::variable_node<T>* variable_node_ptr;
@@ -24179,19 +24311,19 @@ namespace exprtk
                     (0 != (v1 = dynamic_cast<variable_node_ptr>(branch[1])))
                   )
                {
-                  return node_allocator_->allocate<details::swap_node<T> >(v0,v1);
+                  result = node_allocator_->allocate<details::swap_node<T> >(v0,v1);
                }
                else
-                  return node_allocator_->allocate<details::swap_generic_node<T> >(branch[0],branch[1]);
+                  result = node_allocator_->allocate<details::swap_generic_node<T> >(branch[0],branch[1]);
             }
             else if (v0_is_ivec && v1_is_ivec)
             {
-               return node_allocator_->allocate<details::swap_vecvec_node<T> >(branch[0],branch[1]);
+               result = node_allocator_->allocate<details::swap_vecvec_node<T> >(branch[0],branch[1]);
             }
             #ifndef exprtk_disable_string_capabilities
             else if (v0_is_str && v1_is_str)
             {
-               return node_allocator_->allocate<details::swap_string_node<T> >(branch[0],branch[1]);
+               result = node_allocator_->allocate<details::swap_string_node<T> >(branch[0],branch[1]);
             }
             #endif
             else
@@ -24200,6 +24332,10 @@ namespace exprtk
 
                return error_node();
             }
+
+            parser_->state_.side_effect_present = true;
+
+            return result;
          }
 
          #ifndef exprtk_disable_sc_andor
@@ -30173,8 +30309,10 @@ namespace exprtk
 
                return node_allocator_->allocate<literal_node_t>(v);
             }
-            else
-               return expression_point;
+
+            parser_->state_.side_effect_present = true;
+
+            return expression_point;
          }
 
          bool strength_reduction_enabled_;
