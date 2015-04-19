@@ -19545,7 +19545,7 @@ namespace exprtk
 
                // Remove all subexpressions after first encountered return node.
 
-               for (std::size_t j = i + 1; j < (expression_list.size() - 1); ++j)
+               for (std::size_t j = i + 1; j < expression_list.size(); ++j)
                {
                   free_node(node_allocator_,expression_list[j]);
                }
