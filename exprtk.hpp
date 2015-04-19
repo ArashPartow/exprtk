@@ -3736,6 +3736,10 @@ namespace exprtk
          : v_(*reinterpret_cast<value_t*>(ts.data))
          {}
 
+         scalar_view(const type_store_t& ts)
+         : v_(*reinterpret_cast<value_t*>(const_cast<type_store_t&>(ts).data))
+         {}
+
          value_t& operator()()
          {
             return v_;
@@ -17566,7 +17570,7 @@ namespace exprtk
          lexer::token begin_token;
          lexer::token   end_token;
 
-         for (;;)
+         for ( ; ; )
          {
             state_.side_effect_present = false;
 
@@ -18787,7 +18791,7 @@ namespace exprtk
 
             scoped_bool_or_restorer sbr(state_.side_effect_present);
 
-            for (;;)
+            for ( ; ; )
             {
                state_.side_effect_present = false;
 
@@ -19529,10 +19533,27 @@ namespace exprtk
 
          Sequence<expression_node_ptr,Allocator1> tmp_expression_list;
 
+         bool return_node_present = false;
+
          for (std::size_t i = 0; i < (expression_list.size() - 1); ++i)
          {
             if (is_variable_node(expression_list[i]))
                continue;
+            else if (is_return_node(expression_list[i]))
+            {
+               tmp_expression_list.push_back(expression_list[i]);
+
+               // Remove all subexpressions after first encountered return node.
+
+               for (std::size_t j = i + 1; j < (expression_list.size() - 1); ++j)
+               {
+                  free_node(node_allocator_,expression_list[j]);
+               }
+
+               return_node_present = true;
+
+               break;
+            }
             else if (
                       is_constant_node(expression_list[i]) ||
                       is_null_node    (expression_list[i]) ||
@@ -19546,11 +19567,19 @@ namespace exprtk
                tmp_expression_list.push_back(expression_list[i]);
          }
 
-         tmp_expression_list.push_back(expression_list.back());
-         expression_list.swap(tmp_expression_list);
-
-         if ((expression_list.size() > 1) || side_effect_list.back())
+         if (
+              return_node_present          ||
+              side_effect_list.back()      ||
+              (expression_list.size() > 1)
+            )
             state_.side_effect_present = true;
+
+         if (!return_node_present)
+         {
+            tmp_expression_list.push_back(expression_list.back());
+         }
+
+         expression_list.swap(tmp_expression_list);
 
          if (tmp_expression_list.size() > expression_list.size())
          {
@@ -19604,7 +19633,7 @@ namespace exprtk
 
          scoped_bool_or_restorer sbr(state_.side_effect_present);
 
-         for (;;)
+         for ( ; ; )
          {
             state_.side_effect_present = false;
 
@@ -20697,7 +20726,7 @@ namespace exprtk
             }
             else if (!token_is(token_t::e_rcrlbracket))
             {
-               for (;;)
+               for ( ; ; )
                {
                   expression_node_ptr initialiser = parse_expression();
 

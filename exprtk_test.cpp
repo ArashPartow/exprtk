@@ -6621,6 +6621,21 @@ inline std::string results_to_string(const exprtk::results_context<T>& results)
 }
 
 template <typename T>
+inline bool result_equal(const exprtk::results_context<T>& results, const T& value)
+{
+   typedef exprtk::results_context<T> results_context_t;
+   typedef typename results_context_t::type_store_t type_t;
+   typedef typename type_t::scalar_view scalar_t;
+
+   if (1 != results.count())
+      return false;
+   else if (type_t::e_scalar != results[0].type)
+      return false;
+   else
+      return (value == scalar_t(results[0])());
+}
+
+template <typename T>
 inline bool run_test21()
 {
    typedef exprtk::symbol_table<T> symbol_table_t;
@@ -6703,7 +6718,7 @@ inline bool run_test21()
 
          std::string pattern = results_to_string<T>(expression.results());
 
-         if (result_list[i] != results_to_string<T>(expression.results()))
+         if (result_list[i] != pattern)
          {
             printf("run_test21() - Invalid return results [1] Expected %s  Got: %s  Expression: %s\n",
                    result_list[i].c_str(),
@@ -6711,6 +6726,83 @@ inline bool run_test21()
                    expression_list[i].c_str());
 
             failure = true;
+            continue;
+         }
+      }
+
+      if (failure)
+         return false;
+   }
+
+   {
+      static const std::string expression_list[] =
+         {
+           "x := 1; x + 1; x + 2; x + 3; x + 5; x + 7;  return [x + 1];",
+           "x := 1; x + 1; x + 2; x + 3; x + 5; return [x + 1]; x := 7;",
+           "x := 1; x + 1; x + 2; x + 3; return [x + 1]; x + 5; x := 7;",
+           "x := 1; x + 1; x + 2; return [x + 1]; x + 3; x + 5; x := 7;",
+           "x := 1; x + 1; return [x + 1]; x + 2; x + 3; x + 5; x := 7;",
+           "x := 1; return [x + 1]; x + 1; x + 2; x + 3; x + 5; x := 7;",
+           "return [x + 1]; x := 1; x + 1; x + 2; x + 3; x + 5; x := 7;",
+           "~{x := 1; x + 1; x + 2; x + 3; x + 5; x + 7;  return [x + 1]}",
+           "~{x := 1; x + 1; x + 2; x + 3; x + 5; return [x + 1]; x := 7}",
+           "~{x := 1; x + 1; x + 2; x + 3; return [x + 1]; x + 5; x := 7}",
+           "~{x := 1; x + 1; x + 2; return [x + 1]; x + 3; x + 5; x := 7}",
+           "~{x := 1; x + 1; return [x + 1]; x + 2; x + 3; x + 5; x := 7}",
+           "~{x := 1; return [x + 1]; x + 1; x + 2; x + 3; x + 5; x := 7}",
+           "~{return [x + 1]; x := 1; x + 1; x + 2; x + 3; x + 5; x := 7}"
+         };
+
+      static const std::string result_list[] =
+         {
+           "T", "T", "T", "T", "T", "T", "T",
+           "T", "T", "T", "T", "T", "T", "T",
+         };
+
+      static const std::size_t expression_list_size = sizeof(expression_list) / sizeof(std::string);
+
+      bool failure = false;
+
+      for (std::size_t i = 0; i < expression_list_size; ++i)
+      {
+         expression_t expression;
+         expression.register_symbol_table(symbol_table);
+
+         parser_t parser;
+
+         if (!parser.compile(expression_list[i],expression))
+         {
+            printf("run_test21() - Error: %s   Expression: %s  [2]\n",
+                   parser.error().c_str(),
+                   expression_list[i].c_str());
+
+            failure = true;
+            continue;
+         }
+
+         expression.value();
+
+         std::string pattern = results_to_string<T>(expression.results());
+
+         if (result_list[i] != pattern)
+         {
+            printf("run_test21() - Invalid return results [2] Expected %s  Got: %s  Expression: %s\n",
+                   result_list[i].c_str(),
+                   pattern.c_str(),
+                   expression_list[i].c_str());
+
+            failure = true;
+            continue;
+         }
+         else if (!result_equal(expression.results(), x + T(1)))
+         {
+            printf("run_test21() - Invalid return results [2] Expected %s  Got: %s  Expression: %s\n",
+                   result_list[i].c_str(),
+                   pattern.c_str(),
+                   expression_list[i].c_str());
+
+            failure = true;
+            continue;
          }
       }
 
