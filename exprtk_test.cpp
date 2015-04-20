@@ -3955,10 +3955,29 @@ inline bool run_test10()
         "12 == (if (1 > 2) { var x:= 2; } else { var x[3] := {7,2,3}; sum(x); })",
         "12 == (if (1 < 2) { var x[3] := {7,2,3}; sum(x); } else { var x:= 2; })",
         "12 == (if (1 > 2) { var x:= 2; } else { var x[3] := {7,2,3}; sum(x); })",
-        "12 == (if (1 < 2) { var x[3] := {7,2,3}; sum(x); } else { var x:= 2; })"
+        "12 == (if (1 < 2) { var x[3] := {7,2,3}; sum(x); } else { var x:= 2; })",
+
+        "21 == (for (var i := 0; i < 10; i += 1) { if (i > 2) { break [i * 7]; i += 1;"
+        "i += 2; i += 3; }; })",
+
+        "21 == (for (var i := 0; i < 10; i += 1) { if (i > 2) { break [i * 7]; return "
+        "[i * 8]; i += 1; i += 2; i += 3; }; })",
+
+        "2 == for (var i := 0; i < 10; i += 1) { if (i > 2) { continue; i += 1; i += 2;"
+        "i += 3; } else i; }",
+
+        "2 == for (var i := 0; i < 10; i += 1) { if (i > 2) { continue; return [i * 8];"
+        "i += 1; i += 2; i += 3; } else i; }",
+
+        "7 == (for (var i := 0; i < 10; i += 1) { ~{break[7]; continue; i += i} })",
+        "0 == (for (var i := 0; i < 10; i += 1) { ~{break[i]; continue; i += i} })",
+        "0 == (for (var i := 0; i < 10; i += 1) { ~{continue; break[7]; i += i} })",
+        "1 == (for (var i := 0; i < 10; i += 1) { ~{break[i += 1]; continue; i += i} })"
       };
 
       const std::size_t expression_list_size = sizeof(expression_list) / sizeof(std::string);
+
+      static const std::size_t rounds = 20;
 
       exprtk::symbol_table<T> symbol_table;
 
@@ -3970,7 +3989,7 @@ inline bool run_test10()
 
       bool failed = false;
 
-      for (std::size_t r = 0; r < 10; ++r)
+      for (std::size_t r = 0; r < rounds; ++r)
       {
          for (std::size_t i = 0; i < expression_list_size; ++i)
          {
@@ -3982,7 +4001,7 @@ inline bool run_test10()
 
                if (!parser.compile(expression_list[i],expression))
                {
-                  printf("run_test10() -  swaps  Error: %s   Expression: %s\n",
+                  printf("run_test10() -  swaps[1]  Error: %s   Expression: %s\n",
                          parser.error().c_str(),
                          expression_list[i].c_str());
 
@@ -3995,7 +4014,44 @@ inline bool run_test10()
 
             if (T(1) != result)
             {
-               printf("run_test10() -  swaps evaluation error Expression: %s\n",
+               printf("run_test10() -  swaps[1] evaluation error Expression: %s\n",
+                      expression_list[i].c_str());
+
+               failed = true;
+            }
+         }
+
+         if (failed)
+         {
+            return false;
+         }
+      }
+
+      // reuse parser
+      for (std::size_t r = 0; r < rounds; ++r)
+      {
+         exprtk::parser<T> parser;
+
+         for (std::size_t i = 0; i < expression_list_size; ++i)
+         {
+            expression_t expression;
+            expression.register_symbol_table(symbol_table);
+
+            if (!parser.compile(expression_list[i],expression))
+            {
+               printf("run_test10() -  swaps[2]  Error: %s   Expression: %s\n",
+                      parser.error().c_str(),
+                      expression_list[i].c_str());
+
+               failed = true;
+               continue;
+            }
+
+            T result = expression.value();
+
+            if (T(1) != result)
+            {
+               printf("run_test10() -  swaps[2] evaluation error Expression: %s\n",
                       expression_list[i].c_str());
 
                failed = true;

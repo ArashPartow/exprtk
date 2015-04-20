@@ -19539,11 +19539,16 @@ namespace exprtk
          {
             if (is_variable_node(expression_list[i]))
                continue;
-            else if (is_return_node(expression_list[i]))
+            else if (
+                      is_return_node  (expression_list[i]) ||
+                      is_break_node   (expression_list[i]) ||
+                      is_continue_node(expression_list[i])
+                    )
             {
                tmp_expression_list.push_back(expression_list[i]);
 
-               // Remove all subexpressions after first encountered return node.
+               // Remove all subexpressions after first short-circuit
+               // node has been encountered.
 
                for (std::size_t j = i + 1; j < expression_list.size(); ++j)
                {
