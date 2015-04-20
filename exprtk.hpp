@@ -15668,7 +15668,7 @@ namespace exprtk
          t.mode       = mode;
          t.token.type = lexer::token::e_error;
          t.diagnostic = diagnostic;
-         exprtk_debug(((diagnostic + "\n").c_str()));
+         exprtk_debug(("%s\n",diagnostic .c_str()));
          return t;
       }
 
@@ -15678,7 +15678,7 @@ namespace exprtk
          t.mode       = mode;
          t.token      = tk;
          t.diagnostic = diagnostic;
-         exprtk_debug(((diagnostic + "\n").c_str()));
+         exprtk_debug(("%s\n",diagnostic .c_str()));
          return t;
       }
 
@@ -16606,6 +16606,20 @@ namespace exprtk
             return_stmt_present = false;
             side_effect_present = false;
             scope_depth         = 0;
+         }
+
+         #ifndef exprtk_enable_debugging
+         void activate_side_effect(const std::string&)
+         #else
+         void activate_side_effect(const std::string& source)
+         #endif
+         {
+            if (!side_effect_present)
+            {
+               side_effect_present = true;
+
+               exprtk_debug(("activate_side_effect() - caller: %s\n",source.c_str()));
+            }
          }
 
          bool parsing_return_stmt;
@@ -19014,7 +19028,7 @@ namespace exprtk
                      {
                         exprtk_debug(("parse_for_loop() - INFO - Added new local variable: %s\n",nse.name.c_str()));
 
-                        state_.side_effect_present = true;
+                        state_.activate_side_effect("parse_for_loop()");
                      }
                   }
                }
@@ -19572,13 +19586,6 @@ namespace exprtk
                tmp_expression_list.push_back(expression_list[i]);
          }
 
-         if (
-              return_node_present          ||
-              side_effect_list.back()      ||
-              (expression_list.size() > 1)
-            )
-            state_.side_effect_present = true;
-
          if (!return_node_present)
          {
             tmp_expression_list.push_back(expression_list.back());
@@ -19592,6 +19599,13 @@ namespace exprtk
                           static_cast<int>(tmp_expression_list.size()),
                           static_cast<int>(expression_list    .size())));
          }
+
+         if (
+              return_node_present          ||
+              side_effect_list.back()      ||
+              (expression_list.size() > 1)
+            )
+            state_.activate_side_effect("simplify()");
 
          if (1 == expression_list.size())
             return expression_list[0];
@@ -20580,6 +20594,8 @@ namespace exprtk
                }
             }
 
+            state_.activate_side_effect("parse_break_statement()");
+
             return node_allocator_.allocate<details::break_node<T> >(return_expr);
          }
          else
@@ -20598,7 +20614,10 @@ namespace exprtk
          if (!brkcnt_list_.empty())
          {
             next_token();
+
             brkcnt_list_.front() = true;
+            state_.activate_side_effect("parse_continue_statement()");
+
             return node_allocator_.allocate<details::continue_node<T> >();
          }
          else
@@ -20853,9 +20872,9 @@ namespace exprtk
             exprtk_debug(("parse_define_vector_statement() - INFO - Added new local vector: %s[%d]\n",
                           nse.name.c_str(),
                           static_cast<int>(nse.size)));
-
-            state_.side_effect_present = true;
          }
+
+         state_.activate_side_effect("parse_define_vector_statement()");
 
          lodge_symbol(vec_name,e_st_local_vector);
 
@@ -20929,11 +20948,11 @@ namespace exprtk
             str_node = nse.str_node;
 
             exprtk_debug(("parse_define_string_statement() - INFO - Added new local string variable: %s\n",nse.name.c_str()));
-
-            state_.side_effect_present = true;
          }
 
          lodge_symbol(str_name,e_st_local_string);
+
+         state_.activate_side_effect("parse_define_string_statement()");
 
          expression_node_ptr branch[2] = {0};
 
@@ -21115,9 +21134,9 @@ namespace exprtk
             var_node = nse.var_node;
 
             exprtk_debug(("parse_define_var_statement() - INFO - Added new local variable: %s\n",nse.name.c_str()));
-
-            state_.side_effect_present = true;
          }
+
+         state_.activate_side_effect("parse_define_var_statement()");
 
          lodge_symbol(var_name,e_st_local_variable);
 
@@ -21200,12 +21219,13 @@ namespace exprtk
                return error_node();
             }
 
-            exprtk_debug(("parse_uninitialised_var_statement() - INFO - Added new local variable: %s\n",nse.name.c_str()));
-
-            state_.side_effect_present = true;
+            exprtk_debug(("parse_uninitialised_var_statement() - INFO - Added new local variable: %s\n",
+                          nse.name.c_str()));
          }
 
          lodge_symbol(var_name,e_st_local_variable);
+
+         state_.activate_side_effect("parse_uninitialised_var_statement()");
 
          return expression_generator_(T(0));
       }
@@ -21427,7 +21447,7 @@ namespace exprtk
          else
             result = node_allocator_.allocate<details::swap_generic_node<T> >(variable0,variable1);
 
-         state_.side_effect_present = true;
+         state_.activate_side_effect("parse_swap_statement()");
 
          return result;
       }
@@ -21512,6 +21532,8 @@ namespace exprtk
          sdd.delete_ptr = (0 == result);
 
          state_.return_stmt_present = true;
+
+         state_.activate_side_effect("parse_return_statement()");
 
          return result;
       }
@@ -23785,7 +23807,7 @@ namespace exprtk
                result = node_allocator_->allocate<literal_node_t>(v);
             }
 
-            parser_->state_.side_effect_present = true;
+            parser_->state_.activate_side_effect("vararg_function_call()");
 
             return result;
          }
@@ -23827,7 +23849,7 @@ namespace exprtk
             }
             else if (genfunc_node_ptr->init_branches())
             {
-               parser_->state_.side_effect_present = true;
+               parser_->state_.activate_side_effect("generic_function_call()");
                return result;
             }
             else
@@ -23875,7 +23897,7 @@ namespace exprtk
             }
             else if (strfunc_node_ptr->init_branches())
             {
-               parser_->state_.side_effect_present = true;
+               parser_->state_.activate_side_effect("string_function_call()");
                return result;
             }
             else
@@ -23903,7 +23925,7 @@ namespace exprtk
 
             if (return_node_ptr->init_branches())
             {
-               parser_->state_.side_effect_present = true;
+               parser_->state_.activate_side_effect("return_call()");
                return result;
             }
             else
@@ -23962,7 +23984,7 @@ namespace exprtk
 
                   exprtk_debug(("vector_element() - INFO - Added new local vector element: %s\n",nse.name.c_str()));
 
-                  parser_->state_.side_effect_present = true;
+                  parser_->state_.activate_side_effect("vector_element()");
 
                   result = nse.var_node;
                }
@@ -24007,7 +24029,7 @@ namespace exprtk
 
          void lodge_assignment(symbol_type cst, expression_node_ptr node)
          {
-            parser_->state_.side_effect_present = true;
+            parser_->state_.activate_side_effect("lodge_assignment()");
 
             if (!parser_->dec_.collect_assignments())
                return;
@@ -24367,7 +24389,7 @@ namespace exprtk
                return error_node();
             }
 
-            parser_->state_.side_effect_present = true;
+            parser_->state_.activate_side_effect("synthesize_swap_expression()");
 
             return result;
          }
@@ -30344,7 +30366,7 @@ namespace exprtk
                return node_allocator_->allocate<literal_node_t>(v);
             }
 
-            parser_->state_.side_effect_present = true;
+            parser_->state_.activate_side_effect("synthesize_expression(function<NT,N>)");
 
             return expression_point;
          }
