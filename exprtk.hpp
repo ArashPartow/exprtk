@@ -4051,40 +4051,40 @@ namespace exprtk
          {
             e_none         , e_null         , e_constant     , e_unary        ,
             e_binary       , e_binary_ext   , e_trinary      , e_quaternary   ,
-            e_quinary      , e_senary       , e_vararg       , e_conditional  ,
-            e_while        , e_repeat       , e_for          , e_switch       ,
-            e_mswitch      , e_return       , e_retenv       , e_variable     ,
-            e_stringvar    , e_stringconst  , e_stringvarrng , e_cstringvarrng,
-            e_strgenrange  , e_strconcat    , e_stringvarsize, e_strswap      ,
-            e_stringsize   , e_function     , e_vafunction   , e_genfunction  ,
-            e_strfunction  , e_strcondition , e_strccondition, e_add          ,
-            e_sub          , e_mul          , e_div          , e_mod          ,
-            e_pow          , e_lt           , e_lte          , e_gt           ,
-            e_gte          , e_eq           , e_ne           , e_and          ,
-            e_nand         , e_or           , e_nor          , e_xor          ,
-            e_xnor         , e_in           , e_like         , e_ilike        ,
-            e_inranges     , e_ipow         , e_ipowinv      , e_abs          ,
-            e_acos         , e_acosh        , e_asin         , e_asinh        ,
-            e_atan         , e_atanh        , e_ceil         , e_cos          ,
-            e_cosh         , e_exp          , e_expm1        , e_floor        ,
-            e_log          , e_log10        , e_log2         , e_log1p        ,
-            e_neg          , e_pos          , e_round        , e_sin          ,
-            e_sinc         , e_sinh         , e_sqrt         , e_tan          ,
-            e_tanh         , e_cot          , e_sec          , e_csc          ,
-            e_r2d          , e_d2r          , e_d2g          , e_g2d          ,
-            e_notl         , e_sgn          , e_erf          , e_erfc         ,
-            e_ncdf         , e_frac         , e_trunc        , e_uvouv        ,
-            e_vov          , e_cov          , e_voc          , e_vob          ,
-            e_bov          , e_cob          , e_boc          , e_vovov        ,
-            e_vovoc        , e_vocov        , e_covov        , e_covoc        ,
-            e_vovovov      , e_vovovoc      , e_vovocov      , e_vocovov      ,
-            e_covovov      , e_covocov      , e_vocovoc      , e_covovoc      ,
-            e_vococov      , e_sf3ext       , e_sf4ext       , e_nulleq       ,
-            e_strass       , e_vector       , e_vecelem      , e_vecdefass    ,
-            e_vecvalass    , e_vecvecass    , e_vecopvalass  , e_vecopvecass  ,
-            e_vecfunc      , e_vecvecswap   , e_vecvecineq   , e_vecvalineq   ,
-            e_valvecineq   , e_vecvecarith  , e_vecvalarith  , e_valvecarith  ,
-            e_vecunaryop   , e_break        , e_continue     , e_swap
+            e_vararg       , e_conditional  , e_while        , e_repeat       ,
+            e_for          , e_switch       , e_mswitch      , e_return       ,
+            e_retenv       , e_variable     , e_stringvar    , e_stringconst  ,
+            e_stringvarrng , e_cstringvarrng, e_strgenrange  , e_strconcat    ,
+            e_stringvarsize, e_strswap      , e_stringsize   , e_function     ,
+            e_vafunction   , e_genfunction  , e_strfunction  , e_strcondition ,
+            e_strccondition, e_add          , e_sub          , e_mul          ,
+            e_div          , e_mod          , e_pow          , e_lt           ,
+            e_lte          , e_gt           , e_gte          , e_eq           ,
+            e_ne           , e_and          , e_nand         , e_or           ,
+            e_nor          , e_xor          , e_xnor         , e_in           ,
+            e_like         , e_ilike        , e_inranges     , e_ipow         ,
+            e_ipowinv      , e_abs          , e_acos         , e_acosh        ,
+            e_asin         , e_asinh        , e_atan         , e_atanh        ,
+            e_ceil         , e_cos          , e_cosh         , e_exp          ,
+            e_expm1        , e_floor        , e_log          , e_log10        ,
+            e_log2         , e_log1p        , e_neg          , e_pos          ,
+            e_round        , e_sin          , e_sinc         , e_sinh         ,
+            e_sqrt         , e_tan          , e_tanh         , e_cot          ,
+            e_sec          , e_csc          , e_r2d          , e_d2r          ,
+            e_d2g          , e_g2d          , e_notl         , e_sgn          ,
+            e_erf          , e_erfc         , e_ncdf         , e_frac         ,
+            e_trunc        , e_uvouv        , e_vov          , e_cov          ,
+            e_voc          , e_vob          , e_bov          , e_cob          ,
+            e_boc          , e_vovov        , e_vovoc        , e_vocov        ,
+            e_covov        , e_covoc        , e_vovovov      , e_vovovoc      ,
+            e_vovocov      , e_vocovov      , e_covovov      , e_covocov      ,
+            e_vocovoc      , e_covovoc      , e_vococov      , e_sf3ext       ,
+            e_sf4ext       , e_nulleq       , e_strass       , e_vector       ,
+            e_vecelem      , e_vecdefass    , e_vecvalass    , e_vecvecass    ,
+            e_vecopvalass  , e_vecopvecass  , e_vecfunc      , e_vecvecswap   ,
+            e_vecvecineq   , e_vecvalineq   , e_valvecineq   , e_vecvecarith  ,
+            e_vecvalarith  , e_valvecarith  , e_vecunaryop   , e_break        ,
+            e_continue     , e_swap
          };
 
          typedef T value_type;
@@ -5007,17 +5007,7 @@ namespace exprtk
 
          inline T value() const
          {
-            const T arg0 = branch_[0].first->value();
-            const T arg1 = branch_[1].first->value();
-            const T arg2 = branch_[2].first->value();
-            const T arg3 = branch_[3].first->value();
-
-            switch (operation_)
-            {
-               case e_min : return std::min<T>(std::min<T>(arg0,arg1),std::min<T>(arg2,arg3));
-               case e_max : return std::max<T>(std::max<T>(arg0,arg1),std::max<T>(arg2,arg3));
-               default    : return std::numeric_limits<T>::quiet_NaN();
-            }
+            return std::numeric_limits<T>::quiet_NaN();
          }
 
          inline typename expression_node<T>::node_type type() const
@@ -5029,111 +5019,6 @@ namespace exprtk
 
          operator_type operation_;
          branch_t branch_[4];
-      };
-
-      template <typename T>
-      class quinary_node : public expression_node<T>
-      {
-      public:
-
-         typedef expression_node<T>* expression_ptr;
-         typedef std::pair<expression_ptr,bool> branch_t;
-
-         quinary_node(const operator_type& opr,
-                      expression_ptr branch0,
-                      expression_ptr branch1,
-                      expression_ptr branch2,
-                      expression_ptr branch3,
-                      expression_ptr branch4)
-         : operation_(opr)
-         {
-            init_branches<5>(branch_,branch0,branch1,branch2,branch3,branch4);
-         }
-
-        ~quinary_node()
-         {
-            cleanup_branches::execute<T,5>(branch_);
-         }
-
-         inline T value() const
-         {
-            const T arg0 = branch_[0].first->value();
-            const T arg1 = branch_[1].first->value();
-            const T arg2 = branch_[2].first->value();
-            const T arg3 = branch_[3].first->value();
-            const T arg4 = branch_[4].first->value();
-
-            switch (operation_)
-            {
-               case e_min  : return std::min<T>(std::min<T>(std::min<T>(arg0,arg1),std::min<T>(arg2,arg3)),arg4);
-               case e_max  : return std::max<T>(std::max<T>(std::max<T>(arg0,arg1),std::max<T>(arg2,arg3)),arg4);
-               default     : return std::numeric_limits<T>::quiet_NaN();
-            }
-         }
-
-         inline typename expression_node<T>::node_type type() const
-         {
-            return expression_node<T>::e_quinary;
-         }
-
-      private:
-
-         operator_type operation_;
-         branch_t branch_[5];
-      };
-
-      template <typename T>
-      class senary_node : public expression_node<T>
-      {
-      public:
-
-         typedef expression_node<T>* expression_ptr;
-         typedef std::pair<expression_ptr,bool> branch_t;
-
-         senary_node(const operator_type& opr,
-                     expression_ptr branch0,
-                     expression_ptr branch1,
-                     expression_ptr branch2,
-                     expression_ptr branch3,
-                     expression_ptr branch4,
-                     expression_ptr branch5)
-         : operation_(opr)
-         {
-            init_branches<6>(branch_,branch0,branch1,branch2,branch3,branch4,branch5);
-         }
-
-        ~senary_node()
-         {
-            cleanup_branches::execute<T,6>(branch_);
-         }
-
-         inline T value() const
-         {
-            const T arg0 = branch_[0].first->value();
-            const T arg1 = branch_[1].first->value();
-            const T arg2 = branch_[2].first->value();
-            const T arg3 = branch_[3].first->value();
-            const T arg4 = branch_[4].first->value();
-            const T arg5 = branch_[5].first->value();
-
-            switch (operation_)
-            {
-               case e_min     : return std::min<T>(std::min<T>(std::min<T>(arg0,arg1),std::min<T>(arg2,arg3)),std::min<T>(arg4,arg5));
-               case e_max     : return std::max<T>(std::max<T>(std::max<T>(arg0,arg1),std::max<T>(arg2,arg3)),std::max<T>(arg4,arg5));
-               case e_default :
-               default        : return std::numeric_limits<T>::quiet_NaN();
-            }
-         }
-
-         inline typename expression_node<T>::node_type type() const
-         {
-            return expression_node<T>::e_senary;
-         }
-
-      private:
-
-         operator_type operation_;
-         branch_t branch_[6];
       };
 
       template <typename T>
@@ -15786,8 +15671,6 @@ namespace exprtk
       typedef details::binary_node     <T>                    binary_node_t;
       typedef details::trinary_node    <T>                   trinary_node_t;
       typedef details::quaternary_node <T>                quaternary_node_t;
-      typedef details::quinary_node    <T>                   quinary_node_t;
-      typedef details::senary_node     <T>                    senary_node_t;
       typedef details::conditional_node<T>               conditional_node_t;
       typedef details::cons_conditional_node<T>     cons_conditional_node_t;
       typedef details::while_loop_node <T>                while_loop_node_t;
@@ -18278,7 +18161,7 @@ namespace exprtk
             return error_node();
          }
 
-         const std::size_t MaxNumberofParameters = 6;
+         static const std::size_t MaxNumberofParameters = 4;
          expression_node_ptr param_list[MaxNumberofParameters] = {0};
 
          std::size_t parameter_count = parse_base_function_call(param_list);
@@ -18287,7 +18170,7 @@ namespace exprtk
          {
             return error_node();
          }
-         else if (parameter_count <= 6)
+         else if (parameter_count <= MaxNumberofParameters)
          {
             for (base_ops_map_t::iterator itr = itr_range.first; itr != itr_range.second; ++itr)
             {
@@ -18309,8 +18192,6 @@ namespace exprtk
                      base_opr_case(2)
                      base_opr_case(3)
                      base_opr_case(4)
-                     base_opr_case(5)
-                     base_opr_case(6)
                      #undef base_opr_case
                   }
                }
@@ -22899,16 +22780,6 @@ namespace exprtk
          inline expression_node_ptr operator()(const details::operator_type& operation, expression_node_ptr (&branch)[4])
          {
             return synthesize_expression<quaternary_node_t,4>(operation,branch);
-         }
-
-         inline expression_node_ptr operator()(const details::operator_type& operation, expression_node_ptr (&branch)[5])
-         {
-            return synthesize_expression<quinary_node_t,5>(operation,branch);
-         }
-
-         inline expression_node_ptr operator()(const details::operator_type& operation, expression_node_ptr (&branch)[6])
-         {
-            return synthesize_expression<senary_node_t,6>(operation,branch);
          }
 
          inline expression_node_ptr operator()(const details::operator_type& operation, expression_node_ptr b0)
