@@ -3601,6 +3601,84 @@ namespace exprtk
             lexer::token_inserter* error_token_inserter;
          };
       }
+
+      struct parser_helper
+      {
+         typedef token         token_t;
+         typedef generator generator_t;
+
+         inline bool init(const std::string& str)
+         {
+            if (!lexer_.process(str))
+            {
+               return false;
+            }
+
+            lexer_.begin();
+
+            next_token();
+
+            return true;
+         }
+
+         inline void next_token()
+         {
+            current_token_ = lexer_.next_token();
+         }
+
+         inline const token_t& current_token() const
+         {
+            return current_token_;
+         }
+
+         inline bool token_is(const token_t::token_type& ttype, const bool advance_token = true)
+         {
+            if (current_token_.type != ttype)
+            {
+               return false;
+            }
+
+            if (advance_token)
+            {
+               next_token();
+            }
+
+            return true;
+         }
+
+         inline bool token_is(const token_t::token_type& ttype,
+                              const std::string& value,
+                              const bool advance_token = true)
+         {
+            if (
+                 (current_token_.type != ttype) ||
+                 !exprtk::details::imatch(value,current_token().value)
+               )
+            {
+               return false;
+            }
+
+            if (advance_token)
+            {
+               next_token();
+            }
+
+            return true;
+         }
+
+         inline bool peek_token_is(const token_t::token_type& ttype)
+         {
+            return (lexer_.peek_next_token().type == ttype);
+         }
+
+         inline bool peek_token_is(const std::string& s)
+         {
+            return (exprtk::details::imatch(lexer_.peek_next_token().value,s));
+         }
+
+         generator_t lexer_;
+         token_t     current_token_;
+      };
    }
 
    template <typename T> class results_context;
