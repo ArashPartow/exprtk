@@ -1035,30 +1035,30 @@ static const test_t test_list[] =
                     test_t("((1 + 1) < (3 + 3) ? 7 : 9) == 7",1.0),
                     test_t("(min(1,2) ? 1 + 3 : 1 + 4) == 4",1.0),
                     test_t("(min(0,1) ? 1 + 3 : 1 + 4) == 5",1.0),
-                    test_t("if(1 < 2) 3; == 3",1.0),
-                    test_t("if(1 > 2) 3; == null",1.0),
-                    test_t("if(1 < 2) 3; else 4; == 3",1.0),
-                    test_t("if(1 > 2) 3; else 4; == 4",1.0),
-                    test_t("if(1 < 2) 3; else {1+2; 4;} == 3",1.0),
-                    test_t("if(1 > 2) 3; else {1+2; 4;} == 4",1.0),
-                    test_t("if(1 < 2) 3; else if (1 < 2) 4; == 3",1.0),
-                    test_t("if(1 > 2) 3; else if (1 < 2) 4; == 4",1.0),
-                    test_t("if(1 > 2) 3; else if (1 > 2) 4; == null",1.0),
-                    test_t("if(1 < 2) 3; else if (1 < 2) {1+2; 4;} == 3",1.0),
-                    test_t("if(1 > 2) 3; else if (1 < 2) {1+2; 4;} == 4",1.0),
-                    test_t("if(1 > 2) 3; else if (1 > 2) {1+2; 4;} == null",1.0),
-                    test_t("if(1 < 2) { 1+2; 3;} == 3",1.0),
-                    test_t("if(1 > 2) { 1+2; 3;} == null",1.0),
-                    test_t("if(1 < 2) { 1+2; 3;} else 4; == 3",1.0),
-                    test_t("if(1 > 2) { 1+2; 3;} else 4; == 4",1.0),
-                    test_t("if(1 < 2) { 1+2; 3;} else {1+2; 4;} == 3",1.0),
-                    test_t("if(1 > 2) { 1+2; 3;} else {1+2; 4;} == 4",1.0),
-                    test_t("if(1 < 2) { 1+2; 3;} else if (1 < 2) 4; == 3",1.0),
-                    test_t("if(1 > 2) { 1+2; 3;} else if (1 < 2) 4; == 4",1.0),
-                    test_t("if(1 > 2) { 1+2; 3;} else if (1 > 2) 4; == null",1.0),
-                    test_t("if(1 < 2) { 1+2; 3;} else if (1 < 2) {1+2; 4;} == 3",1.0),
-                    test_t("if(1 > 2) { 1+2; 3;} else if (1 < 2) {1+2; 4;} == 4",1.0),
-                    test_t("if(1 > 2) { 1+2; 3;} else if (1 > 2) {1+2; 4;} == null",1.0)
+                    test_t("if (1 < 2) 3; == 3",1.0),
+                    test_t("if (1 > 2) 3; == null",1.0),
+                    test_t("if (1 < 2) 3; else 4; == 3",1.0),
+                    test_t("if (1 > 2) 3; else 4; == 4",1.0),
+                    test_t("if (1 < 2) 3; else {1+2; 4;} == 3",1.0),
+                    test_t("if (1 > 2) 3; else {1+2; 4;} == 4",1.0),
+                    test_t("if (1 < 2) 3; else if (1 < 2) 4; == 3",1.0),
+                    test_t("if (1 > 2) 3; else if (1 < 2) 4; == 4",1.0),
+                    test_t("if (1 > 2) 3; else if (1 > 2) 4; == null",1.0),
+                    test_t("if (1 < 2) 3; else if (1 < 2) {1+2; 4;} == 3",1.0),
+                    test_t("if (1 > 2) 3; else if (1 < 2) {1+2; 4;} == 4",1.0),
+                    test_t("if (1 > 2) 3; else if (1 > 2) {1+2; 4;} == null",1.0),
+                    test_t("if (1 < 2) { 1+2; 3;} == 3",1.0),
+                    test_t("if (1 > 2) { 1+2; 3;} == null",1.0),
+                    test_t("if (1 < 2) { 1+2; 3;} else 4; == 3",1.0),
+                    test_t("if (1 > 2) { 1+2; 3;} else 4; == 4",1.0),
+                    test_t("if (1 < 2) { 1+2; 3;} else {1+2; 4;} == 3",1.0),
+                    test_t("if (1 > 2) { 1+2; 3;} else {1+2; 4;} == 4",1.0),
+                    test_t("if (1 < 2) { 1+2; 3;} else if (1 < 2) 4; == 3",1.0),
+                    test_t("if (1 > 2) { 1+2; 3;} else if (1 < 2) 4; == 4",1.0),
+                    test_t("if (1 > 2) { 1+2; 3;} else if (1 > 2) 4; == null",1.0),
+                    test_t("if (1 < 2) { 1+2; 3;} else if (1 < 2) {1+2; 4;} == 3",1.0),
+                    test_t("if (1 > 2) { 1+2; 3;} else if (1 < 2) {1+2; 4;} == 4",1.0),
+                    test_t("if (1 > 2) { 1+2; 3;} else if (1 > 2) {1+2; 4;} == null",1.0)
                   };
 
 static const std::size_t test_list_size = sizeof(test_list) / sizeof(test_t);
@@ -1679,18 +1679,18 @@ inline bool run_test01()
                                 test_xyzw<T>("(4 + [3 / (min(x,y) + z)])",T(5.0),T(7.0),T(9.0),T(0.0),T((4.0 + (3.0 / (std::min(5.0,7.0) + 9.0))))),
                                 test_xyzw<T>("(4 * [3 / (min(x,y) + z)])",T(5.0),T(7.0),T(9.0),T(0.0),T((4.0 * (3.0 / (std::min(5.0,7.0) + 9.0))))),
                                 test_xyzw<T>("(4 / [3 / (min(x,y) + z)])",T(5.0),T(7.0),T(9.0),T(0.0),T((4.0 / (3.0 / (std::min(5.0,7.0) + 9.0))))),
-                                test_xyzw<T>("if(x < y) { z+2; z;} == z"                             ,T(1.0),T(2.0),T(3.0),T(4.0),T(1.0)),
-                                test_xyzw<T>("if(x > y) { z+2; z;} == null"                          ,T(1.0),T(2.0),T(3.0),T(4.0),T(1.0)),
-                                test_xyzw<T>("if(x < y) { z+2; z;} else w; == z"                     ,T(1.0),T(2.0),T(3.0),T(4.0),T(1.0)),
-                                test_xyzw<T>("if(x > y) { z+2; z;} else 1 + w; == (w + 1)"           ,T(1.0),T(2.0),T(3.0),T(4.0),T(1.0)),
-                                test_xyzw<T>("if(x < y) { z+2; z;} else {1+2; w;} == z"              ,T(1.0),T(2.0),T(3.0),T(4.0),T(1.0)),
-                                test_xyzw<T>("if(x > y) { z+2; z;} else {1+2; w;} == w"              ,T(1.0),T(2.0),T(3.0),T(4.0),T(1.0)),
-                                test_xyzw<T>("if(x < y) { z+2; z;} else if (x < y) w; == z"          ,T(1.0),T(2.0),T(3.0),T(4.0),T(1.0)),
-                                test_xyzw<T>("if(x > y) { z+2; z;} else if (x < y) 1 + w; == w + 1"  ,T(1.0),T(2.0),T(3.0),T(4.0),T(1.0)),
-                                test_xyzw<T>("if(x > y) { z+2; z;} else if (x > y) w; == null"       ,T(1.0),T(2.0),T(3.0),T(4.0),T(1.0)),
-                                test_xyzw<T>("if(x < y) { z+2; z;} else if (x < y) {w+2; w;} == z"   ,T(1.0),T(2.0),T(3.0),T(4.0),T(1.0)),
-                                test_xyzw<T>("if(x > y) { z+2; z;} else if (x < y) {w+2; w;} == w"   ,T(1.0),T(2.0),T(3.0),T(4.0),T(1.0)),
-                                test_xyzw<T>("if(x > y) { z+2; z;} else if (x > y) {w+2; w;} == null",T(1.0),T(2.0),T(3.0),T(4.0),T(1.0))
+                                test_xyzw<T>("if (x < y) { z+2; z;} == z"                             ,T(1.0),T(2.0),T(3.0),T(4.0),T(1.0)),
+                                test_xyzw<T>("if (x > y) { z+2; z;} == null"                          ,T(1.0),T(2.0),T(3.0),T(4.0),T(1.0)),
+                                test_xyzw<T>("if (x < y) { z+2; z;} else w; == z"                     ,T(1.0),T(2.0),T(3.0),T(4.0),T(1.0)),
+                                test_xyzw<T>("if (x > y) { z+2; z;} else 1 + w; == (w + 1)"           ,T(1.0),T(2.0),T(3.0),T(4.0),T(1.0)),
+                                test_xyzw<T>("if (x < y) { z+2; z;} else {1+2; w;} == z"              ,T(1.0),T(2.0),T(3.0),T(4.0),T(1.0)),
+                                test_xyzw<T>("if (x > y) { z+2; z;} else {1+2; w;} == w"              ,T(1.0),T(2.0),T(3.0),T(4.0),T(1.0)),
+                                test_xyzw<T>("if (x < y) { z+2; z;} else if (x < y) w; == z"          ,T(1.0),T(2.0),T(3.0),T(4.0),T(1.0)),
+                                test_xyzw<T>("if (x > y) { z+2; z;} else if (x < y) 1 + w; == w + 1"  ,T(1.0),T(2.0),T(3.0),T(4.0),T(1.0)),
+                                test_xyzw<T>("if (x > y) { z+2; z;} else if (x > y) w; == null"       ,T(1.0),T(2.0),T(3.0),T(4.0),T(1.0)),
+                                test_xyzw<T>("if (x < y) { z+2; z;} else if (x < y) {w+2; w;} == z"   ,T(1.0),T(2.0),T(3.0),T(4.0),T(1.0)),
+                                test_xyzw<T>("if (x > y) { z+2; z;} else if (x < y) {w+2; w;} == w"   ,T(1.0),T(2.0),T(3.0),T(4.0),T(1.0)),
+                                test_xyzw<T>("if (x > y) { z+2; z;} else if (x > y) {w+2; w;} == null",T(1.0),T(2.0),T(3.0),T(4.0),T(1.0))
                               };
 
       static const std::size_t test_list_size = sizeof(test_list) / sizeof(test_xyzw<T>);
@@ -5917,16 +5917,16 @@ inline bool run_test19()
 
       compositor
          .add("is_prime_impl1",
-              "if(y == 1,true,                "
-              "   if(0 == (x % y),false,      "
-              "      is_prime_impl1(x,y - 1)))",
+              "if (y == 1,true,                "
+              "   if (0 == (x % y),false,      "
+              "      is_prime_impl1(x,y - 1))) ",
               "x","y");
 
       compositor
          .add("is_prime1",
-              "if(frac(x) != 0, false,                                "
-              "   if(x <= 0, false,                                   "
-              "      is_prime_impl1(x,min(x - 1,trunc(sqrt(x)) + 1))))",
+              "if (frac(x) != 0, false,                                "
+              "   if (x <= 0, false,                                   "
+              "      is_prime_impl1(x,min(x - 1,trunc(sqrt(x)) + 1)))) ",
               "x");
 
       compositor
@@ -6122,9 +6122,9 @@ inline bool run_test19()
 
       compositor
          .add("fibonacci1",
-              "if(x == 0,0,                                 "
-              "   if(x == 1,1,                              "
-              "      fibonacci1(x - 1) + fibonacci1(x - 2)))",
+              "if (x == 0,0,                                 "
+              "    if (x == 1,1,                             "
+              "       fibonacci1(x - 1) + fibonacci1(x - 2)))",
               "x");
 
       compositor
@@ -6139,19 +6139,19 @@ inline bool run_test19()
 
       compositor
          .add("fibonacci_impl3",
-              "switch                        "
-              "{                             "
-              "  case x == 0 : 0;            "
-              "  case x == 1 : 1;            "
-              "  default :                   "
-              "    while ((x := (x - 1)) > 0)"
-              "    {                         "
-              "      w := z;                 "
-              "      z := z + y;             "
-              "      y := w;                 "
-              "      z                       "
-              "    };                        "
-              "}                             ",
+              "switch                         "
+              "{                              "
+              "  case x == 0 : 0;             "
+              "  case x == 1 : 1;             "
+              "  default :                    "
+              "    while ((x := (x - 1)) > 0) "
+              "    {                          "
+              "      w := z;                  "
+              "      z := z + y;              "
+              "      y := w;                  "
+              "      z                        "
+              "    };                         "
+              "}                              ",
               "x","y","z","w");
 
       compositor
@@ -6161,19 +6161,19 @@ inline bool run_test19()
 
       compositor
          .add("fibonacci_impl4",
-              "switch             "
-              "{                  "
-              "  case x == 0 : 0; "
-              "  case x == 1 : 1; "
-              "  default :        "
-              "    repeat         "
-              "      w := z;      "
-              "      z := z + y;  "
-              "      y := w;      "
-              "      x := x - 1;  "
-              "      z            "
-              "    until (x <= 1);"
-              "}                  ",
+              "switch              "
+              "{                   "
+              "  case x == 0 : 0;  "
+              "  case x == 1 : 1;  "
+              "  default :         "
+              "    repeat          "
+              "      w := z;       "
+              "      z := z + y;   "
+              "      y := w;       "
+              "      x := x - 1;   "
+              "      z             "
+              "    until (x <= 1); "
+              "}                   ",
               "x","y","z","w");
 
       compositor
@@ -6731,21 +6731,21 @@ inline bool run_test21()
 
       static const std::string result_list[] =
          {
-           ""   ,
-           "T"  ,
-           "TT" ,
-           "TT" ,
-           "TTS",
-           "TS" ,
-           "TST",
-           "TS" ,
-           "TST",
-           "T"  ,
-           "TS" ,
-           "TST",
-           "TSTT",
+           ""     ,
+           "T"    ,
+           "TT"   ,
+           "TT"   ,
+           "TTS"  ,
+           "TS"   ,
+           "TST"  ,
+           "TS"   ,
+           "TST"  ,
+           "T"    ,
+           "TS"   ,
+           "TST"  ,
+           "TSTT" ,
            "TSTTT",
-           "TST",
+           "TST"  ,
            "TS"
          };
 
@@ -6793,13 +6793,13 @@ inline bool run_test21()
    {
       static const std::string expression_list[] =
          {
-           "x := 1; x + 1; x + 2; x + 3; x + 5; x + 7;  return [x + 1];",
-           "x := 1; x + 1; x + 2; x + 3; x + 5; return [x + 1]; x := 7;",
-           "x := 1; x + 1; x + 2; x + 3; return [x + 1]; x + 5; x := 7;",
-           "x := 1; x + 1; x + 2; return [x + 1]; x + 3; x + 5; x := 7;",
-           "x := 1; x + 1; return [x + 1]; x + 2; x + 3; x + 5; x := 7;",
-           "x := 1; return [x + 1]; x + 1; x + 2; x + 3; x + 5; x := 7;",
-           "return [x + 1]; x := 1; x + 1; x + 2; x + 3; x + 5; x := 7;",
+           "x := 1; x + 1; x + 2; x + 3; x + 5; x + 7;  return [x + 1];  ",
+           "x := 1; x + 1; x + 2; x + 3; x + 5; return [x + 1]; x := 7;  ",
+           "x := 1; x + 1; x + 2; x + 3; return [x + 1]; x + 5; x := 7;  ",
+           "x := 1; x + 1; x + 2; return [x + 1]; x + 3; x + 5; x := 7;  ",
+           "x := 1; x + 1; return [x + 1]; x + 2; x + 3; x + 5; x := 7;  ",
+           "x := 1; return [x + 1]; x + 1; x + 2; x + 3; x + 5; x := 7;  ",
+           "return [x + 1]; x := 1; x + 1; x + 2; x + 3; x + 5; x := 7;  ",
            "~{x := 1; x + 1; x + 2; x + 3; x + 5; x + 7;  return [x + 1]}",
            "~{x := 1; x + 1; x + 2; x + 3; x + 5; return [x + 1]; x := 7}",
            "~{x := 1; x + 1; x + 2; x + 3; return [x + 1]; x + 5; x := 7}",

@@ -93,7 +93,7 @@ Library including all updates and tests can be found at the  following
 locations:
 
   (a) Download:   http://www.partow.net/programming/exprtk/index.html
-  (b) Repository: https://exprtk.googlecode.com/svn/
+  (b) Repository: https://github.com/ArashPartow/exprtk
 
 
 
