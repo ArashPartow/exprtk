@@ -5834,10 +5834,29 @@ namespace exprtk
             return expression_node<T>::e_switch;
          }
 
-      private:
+      protected:
 
          std::vector<expression_ptr> arg_list_;
          std::vector<unsigned char> delete_branch_;
+      };
+
+      template <typename T, typename Switch_N>
+      class switch_n_node : public switch_node<T>
+      {
+      public:
+
+         typedef expression_node<T>* expression_ptr;
+
+         template <typename Allocator,
+                   template <typename,typename> class Sequence>
+         switch_n_node(const Sequence<expression_ptr,Allocator>& arg_list)
+         : switch_node<T>(arg_list)
+         {}
+
+         inline T value() const
+         {
+            return Switch_N::process(switch_node<T>::arg_list_);
+         }
       };
 
       template <typename T>
@@ -23192,20 +23211,125 @@ namespace exprtk
             return result;
          }
 
+         struct switch_nodes
+         {
+            typedef std::vector<expression_node_ptr> arg_list_t;
+
+            #define case_stmt(N) \
+            if (is_true(arg[(2 * N)])) return arg[(2 * N) + 1]->value();
+
+            struct switch_1
+            {
+               static inline T process(const arg_list_t& arg)
+               {
+                  case_stmt(0)
+                  return arg.back()->value();
+               }
+            };
+
+            struct switch_2
+            {
+               static inline T process(const arg_list_t& arg)
+               {
+                  case_stmt(0) case_stmt(1)
+                  return arg.back()->value();
+               }
+            };
+
+            struct switch_3
+            {
+               static inline T process(const arg_list_t& arg)
+               {
+                  case_stmt(0) case_stmt(1)
+                  case_stmt(2)
+                  return arg.back()->value();
+               }
+            };
+
+            struct switch_4
+            {
+               static inline T process(const arg_list_t& arg)
+               {
+                  case_stmt(0) case_stmt(1)
+                  case_stmt(2) case_stmt(3)
+                  return arg.back()->value();
+               }
+            };
+
+            struct switch_5
+            {
+               static inline T process(const arg_list_t& arg)
+               {
+                  case_stmt(0) case_stmt(1)
+                  case_stmt(2) case_stmt(3)
+                  case_stmt(4)
+                  return arg.back()->value();
+               }
+            };
+
+            struct switch_6
+            {
+               static inline T process(const arg_list_t& arg)
+               {
+                  case_stmt(0) case_stmt(1)
+                  case_stmt(2) case_stmt(3)
+                  case_stmt(4) case_stmt(5)
+                  return arg.back()->value();
+               }
+            };
+
+            struct switch_7
+            {
+               static inline T process(const arg_list_t& arg)
+               {
+                  case_stmt(0) case_stmt(1)
+                  case_stmt(2) case_stmt(3)
+                  case_stmt(4) case_stmt(5)
+                  case_stmt(6)
+                  return arg.back()->value();
+               }
+            };
+
+            #undef case_stmt
+         };
+
          template <typename Allocator,
                    template <typename,typename> class Sequence>
          inline expression_node_ptr switch_statement(Sequence<expression_node_ptr,Allocator>& arg_list)
          {
-            if (!all_nodes_valid(arg_list))
+            if (arg_list.empty())
+               return error_node();
+            else if (
+                      !all_nodes_valid(arg_list)   ||
+                      (arg_list.size() < 3)        ||
+                      ((arg_list.size() % 2) != 1)
+                    )
             {
                details::free_all_nodes(*node_allocator_,arg_list);
-
                return error_node();
             }
             else if (is_constant_foldable(arg_list))
                return const_optimize_switch(arg_list);
-            else
-               return node_allocator_->allocate<details::switch_node<Type> >(arg_list);
+
+            switch ((arg_list.size() - 1) / 2)
+            {
+               #define case_stmt(N)                                                 \
+               case N :                                                             \
+                  return node_allocator_->                                          \
+                            allocate<details::switch_n_node                         \
+                              <Type,typename switch_nodes::switch_##N> >(arg_list); \
+
+               case_stmt(1)
+               case_stmt(2)
+               case_stmt(3)
+               case_stmt(4)
+               case_stmt(5)
+               case_stmt(6)
+               case_stmt(7)
+               #undef case_stmt
+
+               default : return node_allocator_->allocate<details::switch_node<Type> >(arg_list);
+            }
          }
 
          template <typename Allocator,
