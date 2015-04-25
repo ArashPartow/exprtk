@@ -19309,7 +19309,12 @@ namespace exprtk
                   return error_node();
                }
 
-               expression_node_ptr default_statement = parse_multi_sequence("switch-default");
+               expression_node_ptr default_statement = error_node();
+
+               if (token_is(token_t::e_lcrlbracket,false))
+                  default_statement = parse_multi_sequence("switch-default");
+               else
+                  default_statement = parse_expression();
 
                if (0 == default_statement)
                   return error_node();
