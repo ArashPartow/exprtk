@@ -19309,7 +19309,7 @@ namespace exprtk
                   return error_node();
                }
 
-               expression_node_ptr default_statement = parse_expression();
+               expression_node_ptr default_statement = parse_multi_sequence("switch-default");
 
                if (0 == default_statement)
                   return error_node();
@@ -31916,11 +31916,18 @@ namespace exprtk
             mod_expression += " var " + input_var_list[i] + "{};\n";
          }
 
-         mod_expression += "~{" + expression + "};";
+         if (
+              ('{' == expression.front()) &&
+              ('}' == expression.back ())
+            )
+            mod_expression += "~" + expression + ";";
+         else
+            mod_expression += "~{" + expression + "};";
 
          if (!parser_.compile(mod_expression,compiled_expression))
          {
-            exprtk_debug(("Error: %s\n",parser_.error().c_str()));
+            exprtk_debug(("Compositor error: %s\n",parser_.error().c_str()));
+            exprtk_debug(("Compositor modified expression: \n%s\n",mod_expression.c_str()));
             return false;
          }
 
