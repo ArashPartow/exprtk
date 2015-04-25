@@ -4921,6 +4921,11 @@ inline bool run_test17()
 template <typename T>
 struct va_func : public exprtk::ivararg_function<T>
 {
+   va_func()
+   {
+      exprtk::enable_zero_parameters(*this);
+   }
+
    inline T operator()(const std::vector<T>& arglist)
    {
       T result = T(0);

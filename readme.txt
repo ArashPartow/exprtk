@@ -1677,14 +1677,16 @@ at compile time.
 
 If it is certain that the function being registered does not have  any
 side effects and can  be correctly constant folded  where appropriate,
-then  during the construction of the function a 'false' can be  passed
-to the constructor to denote the lack of side-effects.
+then during the construction of the function the side-effect trait  of
+the function can be disabled.
 
    template <typename T>
    struct foo : public exprtk::ifunction<T>
    {
-      foo() : exprtk::ifunction<T>(3,false)
-      {}
+      foo() : exprtk::ifunction<T>(3)
+      {
+         disable_has_side_effects(*this);
+      }
 
       T operator()(const T& v1, const T& v2, const T& v3)
       { ... }
@@ -1692,13 +1694,31 @@ to the constructor to denote the lack of side-effects.
 
 
 (8) Zero Parameter Functions
-When either an ifunction  or ivararg_function derived type  is defined
-with  zero number  of parameters,  there are  two calling  conventions
-within expressions that are allowed.  For a function named 'foo'  with
-zero input parameters the calling styles are as follows:
+When  either  an  ifunction,  ivararg_function  or   igeneric_function
+derived type is defined with zero number of parameters, there are  two
+calling  conventions  within  expressions  that  are  allowed.  For  a
+function named 'foo' with zero input parameters the calling styles are
+as follows:
 
    (1)  x + sin(foo()- 2) / y
    (2)  x + sin(foo  - 2) / y
+
+
+By default the  zero parameter trait  is disabled. In  order to enable
+it, a process similar to that of  enabling of the side effect trait is
+carried out:
+
+   template <typename T>
+   struct foo : public exprtk::ivararg_function<T>
+   {
+      foo()
+      {
+         exprtk::enable_zero_parameters(*this);
+      }
+
+      inline T operator()(const std::vector<T>& arglist)
+      { ... }
+   };
 
 
 

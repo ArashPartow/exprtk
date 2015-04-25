@@ -54,12 +54,6 @@ void savitzky_golay_filter()
                   "   };                                                      "
                   "                                                           "
                   "   v_out /= sum(weight);                                   "
-                  "                                                           "
-                  "   for (var i := 0; i < lower_bound; i += 1)               "
-                  "   {                                                       "
-                  "     v_out[i] := 0;                                        "
-                  "     v_out[v_out[] - i - 1] := 0;                          "
-                  "   };                                                      "
                   " }                                                         ";
 
    const std::size_t n = 1024;

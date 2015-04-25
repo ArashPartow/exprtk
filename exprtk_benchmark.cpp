@@ -508,6 +508,7 @@ void perform_file_based_benchmark(const std::string& file_name, const std::size_
    }
 
    exprtk::timer total_timer;
+   exprtk::timer timer;
 
    double single_eval_total_time = 0.0;
 
@@ -516,8 +517,6 @@ void perform_file_based_benchmark(const std::string& file_name, const std::size_
    for (std::size_t i = 0; i < expression_list.size(); ++i)
    {
       expression_t& e = expression_list[i];
-
-      exprtk::timer timer;
 
       a = 1.1;
       b = 2.2;
