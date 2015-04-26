@@ -10290,10 +10290,12 @@ namespace exprtk
          typedef expression_node<T>* expression_ptr;
          typedef results_context<T>  results_context_t;
 
-         return_envelope_node(expression_ptr body, results_context_t& rc)
+         return_envelope_node(expression_ptr body,
+                              results_context_t& rc, bool& rtrn_invoked)
          : results_context_(&rc),
-           body_(body),
-           body_deletable_(branch_deletable(body_))
+           return_invoked_ (rtrn_invoked),
+           body_           (body),
+           body_deletable_ (branch_deletable(body_))
          {}
 
         ~return_envelope_node()
@@ -10308,12 +10310,14 @@ namespace exprtk
          {
             try
             {
+               return_invoked_ = false;
                results_context_->clear();
 
                return body_->value();
             }
             catch(const return_exception&)
             {
+               return_invoked_ = true;
                return std::numeric_limits<T>::quiet_NaN();
             }
          }
@@ -10326,6 +10330,7 @@ namespace exprtk
       private:
 
          results_context_t* results_context_;
+         bool&              return_invoked_;
          expression_ptr     body_;
          bool               body_deletable_;
       };
@@ -13599,6 +13604,13 @@ namespace exprtk
          }
 
          template <typename node_type,
+                   typename T1, typename T2, typename T3>
+         inline expression_node<typename node_type::value_type>* allocate_crr(const T1& t1, T2& t2, T3& t3) const
+         {
+            return new node_type(t1,t2,t3);
+         }
+
+         template <typename node_type,
                    typename T1, typename T2>
          inline expression_node<typename node_type::value_type>* allocate_rc(T1& t1, const T2& t2) const
          {
@@ -15411,14 +15423,16 @@ namespace exprtk
 
          expression_holder()
          : ref_count(0),
-           expr(0),
-           results_(0)
+           expr     (0),
+           results  (0),
+           return_invoked(false)
          {}
 
          expression_holder(expression_ptr e)
          : ref_count(1),
-           expr(e),
-           results_(0)
+           expr     (e),
+           results  (0),
+           return_invoked(false)
          {}
 
         ~expression_holder()
@@ -15454,16 +15468,17 @@ namespace exprtk
                }
             }
 
-            if (results_)
+            if (results)
             {
-               delete results_;
+               delete results;
             }
          }
 
          std::size_t ref_count;
          expression_ptr expr;
          local_data_list_t local_data_list;
-         results_context_t* results_;
+         results_context_t* results;
+         bool return_invoked;
 
          friend class function_compositor<T>;
       };
@@ -15583,13 +15598,18 @@ namespace exprtk
 
       inline const results_context_t& results() const
       {
-         if (expression_holder_->results_)
-            return (*expression_holder_->results_);
+         if (expression_holder_->results)
+            return (*expression_holder_->results);
          else
          {
             static const results_context_t null_results;
             return null_results;
          }
+      }
+
+      inline bool return_invoked() const
+      {
+         return (expression_holder_->return_invoked);
       }
 
    private:
@@ -15685,8 +15705,13 @@ namespace exprtk
       {
          if (rc)
          {
-            expression_holder_->results_ = rc;
+            expression_holder_->results = rc;
          }
+      }
+
+      inline bool& rtrn_invk_ref()
+      {
+         return expression_holder_->return_invoked;
       }
 
       expression_holder* expression_holder_;
@@ -16780,7 +16805,8 @@ namespace exprtk
          : options_(options),
            collect_variables_  ((options_ & e_ct_variables  ) == e_ct_variables  ),
            collect_functions_  ((options_ & e_ct_functions  ) == e_ct_functions  ),
-           collect_assignments_((options_ & e_ct_assignments) == e_ct_assignments)
+           collect_assignments_((options_ & e_ct_assignments) == e_ct_assignments),
+           return_present_(false)
          {}
 
          template <typename Allocator,
@@ -16833,6 +16859,7 @@ namespace exprtk
          {
             symbol_name_list_    .clear();
             assignment_name_list_.clear();
+            return_present_ = false;
          }
 
          bool& collect_variables()
@@ -16848,6 +16875,11 @@ namespace exprtk
          bool& collect_assignments()
          {
             return collect_assignments_;
+         }
+
+         bool return_present() const
+         {
+            return return_present_;
          }
 
       private:
@@ -16890,6 +16922,7 @@ namespace exprtk
          bool collect_variables_;
          bool collect_functions_;
          bool collect_assignments_;
+         bool return_present_;
          symbol_list_t symbol_name_list_;
          symbol_list_t assignment_name_list_;
 
@@ -17367,7 +17400,10 @@ namespace exprtk
          {
             if (state_.return_stmt_present)
             {
-               e = expression_generator_.return_envelope(e,results_context_);
+               dec_.return_present_ = true;
+
+               e = expression_generator_
+                     .return_envelope(e,results_context_,expr.rtrn_invk_ref());
             }
 
             expr.set_expression(e);
@@ -24128,11 +24164,13 @@ namespace exprtk
             }
          }
 
-         inline expression_node_ptr return_envelope(expression_node_ptr body, results_context_t* rc)
+         inline expression_node_ptr return_envelope(expression_node_ptr body,
+                                                    results_context_t* rc,
+                                                    bool& return_invoked)
          {
             typedef details::return_envelope_node<Type> alloc_type;
 
-            return node_allocator_->allocate_cr<alloc_type>(body,(*rc));
+            return node_allocator_->allocate_crr<alloc_type>(body,(*rc),return_invoked);
          }
 
          inline expression_node_ptr vector_element(const std::string& symbol,

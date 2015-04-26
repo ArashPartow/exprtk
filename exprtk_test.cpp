@@ -6774,12 +6774,28 @@ inline bool run_test21()
             failure = true;
             continue;
          }
+         else if (!parser.dec().return_present())
+         {
+            printf("run_test21() - Expected a return statement   Expression: %s  [1]\n",
+                   expression_list[i].c_str());
+
+            failure = true;
+            continue;
+         }
 
          expression.value();
 
          std::string pattern = results_to_string<T>(expression.results());
 
-         if (result_list[i] != pattern)
+         if (!expression.return_invoked())
+         {
+            printf("run_test21() - Invalid return invoke state [1] Expression: %s\n",
+                   expression_list[i].c_str());
+
+            failure = true;
+            continue;
+         }
+         else if (result_list[i] != pattern)
          {
             printf("run_test21() - Invalid return results [1] Expected %s  Got: %s  Expression: %s\n",
                    result_list[i].c_str(),
@@ -6840,12 +6856,28 @@ inline bool run_test21()
             failure = true;
             continue;
          }
+         else if (!parser.dec().return_present())
+         {
+            printf("run_test21() - Expected a return statement   Expression: %s  [2]\n",
+                   expression_list[i].c_str());
+
+            failure = true;
+            continue;
+         }
 
          expression.value();
 
          std::string pattern = results_to_string<T>(expression.results());
 
-         if (result_list[i] != pattern)
+         if (!expression.return_invoked())
+         {
+            printf("run_test21() - Invalid return invoke state [2] Expression: %s\n",
+                   expression_list[i].c_str());
+
+            failure = true;
+            continue;
+         }
+         else if (result_list[i] != pattern)
          {
             printf("run_test21() - Invalid return results [2] Expected %s  Got: %s  Expression: %s\n",
                    result_list[i].c_str(),
