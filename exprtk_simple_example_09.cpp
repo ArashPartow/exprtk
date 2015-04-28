@@ -28,6 +28,7 @@ void primes()
    typedef exprtk::expression<T>          expression_t;
    typedef exprtk::parser<T>                  parser_t;
    typedef exprtk::function_compositor<T> compositor_t;
+   typedef typename compositor_t::function  function_t;
 
    T x = T(0);
 
@@ -40,43 +41,53 @@ void primes()
 
    //Mode 1 - if statement based
    compositor
-      .add("is_prime_impl1",
+      .add(
+      function_t(
+           "is_prime_impl1",
            "if(y == 1,true,                "
            "   if(0 == (x % y),false,      "
            "      is_prime_impl1(x,y - 1)))",
-           "x","y");
+           "x","y"));
 
    compositor
-      .add("is_prime1",
+      .add(
+      function_t(
+           "is_prime1",
            "if(frac(x) != 0, false,                                "
            "   if(x <= 0, false,                                   "
            "      is_prime_impl1(x,min(x - 1,trunc(sqrt(x)) + 1))))",
-           "x");
+           "x"));
 
    //Mode 2 - switch statement based
    compositor
-      .add("is_prime_impl2",
+      .add(
+      function_t(
+           "is_prime_impl2",
            "switch                                        "
            "{                                             "
            "  case y == 1       : true;                   "
            "  case (x % y) == 0 : false;                  "
            "  default           : is_prime_impl2(x,y - 1);"
            "}                                             ",
-           "x","y");
+           "x","y"));
 
    compositor
-      .add("is_prime2",
+      .add(
+      function_t(
+           "is_prime2",
            "switch                                                                "
            "{                                                                     "
            "  case x <= 0       : false;                                          "
            "  case frac(x) != 0 : false;                                          "
            "  default           : is_prime_impl2(x,min(x - 1,trunc(sqrt(x)) + 1));"
            "}                                                                     ",
-           "x");
+           "x"));
 
    //Mode 3 - switch statement and while-loop based
    compositor
-      .add("is_prime_impl3",
+      .add(
+      function_t(
+           "is_prime_impl3",
            "while (y > 0)                           "
            "{                                       "
            "  switch                                "
@@ -86,17 +97,19 @@ void primes()
            "    default           : y := y - 1;     "
            "  }                                     "
            "}                                       ",
-           "x","y");
+           "x","y"));
 
    compositor
-      .add("is_prime3",
+      .add(
+      function_t(
+           "is_prime3",
            "switch                                                                "
            "{                                                                     "
            "  case x <= 0       : false;                                          "
            "  case frac(x) != 0 : false;                                          "
            "  default           : is_prime_impl3(x,min(x - 1,trunc(sqrt(x)) + 1));"
            "}                                                                     ",
-           "x");
+           "x"));
 
    std::string expression_str1 = "is_prime1(x)";
    std::string expression_str2 = "is_prime2(x)";

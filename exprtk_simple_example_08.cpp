@@ -29,6 +29,7 @@ void composite()
    typedef exprtk::parser<T>                  parser_t;
    typedef exprtk::parser_error::type          error_t;
    typedef exprtk::function_compositor<T> compositor_t;
+   typedef typename compositor_t::function  function_t;
 
    compositor_t compositor;
 
@@ -40,8 +41,13 @@ void composite()
    symbol_table.add_variable("x",x);
    symbol_table.add_variable("y",y);
 
-   compositor.add("f","sin(x / pi)","x");          // f(x) = sin(x / pi)
-   compositor.add("g","3*[f(x) + f(y)]","x","y");  // g(x,y) = 3[f(x) + f(y)]
+   compositor
+      .add(
+      function_t("f","sin(x / pi)","x"));          // f(x) = sin(x / pi)
+
+   compositor
+      .add(
+      function_t("g","3*[f(x) + f(y)]","x","y"));  // g(x,y) = 3[f(x) + f(y)]
 
    std::string expression_string = "g(1 + f(x),f(y) / 2)";
 

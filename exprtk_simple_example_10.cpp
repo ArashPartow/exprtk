@@ -29,6 +29,7 @@ void newton_sqrt()
    typedef exprtk::expression<T>          expression_t;
    typedef exprtk::parser<T>                  parser_t;
    typedef exprtk::function_compositor<T> compositor_t;
+   typedef typename compositor_t::function  function_t;
 
    T x = T(0);
 
@@ -40,7 +41,9 @@ void newton_sqrt()
    compositor_t compositor(symbol_table);
 
    compositor
-      .add("newton_sqrt",
+      .add(
+      function_t(
+           "newton_sqrt",
            " switch                               "
            " {                                    "
            "   case x < 0  : -inf;                "
@@ -57,7 +60,7 @@ void newton_sqrt()
            "      until ((z -= 1) <= 0);          "
            "    };                                "
            " }                                    ",
-           "x");
+           "x"));
 
    std::string expression_str = "newton_sqrt(x)";
 

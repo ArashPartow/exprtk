@@ -5719,28 +5719,28 @@ inline bool run_test19()
       compositor_t compositor;
 
       // f(x) = x + 2
-      compositor.add("f","x + 2","x");
+      compositor.add(function_t("f","x + 2","x"));
 
       // g(x) = x^2-3
-      compositor.add("g","x^2 - 3","x");
+      compositor.add(function_t("g","x^2 - 3","x"));
 
       // fof(x) = f(f(x))
-      compositor.add("fof","f(f(x))","x");
+      compositor.add(function_t("fof","f(f(x))","x"));
 
       // gog(x) = g(g(x))
-      compositor.add("gog","g(g(x))","x");
+      compositor.add(function_t("gog","g(g(x))","x"));
 
       // fog(x) = f(g(x))
-      compositor.add("fog","f(g(x))","x");
+      compositor.add(function_t("fog","f(g(x))","x"));
 
       // gof(x) = g(f(x))
-      compositor.add("gof","g(f(x))","x");
+      compositor.add(function_t("gof","g(f(x))","x"));
 
       // fogof(x) = f(g(f(x)))
-      compositor.add("fogof","f(g(f(x)))","x");
+      compositor.add(function_t("fogof","f(g(f(x)))","x"));
 
       // gofog(x) = g(f(g(x)))
-      compositor.add("gofog","g(f(g(x)))","x");
+      compositor.add(function_t("gofog","g(f(g(x)))","x"));
 
       symbol_table_t& symbol_table = compositor.symbol_table();
       symbol_table.add_constants();
@@ -5798,6 +5798,7 @@ inline bool run_test19()
    }
 
    const std::size_t rounds = 100;
+
    for (std::size_t r = 0; r < rounds; ++r)
    {
       T x = T(1);
@@ -5811,29 +5812,44 @@ inline bool run_test19()
 
       // f0() = 6
       compositor
-         .add("f0"," 3 * 2");
+         .add(
+            function_t("f0")
+              .expression("3 * 2"));
 
       // f1(x) = 5 * (f0 + x)
       compositor
-         .add("f1","5 * (f0 + x)","x");
+         .add(
+            function_t("f1")
+              .var("x")
+              .expression("5 * (f0 + x)"));
 
       // f2(x,y) = 7 * (f1(x) + f1(y))
       compositor
-         .add("f2","7 * (f1(x) + f1(y))","x","y");
+         .add(
+            function_t("f2")
+              .var("x").var("y")
+              .expression("7 * (f1(x) + f1(y))"));
 
       // f3(x,y,z) = 9 * (f2(x,y) + f2(y,z) + f2(x,z))
       compositor
-         .add("f3","9 * (f2(x,y) + f2(y,z) + f2(x,z))","x","y","z");
+         .add(
+            function_t("f3")
+              .var("x").var("y").var("z")
+              .expression("9 * (f2(x,y) + f2(y,z) + f2(x,z))"));
 
       // f4(x,y,z,w) = 11 * (f3(x,y,z) + f3(y,z,w) + f3(z,w,z))
       compositor
-         .add("f4","11 * (f3(x,y,z) + f3(y,z,w) + f3(z,w,x))","x","y","z","w");
+         .add(
+            function_t("f4")
+              .var("x").var("y").var("z").var("w")
+              .expression("11 * (f3(x,y,z) + f3(y,z,w) + f3(z,w,x))"));
 
       // f5(x,y,z,w,u) = 13 * (f4(x,y,z,w) + f4(y,z,w,u) + f4(z,w,u,x) + f4(w,u,x,y))
       compositor
-         .add("f5",
-              "13 * (f4(x,y,z,w) + f4(y,z,w,u) + f4(z,w,u,x) + f4(w,u,x,y))",
-              "x","y","z","w","u");
+         .add(
+            function_t("f5")
+              .var("x").var("y").var("z").var("w").var("u")
+              .expression("13 * (f4(x,y,z,w) + f4(y,z,w,u) + f4(z,w,u,x) + f4(w,u,x,y))"));
 
       // f6(x,y,z,w,u,v) = 17 * (f5(x,y,z,w,u) + f5(y,z,w,u,v) + f5(z,w,u,v,x) + f5(w,u,v,x,y))
       compositor
@@ -5887,6 +5903,8 @@ inline bool run_test19()
                   T(2122700580)
                 };
 
+      bool failure = true;
+
       for (std::size_t i = 0; i < expr_str_list_size; ++i)
       {
          expression_t expression;
@@ -5898,7 +5916,8 @@ inline bool run_test19()
                    parser.error().c_str(),
                    expr_str_list[i].c_str());
 
-            return false;
+            failure = true;
+            continue;
          }
 
          T result = expression.value();
@@ -5910,9 +5929,13 @@ inline bool run_test19()
                    result_list[i],
                    result);
 
-            return false;
+            failure = true;
+            continue;
          }
       }
+
+      if (!failure)
+         return false;
    }
 
    {
@@ -5921,41 +5944,51 @@ inline bool run_test19()
       compositor_t compositor;
 
       compositor
-         .add("is_prime_impl1",
+         .add(
+         function_t(
+              "is_prime_impl1",
               "if (y == 1,true,                "
               "   if (0 == (x % y),false,      "
               "      is_prime_impl1(x,y - 1))) ",
-              "x","y");
+              "x","y"));
 
       compositor
-         .add("is_prime1",
+         .add(
+         function_t(
+              "is_prime1",
               "if (frac(x) != 0, false,                                "
               "   if (x <= 0, false,                                   "
               "      is_prime_impl1(x,min(x - 1,trunc(sqrt(x)) + 1)))) ",
-              "x");
+              "x"));
 
       compositor
-         .add("is_prime_impl2",
+         .add(
+         function_t(
+              "is_prime_impl2",
               "switch                                        "
               "{                                             "
               "  case y == 1       : true;                   "
               "  case (x % y) == 0 : false;                  "
               "  default           : is_prime_impl2(x,y - 1);"
               "}                                             ",
-              "x","y");
+              "x","y"));
 
       compositor
-         .add("is_prime2",
+         .add(
+         function_t(
+              "is_prime2",
               "switch                                                                "
               "{                                                                     "
               "  case x <= 0       : false;                                          "
               "  case frac(x) != 0 : false;                                          "
               "  default           : is_prime_impl2(x,min(x - 1,trunc(sqrt(x)) + 1));"
               "}                                                                     ",
-              "x");
+              "x"));
 
       compositor
-         .add("is_prime_impl3",
+         .add(
+         function_t(
+              "is_prime_impl3",
               "while (y > 0)                           "
               "{                                       "
               "  switch                                "
@@ -5965,20 +5998,24 @@ inline bool run_test19()
               "    default           : y := y - 1;     "
               "  }                                     "
               "}                                       ",
-              "x","y");
+              "x","y"));
 
       compositor
-         .add("is_prime3",
+         .add(
+         function_t(
+              "is_prime3",
               "switch                                                                "
               "{                                                                     "
               "  case x <= 0       : false;                                          "
               "  case frac(x) != 0 : false;                                          "
               "  default           : is_prime_impl3(x,min(x - 1,trunc(sqrt(x)) + 1));"
               "}                                                                     ",
-              "x");
+              "x"));
 
       compositor
-         .add("is_prime_impl4",
+         .add(
+         function_t(
+              "is_prime_impl4",
               "switch                              "
               "{                                   "
               "  case 1 == x     : false;          "
@@ -5998,17 +6035,19 @@ inline bool run_test19()
               "    }                               "
               "  };                                "
               "}                                   ",
-              "x","y");
+              "x","y"));
 
       compositor
-         .add("is_prime4",
+         .add(
+         function_t(
+              "is_prime4",
               "switch                                                                "
               "{                                                                     "
               "  case x <= 0       : false;                                          "
               "  case frac(x) != 0 : false;                                          "
               "  default           : is_prime_impl4(x,min(x - 1,trunc(sqrt(x)) + 1));"
               "}                                                                     ",
-              "x");
+              "x"));
 
       symbol_table_t& symbol_table = compositor.symbol_table();
       symbol_table.add_constants();
@@ -6126,24 +6165,30 @@ inline bool run_test19()
       compositor_t compositor;
 
       compositor
-         .add("fibonacci1",
+         .add(
+         function_t(
+              "fibonacci1",
               "if (x == 0,0,                                 "
               "    if (x == 1,1,                             "
               "       fibonacci1(x - 1) + fibonacci1(x - 2)))",
-              "x");
+              "x"));
 
       compositor
-         .add("fibonacci2",
+         .add(
+         function_t(
+              "fibonacci2",
               "switch                                                "
               "{                                                     "
               "  case x == 0 : 0;                                    "
               "  case x == 1 : 1;                                    "
               "  default     : fibonacci2(x - 1) + fibonacci2(x - 2);"
               "}                                                     ",
-              "x");
+              "x"));
 
       compositor
-         .add("fibonacci_impl3",
+         .add(
+         function_t(
+              "fibonacci_impl3",
               "switch                         "
               "{                              "
               "  case x == 0 : 0;             "
@@ -6157,15 +6202,19 @@ inline bool run_test19()
               "      z                        "
               "    };                         "
               "}                              ",
-              "x","y","z","w");
+              "x","y","z","w"));
 
       compositor
-         .add("fibonacci3",
+         .add(
+         function_t(
+              "fibonacci3",
               "fibonacci_impl3(x,0,1,0)",
-              "x");
+              "x"));
 
       compositor
-         .add("fibonacci_impl4",
+         .add(
+         function_t(
+              "fibonacci_impl4",
               "switch              "
               "{                   "
               "  case x == 0 : 0;  "
@@ -6179,20 +6228,24 @@ inline bool run_test19()
               "      z             "
               "    until (x <= 1); "
               "}                   ",
-              "x","y","z","w");
+              "x","y","z","w"));
 
       compositor
-         .add("fibonacci4",
+         .add(
+         function_t(
+              "fibonacci4",
               "fibonacci_impl4(x,0,1,0)",
-              "x");
+              "x"));
 
       compositor
-         .add("fibonacci5",
+         .add(
+         function_t(
+              "fibonacci5",
               "if ((x == 0) or (x == 1))                "
               "  x;                                     "
               "else                                     "
               "  fibonacci5(x - 1) + fibonacci5(x - 2); ",
-              "x");
+              "x"));
 
       symbol_table_t& symbol_table = compositor.symbol_table();
       symbol_table.add_constants();
@@ -6309,7 +6362,9 @@ inline bool run_test19()
       compositor_t compositor(symbol_table);
 
       compositor
-         .add("newton_sqrt_impl",
+         .add(
+         function_t(
+              "newton_sqrt_impl",
               "switch                               "
               "{                                    "
               "  case x < 0  : -inf;                "
@@ -6326,11 +6381,13 @@ inline bool run_test19()
               "     until ((z -= 1) <= 0);          "
               "   };                                "
               "}                                    ",
-              "x","y","z");
+              "x","y","z"));
 
       compositor
-         .add("newton_sqrt",
-              "newton_sqrt_impl(x,0,0)","x");
+         .add(
+         function_t(
+              "newton_sqrt",
+              "newton_sqrt_impl(x,0,0)","x"));
 
       std::string expression_str = "newton_sqrt(x)";
 
@@ -6380,7 +6437,9 @@ inline bool run_test19()
       compositor_t compositor(symbol_table);
 
       compositor
-         .add("mandelbrot",
+         .add(
+         function_t(
+              "mandelbrot",
               " var width    := 118;                            "
               " var height   := 41;                             "
               " var imag_max := +1;                             "
@@ -6412,7 +6471,7 @@ inline bool run_test19()
               "         break;                                  "
               "     };                                          "
               "   };                                            "
-              " }                                               ");
+              " }                                               "));
 
       std::string expression_str = "mandelbrot()";
 
@@ -6447,13 +6506,15 @@ inline bool run_test19()
       compositor_t compositor(symbol_table);
 
       compositor
-         .add("fooboo",
+         .add(
+         function_t(
+              "fooboo",
               " var x := input;       "
               " if (x > 0)            "
               "   fooboo(x - 1) + x;  "
               " else                  "
               "   0;                  ",
-              "input");
+              "input"));
 
       std::string expression_str = "fOoBoO(x)";
 

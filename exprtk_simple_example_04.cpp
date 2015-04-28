@@ -28,11 +28,14 @@ void fibonacci()
    typedef exprtk::expression<T>          expression_t;
    typedef exprtk::parser<T>                  parser_t;
    typedef exprtk::function_compositor<T> compositor_t;
+   typedef typename compositor_t::function  function_t;
 
    compositor_t compositor;
 
    compositor
-      .add("fibonacci",
+      .add(
+      function_t(
+           "fibonacci",
            " var w := 0;             "
            " var y := 0;             "
            " var z := 1;             "
@@ -49,7 +52,7 @@ void fibonacci()
            "      z                  "
            "    };                   "
            " }                       ",
-           "x");
+           "x"));
 
    T x = T(0);
 

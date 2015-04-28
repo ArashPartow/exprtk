@@ -37,6 +37,7 @@
 #include <algorithm>
 #include <cctype>
 #include <cmath>
+#include <complex>
 #include <cstdio>
 #include <cstdlib>
 #include <deque>
@@ -656,6 +657,7 @@ namespace exprtk
          {
             struct unknown_type_tag {};
             struct real_type_tag    {};
+            struct complex_type_tag {};
             struct int_type_tag     {};
 
             template <typename T>
@@ -664,12 +666,20 @@ namespace exprtk
             #define exprtk_register_real_type_tag(T)                          \
             template<> struct number_type<T> { typedef real_type_tag type; }; \
 
+            #define exprtk_register_complex_type_tag(T)     \
+            template<> struct number_type<std::complex<T> > \
+            { typedef complex_type_tag type; };             \
+
             #define exprtk_register_int_type_tag(T)                          \
             template<> struct number_type<T> { typedef int_type_tag type; }; \
 
             exprtk_register_real_type_tag(double     )
             exprtk_register_real_type_tag(long double)
             exprtk_register_real_type_tag(float      )
+
+            exprtk_register_complex_type_tag(double     )
+            exprtk_register_complex_type_tag(long double)
+            exprtk_register_complex_type_tag(float      )
 
             exprtk_register_int_type_tag(short                 )
             exprtk_register_int_type_tag(int                   )
@@ -797,14 +807,16 @@ namespace exprtk
             template <typename T>
             inline T nequal_impl(const T v0, const T v1, real_type_tag)
             {
+               typedef real_type_tag rtg;
                const T epsilon = epsilon_type<T>::value();
-               return (abs_impl(v0 - v1,real_type_tag()) > (std::max(T(1),std::max(abs_impl(v0,real_type_tag()),abs_impl(v1,real_type_tag()))) * epsilon)) ? T(1) : T(0);
+               return (abs_impl(v0 - v1,rtg()) > (std::max(T(1),std::max(abs_impl(v0,rtg()),abs_impl(v1,rtg()))) * epsilon)) ? T(1) : T(0);
             }
 
             inline float nequal_impl(const float v0, const float v1, real_type_tag)
             {
+               typedef real_type_tag rtg;
                const float epsilon = epsilon_type<float>::value();
-               return (abs_impl(v0 - v1,real_type_tag()) > (std::max(1.0f,std::max(abs_impl(v0,real_type_tag()),abs_impl(v1,real_type_tag()))) * epsilon)) ? 1.0f : 0.0f;
+               return (abs_impl(v0 - v1,rtg()) > (std::max(1.0f,std::max(abs_impl(v0,rtg()),abs_impl(v1,rtg()))) * epsilon)) ? 1.0f : 0.0f;
             }
 
             template <typename T>
@@ -4280,6 +4292,12 @@ namespace exprtk
       inline bool is_true(const float v)
       {
          return std::not_equal_to<float>()(0.0f,v);
+      }
+
+      template <typename T>
+      inline bool is_true(const std::complex<T>& v)
+      {
+         return std::not_equal_to<std::complex<T> >()(std::complex<T>(0),v);
       }
 
       template <typename T>
@@ -10290,10 +10308,9 @@ namespace exprtk
          typedef expression_node<T>* expression_ptr;
          typedef results_context<T>  results_context_t;
 
-         return_envelope_node(expression_ptr body,
-                              results_context_t& rc, bool& rtrn_invoked)
+         return_envelope_node(expression_ptr body, results_context_t& rc)
          : results_context_(&rc),
-           return_invoked_ (rtrn_invoked),
+           return_invoked_ (false),
            body_           (body),
            body_deletable_ (branch_deletable(body_))
          {}
@@ -10327,10 +10344,15 @@ namespace exprtk
             return expression_node<T>::e_retenv;
          }
 
+         inline bool* retinvk_ptr()
+         {
+            return &return_invoked_;
+         }
+
       private:
 
          results_context_t* results_context_;
-         bool&              return_invoked_;
+         mutable bool       return_invoked_;
          expression_ptr     body_;
          bool               body_deletable_;
       };
@@ -13604,13 +13626,6 @@ namespace exprtk
          }
 
          template <typename node_type,
-                   typename T1, typename T2, typename T3>
-         inline expression_node<typename node_type::value_type>* allocate_crr(const T1& t1, T2& t2, T3& t3) const
-         {
-            return new node_type(t1,t2,t3);
-         }
-
-         template <typename node_type,
                    typename T1, typename T2>
          inline expression_node<typename node_type::value_type>* allocate_rc(T1& t1, const T2& t2) const
          {
@@ -15425,14 +15440,16 @@ namespace exprtk
          : ref_count(0),
            expr     (0),
            results  (0),
-           return_invoked(false)
+           retinv_null(false),
+           return_invoked(&retinv_null)
          {}
 
          expression_holder(expression_ptr e)
          : ref_count(1),
            expr     (e),
            results  (0),
-           return_invoked(false)
+           retinv_null(false),
+           return_invoked(&retinv_null)
          {}
 
         ~expression_holder()
@@ -15478,7 +15495,8 @@ namespace exprtk
          expression_ptr expr;
          local_data_list_t local_data_list;
          results_context_t* results;
-         bool return_invoked;
+         bool  retinv_null;
+         bool* return_invoked;
 
          friend class function_compositor<T>;
       };
@@ -15609,7 +15627,7 @@ namespace exprtk
 
       inline bool return_invoked() const
       {
-         return (expression_holder_->return_invoked);
+         return (*expression_holder_->return_invoked);
       }
 
    private:
@@ -15703,15 +15721,18 @@ namespace exprtk
 
       inline void register_return_results(results_context_t* rc)
       {
-         if (rc)
+         if (expression_holder_ && rc)
          {
             expression_holder_->results = rc;
          }
       }
 
-      inline bool& rtrn_invk_ref()
+      inline void set_retinvk(bool* retinvk_ptr)
       {
-         return expression_holder_->return_invoked;
+         if (expression_holder_)
+         {
+            expression_holder_->return_invoked = retinvk_ptr;
+         }
       }
 
       expression_holder* expression_holder_;
@@ -16109,12 +16130,14 @@ namespace exprtk
          inline scope_element& get_element(const std::string& var_name,
                                            const std::size_t index = std::numeric_limits<std::size_t>::max())
          {
+            const std::size_t current_depth = parser_.state_.scope_depth;
+
             for (std::size_t i = 0; i < element_.size(); ++i)
             {
                scope_element& se = element_[i];
 
-               if (se.depth > parser_.state_.scope_depth)
-                  return null_element_;
+               if (se.depth > current_depth)
+                  continue;
                else if (
                          (se.name  == var_name) &&
                          (se.index == index)
@@ -16128,15 +16151,17 @@ namespace exprtk
          inline scope_element& get_active_element(const std::string& var_name,
                                                   const std::size_t index = std::numeric_limits<std::size_t>::max())
          {
+            const std::size_t current_depth = parser_.state_.scope_depth;
+
             for (std::size_t i = 0; i < element_.size(); ++i)
             {
                scope_element& se = element_[i];
 
-               if (se.depth > parser_.state_.scope_depth)
-                  return null_element_;
+               if (se.depth > current_depth)
+                  continue;
                else if (
-                         (se.name   == var_name) &&
-                         (se.index  == index)    &&
+                         (se.name  == var_name) &&
+                         (se.index == index)    &&
                          (se.active)
                        )
                   return se;
@@ -17398,15 +17423,19 @@ namespace exprtk
 
          if ((0 != e) && (token_t::e_eof == current_token().type))
          {
+            bool* retinvk_ptr = 0;
+
             if (state_.return_stmt_present)
             {
                dec_.return_present_ = true;
 
                e = expression_generator_
-                     .return_envelope(e,results_context_,expr.rtrn_invk_ref());
+                     .return_envelope(e,results_context_,retinvk_ptr);
             }
 
             expr.set_expression(e);
+            expr.set_retinvk(retinvk_ptr);
+
             register_local_vars(expr);
             register_return_results(expr);
 
@@ -24166,11 +24195,16 @@ namespace exprtk
 
          inline expression_node_ptr return_envelope(expression_node_ptr body,
                                                     results_context_t* rc,
-                                                    bool& return_invoked)
+                                                    bool*& return_invoked)
          {
             typedef details::return_envelope_node<Type> alloc_type;
 
-            return node_allocator_->allocate_crr<alloc_type>(body,(*rc),return_invoked);
+            expression_node_ptr result = node_allocator_->
+                                            allocate_cr<alloc_type>(body,(*rc));
+
+            return_invoked = static_cast<alloc_type*>(result)->retinvk_ptr();
+
+            return result;
          }
 
          inline expression_node_ptr vector_element(const std::string& symbol,
@@ -31465,6 +31499,52 @@ namespace exprtk
          : name_(n)
          {}
 
+         function(const std::string& name,
+                  const std::string& expression)
+         : name_(name),
+           expression_(expression)
+         {}
+
+         function(const std::string& name,
+                  const std::string& expression,
+                  const std::string& v0)
+         : name_(name),
+           expression_(expression)
+         {
+            v_.push_back(v0);
+         }
+
+         function(const std::string& name,
+                  const std::string& expression,
+                  const std::string& v0, const std::string& v1)
+         : name_(name),
+           expression_(expression)
+         {
+            v_.push_back(v0); v_.push_back(v1);
+         }
+
+         function(const std::string& name,
+                  const std::string& expression,
+                  const std::string& v0, const std::string& v1,
+                  const std::string& v2)
+         : name_(name),
+           expression_(expression)
+         {
+            v_.push_back(v0); v_.push_back(v1);
+            v_.push_back(v2);
+         }
+
+         function(const std::string& name,
+                  const std::string& expression,
+                  const std::string& v0, const std::string& v1,
+                  const std::string& v2, const std::string& v3)
+         : name_(name),
+           expression_(expression)
+         {
+            v_.push_back(v0); v_.push_back(v1);
+            v_.push_back(v2); v_.push_back(v3);
+         }
+
          inline function& name(const std::string& n)
          {
             name_ = n;
@@ -31685,6 +31765,11 @@ namespace exprtk
             }
          }
 
+         inline virtual T value(expression_t& e)
+         {
+            return e.value();
+         }
+
          expression_t expression;
          varref_t v;
          lvr_vec_t lv;
@@ -31702,7 +31787,7 @@ namespace exprtk
 
          inline T operator()()
          {
-            return base_func::expression.value();
+            return this->value(base_func::expression);
          }
       };
 
@@ -31716,7 +31801,7 @@ namespace exprtk
          {
             base_func::pre();
             base_func::update(v0);
-            T result = base_func::expression.value();
+            T result = this->value(base_func::expression);
             base_func::post();
             return result;
          }
@@ -31730,7 +31815,7 @@ namespace exprtk
          {
             base_func::pre();
             base_func::update(v0,v1);
-            T result = base_func::expression.value();
+            T result = this->value(base_func::expression);
             base_func::post();
             return result;
          }
@@ -31744,7 +31829,7 @@ namespace exprtk
          {
             base_func::pre();
             base_func::update(v0,v1,v2);
-            T result = base_func::expression.value();
+            T result = this->value(base_func::expression);
             base_func::post();
             return result;
          }
@@ -31758,7 +31843,7 @@ namespace exprtk
          {
             base_func::pre();
             base_func::update(v0,v1,v2,v3);
-            T result = base_func::expression.value();
+            T result = this->value(base_func::expression);
             base_func::post();
             return result;
          }
@@ -31772,7 +31857,7 @@ namespace exprtk
          {
             base_func::pre();
             base_func::update(v0,v1,v2,v3,v4);
-            T result = base_func::expression.value();
+            T result = this->value(base_func::expression);
             base_func::post();
             return result;
          }
@@ -31786,11 +31871,48 @@ namespace exprtk
          {
             base_func::pre();
             base_func::update(v0,v1,v2,v3,v4,v5);
-            T result = base_func::expression.value();
+            T result = this->value(base_func::expression);
             base_func::post();
             return result;
          }
       };
+
+      static T return_value(expression_t& e)
+      {
+         typedef exprtk::results_context<T> results_context_t;
+         typedef typename results_context_t::type_store_t type_t;
+         typedef typename type_t::scalar_view scalar_t;
+
+         T result = e.value();
+
+         if (
+              e.return_invoked()         &&
+              (e.results().count() >= 1) &&
+              (type_t::e_scalar == e.results()[0].type)
+            )
+         {
+            result = scalar_t(e.results()[0])();
+         }
+
+         return result;
+      }
+
+      #define def_fp_retval(N)                               \
+      struct func_##N##param_retval : public func_##N##param \
+      {                                                      \
+         inline T value(expression_t& e)                     \
+         {                                                   \
+            return return_value(e);                          \
+         }                                                   \
+      };                                                     \
+
+      def_fp_retval(0)
+      def_fp_retval(1)
+      def_fp_retval(2)
+      def_fp_retval(3)
+      def_fp_retval(4)
+      def_fp_retval(5)
+      def_fp_retval(6)
 
       template <typename Allocator,
                 template <typename,typename> class Sequence>
@@ -31857,89 +31979,14 @@ namespace exprtk
          return add(f.name_,f.expression_,f.v_);
       }
 
-      inline bool add(const std::string& name,
-                      const std::string& expression)
-      {
-         const std::size_t n = 0;
-         std::vector<std::string> v(n);
-         return add(name,expression,v);
-      }
-
-      inline bool add(const std::string& name,
-                      const std::string& expression,
-                      const std::string& v0)
-      {
-         const std::size_t n = 1;
-         std::vector<std::string> v(n);
-         v[0] = v0;
-         return add(name,expression,v);
-      }
-
-      inline bool add(const std::string& name,
-                      const std::string& expression,
-                      const std::string& v0, const std::string& v1)
-      {
-         const std::size_t n = 2;
-         std::vector<std::string> v(n);
-         v[0] = v0; v[1] = v1;
-         return add(name,expression,v);
-      }
-
-      inline bool add(const std::string& name,
-                      const std::string& expression,
-                      const std::string& v0, const std::string& v1, const std::string& v2)
-      {
-         const std::size_t n = 3;
-         std::vector<std::string> v(n);
-         v[0] = v0; v[1] = v1; v[2] = v2;
-         return add(name,expression,v);
-      }
-
-      inline bool add(const std::string& name,
-                      const std::string& expression,
-                      const std::string& v0, const std::string& v1, const std::string& v2,
-                      const std::string& v3)
-      {
-         const std::size_t n = 4;
-         std::vector<std::string> v(n);
-         v[0] = v0; v[1] = v1;
-         v[2] = v2; v[3] = v3;
-         return add(name,expression,v);
-      }
-
-      inline bool add(const std::string& name,
-                      const std::string& expression,
-                      const std::string& v0, const std::string& v1, const std::string& v2,
-                      const std::string& v3, const std::string& v4)
-      {
-         const std::size_t n = 5;
-         std::vector<std::string> v(n);
-         v[0] = v0; v[1] = v1;
-         v[2] = v2; v[3] = v3;
-         v[4] = v4;
-         return add(name,expression,v);
-      }
-
-      inline bool add(const std::string& name,
-                      const std::string& expression,
-                      const std::string& v0, const std::string& v1, const std::string& v2,
-                      const std::string& v3, const std::string& v4, const std::string& v5)
-      {
-         const std::size_t n = 5;
-         std::vector<std::string> v(n);
-         v[0] = v0; v[1] = v1;
-         v[2] = v2; v[3] = v3;
-         v[4] = v4; v[5] = v5;
-         return add(name,expression,v);
-      }
-
    private:
 
       template <typename Allocator,
                 template <typename,typename> class Sequence>
       bool compile_expression(const std::string& name,
                               const std::string& expression,
-                              const Sequence<std::string,Allocator>& input_var_list)
+                              const Sequence<std::string,Allocator>& input_var_list,
+                              bool  return_present = false)
       {
          expression_t compiled_expression;
          symbol_table_t local_symbol_table;
@@ -31947,7 +31994,13 @@ namespace exprtk
          local_symbol_table.load_from(symbol_table_);
          local_symbol_table.add_constants();
 
-         if (!forward(name,input_var_list.size(),local_symbol_table))
+         if (!valid(name,input_var_list.size()))
+            return false;
+
+         if (!forward(name,
+                      input_var_list.size(),
+                      local_symbol_table,
+                      return_present))
             return false;
 
          compiled_expression.register_symbol_table(local_symbol_table);
@@ -31974,6 +32027,13 @@ namespace exprtk
             return false;
          }
 
+         if (!return_present && parser_.dec().return_present())
+         {
+            remove(name,input_var_list.size());
+
+            return compile_expression(name,expression,input_var_list,true);
+         }
+
          expr_map_[name] = compiled_expression;
 
          exprtk::ifunction<T>& ifunc = (*(fp_map_[input_var_list.size()])[name]);
@@ -31981,7 +32041,7 @@ namespace exprtk
          return symbol_table_.add_function(name,ifunc);
       }
 
-      inline bool symbol_used(const std::string& symbol)
+      inline bool symbol_used(const std::string& symbol) const
       {
          return (
                   symbol_table_.is_variable       (symbol) ||
@@ -31992,46 +32052,42 @@ namespace exprtk
                 );
       }
 
-      inline bool forward(const std::string& name, const std::size_t& arg_count, symbol_table_t& sym_table)
+      inline bool valid(const std::string& name,
+                        const std::size_t& arg_count) const
       {
          if (arg_count > 6)
             return false;
          else if (symbol_used(name))
             return false;
-         else
-         {
-            if (fp_map_[arg_count].end() != fp_map_[arg_count].find(name))
-               return false;
-
-            switch (arg_count)
-            {
-               case 0  : (fp_map_[arg_count])[name] = new func_0param(); break;
-               case 1  : (fp_map_[arg_count])[name] = new func_1param(); break;
-               case 2  : (fp_map_[arg_count])[name] = new func_2param(); break;
-               case 3  : (fp_map_[arg_count])[name] = new func_3param(); break;
-               case 4  : (fp_map_[arg_count])[name] = new func_4param(); break;
-               case 5  : (fp_map_[arg_count])[name] = new func_5param(); break;
-               case 6  : (fp_map_[arg_count])[name] = new func_6param(); break;
-            }
-
-            exprtk::ifunction<T>& ifunc = (*(fp_map_[arg_count])[name]);
-
-            return sym_table.add_function(name,ifunc);
-         }
+         else if (fp_map_[arg_count].end() != fp_map_[arg_count].find(name))
+            return false;
+         return true;
       }
 
-      template <typename Allocator,
-                template <typename,typename> class Sequence>
-      inline void remove(const std::string& name, const Sequence<std::string,Allocator>& v)
+      inline bool forward(const std::string& name,
+                          const std::size_t& arg_count,
+                          symbol_table_t& sym_table,
+                          const bool ret_present = false)
       {
-         symbol_table_.remove_function(name);
-
-         for (std::size_t i = 0; i < v.size(); ++i)
+         switch (arg_count)
          {
-            symbol_table_.remove_variable(v[i]);
+            #define case_stmt(N)                                     \
+            case N : (fp_map_[arg_count])[name] =                    \
+                     (!ret_present) ? static_cast<base_func*>        \
+                                      (new func_##N##param) :        \
+                                      static_cast<base_func*>        \
+                                      (new func_##N##param_retval) ; \
+                     break;                                          \
+
+            case_stmt(0) case_stmt(1) case_stmt(2)
+            case_stmt(3) case_stmt(4) case_stmt(5)
+            case_stmt(6)
+            #undef case_stmt
          }
 
-         remove(name,v.size());
+         exprtk::ifunction<T>& ifunc = (*(fp_map_[arg_count])[name]);
+
+         return sym_table.add_function(name,ifunc);
       }
 
       inline void remove(const std::string& name, const std::size_t& arg_count)
@@ -32049,11 +32105,12 @@ namespace exprtk
          typename funcparam_t::iterator fp_itr = fp_map_[arg_count].find(name);
 
          if (fp_map_[arg_count].end() != fp_itr)
-            return;
-         else
+         {
             delete fp_itr->second;
+            fp_map_[arg_count].erase(fp_itr);
+         }
 
-         fp_map_[arg_count].erase(fp_itr);
+         symbol_table_.remove_function(name);
       }
 
    private:
