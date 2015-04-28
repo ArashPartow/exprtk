@@ -5903,7 +5903,7 @@ inline bool run_test19()
                   T(2122700580)
                 };
 
-      bool failure = true;
+      bool failure = false;
 
       for (std::size_t i = 0; i < expr_str_list_size; ++i)
       {
@@ -5934,7 +5934,7 @@ inline bool run_test19()
          }
       }
 
-      if (!failure)
+      if (failure)
          return false;
    }
 

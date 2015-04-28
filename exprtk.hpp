@@ -19385,6 +19385,8 @@ namespace exprtk
                   return error_node();
                else if (!token_is(token_t::e_eof))
                {
+                  free_node(node_allocator_,default_statement);
+
                   set_error(
                      make_error(parser_error::e_syntax,
                                 current_token(),
