@@ -170,6 +170,16 @@ namespace exprtk
                 is_digit(symbol[3]);
       }
 
+      inline const char& front(const std::string& s)
+      {
+         return s[0];
+      }
+
+      inline const char& back(const std::string& s)
+      {
+         return s[s.size() - 1];
+      }
+
       inline std::string to_str(int i)
       {
          if (0 == i)
@@ -32073,8 +32083,8 @@ namespace exprtk
          }
 
          if (
-              ('{' == expression.front()) &&
-              ('}' == expression.back ())
+              ('{' == details::front(expression)) &&
+              ('}' == details::back (expression))
             )
             mod_expression += "~" + expression + ";";
          else
