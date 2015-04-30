@@ -1585,16 +1585,18 @@ as follows:
 
 
 (5) function_compositor
-The function compositor interface allows  a user to define a  function
-using ExprTk syntax. The functions  are limited to returning a  single
-scalar value and consuming up to six parameters as input.
+The function  compositor is  a factory  that allows  one to define and
+construct a function using ExprTk syntax. The functions are limited to
+returning a single scalar value and consuming up to six parameters  as
+input.
 
 All composited functions are registered with a symbol table,  allowing
 them to call other functions that have been registered with the symbol
-table instance, furthermore the functions can be recursive in  nature.
-The following example defines, using two different methods, composited
-functions then  implicitly registers  the functions  with the  denoted
-symbol table.
+table instance. Furthermore the  functions can be recursive  in nature
+due to the inherent  function prototype forwarding that  occurs during
+construction.  The following  example  defines, by using two different
+methods, composited functions and implicitly registering the functions
+with the denoted symbol table.
 
    typedef exprtk::symbol_table<T>         symbol_table_t;
    typedef exprtk::function_compositor<T>    compositor_t;
@@ -1606,9 +1608,11 @@ symbol table.
 
    // define function koo0(v1,v2) { ... }
    compositor
-      .add("koo0",
-           " 1 + cos(v1 * v2) / 3;",
-           "v1","v2");
+      .add(
+        function_t(
+         "koo0",
+         " 1 + cos(v1 * v2) / 3;",
+         "v1","v2"));
 
    // define function koo1(x,y,z) { ... }
    compositor
