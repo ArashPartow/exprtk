@@ -31984,19 +31984,38 @@ namespace exprtk
                 template <typename,typename> class Sequence>
       inline bool add(const std::string& name,
                       const std::string& expression,
-                      const Sequence<std::string,Allocator>& var_list)
+                      const Sequence<std::string,Allocator>& var_list,
+                      const bool override = false)
       {
          const std::size_t n = var_list.size();
 
-         if (expr_map_.end() != expr_map_.find(name))
-            return false;
-         else if (compile_expression(name,expression,var_list))
+         typename std::map<std::string,expression_t>::iterator itr = expr_map_.find(name);
+
+         if (expr_map_.end() != itr)
+         {
+            if (!override)
+            {
+               exprtk_debug(("Compositor error(add): function '%s' already defined\n",
+                             name.c_str()));
+
+               return false;
+            }
+
+            remove(name, var_list.size());
+         }
+
+         if (compile_expression(name,expression,var_list))
          {
             fp_map_[n][name]->setup(expr_map_[name]);
             return true;
          }
          else
+         {
+            exprtk_debug(("Compositor error(add): Failed to compile function '%s'\n",
+                          name.c_str()));
+
             return false;
+         }
       }
 
    public:
@@ -32024,10 +32043,15 @@ namespace exprtk
          return symbol_table_;
       }
 
+      inline void add_auxiliary_symtab(symbol_table_t& symtab)
+      {
+         auxiliary_symtab_list_.push_back(&symtab);
+      }
+
       void clear()
       {
          symbol_table_.clear();
-         expr_map_.clear();
+         expr_map_    .clear();
 
          for (std::size_t i = 0; i < fp_map_.size(); ++i)
          {
@@ -32044,9 +32068,9 @@ namespace exprtk
          }
       }
 
-      inline bool add(const function& f)
+      inline bool add(const function& f, const bool override = false)
       {
-         return add(f.name_,f.expression_,f.v_);
+         return add(f.name_,f.expression_,f.v_,override);
       }
 
    private:
@@ -32075,6 +32099,11 @@ namespace exprtk
 
          compiled_expression.register_symbol_table(local_symbol_table);
 
+         for (std::size_t i = 0; i < auxiliary_symtab_list_.size(); ++i)
+         {
+            compiled_expression.register_symbol_table((*auxiliary_symtab_list_[i]));
+         }
+
          std::string mod_expression;
 
          for (std::size_t i = 0; i < input_var_list.size(); ++i)
@@ -32092,7 +32121,7 @@ namespace exprtk
 
          if (!parser_.compile(mod_expression,compiled_expression))
          {
-            exprtk_debug(("Compositor error: %s\n",parser_.error().c_str()));
+            exprtk_debug(("Compositor Error: %s\n",parser_.error().c_str()));
             exprtk_debug(("Compositor modified expression: \n%s\n",mod_expression.c_str()));
 
             remove(name,input_var_list.size());
@@ -32120,7 +32149,7 @@ namespace exprtk
 
                if (params.empty() || ('T' != params[0]))
                {
-                  exprtk_debug(("Compositor error: Return statement in function '%s' is invalid\n",
+                  exprtk_debug(("Compositor Error: Return statement in function '%s' is invalid\n",
                                 name.c_str()));
 
                   remove(name,input_var_list.size());
@@ -32134,7 +32163,14 @@ namespace exprtk
 
          exprtk::ifunction<T>& ifunc = (*(fp_map_[input_var_list.size()])[name]);
 
-         return symbol_table_.add_function(name,ifunc);
+         if (symbol_table_.add_function(name,ifunc))
+            return true;
+         else
+         {
+            exprtk_debug(("Compositor Error: Failed to add function '%s' to symbol table\n",
+                          name.c_str()));
+            return false;
+         }
       }
 
       inline bool symbol_used(const std::string& symbol) const
@@ -32157,7 +32193,8 @@ namespace exprtk
             return false;
          else if (fp_map_[arg_count].end() != fp_map_[arg_count].find(name))
             return false;
-         return true;
+         else
+            return true;
       }
 
       inline bool forward(const std::string& name,
@@ -32215,6 +32252,7 @@ namespace exprtk
       parser_t parser_;
       std::map<std::string,expression_t> expr_map_;
       std::vector<funcparam_t> fp_map_;
+      std::vector<symbol_table_t*> auxiliary_symtab_list_;
    };
 
    template <typename T>
