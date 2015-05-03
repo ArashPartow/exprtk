@@ -250,9 +250,12 @@ namespace exprtk
 
       inline void cleanup_escapes(std::string& s)
       {
-         std::string::iterator itr1 = s.begin();
-         std::string::iterator itr2 = s.begin();
-         std::string::iterator end  = s.end  ();
+         typedef std::string::iterator str_itr_t;
+
+         str_itr_t itr1 = s.begin();
+         str_itr_t itr2 = s.begin();
+         str_itr_t end  = s.end  ();
+
          std::size_t removal_count  = 0;
 
          while (end != itr1)
@@ -270,7 +273,7 @@ namespace exprtk
                      case 'n' : (*itr1) = '\n'; break;
                      case 'r' : (*itr1) = '\r'; break;
                      case 't' : (*itr1) = '\t'; break;
-                     case '0' : parse_hex(itr1,end,(*itr1));
+                     case '0' : parse_hex(itr1, end, (*itr1));
                                 removal_count += 3;
                                 break;
                   }
@@ -2505,7 +2508,7 @@ namespace exprtk
 
             while (!is_end(s_itr_))
             {
-               if ('\\' == *s_itr_)
+               if (!escaped && ('\\' == *s_itr_))
                {
                   escaped_found = true;
                   escaped = true;

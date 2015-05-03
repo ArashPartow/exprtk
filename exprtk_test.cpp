@@ -2266,7 +2266,11 @@ inline bool run_test02()
                              test_ab<T>("'\\0x30\\n\\0x31\\n\\0x32\\n\\0x33' == '0\\n1\\n2\\n3'" ,"","",T(1.0)),
                              test_ab<T>("('\\0x30' + '') == '0'"                                 ,"","",T(1.0)),
                              test_ab<T>("('\\0x30' + '\\0x31\\0x32') == '012'"                   ,"","",T(1.0)),
-                             test_ab<T>("('\\0x30' + '\\0x31\\0x32' + '\\0x33\\0x34\\0x35') == '012345'" ,"","",T(1.0))
+                             test_ab<T>("('\\0x30' + '\\0x31\\0x32' + '\\0x33\\0x34\\0x35') == '012345'" ,"","",T(1.0)),
+                             test_ab<T>("'a\\'\\\\b' == a" ,"a'\\b","",T(1.0)),
+                             test_ab<T>("'a\\\\\\'b' == a" ,"a\\'b","",T(1.0)),
+                             test_ab<T>("'a\\'\\\\\\\\b' == a" ,"a'\\\\b","",T(1.0)),
+                             test_ab<T>("'a\\0x30\\'\\0x31\\\\\\0x32b' == a" ,"a0'1\\2b","",T(1.0))
                            };
 
    static const std::size_t test_list_size = sizeof(test_list) / sizeof(test_ab<T>);
@@ -2323,10 +2327,14 @@ inline bool run_test02()
 
          if (not_equal(expr_result,test.result))
          {
-            printf("run_test02() - Computation Error:  Expression: [%s]\tExpected: %19.15f\tResult: %19.15f\n",
+            printf("run_test02() - Computation Error:  Expression: [%s]\tExpected: %19.15f\tResult: %19.15f\t"
+                   "a='%s'\tb='%s'\tc='%s'\n",
                    test.expr.c_str(),
                    (double)test.result,
-                   (double)expr_result);
+                   (double)expr_result,
+                   str_a.c_str(),
+                   str_b.c_str(),
+                   str_c.c_str());
 
             result = false;
             continue;
