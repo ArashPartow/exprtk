@@ -32,7 +32,7 @@
 typedef double numeric_type;
 typedef std::pair<std::string,numeric_type> test_t;
 
-static const test_t test_list[] =
+static const test_t global_test_list[] =
                   {
                     // Note: Each of following tests must compile down
                     // to a single literal node.
@@ -1061,7 +1061,7 @@ static const test_t test_list[] =
                     test_t("if (1 > 2) { 1+2; 3;} else if (1 > 2) {1+2; 4;} == null",1.0)
                   };
 
-static const std::size_t test_list_size = sizeof(test_list) / sizeof(test_t);
+static const std::size_t global_test_list_size = sizeof(global_test_list) / sizeof(test_t);
 
 template <typename T>
 inline bool not_equal_impl(const T& t1,
@@ -1165,9 +1165,9 @@ inline bool run_test00()
    for (std::size_t r = 0; r < rounds; ++r)
    {
       bool result = true;
-      for (std::size_t i = 0; i < test_list_size; ++i)
+      for (std::size_t i = 0; i < global_test_list_size; ++i)
       {
-         if (!test_expression<T>(test_list[i].first,T(test_list[i].second)))
+         if (!test_expression<T>(global_test_list[i].first,T(global_test_list[i].second)))
          {
             result = false;
          }
@@ -1576,7 +1576,14 @@ inline bool run_test01()
                                 test_xy<T>("for(var i := 0; (i < 10) and (i != y); i+=2) { x += i; }; x;" ,T(1),T(20),T(21)),
                                 test_xy<T>("for(var i := 0; (i < 10) and (i != y);) { x += i; i+=2; }; x;",T(1),T(20),T(21)),
                                 test_xy<T>("for(var i := 0; (i < y); i += 1) { if (i <= (y / 2)) x += i; else break; }; x;" ,T(0),T(10),T(15)),
-                                test_xy<T>("for(var i := 0; (i < y); i += 1) { if (i <= (y / 2)) continue; else x += i; }; x;" ,T(0),T(10),T(30))
+                                test_xy<T>("for(var i := 0; (i < y); i += 1) { if (i <= (y / 2)) continue; else x += i; }; x;" ,T(0),T(10),T(30)),
+                                test_xy<T>("var a := 2; (0 * a) == 0",T(0),T(0),T(1)),
+                                test_xy<T>("var a := 2; (0 / a) == 0",T(0),T(0),T(1)),
+                                test_xy<T>("var a := 2; (a * 0) == 0",T(0),T(0),T(1)),
+                                test_xy<T>("var a := 2; (a / 1) == a",T(0),T(0),T(1)),
+                                test_xy<T>("var a := 2; (0 + a) == a",T(0),T(0),T(1)),
+                                test_xy<T>("var a := 2; (a + 0) == a",T(0),T(0),T(1)),
+                                test_xy<T>("var a := 2; (1 * a) == a",T(0),T(0),T(1))
                               };
 
       static const std::size_t test_list_size = sizeof(test_list) / sizeof(test_xy<T>);
@@ -2270,80 +2277,111 @@ inline bool run_test02()
                              test_ab<T>("'a\\'\\\\b' == a" ,"a'\\b","",T(1.0)),
                              test_ab<T>("'a\\\\\\'b' == a" ,"a\\'b","",T(1.0)),
                              test_ab<T>("'a\\'\\\\\\\\b' == a" ,"a'\\\\b","",T(1.0)),
-                             test_ab<T>("'a\\0x30\\'\\0x31\\\\\\0x32b' == a" ,"a0'1\\2b","",T(1.0))
+                             test_ab<T>("'a\\0x30\\'\\0x31\\\\\\0x32b' == a" ,"a0'1\\2b","",T(1.0)),
+
+                             test_ab<T>("var x := 3; x > 2 and 'abc' like  '*bc'"   ,"","",T(1.0)),
+                             test_ab<T>("var x := 3; x > 2 and 'abc' ilike '*Bc'"   ,"","",T(1.0)),
+                             test_ab<T>("var x := 3; x > 2 and 'abc' in '123abc123'","","",T(1.0)),
+
+                             test_ab<T>("var x := 3; var s := 'abc'; x > 2 and s like  '*bc'"   ,"","",T(1.0)),
+                             test_ab<T>("var x := 3; var s := 'abc'; x > 2 and s ilike '*Bc'"   ,"","",T(1.0)),
+                             test_ab<T>("var x := 3; var s := 'abc'; x > 2 and s in '123abc123'","","",T(1.0)),
+
+                             test_ab<T>("var x := 3; var s := 'abc'; var t := '*bc'; x > 2 and s like  t"   ,"","",T(1.0)),
+                             test_ab<T>("var x := 3; var s := 'abc'; var t := '*Bc'; x > 2 and s ilike t"   ,"","",T(1.0)),
+                             test_ab<T>("var x := 3; var s := 'abc'; var t := '123abc123'; x > 2 and s in t","","",T(1.0)),
+
+                             test_ab<T>("var x := 3; x > 2 and a like  '*bc'"   ,"abc","",T(1.0)),
+                             test_ab<T>("var x := 3; x > 2 and a ilike '*Bc'"   ,"abc","",T(1.0)),
+                             test_ab<T>("var x := 3; x > 2 and a in '123abc123'","abc","",T(1.0)),
+
+                             test_ab<T>("var x := 3; x > 2 and a like b ","abc","*bc",T(1.0)),
+                             test_ab<T>("var x := 3; x > 2 and a ilike b","abc","*Bc",T(1.0)),
+                             test_ab<T>("var x := 3; x > 2 and a in b   ","abc","123abc123",T(1.0)),
+
+                             test_ab<T>("a[] > 2 and a like  '*bc'"   ,"abc","",T(1.0)),
+                             test_ab<T>("a[] > 2 and a ilike '*Bc'"   ,"abc","",T(1.0)),
+                             test_ab<T>("a[] > 2 and a in '123abc123'","abc","",T(1.0)),
+
+                             test_ab<T>("a[] > 2 and a like b ","abc","*bc",T(1.0)),
+                             test_ab<T>("a[] > 2 and a ilike b","abc","*Bc",T(1.0)),
+                             test_ab<T>("a[] > 2 and a in b   ","abc","123abc123",T(1.0))
                            };
 
    static const std::size_t test_list_size = sizeof(test_list) / sizeof(test_ab<T>);
 
-   const std::size_t rounds = 50;
-   for (std::size_t r = 0; r < rounds; ++r)
    {
-      bool result = true;
+      const std::size_t rounds = 50;
 
-      for (std::size_t i = 0; i < test_list_size; ++i)
+      for (std::size_t r = 0; r < rounds; ++r)
       {
-         test_ab<T>& test = const_cast<test_ab<T>&>(test_list[i]);
+         bool result = true;
 
-         std::string str_a;
-         std::string str_b;
-         std::string str_c;
-
-         T r0 = T(2);
-         T r1 = T(6);
-         T r2 = T(7);
-         T r3 = T(3);
-
-         exprtk::symbol_table<T> symbol_table;
-         symbol_table.add_stringvar("a" ,str_a);
-         symbol_table.add_stringvar("b" ,str_b);
-         symbol_table.add_stringvar("c" ,str_c);
-         symbol_table.add_variable ("r0",   r0);
-         symbol_table.add_variable ("r1",   r1);
-         symbol_table.add_variable ("r2",   r2);
-         symbol_table.add_variable ("r3",   r3);
-
-         exprtk::expression<T> expression;
-         expression.register_symbol_table(symbol_table);
-
+         for (std::size_t i = 0; i < test_list_size; ++i)
          {
-            exprtk::parser<T> parser;
+            test_ab<T>& test = const_cast<test_ab<T>&>(test_list[i]);
 
-            if (!parser.compile(test.expr,expression))
+            std::string str_a;
+            std::string str_b;
+            std::string str_c;
+
+            T r0 = T(2);
+            T r1 = T(6);
+            T r2 = T(7);
+            T r3 = T(3);
+
+            exprtk::symbol_table<T> symbol_table;
+            symbol_table.add_stringvar("a", str_a);
+            symbol_table.add_stringvar("b", str_b);
+            symbol_table.add_stringvar("c", str_c);
+            symbol_table.add_variable("r0", r0);
+            symbol_table.add_variable("r1", r1);
+            symbol_table.add_variable("r2", r2);
+            symbol_table.add_variable("r3", r3);
+
+            exprtk::expression<T> expression;
+            expression.register_symbol_table(symbol_table);
+
             {
-               printf("run_test02() - Error: %s   Expression: %s\n",
-                      parser.error().c_str(),
-                      test.expr.c_str());
+               exprtk::parser<T> parser;
+
+               if (!parser.compile(test.expr, expression))
+               {
+                  printf("run_test02() - Error: %s   Expression: %s\n",
+                     parser.error().c_str(),
+                     test.expr.c_str());
+
+                  result = false;
+                  continue;
+               }
+            }
+
+            str_a = test.a;
+            str_b = test.b;
+            str_c = test.c;
+
+            T expr_result = expression.value();
+
+            if (not_equal(expr_result, test.result))
+            {
+               printf("run_test02() - Computation Error:  Expression: [%s]\tExpected: %19.15f\tResult: %19.15f\t"
+                  "a='%s'\tb='%s'\tc='%s'\n",
+                  test.expr.c_str(),
+                  (double)test.result,
+                  (double)expr_result,
+                  str_a.c_str(),
+                  str_b.c_str(),
+                  str_c.c_str());
 
                result = false;
                continue;
             }
          }
 
-         str_a = test.a;
-         str_b = test.b;
-         str_c = test.c;
-
-         T expr_result = expression.value();
-
-         if (not_equal(expr_result,test.result))
+         if (!result)
          {
-            printf("run_test02() - Computation Error:  Expression: [%s]\tExpected: %19.15f\tResult: %19.15f\t"
-                   "a='%s'\tb='%s'\tc='%s'\n",
-                   test.expr.c_str(),
-                   (double)test.result,
-                   (double)expr_result,
-                   str_a.c_str(),
-                   str_b.c_str(),
-                   str_c.c_str());
-
-            result = false;
-            continue;
+            return false;
          }
-      }
-
-      if (!result)
-      {
-         return false;
       }
    }
 
@@ -2490,6 +2528,117 @@ inline bool run_test03()
       }
 
       expression.value();
+   }
+
+   {
+      static const std::string invalid_expr[] =
+                                 {
+                                   "x y",
+                                   "x y z",
+                                   "x y z w",
+                                   "x 1",
+                                   "x 1 2",
+                                   "x 1 2 3",
+                                   "x 'abc'",
+                                   "x 1 'abc'",
+                                   "x 'abc' 1",
+                                   "1 2",
+                                   "1 2 3",
+                                   "1 2 3 4",
+                                   "'abc' 'xyz'",
+                                   "'abc' 1",
+                                   "1 'abc'",
+                                   "x sin(1)",
+                                   "s 'abc'",
+                                   "s x",
+                                   "s y",
+                                   "s 1",
+                                   "s 1 x",
+                                   "s 1 y",
+                                   "s x 1",
+                                   "s y 1",
+                                   "x s ",
+                                   "y s ",
+                                   "1 s ",
+                                   "1 s x",
+                                   "1 s y",
+                                   "x s 1",
+                                   "y s 1",
+                                   "v 'abc'",
+                                   "v x  ",
+                                   "v y  ",
+                                   "v s  ",
+                                   "v 1  ",
+                                   "v 1 x",
+                                   "v 1 y",
+                                   "v 1 s",
+                                   "v x 1",
+                                   "v y 1",
+                                   "v s 1",
+                                   "x v  ",
+                                   "y v  ",
+                                   "1 v  ",
+                                   "1 v x",
+                                   "1 v y",
+                                   "x v 1",
+                                   "y v 1"
+                                 };
+
+      const std::size_t invalid_expr_size = sizeof(invalid_expr) / sizeof(std::string);
+
+      {
+         for (std::size_t i = 0; i < invalid_expr_size; ++i)
+         {
+            exprtk::symbol_table<T> symbol_table;
+
+            exprtk::expression<T> expression;
+
+            T x = T(0);
+            std::string s;
+            std::vector<T> v(10, T(1.234));
+
+            symbol_table.add_variable ("x",x);
+            symbol_table.add_stringvar("s",s);
+            symbol_table.add_vector   ("v",v);
+
+            exprtk::parser<T> parser;
+
+            if (parser.compile(invalid_expr[i],expression))
+            {
+               printf("run_test03() - Error: [1] Invalid expression compiled successfuly.   Expression: %s\n",
+                      invalid_expr[i].c_str());
+
+               return false;
+            }
+         }
+      }
+
+      {
+         T x = T(0);
+         std::string s;
+         std::vector<T> v(10, T(1.234));
+
+         exprtk::symbol_table<T> symbol_table;
+
+         symbol_table.add_variable ("x",x);
+         symbol_table.add_stringvar("s",s);
+         symbol_table.add_vector   ("v",v);
+
+         exprtk::parser<T> parser;
+
+         for (std::size_t i = 0; i < invalid_expr_size; ++i)
+         {
+            exprtk::expression<T> expression;
+
+            if (parser.compile(invalid_expr[i],expression))
+            {
+               printf("run_test03() - Error: [2] Invalid expression compiled successfuly.   Expression: %s\n",
+                      invalid_expr[i].c_str());
+
+               return false;
+            }
+         }
+      }
    }
 
    return true;
@@ -2977,95 +3126,149 @@ struct myfunc : public exprtk::ifunction<T>
    }
 };
 
+double foo1(double v0) { return v0; }
+double foo2(double v0, double v1) { return v0 + v1; }
+double foo3(double v0, double v1, double v2) { return v0 + v1 + v2; }
+double foo4(double v0, double v1, double v2, double v3) { return v0 + v1 + v2 + v3; }
+double foo5(double v0, double v1, double v2, double v3, double v4) { return v0 + v1 + v2 + v3 + v4; }
+
 template <typename T>
 inline bool run_test09()
 {
-   static const std::size_t rounds = 1000;
-   for (std::size_t i = 0; i < rounds; ++i)
    {
-      typedef exprtk::expression<T> expression_t;
-      std::string expression_string = "myfunc0(sin(x * pi),y / 2) + myfunc1(sin(x * pi),y / 2)+"
-                                      "myfunc2(sin(x * pi),y / 2) + myfunc3(sin(x * pi),y / 2)+"
-                                      "myfunc4(sin(x * pi),y / 2) + myfunc5(sin(x * pi),y / 2)+"
-                                      "myfunc6(sin(x * pi),y / 2) + myfunc7(sin(x * pi),y / 2)+"
-                                      "myfunc8(sin(x * pi),y / 2) + myfunc9(sin(x * pi),y / 2)+"
-                                      "myfunc0(sin(x * pi),y / 2) + myfunc1(sin(x * pi),y / 2)+"
-                                      "myfunc2(sin(x * pi),y / 2) + myfunc3(sin(x * pi),y / 2)+"
-                                      "myfunc4(sin(x * pi),y / 2) + myfunc5(sin(x * pi),y / 2)+"
-                                      "myfunc6(sin(x * pi),y / 2) + myfunc7(sin(x * pi),y / 2)+"
-                                      "myfunc8(sin(x * pi),y / 2) + myfunc9(sin(x * pi),y / 2)+"
-                                      "myfunc0(sin(x * pi),y / 2) + myfunc1(sin(x * pi),y / 2)+"
-                                      "myfunc2(sin(x * pi),y / 2) + myfunc3(sin(x * pi),y / 2)+"
-                                      "myfunc4(sin(x * pi),y / 2) + myfunc5(sin(x * pi),y / 2)+"
-                                      "myfunc6(sin(x * pi),y / 2) + myfunc7(sin(x * pi),y / 2)+"
-                                      "myfunc8(sin(x * pi),y / 2) + myfunc9(sin(x * pi),y / 2)+"
-                                      "myfunc0(sin(x * pi),y / 2) + myfunc1(sin(x * pi),y / 2)+"
-                                      "myfunc2(sin(x * pi),y / 2) + myfunc3(sin(x * pi),y / 2)+"
-                                      "myfunc4(sin(x * pi),y / 2) + myfunc5(sin(x * pi),y / 2)+"
-                                      "myfunc6(sin(x * pi),y / 2) + myfunc7(sin(x * pi),y / 2)+"
-                                      "myfunc8(sin(x * pi),y / 2) + myfunc9(sin(x * pi),y / 2)";
-
-      T x = T(1) + (i / T(10000));
-      T y = T(2) + (i / T(10000));
-      myfunc<T> mf;
-
-      exprtk::symbol_table<T> symbol_table;
-      symbol_table.add_variable("x",x);
-      symbol_table.add_variable("y",y);
-      symbol_table.add_function("myfunc0",mf);
-      symbol_table.add_function("myfunc1",mf);
-      symbol_table.add_function("myfunc2",mf);
-      symbol_table.add_function("myfunc3",mf);
-      symbol_table.add_function("myfunc4",mf);
-      symbol_table.add_function("myfunc5",mf);
-      symbol_table.add_function("myfunc6",mf);
-      symbol_table.add_function("myfunc7",mf);
-      symbol_table.add_function("myfunc8",mf);
-      symbol_table.add_function("myfunc9",mf);
-      symbol_table.add_constants();
-
-      expression_t expression;
-      expression.register_symbol_table(symbol_table);
-
+      static const std::size_t rounds = 1000;
+      for (std::size_t i = 0; i < rounds; ++i)
       {
-         exprtk::parser<T> parser;
+         typedef exprtk::expression<T> expression_t;
+         std::string expression_string = "myfunc0(sin(x * pi),y / 2) + myfunc1(sin(x * pi),y / 2)+"
+                                         "myfunc2(sin(x * pi),y / 2) + myfunc3(sin(x * pi),y / 2)+"
+                                         "myfunc4(sin(x * pi),y / 2) + myfunc5(sin(x * pi),y / 2)+"
+                                         "myfunc6(sin(x * pi),y / 2) + myfunc7(sin(x * pi),y / 2)+"
+                                         "myfunc8(sin(x * pi),y / 2) + myfunc9(sin(x * pi),y / 2)+"
+                                         "myfunc0(sin(x * pi),y / 2) + myfunc1(sin(x * pi),y / 2)+"
+                                         "myfunc2(sin(x * pi),y / 2) + myfunc3(sin(x * pi),y / 2)+"
+                                         "myfunc4(sin(x * pi),y / 2) + myfunc5(sin(x * pi),y / 2)+"
+                                         "myfunc6(sin(x * pi),y / 2) + myfunc7(sin(x * pi),y / 2)+"
+                                         "myfunc8(sin(x * pi),y / 2) + myfunc9(sin(x * pi),y / 2)+"
+                                         "myfunc0(sin(x * pi),y / 2) + myfunc1(sin(x * pi),y / 2)+"
+                                         "myfunc2(sin(x * pi),y / 2) + myfunc3(sin(x * pi),y / 2)+"
+                                         "myfunc4(sin(x * pi),y / 2) + myfunc5(sin(x * pi),y / 2)+"
+                                         "myfunc6(sin(x * pi),y / 2) + myfunc7(sin(x * pi),y / 2)+"
+                                         "myfunc8(sin(x * pi),y / 2) + myfunc9(sin(x * pi),y / 2)+"
+                                         "myfunc0(sin(x * pi),y / 2) + myfunc1(sin(x * pi),y / 2)+"
+                                         "myfunc2(sin(x * pi),y / 2) + myfunc3(sin(x * pi),y / 2)+"
+                                         "myfunc4(sin(x * pi),y / 2) + myfunc5(sin(x * pi),y / 2)+"
+                                         "myfunc6(sin(x * pi),y / 2) + myfunc7(sin(x * pi),y / 2)+"
+                                         "myfunc8(sin(x * pi),y / 2) + myfunc9(sin(x * pi),y / 2)";
 
-         if (!parser.compile(expression_string,expression))
+         T x = T(1) + (i / T(10000));
+         T y = T(2) + (i / T(10000));
+         myfunc<T> mf;
+
+         exprtk::symbol_table<T> symbol_table;
+         symbol_table.add_variable("x",x);
+         symbol_table.add_variable("y",y);
+         symbol_table.add_function("myfunc0",mf);
+         symbol_table.add_function("myfunc1",mf);
+         symbol_table.add_function("myfunc2",mf);
+         symbol_table.add_function("myfunc3",mf);
+         symbol_table.add_function("myfunc4",mf);
+         symbol_table.add_function("myfunc5",mf);
+         symbol_table.add_function("myfunc6",mf);
+         symbol_table.add_function("myfunc7",mf);
+         symbol_table.add_function("myfunc8",mf);
+         symbol_table.add_function("myfunc9",mf);
+         symbol_table.add_constants();
+
+         expression_t expression;
+         expression.register_symbol_table(symbol_table);
+
          {
-            printf("run_test09() - Error: %s   Expression: %s\n",
-                   parser.error().c_str(),
-                   expression_string.c_str());
+            exprtk::parser<T> parser;
+
+            if (!parser.compile(expression_string,expression))
+            {
+               printf("run_test09() - Error: %s   Expression: %s\n",
+                      parser.error().c_str(),
+                      expression_string.c_str());
+
+               return false;
+            }
+         }
+
+         const T pi = T(3.141592653589793238462);
+
+         T result = expression.value();
+
+         T expected = T(4) *
+                      (
+                         mf(sin(x*pi),y / T(2)) +
+                         mf(sin(x*pi),y / T(2)) +
+                         mf(sin(x*pi),y / T(2)) +
+                         mf(sin(x*pi),y / T(2)) +
+                         mf(sin(x*pi),y / T(2)) +
+                         mf(sin(x*pi),y / T(2)) +
+                         mf(sin(x*pi),y / T(2)) +
+                         mf(sin(x*pi),y / T(2)) +
+                         mf(sin(x*pi),y / T(2)) +
+                         mf(sin(x*pi),y / T(2))
+                      );
+
+         if (not_equal(result,expected,T(0.0000001)))
+         {
+            printf("run_test09() - Error Expected: %19.15f\tResult: %19.15f\n",
+                   (double)expected,
+                   (double)result);
 
             return false;
          }
       }
+   }
 
-      const T pi = T(3.141592653589793238462);
+   {
+      typedef exprtk::expression<T>   expression_t;
+      typedef exprtk::symbol_table<T> symbol_table_t;
 
-      T result = expression.value();
+      bool result = true;
 
-      T expected = T(4) *
-                   (
-                      mf(sin(x*pi),y / T(2)) +
-                      mf(sin(x*pi),y / T(2)) +
-                      mf(sin(x*pi),y / T(2)) +
-                      mf(sin(x*pi),y / T(2)) +
-                      mf(sin(x*pi),y / T(2)) +
-                      mf(sin(x*pi),y / T(2)) +
-                      mf(sin(x*pi),y / T(2)) +
-                      mf(sin(x*pi),y / T(2)) +
-                      mf(sin(x*pi),y / T(2)) +
-                      mf(sin(x*pi),y / T(2))
-                   );
+      const std::string expression_list[] =
+                           {
+                             "foo1(1)         == 1",
+                             "foo2(1,2)       == (1 + 2)",
+                             "foo3(1,2,3)     == (1 + 2 + 3)",
+                             "foo4(1,2,3,4)   == (1 + 2 + 3 + 4)",
+                             "foo5(1,2,3,4,5) == (1 + 2 + 3 + 4 + 5)"
+                           };
 
-      if (not_equal(result,expected,T(0.0000001)))
+      const std::size_t expression_list_size = sizeof(expression_list) / sizeof(std::string);
+
+      symbol_table_t symbol_table;
+
+      symbol_table.add_function("foo1",foo1);
+      symbol_table.add_function("foo2",foo2);
+      symbol_table.add_function("foo3",foo3);
+      symbol_table.add_function("foo4",foo4);
+      symbol_table.add_function("foo5",foo5);
+
+      for (std::size_t i = 0; i < expression_list_size; ++i)
       {
-         printf("run_test09() - Error Expected: %19.15f\tResult: %19.15f\n",
-                (double)expected,
-                (double)result);
+         expression_t expression;
+         expression.register_symbol_table(symbol_table);
 
-         return false;
+         exprtk::parser<T> parser;
+
+         if (!parser.compile(expression_list[i],expression))
+         {
+            printf("run_test09() - Error: %s   Expression: %s\n",
+                   parser.error().c_str(),
+                   expression_list[i].c_str());
+
+            result = false;
+         }
       }
+
+      if (!result)
+         return false;
    }
 
    return true;
@@ -3081,12 +3284,10 @@ inline bool run_test10()
    T xx = T(3.3);
    T yy = T(4.4);
 
-   std::string i  = "A String";
-   std::string j  = "Another String";
-   std::string ii = "A String";
-   std::string jj = "Another String";
-
-   exprtk::symbol_table<T> symbol_table;
+   std::string i_s  = "A String";
+   std::string j_s  = "Another String";
+   std::string ii_s = "A String";
+   std::string jj_s = "Another String";
 
    struct test
    {
@@ -3111,361 +3312,365 @@ inline bool run_test10()
       }
    };
 
-   static const std::size_t rounds = 10;
-
-   for (std::size_t r = 0; r < rounds; ++r)
    {
-      symbol_table.add_variable("x",  x);
-      symbol_table.add_variable("y",  y);
-      symbol_table.add_variable("xx",xx);
-      symbol_table.add_variable("yy",yy);
+      static const std::size_t rounds = 10;
 
-      if (!symbol_table.symbol_exists("x"))
-      {
-         printf("run_test10() - Symbol 'x' does not exist!\n");
-         return false;
-      }
-      else if (!symbol_table.symbol_exists("y"))
-      {
-         printf("run_test10() - Symbol 'y' does not exist!\n");
-         return false;
-      }
-      else if (!symbol_table.symbol_exists("xx"))
-      {
-         printf("run_test10() - Symbol 'xx' does not exist!\n");
-         return false;
-      }
-      else if (!symbol_table.symbol_exists("yy"))
-      {
-         printf("run_test10() - Symbol 'yy' does not exist!\n");
-         return false;
-      }
-      else if (!test::variable(symbol_table,"x",x))
-      {
-         printf("run_test10() - Symbol 'x' value failure!\n");
-         return false;
-      }
-      else if (!test::variable(symbol_table,"y",y))
-      {
-         printf("run_test10() - Symbol 'y' value failure!\n");
-         return false;
-      }
-      else if (!test::variable(symbol_table,"xx",xx))
-      {
-         printf("run_test10() - Symbol 'xx' value failure!\n");
-         return false;
-      }
-      else if (!test::variable(symbol_table,"yy",yy))
-      {
-         printf("run_test10() - Symbol 'yy' value failure!\n");
-         return false;
-      }
+      exprtk::symbol_table<T> symbol_table;
 
-      if (!symbol_table.remove_variable("x"))
+      for (std::size_t r = 0; r < rounds; ++r)
       {
-         printf("run_test10() - Failed to remove symbol 'x'!\n");
-         return false;
-      }
-      else if (!symbol_table.remove_variable("y"))
-      {
-         printf("run_test10() - Failed to remove symbol 'y'!\n");
-         return false;
-      }
-      else if (!symbol_table.remove_variable("xx"))
-      {
-         printf("run_test10() - Failed to remove symbol 'xx'!\n");
-         return false;
-      }
-      else if (!symbol_table.remove_variable("yy"))
-      {
-         printf("run_test10() - Failed to remove symbol 'yy'!\n");
-         return false;
-      }
-   }
+         symbol_table.add_variable("x", x);
+         symbol_table.add_variable("y", y);
+         symbol_table.add_variable("xx", xx);
+         symbol_table.add_variable("yy", yy);
 
-   for (std::size_t r = 0; r < rounds; ++r)
-   {
-      myfunc<T> mf;
-
-      symbol_table.add_function("f",mf);
-      symbol_table.add_function("f1",mf);
-
-      if (!symbol_table.symbol_exists("f"))
-      {
-         printf("run_test10() - function 'f' does not exist!\n");
-         return false;
-      }
-      else if (!symbol_table.symbol_exists("f1"))
-      {
-         printf("run_test10() - function 'f1' does not exist!\n");
-         return false;
-      }
-
-      if (!symbol_table.remove_function("f"))
-      {
-         printf("run_test10() - Failed to remove function 'f'!\n");
-         return false;
-      }
-      else if (!symbol_table.remove_function("f1"))
-      {
-         printf("run_test10() - Failed to remove function 'f1'!\n");
-         return false;
-      }
-   }
-
-   for (std::size_t r = 0; r < rounds; ++r)
-   {
-      symbol_table.add_stringvar("i",i);
-      symbol_table.add_stringvar("j",j);
-
-      symbol_table.add_stringvar("ii",ii);
-      symbol_table.add_stringvar("jj",jj);
-
-      if (!symbol_table.symbol_exists("i"))
-      {
-         printf("run_test10() - String 'i' does not exist!\n");
-         return false;
-      }
-      else if (!symbol_table.symbol_exists("j"))
-      {
-         printf("run_test10() - String 'j' does not exist!\n");
-         return false;
-      }
-      else if (!symbol_table.symbol_exists("ii"))
-      {
-         printf("run_test10() - String 'ii' does not exist!\n");
-         return false;
-      }
-      else if (!symbol_table.symbol_exists("jj"))
-      {
-         printf("run_test10() - String 'jj' does not exist!\n");
-         return false;
-      }
-      else if (!test::string(symbol_table,"i",i))
-      {
-         printf("run_test10() - String 'i' value failure!\n");
-         return false;
-      }
-      else if (!test::string(symbol_table,"j",j))
-      {
-         printf("run_test10() - String 'j' value failure!\n");
-         return false;
-      }
-      else if (!test::string(symbol_table,"ii",ii))
-      {
-         printf("run_test10() - String 'ii' value failure!\n");
-         return false;
-      }
-      else if (!test::string(symbol_table,"jj",jj))
-      {
-         printf("run_test10() - String 'jj' value failure!\n");
-         return false;
-      }
-      else if (!symbol_table.remove_stringvar("i"))
-      {
-         printf("run_test10() - Failed to remove String 'i'!\n");
-         return false;
-      }
-      else if (!symbol_table.remove_stringvar("j"))
-      {
-         printf("run_test10() - Failed to remove String 'j'!\n");
-         return false;
-      }
-      else if (!symbol_table.remove_stringvar("ii"))
-      {
-         printf("run_test10() - Failed to remove String 'ii'!\n");
-         return false;
-      }
-      else if (!symbol_table.remove_stringvar("jj"))
-      {
-         printf("run_test10() - Failed to remove String 'jj'!\n");
-         return false;
-      }
-   }
-
-   for (std::size_t r = 0; r < rounds; ++r)
-   {
-      symbol_table.add_variable("x",  x);
-      symbol_table.add_variable("y",  y);
-      symbol_table.add_variable("xx",xx);
-      symbol_table.add_variable("yy",yy);
-
-      std::vector<std::string> expected_var_list;
-
-      expected_var_list.push_back( "x");
-      expected_var_list.push_back( "y");
-      expected_var_list.push_back("xx");
-      expected_var_list.push_back("yy");
-
-      std::deque<std::pair<std::string,T> > variable_list;
-
-      symbol_table.get_variable_list(variable_list);
-
-      if (variable_list.size() != expected_var_list.size())
-      {
-         printf("run_test10() - Failed to get variable list (1)\n");
-         return false;
-      }
-
-      std::size_t found_count = 0;
-
-      for (std::size_t i = 0; i < variable_list.size(); ++i)
-      {
-         for (std::size_t j = 0; j < expected_var_list.size(); ++j)
+         if (!symbol_table.symbol_exists("x"))
          {
-            if (variable_list[i].first == expected_var_list[j])
-            {
-               ++found_count;
-               break;
-            }
+            printf("run_test10() - Symbol 'x' does not exist!\n");
+            return false;
+         }
+         else if (!symbol_table.symbol_exists("y"))
+         {
+            printf("run_test10() - Symbol 'y' does not exist!\n");
+            return false;
+         }
+         else if (!symbol_table.symbol_exists("xx"))
+         {
+            printf("run_test10() - Symbol 'xx' does not exist!\n");
+            return false;
+         }
+         else if (!symbol_table.symbol_exists("yy"))
+         {
+            printf("run_test10() - Symbol 'yy' does not exist!\n");
+            return false;
+         }
+         else if (!test::variable(symbol_table, "x", x))
+         {
+            printf("run_test10() - Symbol 'x' value failure!\n");
+            return false;
+         }
+         else if (!test::variable(symbol_table, "y", y))
+         {
+            printf("run_test10() - Symbol 'y' value failure!\n");
+            return false;
+         }
+         else if (!test::variable(symbol_table, "xx", xx))
+         {
+            printf("run_test10() - Symbol 'xx' value failure!\n");
+            return false;
+         }
+         else if (!test::variable(symbol_table, "yy", yy))
+         {
+            printf("run_test10() - Symbol 'yy' value failure!\n");
+            return false;
+         }
+
+         if (!symbol_table.remove_variable("x"))
+         {
+            printf("run_test10() - Failed to remove symbol 'x'!\n");
+            return false;
+         }
+         else if (!symbol_table.remove_variable("y"))
+         {
+            printf("run_test10() - Failed to remove symbol 'y'!\n");
+            return false;
+         }
+         else if (!symbol_table.remove_variable("xx"))
+         {
+            printf("run_test10() - Failed to remove symbol 'xx'!\n");
+            return false;
+         }
+         else if (!symbol_table.remove_variable("yy"))
+         {
+            printf("run_test10() - Failed to remove symbol 'yy'!\n");
+            return false;
          }
       }
 
-      if (found_count != expected_var_list.size())
+      for (std::size_t r = 0; r < rounds; ++r)
       {
-         printf("run_test10() - Failed to get variable list (2)\n");
-         return false;
-      }
-   }
+         myfunc<T> mf;
 
-   for (std::size_t r = 0; r < rounds; ++r)
-   {
-      symbol_table.add_variable("x",  x);
-      symbol_table.add_variable("y",  y);
-      symbol_table.add_variable("xx",xx);
-      symbol_table.add_variable("yy",yy);
+         symbol_table.add_function("f", mf);
+         symbol_table.add_function("f1", mf);
 
-      std::vector<std::string> expected_var_list;
-
-      expected_var_list.push_back( "x");
-      expected_var_list.push_back( "y");
-      expected_var_list.push_back("xx");
-      expected_var_list.push_back("yy");
-
-      std::deque<std::string> variable_list;
-
-      symbol_table.get_variable_list(variable_list);
-
-      if (variable_list.size() != expected_var_list.size())
-      {
-         printf("run_test10() - Failed to get variable list (3)\n");
-         return false;
-      }
-
-      std::size_t found_count = 0;
-
-      for (std::size_t i = 0; i < variable_list.size(); ++i)
-      {
-         for (std::size_t j = 0; j < expected_var_list.size(); ++j)
+         if (!symbol_table.symbol_exists("f"))
          {
-            if (variable_list[i] == expected_var_list[j])
-            {
-               ++found_count;
-               break;
-            }
+            printf("run_test10() - function 'f' does not exist!\n");
+            return false;
+         }
+         else if (!symbol_table.symbol_exists("f1"))
+         {
+            printf("run_test10() - function 'f1' does not exist!\n");
+            return false;
+         }
+
+         if (!symbol_table.remove_function("f"))
+         {
+            printf("run_test10() - Failed to remove function 'f'!\n");
+            return false;
+         }
+         else if (!symbol_table.remove_function("f1"))
+         {
+            printf("run_test10() - Failed to remove function 'f1'!\n");
+            return false;
          }
       }
 
-      if (found_count != expected_var_list.size())
+      for (std::size_t r = 0; r < rounds; ++r)
       {
-         printf("run_test10() - Failed to get variable list (4)\n");
-         return false;
-      }
-   }
+         symbol_table.add_stringvar("i", i_s);
+         symbol_table.add_stringvar("j", j_s);
 
-   for (std::size_t r = 0; r < rounds; ++r)
-   {
-      symbol_table.add_stringvar( "i", i);
-      symbol_table.add_stringvar( "j", j);
-      symbol_table.add_stringvar("ii",ii);
-      symbol_table.add_stringvar("jj",jj);
+         symbol_table.add_stringvar("ii", ii_s);
+         symbol_table.add_stringvar("jj", jj_s);
 
-      std::vector<std::string> expected_var_list;
-
-      expected_var_list.push_back( "i");
-      expected_var_list.push_back( "j");
-      expected_var_list.push_back("ii");
-      expected_var_list.push_back("jj");
-
-      std::deque<std::pair<std::string,std::string> > stringvar_list;
-
-      symbol_table.get_stringvar_list(stringvar_list);
-
-      if (stringvar_list.size() != expected_var_list.size())
-      {
-         printf("run_test10() - Failed to get stringvar list (1)\n");
-         return false;
-      }
-
-      std::size_t found_count = 0;
-
-      for (std::size_t i = 0; i < stringvar_list.size(); ++i)
-      {
-         for (std::size_t j = 0; j < expected_var_list.size(); ++j)
+         if (!symbol_table.symbol_exists("i"))
          {
-            if (stringvar_list[i].first == expected_var_list[j])
-            {
-               ++found_count;
-               break;
-            }
+            printf("run_test10() - String 'i' does not exist!\n");
+            return false;
+         }
+         else if (!symbol_table.symbol_exists("j"))
+         {
+            printf("run_test10() - String 'j' does not exist!\n");
+            return false;
+         }
+         else if (!symbol_table.symbol_exists("ii"))
+         {
+            printf("run_test10() - String 'ii' does not exist!\n");
+            return false;
+         }
+         else if (!symbol_table.symbol_exists("jj"))
+         {
+            printf("run_test10() - String 'jj' does not exist!\n");
+            return false;
+         }
+         else if (!test::string(symbol_table, "i", i_s))
+         {
+            printf("run_test10() - String 'i' value failure!\n");
+            return false;
+         }
+         else if (!test::string(symbol_table, "j", j_s))
+         {
+            printf("run_test10() - String 'j' value failure!\n");
+            return false;
+         }
+         else if (!test::string(symbol_table, "ii", ii_s))
+         {
+            printf("run_test10() - String 'ii' value failure!\n");
+            return false;
+         }
+         else if (!test::string(symbol_table, "jj", jj_s))
+         {
+            printf("run_test10() - String 'jj' value failure!\n");
+            return false;
+         }
+         else if (!symbol_table.remove_stringvar("i"))
+         {
+            printf("run_test10() - Failed to remove String 'i'!\n");
+            return false;
+         }
+         else if (!symbol_table.remove_stringvar("j"))
+         {
+            printf("run_test10() - Failed to remove String 'j'!\n");
+            return false;
+         }
+         else if (!symbol_table.remove_stringvar("ii"))
+         {
+            printf("run_test10() - Failed to remove String 'ii'!\n");
+            return false;
+         }
+         else if (!symbol_table.remove_stringvar("jj"))
+         {
+            printf("run_test10() - Failed to remove String 'jj'!\n");
+            return false;
          }
       }
 
-      if (found_count != expected_var_list.size())
+      for (std::size_t r = 0; r < rounds; ++r)
       {
-         printf("run_test10() - Failed to get stringvar list (2)\n");
-         return false;
-      }
-   }
+         symbol_table.add_variable("x", x);
+         symbol_table.add_variable("y", y);
+         symbol_table.add_variable("xx", xx);
+         symbol_table.add_variable("yy", yy);
 
-   for (std::size_t r = 0; r < rounds; ++r)
-   {
-      symbol_table.add_stringvar( "i", i);
-      symbol_table.add_stringvar( "j", j);
-      symbol_table.add_stringvar("ii",ii);
-      symbol_table.add_stringvar("jj",jj);
+         std::vector<std::string> expected_var_list;
 
-      std::vector<std::string> expected_var_list;
+         expected_var_list.push_back("x");
+         expected_var_list.push_back("y");
+         expected_var_list.push_back("xx");
+         expected_var_list.push_back("yy");
 
-      expected_var_list.push_back( "i");
-      expected_var_list.push_back( "j");
-      expected_var_list.push_back("ii");
-      expected_var_list.push_back("jj");
+         std::deque<std::pair<std::string, T> > variable_list;
 
-      std::deque<std::string> stringvar_list;
+         symbol_table.get_variable_list(variable_list);
 
-      symbol_table.get_stringvar_list(stringvar_list);
-
-      if (stringvar_list.size() != expected_var_list.size())
-      {
-         printf("run_test10() - Failed to get stringvar list (3.0)\n");
-         return false;
-      }
-
-      if (symbol_table.stringvar_count() != expected_var_list.size())
-      {
-         printf("run_test10() - Failed to get stringvar list (3.1)\n");
-         return false;
-      }
-
-      std::size_t found_count = 0;
-
-      for (std::size_t i = 0; i < stringvar_list.size(); ++i)
-      {
-         for (std::size_t j = 0; j < expected_var_list.size(); ++j)
+         if (variable_list.size() != expected_var_list.size())
          {
-            if (stringvar_list[i] == expected_var_list[j])
+            printf("run_test10() - Failed to get variable list (1)\n");
+            return false;
+         }
+
+         std::size_t found_count = 0;
+
+         for (std::size_t i = 0; i < variable_list.size(); ++i)
+         {
+            for (std::size_t j = 0; j < expected_var_list.size(); ++j)
             {
-               ++found_count;
-               break;
+               if (variable_list[i].first == expected_var_list[j])
+               {
+                  ++found_count;
+                  break;
+               }
             }
+         }
+
+         if (found_count != expected_var_list.size())
+         {
+            printf("run_test10() - Failed to get variable list (2)\n");
+            return false;
          }
       }
 
-      if (found_count != expected_var_list.size())
+      for (std::size_t r = 0; r < rounds; ++r)
       {
-         printf("run_test10() - Failed to get stringvar list (4)\n");
-         return false;
+         symbol_table.add_variable("x", x);
+         symbol_table.add_variable("y", y);
+         symbol_table.add_variable("xx", xx);
+         symbol_table.add_variable("yy", yy);
+
+         std::vector<std::string> expected_var_list;
+
+         expected_var_list.push_back("x");
+         expected_var_list.push_back("y");
+         expected_var_list.push_back("xx");
+         expected_var_list.push_back("yy");
+
+         std::deque<std::string> variable_list;
+
+         symbol_table.get_variable_list(variable_list);
+
+         if (variable_list.size() != expected_var_list.size())
+         {
+            printf("run_test10() - Failed to get variable list (3)\n");
+            return false;
+         }
+
+         std::size_t found_count = 0;
+
+         for (std::size_t i = 0; i < variable_list.size(); ++i)
+         {
+            for (std::size_t j = 0; j < expected_var_list.size(); ++j)
+            {
+               if (variable_list[i] == expected_var_list[j])
+               {
+                  ++found_count;
+                  break;
+               }
+            }
+         }
+
+         if (found_count != expected_var_list.size())
+         {
+            printf("run_test10() - Failed to get variable list (4)\n");
+            return false;
+         }
+      }
+
+      for (std::size_t r = 0; r < rounds; ++r)
+      {
+         symbol_table.add_stringvar("i", i_s);
+         symbol_table.add_stringvar("j", j_s);
+         symbol_table.add_stringvar("ii", ii_s);
+         symbol_table.add_stringvar("jj", jj_s);
+
+         std::vector<std::string> expected_var_list;
+
+         expected_var_list.push_back("i");
+         expected_var_list.push_back("j");
+         expected_var_list.push_back("ii");
+         expected_var_list.push_back("jj");
+
+         std::deque<std::pair<std::string, std::string> > stringvar_list;
+
+         symbol_table.get_stringvar_list(stringvar_list);
+
+         if (stringvar_list.size() != expected_var_list.size())
+         {
+            printf("run_test10() - Failed to get stringvar list (1)\n");
+            return false;
+         }
+
+         std::size_t found_count = 0;
+
+         for (std::size_t i = 0; i < stringvar_list.size(); ++i)
+         {
+            for (std::size_t j = 0; j < expected_var_list.size(); ++j)
+            {
+               if (stringvar_list[i].first == expected_var_list[j])
+               {
+                  ++found_count;
+                  break;
+               }
+            }
+         }
+
+         if (found_count != expected_var_list.size())
+         {
+            printf("run_test10() - Failed to get stringvar list (2)\n");
+            return false;
+         }
+      }
+
+      for (std::size_t r = 0; r < rounds; ++r)
+      {
+         symbol_table.add_stringvar("i", i_s);
+         symbol_table.add_stringvar("j", j_s);
+         symbol_table.add_stringvar("ii", ii_s);
+         symbol_table.add_stringvar("jj", jj_s);
+
+         std::vector<std::string> expected_var_list;
+
+         expected_var_list.push_back("i");
+         expected_var_list.push_back("j");
+         expected_var_list.push_back("ii");
+         expected_var_list.push_back("jj");
+
+         std::deque<std::string> stringvar_list;
+
+         symbol_table.get_stringvar_list(stringvar_list);
+
+         if (stringvar_list.size() != expected_var_list.size())
+         {
+            printf("run_test10() - Failed to get stringvar list (3.0)\n");
+            return false;
+         }
+
+         if (symbol_table.stringvar_count() != expected_var_list.size())
+         {
+            printf("run_test10() - Failed to get stringvar list (3.1)\n");
+            return false;
+         }
+
+         std::size_t found_count = 0;
+
+         for (std::size_t i = 0; i < stringvar_list.size(); ++i)
+         {
+            for (std::size_t j = 0; j < expected_var_list.size(); ++j)
+            {
+               if (stringvar_list[i] == expected_var_list[j])
+               {
+                  ++found_count;
+                  break;
+               }
+            }
+         }
+
+         if (found_count != expected_var_list.size())
+         {
+            printf("run_test10() - Failed to get stringvar list (4)\n");
+            return false;
+         }
       }
    }
 
@@ -3976,6 +4181,9 @@ inline bool run_test10()
 
         "2 == for (var i := 0; i < 10; i += 1) { if (i > 2) { continue; return [i * 8];"
         "i += 1; i += 2; i += 3; } else i; }",
+
+        "var x[10] := [-1]; var y[10] := [-1]; for (var i := 0; i < 10; i += 1) { x[i] := i; "
+        "y[i] := 2 * x[i]; }; (sum(x) == 45) and (sum(y) == (2 * sum(x)));"
 
         "7 == (for (var i := 0; i < 10; i += 1) { ~{break[7]; continue; i += i} })",
         "0 == (for (var i := 0; i < 10; i += 1) { ~{break[i]; continue; i += i} })",
@@ -4932,6 +5140,8 @@ struct va_func : public exprtk::ivararg_function<T>
    va_func()
    {
       exprtk::enable_zero_parameters(*this);
+      exprtk::set_min_num_args(*this,  0);
+      exprtk::set_max_num_args(*this, 20);
    }
 
    inline T operator()(const std::vector<T>& arglist)
@@ -5084,12 +5294,13 @@ struct inc_func : public exprtk::igeneric_function<T>
 template <typename T>
 struct rem_space_and_uppercase : public exprtk::igeneric_function<T>
 {
-   typedef typename exprtk::igeneric_function<T>::generic_type generic_type;
-   typedef typename exprtk::igeneric_function<T>::parameter_list_t parameter_list_t;
-   typedef typename generic_type::string_view string_t;
+   typedef typename exprtk::igeneric_function<T> igenfunc_t;
+   typedef typename igenfunc_t::generic_type     generic_type;
+   typedef typename igenfunc_t::parameter_list_t parameter_list_t;
+   typedef typename generic_type::string_view    string_t;
 
    rem_space_and_uppercase()
-   : exprtk::igeneric_function<T>("S")
+   : igenfunc_t("S",igenfunc_t::e_rtrn_string)
    {}
 
    inline T operator()(std::string& result, parameter_list_t params)
@@ -5104,7 +5315,7 @@ struct rem_space_and_uppercase : public exprtk::igeneric_function<T>
       for (std::size_t i = 0; i < string.size(); ++i)
       {
          if (' ' != (c = string[i]))
-            result += std::toupper(c);
+            result += static_cast<char>(std::toupper(c));
       }
 
       return T(0);
@@ -5613,7 +5824,7 @@ inline bool run_test18()
       symbol_table.add_stringvar("s3", s3);
       symbol_table.add_stringvar("s4", s4);
 
-      symbol_table.add_function("remspc_uc",rsauc,symbol_table_t::e_ft_strfunc);
+      symbol_table.add_function("remspc_uc",rsauc);
 
       std::string program = " s0 := 'How now ';                                   "
                             " s1 := 'brown cow?';                                 "

@@ -610,9 +610,9 @@ appropriate may represent any of one the following:
 ExprTk supports three fundamental types which can be used freely in
 expressions. The types are as follows:
 
-   1. Scalar
-   2. Vector
-   3. String
+   (1) Scalar
+   (2) Vector
+   (3) String
 
 
 (1) Scalar Type
@@ -706,7 +706,7 @@ current values assigned to the variables will be used.
    expression.value(); // 3.7 * -9 + 3
 
    // 'x * -9 + 3' for x in range of [0,100) in steps of 0.0001
-   for (x = 0; x < 100; x += 0.0001)
+   for (x = 0.0; x < 100.0; x += 0.0001)
    {
       expression.value(); // x * -9 + 3
    }
@@ -860,7 +860,10 @@ handle:
    (i) '*' '='  --->  '*='  (multiplication assignment)
    (j) '/' '='  --->  '/='  (division assignment)
    (k) '%' '='  --->  '%='  (modulo assignment)
-   (l) '<=' '>' --->  '<=>' (swap)
+   (l) '+' '-'  --->  '-'   (subtraction)
+   (m) '-' '+'  --->  '-'   (subtraction)
+   (n) '-' '-'  --->  '+'   (addition)
+   (o) '<=' '>' --->  '<=>' (swap)
 
 
 An example of the transformation that takes place is as follows:
@@ -926,7 +929,7 @@ In  the following  example the  given expression  which represents  an
 attempt at computing the average  between x and y will  be transformed
 as follows:
 
-   (x * 0.5) + (y * 0.5) ---> 0.5 * (x + y)
+   (0.5 * x) + (y * 0.5) ---> 0.5 * (x + y)
 
 There  may be  situations where  the above  transformation will  cause
 numerical overflows and  that the original  form of the  expression is
@@ -1216,11 +1219,15 @@ embedded into the expression.
 
 There are five types of function interface:
 
-   (1) ifunction
-   (2) ivararg_function
-   (3) igeneric_function
-   (4) igeneric_function II
-   (5) function_compositor
+   +---+----------------------+-------------+
+   | # |         Name         | Return Type |
+   +---+----------------------+-------------+
+   | 1 | ifunction            | Scalar      |
+   | 2 | ivararg_function     | Scalar      |
+   | 3 | igeneric_function    | Scalar      |
+   | 4 | igeneric_function II | String      |
+   | 5 | function_compositor  | Scalar      |
+   +---+----------------------+-------------+
 
 
 (1) ifunction
@@ -1446,17 +1453,21 @@ the string return type function operator being explicitly overridden:
       typedef typename generic_t::string_view string_t;
 
       toupper()
-      : exprtk::igeneric_function<T>("S")
+      : exprtk::igeneric_function<T>("S",igenfunct_t::e_rtrn_string)
       {}
 
       inline T operator()(std::string& result,
                           parameter_list_t parameters)
       {
          result.clear();
+
+         string_t string(params[0]);
+
          for (std::size_t i = 0; i < string.size(); ++i)
          {
             result += std::toupper(string[i]);
          }
+
          return T(0);
       }
    };
@@ -1464,27 +1475,27 @@ the string return type function operator being explicitly overridden:
 
 In the example above the  generic function 'toupper' expects only  one
 input parameter  of type  string, as  noted by  the parameter sequence
-string passed during the constructor. When executed, the function will
-return as a result a copy  of the input string converted to  uppercase
-form. An example expression  using the toupper function  registered as
-the symbol 'toupper' is as follows:
+string passed during the  constructor. Furthermore a second  parameter
+is passed to the constructor indicating that it should be treated as a
+string returning function -  by default it is  assumed to be a  scalar
+returning function.
+
+When executed,  the function  will return  as a  result a  copy of the
+input string converted to uppercase form. An example expression  using
+the toupper function registered as the symbol 'toupper' is as follows:
 
    "'ABCDEF' == toupper('aBc') + toupper('DeF')"
 
 
 Note: When adding a string type returning generic function to a symbol
-table,  the  'add_function'  is   invoked  with  an  extra   parameter
-(e_ft_strfunc) that denotes the function should be treated as a string
-returning function type. The  following example demonstrates how  this
-is done:
+table the  'add_function' is invoked.  The example  below demonstrates
+how this can be done:
 
    toupper<T> tu;
 
    exprtk::symbol_table<T> symbol_table;
 
-   symbol_table.add_function("toupper",
-                             tu,
-                             symbol_table_t::e_ft_strfunc);
+   symbol_table.add_function("toupper",tu);
 
 
 Note: Two further  refinements to the  type checking facility  are the
@@ -1689,7 +1700,7 @@ the function can be disabled.
    {
       foo() : exprtk::ifunction<T>(3)
       {
-         disable_has_side_effects(*this);
+          exprtk::disable_has_side_effects(*this);
       }
 
       T operator()(const T& v1, const T& v2, const T& v3)
@@ -1757,6 +1768,14 @@ parsing  phase.   Once  the   compilation  process   has  successfully
 completed, the  caller can  then obtain  a list  of symbols  and their
 associated types from the DEC.
 
+The kinds of  questions one can  ask regarding the  dependent entities
+within an expression are as follows:
+
+  * What user defined or local variables, vectors or strings are used?
+  * What functions or custom user functions are used?
+  * Which variables, vectors or strings have values assigned to them?
+
+
 The following example demonstrates usage of the DEC in determining the
 dependents of the given expression:
 
@@ -1766,8 +1785,14 @@ dependents of the given expression:
    std::string expression_string =
                   "z := abs(x + sin(2 * pi / y))";
 
+   T x,y,z;
+
    parser_t parser;
    symbol_table_t symbol_table;
+
+   symbol_table.add_variable("x",x);
+   symbol_table.add_variable("y",y);
+   symbol_table.add_variable("z",z);
 
    expression_t expression;
    expression.register_symbol_table(symbol_table);
@@ -1799,7 +1824,7 @@ dependents of the given expression:
    }
 
 
-Note: The  'symbol_t' type  is a  pair comprising  of the  symbol name
+Note: The 'symbol_t' type is a std::pair comprising of the symbol name
 (std::string) and the associated type of the symbol as denoted by  the
 cases in the switch statement.
 
@@ -1866,6 +1891,9 @@ grammar. The features fall into one of the following three categories:
    (1) Base Functions
    (2) Control Flow Structures
    (3) Logical Operators
+   (4) Arithmetic Operators
+   (5) Inequality Operators
+   (6) Assignment Operators
 
 
 (1) Base Functions
@@ -1967,13 +1995,13 @@ flow structure:
        " }                                ";
 
     parser.settings()
-      .disable_all_control_structures(settings_t::e_ctrl_for_loop);
+      .disable_control_structure(settings_t::e_ctrl_for_loop);
 
     parser
       .compile(program,expression); // failure
 
     parser.settings()
-      .enable_all_control_structures(settings_t::e_ctrl_for_loop);
+      .enable_control_structure(settings_t::e_ctrl_for_loop);
 
     parser
       .compile(program,expression); // success
@@ -2009,16 +2037,156 @@ example  demonstrates  the disabling  of  the 'and' logical operator:
     expression_t expression;
 
     parser.settings()
-      .disable_base_function(settings_t::e_logic_and);
+      .disable_logic_operation(settings_t::e_logic_and);
 
     parser
       .compile("1 or not(0 and 1)",expression); // failure
 
     parser.settings()
-      .enable_base_function(settings_t::e_logic_and);
+      .enable_logic_operation(settings_t::e_logic_and);
 
     parser
       .compile("1 or not(0 and 1)",expression); // success
+
+
+(4) Arithmetic Operators
+The list of available arithmetic operators is as follows:
+
+   +, -, *, /, %, ^
+
+
+The  above  mentioned  arithmetic  operators  can  be  either  enabled or
+disabled 'all' at once, as is demonstrated below:
+
+    parser_t parser;
+    expression_t expression;
+
+    parser.settings().disable_all_arithmetic_ops();
+
+    parser
+      .compile("1 + 2 / 3",expression); // compilation failure
+
+    parser.settings().enable_all_arithmetic_ops();
+
+    parser
+      .compile("1 + 2 / 3",expression); // compilation success
+
+
+One can also enable or disable specific arithmetic operators. The  following
+example demonstrates the disabling of  the addition '+' arithmetic operator:
+
+    parser_t parser;
+    expression_t expression;
+
+    parser.settings()
+      .disable_arithmetic_operation(settings_t::e_arith_add);
+
+    parser
+      .compile("1 + 2 / 3",expression); // failure
+
+    parser.settings()
+      .enable_arithmetic_operation(settings_t::e_arith_add);
+
+    parser
+      .compile("1 + 2 / 3",expression); // success
+
+
+(5) Inequality Operators
+The list of available inequality operators is as follows:
+
+   <, <=, >, >=, ==, =, != <>
+
+
+The  above  mentioned  inequality  operators  can  be  either  enabled or
+disabled 'all' at once, as is demonstrated below:
+
+    parser_t parser;
+    expression_t expression;
+
+    parser.settings().disable_all_inequality_ops();
+
+    parser
+      .compile("1 < 3",expression); // compilation failure
+
+    parser.settings().enable_all_inequality_ops();
+
+    parser
+      .compile("1 < 3",expression); // compilation success
+
+
+One can also enable or disable specific inequality operators. The  following
+example demonstrates the disabling of the less-than '<' inequality operator:
+
+    parser_t parser;
+    expression_t expression;
+
+    parser.settings()
+      .disable_inequality_operation(settings_t::e_ineq_lt);
+
+    parser
+      .compile("1 < 3",expression); // failure
+
+    parser.settings()
+      .enable_inequality_operation(settings_t::e_ineq_lt);
+
+    parser
+      .compile("1 < 3",expression); // success
+
+
+(6) Assignment Operators
+The list of available assignment operators is as follows:
+
+   :=, +=, -=, *=, /=, %=
+
+
+The  above  mentioned  assignment  operators  can  be  either  enabled or
+disabled 'all' at once, as is demonstrated below:
+
+    parser_t parser;
+    expression_t expression;
+    symbol_table_t symbol_table;
+
+    T x = T(0);
+
+    symbol_table.add_variable("x",x);
+
+    expression.register_symbol_table(symbol_table);
+
+    parser.settings().disable_all_assignment_ops();
+
+    parser
+      .compile("x := 3",expression); // compilation failure
+
+    parser.settings().enable_all_assignment_ops();
+
+    parser
+      .compile("x := 3",expression); // compilation success
+
+
+One can also enable or disable specific assignment operators. The  following
+example demonstrates the disabling of the '+=' addition assignment operator:
+
+    parser_t parser;
+    expression_t expression;
+    symbol_table_t symbol_table;
+
+    T x = T(0);
+
+    symbol_table.add_variable("x",x);
+
+    expression.register_symbol_table(symbol_table);
+
+    parser.settings()
+      .disable_assignment_operation(settings_t::e_assign_addass);
+
+    parser
+      .compile("x += 3",expression); // failure
+
+    parser.settings()
+      .enable_assignment_operation(settings_t::e_assign_addass);
+
+    parser
+      .compile("x += 3",expression); // success
 
 
 Note: In the event of a base function being disabled, one can redefine
@@ -2161,7 +2329,7 @@ following example:
    if (!parser.compile(expression_string,expression))
    {
       printf("Error: %s\n", parser.error().c_str());
-      return 1;
+      return false;
    }
 
 
@@ -2189,7 +2357,7 @@ in the event of a failed compilation.
                 error.diagnostic.c_str());
       }
 
-      return 1;
+      return false;
    }
 
 
@@ -2214,7 +2382,7 @@ demonstrated by the following example:
                 error.column_no);
       }
 
-      return 1;
+      return false;
    }
 
 
@@ -2530,7 +2698,15 @@ int main()
 When building ExprTk there are a number of defines that will enable or
 disable certain features and  capabilities. The defines can  either be
 part of a compiler command line switch or scoped around the include to
-the ExprTk header.
+the ExprTk header. The defines are as follows:
+
+   (1) exprtk_enable_debugging
+   (2) exprtk_disable_comments
+   (3) exprtk_disable_break_continue
+   (4) exprtk_disable_sc_andor
+   (5) exprtk_disable_enhanced_features
+   (6) exprtk_disable_string_capabilities
+
 
 (1) exprtk_enable_debugging
 This define will enable printing of debug information to stdout during
