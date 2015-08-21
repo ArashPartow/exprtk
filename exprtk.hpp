@@ -4123,7 +4123,7 @@ namespace exprtk
          e_sf4ext60 = 2060
       };
 
-      std::string to_str(const operator_type opr)
+      inline std::string to_str(const operator_type opr)
       {
          switch (opr)
          {
@@ -20825,8 +20825,8 @@ namespace exprtk
                   make_error(parser_error::e_syntax,
                              current_token(),
                              "ERR102 - Overflow in range for string: '" + const_str + "'[" +
-                             (rp.n0_c.first ? details::to_str(rp.n0_c.second) : "?") + ":" +
-                             (rp.n1_c.first ? details::to_str(rp.n1_c.second) : "?") + "]"));
+                             (rp.n0_c.first ? details::to_str(static_cast<int>(rp.n0_c.second)) : "?") + ":" +
+                             (rp.n1_c.first ? details::to_str(static_cast<int>(rp.n1_c.second)) : "?") + "]"));
 
                return error_node();
             }
@@ -20979,7 +20979,7 @@ namespace exprtk
                           current_token(),
                           "ERR109 - Invalid number of parameters to call to vararg function: "
                           + vararg_function_name + ", require at least "
-                          + details::to_str( vararg_function->min_num_args()) + " parameters"));
+                          + details::to_str(static_cast<int>(vararg_function->min_num_args())) + " parameters"));
 
             return error_node();
          }
@@ -20990,7 +20990,7 @@ namespace exprtk
                           current_token(),
                           "ERR110 - Invalid number of parameters to call to vararg function: "
                           + vararg_function_name + ", require no more than "
-                          + details::to_str( vararg_function->max_num_args()) + " parameters"));
+                          + details::to_str(static_cast<int>(vararg_function->max_num_args())) + " parameters"));
 
             return error_node();
          }
