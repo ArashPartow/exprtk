@@ -57,7 +57,7 @@
 
 namespace exprtk
 {
-   #if exprtk_enable_debugging
+   #ifdef exprtk_enable_debugging
      #define exprtk_debug(params) printf params
    #else
      #define exprtk_debug(params) (void)0
@@ -678,16 +678,16 @@ namespace exprtk
       {
          namespace constant
          {
-            static const double e       =  2.718281828459045235360;
-            static const double pi      =  3.141592653589793238462;
-            static const double pi_2    =  1.570796326794896619231;
-            static const double pi_4    =  0.785398163397448309616;
-            static const double pi_180  =  0.017453292519943295769;
-            static const double _1_pi   =  0.318309886183790671538;
-            static const double _2_pi   =  0.636619772367581343076;
-            static const double _180_pi = 57.295779513082320876798;
-            static const double log2    =  0.693147180559945309417;
-            static const double sqrt2   =  1.414213562373095048801;
+            static const double e       =  2.71828182845904523536028747135266249775724709369996;
+            static const double pi      =  3.14159265358979323846264338327950288419716939937510;
+            static const double pi_2    =  1.57079632679489661923132169163975144209858469968755;
+            static const double pi_4    =  0.78539816339744830961566084581987572104929234984378;
+            static const double pi_180  =  0.01745329251994329576923690768488612713442871888542;
+            static const double _1_pi   =  0.31830988618379067153776752674502872406891929148091;
+            static const double _2_pi   =  0.63661977236758134307553505349005744813783858296183;
+            static const double _180_pi = 57.29577951308232087679815481410517033240547246656443;
+            static const double log2    =  0.69314718055994530941723212145817656807550013436026;
+            static const double sqrt2   =  1.41421356237309504880168872420969807856967187537695;
          }
 
          namespace details
@@ -1760,7 +1760,7 @@ namespace exprtk
                if (curr != itr)
                {
                   instate = true;
-                  d += compute_pow10(tmp_d,-std::distance(curr,itr));
+                  d += compute_pow10(tmp_d,static_cast<int>(-std::distance(curr,itr)));
                }
 
                #undef parse_digit_1
@@ -6733,9 +6733,9 @@ namespace exprtk
       std::string stringvar_node<T>::null_value = std::string("");
 
       template <typename T>
-      class string_range_node :  public expression_node <T>,
-                                 public string_base_node<T>,
-                                 public range_interface <T>
+      class string_range_node : public expression_node <T>,
+                                public string_base_node<T>,
+                                public range_interface <T>
       {
       public:
 
@@ -11600,7 +11600,7 @@ namespace exprtk
       public:
 
          virtual ~boc_base_node()
-       {}
+         {}
 
          inline virtual operator_type operation() const
          {
@@ -13555,6 +13555,43 @@ namespace exprtk
       };
 
       template <typename T, typename PowOp>
+      class bipow_node : public expression_node<T>
+      {
+      public:
+
+         typedef expression_node<T>* expression_ptr;
+         typedef std::pair<expression_ptr, bool> branch_t;
+         typedef PowOp operation_t;
+
+         explicit bipow_node(expression_ptr brnch)
+         {
+            init_branches<1>(branch_, brnch);
+         }
+
+         ~bipow_node()
+         {
+            cleanup_branches::execute<T,1>(branch_);
+         }
+
+         inline T value() const
+         {
+            return PowOp::result(branch_[0].first->value());
+         }
+
+         inline typename expression_node<T>::node_type type() const
+         {
+            return expression_node<T>::e_ipow;
+         }
+
+      private:
+
+         bipow_node(const bipow_node<T,PowOp>&);
+         bipow_node<T,PowOp>& operator=(const bipow_node<T,PowOp>&);
+
+         branch_t branch_[1];
+      };
+
+      template <typename T, typename PowOp>
       class ipowinv_node : public expression_node<T>
       {
       public:
@@ -13582,6 +13619,43 @@ namespace exprtk
          ipowinv_node<T,PowOp>& operator=(const ipowinv_node<T,PowOp>&);
 
          const T& v_;
+      };
+
+      template <typename T, typename PowOp>
+      class bipowninv_node : public expression_node<T>
+      {
+      public:
+
+         typedef expression_node<T>* expression_ptr;
+         typedef std::pair<expression_ptr, bool> branch_t;
+         typedef PowOp operation_t;
+
+         explicit bipowninv_node(expression_ptr brnch)
+         {
+            init_branches<1>(branch_, brnch);
+         }
+
+         ~bipowninv_node()
+         {
+            cleanup_branches::execute<T,1>(branch_);
+         }
+
+         inline T value() const
+         {
+            return (T(1) / PowOp::result(branch_[0].first->value()));
+         }
+
+         inline typename expression_node<T>::node_type type() const
+         {
+            return expression_node<T>::e_ipowinv;
+         }
+
+      private:
+
+         bipowninv_node(const bipowninv_node<T,PowOp>&);
+         bipowninv_node<T,PowOp>& operator=(const bipowninv_node<T,PowOp>&);
+
+         branch_t branch_[1];
       };
 
       template <typename T>
@@ -17139,7 +17213,7 @@ namespace exprtk
          {
             st = e_usr_variable_type;
             default_value = T(0);
-            error_message = "";
+            error_message.clear();
 
             return true;
          }
@@ -17698,7 +17772,7 @@ namespace exprtk
          settings_store& disable_inequality_operation(settings_inequality_opr inequality)
          {
             if (
-                 (e_assign_unknown != inequality) &&
+                 (e_ineq_unknown != inequality) &&
                  (static_cast<std::size_t>(inequality) < details::inequality_ops_list_size)
                )
             {
@@ -20039,7 +20113,7 @@ namespace exprtk
                return error_node();
             }
 
-            // Can we optimize away the case statement?
+            // Can we optimise away the case statement?
             if (is_constant_node(condition) && is_false(condition))
             {
                free_node(node_allocator_, condition);
@@ -20183,7 +20257,7 @@ namespace exprtk
                return error_node();
             }
 
-            // Can we optimize away the case statement?
+            // Can we optimise away the case statement?
             if (is_constant_node(condition) && is_false(condition))
             {
                free_node(node_allocator_, condition);
@@ -23259,7 +23333,7 @@ namespace exprtk
          }
          #endif
 
-         inline bool unary_optimizable(const details::operator_type& operation) const
+         inline bool unary_optimisable(const details::operator_type& operation) const
          {
             return (details::e_abs   == operation) || (details::e_acos  == operation) ||
                    (details::e_acosh == operation) || (details::e_asin  == operation) ||
@@ -23283,7 +23357,7 @@ namespace exprtk
                    (details::e_frac  == operation) || (details::e_trunc == operation);
          }
 
-         inline bool sf3_optimizable(const std::string& sf3id, trinary_functor_t& tfunc)
+         inline bool sf3_optimisable(const std::string& sf3id, trinary_functor_t& tfunc)
          {
             typename sf3_map_t::iterator itr = sf3_map_->find(sf3id);
 
@@ -23295,7 +23369,7 @@ namespace exprtk
             return true;
          }
 
-         inline bool sf4_optimizable(const std::string& sf4id, quaternary_functor_t& qfunc)
+         inline bool sf4_optimisable(const std::string& sf4id, quaternary_functor_t& qfunc)
          {
             typename sf4_map_t::iterator itr = sf4_map_->find(sf4id);
 
@@ -23307,7 +23381,7 @@ namespace exprtk
             return true;
          }
 
-         inline bool sf3_optimizable(const std::string& sf3id, details::operator_type& operation)
+         inline bool sf3_optimisable(const std::string& sf3id, details::operator_type& operation)
          {
             typename sf3_map_t::iterator itr = sf3_map_->find(sf3id);
 
@@ -23319,7 +23393,7 @@ namespace exprtk
             return true;
          }
 
-         inline bool sf4_optimizable(const std::string& sf4id, details::operator_type& operation)
+         inline bool sf4_optimisable(const std::string& sf4id, details::operator_type& operation)
          {
             typename sf4_map_t::iterator itr = sf4_map_->find(sf4id);
 
@@ -23343,9 +23417,9 @@ namespace exprtk
                return error_node();
             else if (details::is_constant_node(branch[0]))
                return synthesize_expression<unary_node_t,1>(operation,branch);
-            else if (unary_optimizable(operation) && details::is_variable_node(branch[0]))
+            else if (unary_optimisable(operation) && details::is_variable_node(branch[0]))
                return synthesize_uv_expression(operation,branch);
-            else if (unary_optimizable(operation) && details::is_ivector_node(branch[0]))
+            else if (unary_optimisable(operation) && details::is_ivector_node(branch[0]))
                return synthesize_uvec_expression(operation,branch);
             else
                return synthesize_unary_expression(operation,branch);
@@ -23413,7 +23487,7 @@ namespace exprtk
             }
          }
 
-         inline bool operation_optimizable(const details::operator_type& operation) const
+         inline bool operation_optimisable(const details::operator_type& operation) const
          {
             return (details::e_add  == operation) ||
                    (details::e_sub  == operation) ||
@@ -23481,47 +23555,47 @@ namespace exprtk
             return branch_to_id(branch[0]) + std::string("o") + branch_to_id(branch[1]);
          }
 
-         inline bool cov_optimizable(const details::operator_type& operation, expression_node_ptr (&branch)[2]) const
+         inline bool cov_optimisable(const details::operator_type& operation, expression_node_ptr (&branch)[2]) const
          {
-            if (!operation_optimizable(operation))
+            if (!operation_optimisable(operation))
                return false;
             else
                return (details::is_constant_node(branch[0]) && details::is_variable_node(branch[1]));
          }
 
-         inline bool voc_optimizable(const details::operator_type& operation, expression_node_ptr (&branch)[2]) const
+         inline bool voc_optimisable(const details::operator_type& operation, expression_node_ptr (&branch)[2]) const
          {
-            if (!operation_optimizable(operation))
+            if (!operation_optimisable(operation))
                return false;
             else
                return (details::is_variable_node(branch[0]) && details::is_constant_node(branch[1]));
          }
 
-         inline bool vov_optimizable(const details::operator_type& operation, expression_node_ptr (&branch)[2]) const
+         inline bool vov_optimisable(const details::operator_type& operation, expression_node_ptr (&branch)[2]) const
          {
-            if (!operation_optimizable(operation))
+            if (!operation_optimisable(operation))
                return false;
             else
                return (details::is_variable_node(branch[0]) && details::is_variable_node(branch[1]));
          }
 
-         inline bool cob_optimizable(const details::operator_type& operation, expression_node_ptr (&branch)[2]) const
+         inline bool cob_optimisable(const details::operator_type& operation, expression_node_ptr (&branch)[2]) const
          {
-            if (!operation_optimizable(operation))
+            if (!operation_optimisable(operation))
                return false;
             else
                return (details::is_constant_node(branch[0]) && !details::is_constant_node(branch[1]));
          }
 
-         inline bool boc_optimizable(const details::operator_type& operation, expression_node_ptr (&branch)[2]) const
+         inline bool boc_optimisable(const details::operator_type& operation, expression_node_ptr (&branch)[2]) const
          {
-            if (!operation_optimizable(operation))
+            if (!operation_optimisable(operation))
                return false;
             else
                return (!details::is_constant_node(branch[0]) && details::is_constant_node(branch[1]));
          }
 
-         inline bool cocob_optimizable(const details::operator_type& operation, expression_node_ptr (&branch)[2]) const
+         inline bool cocob_optimisable(const details::operator_type& operation, expression_node_ptr (&branch)[2]) const
          {
             if (
                  (details::e_add == operation) ||
@@ -23537,7 +23611,7 @@ namespace exprtk
                return false;
          }
 
-         inline bool coboc_optimizable(const details::operator_type& operation, expression_node_ptr (&branch)[2]) const
+         inline bool coboc_optimisable(const details::operator_type& operation, expression_node_ptr (&branch)[2]) const
          {
             if (
                  (details::e_add == operation) ||
@@ -23553,33 +23627,33 @@ namespace exprtk
                return false;
          }
 
-         inline bool uvouv_optimizable(const details::operator_type& operation, expression_node_ptr (&branch)[2]) const
+         inline bool uvouv_optimisable(const details::operator_type& operation, expression_node_ptr (&branch)[2]) const
          {
-            if (!operation_optimizable(operation))
+            if (!operation_optimisable(operation))
                return false;
             else
                return (details::is_uv_node(branch[0]) && details::is_uv_node(branch[1]));
          }
 
-         inline bool vob_optimizable(const details::operator_type& operation, expression_node_ptr (&branch)[2]) const
+         inline bool vob_optimisable(const details::operator_type& operation, expression_node_ptr (&branch)[2]) const
          {
-            if (!operation_optimizable(operation))
+            if (!operation_optimisable(operation))
                return false;
             else
                return (details::is_variable_node(branch[0]) && !details::is_variable_node(branch[1]));
          }
 
-         inline bool bov_optimizable(const details::operator_type& operation, expression_node_ptr (&branch)[2]) const
+         inline bool bov_optimisable(const details::operator_type& operation, expression_node_ptr (&branch)[2]) const
          {
-            if (!operation_optimizable(operation))
+            if (!operation_optimisable(operation))
                return false;
             else
                return (!details::is_variable_node(branch[0]) && details::is_variable_node(branch[1]));
          }
 
-         inline bool binext_optimizable(const details::operator_type& operation, expression_node_ptr (&branch)[2]) const
+         inline bool binext_optimisable(const details::operator_type& operation, expression_node_ptr (&branch)[2]) const
          {
-            if (!operation_optimizable(operation))
+            if (!operation_optimisable(operation))
                return false;
             else
                return (!details::is_constant_node(branch[0]) || !details::is_constant_node(branch[1]));
@@ -23603,6 +23677,22 @@ namespace exprtk
             }
             else
                return false;
+         }
+
+         inline bool is_constpow_operation(const details::operator_type& operation, expression_node_ptr(&branch)[2])
+         {
+            if (
+                 !is_constant_node(branch[1]) ||
+                  is_constant_node(branch[0]) ||
+                  is_variable_node(branch[0]) ||
+                  is_vector_node  (branch[0]) ||
+                  is_generally_string_node(branch[0])
+               )
+               return false;
+
+            const Type c = static_cast<details::literal_node<Type>*>(branch[1])->value();
+
+            return cardinal_pow_optimisable(operation, c);
          }
 
          inline bool is_invalid_break_continue_op(expression_node_ptr (&branch)[2])
@@ -23750,7 +23840,11 @@ namespace exprtk
             else if (is_string_operation(operation,branch))
                return synthesize_string_expression(operation,branch);
             else if (is_null_present(branch))
-               return synthesize_null_expression(operation,branch);
+               return synthesize_null_expression(operation, branch);
+            #ifndef exprtk_disable_cardinal_pow_optimisation
+            else if (is_constpow_operation(operation, branch))
+               return cardinal_pow_optimisation(branch);
+            #endif
 
             expression_node_ptr result = error_node();
 
@@ -23770,30 +23864,30 @@ namespace exprtk
                */
                result = error_node();
 
-               if (cocob_optimizable(operation,branch))
+               if (cocob_optimisable(operation,branch))
                   result = synthesize_cocob_expression::process(*this,operation,branch);
-               else if (coboc_optimizable(operation,branch) && (0 == result))
+               else if (coboc_optimisable(operation,branch) && (0 == result))
                   result = synthesize_coboc_expression::process(*this,operation,branch);
 
                if (result)
                   return result;
             }
 
-            if (uvouv_optimizable(operation,branch))
+            if (uvouv_optimisable(operation,branch))
                return synthesize_uvouv_expression(operation,branch);
-            else if (vob_optimizable(operation,branch))
+            else if (vob_optimisable(operation,branch))
                return synthesize_vob_expression::process(*this,operation,branch);
-            else if (bov_optimizable(operation,branch))
+            else if (bov_optimisable(operation,branch))
                return synthesize_bov_expression::process(*this,operation,branch);
-            else if (cob_optimizable(operation,branch))
+            else if (cob_optimisable(operation,branch))
                return synthesize_cob_expression::process(*this,operation,branch);
-            else if (boc_optimizable(operation,branch))
+            else if (boc_optimisable(operation,branch))
                return synthesize_boc_expression::process(*this,operation,branch);
             #ifndef exprtk_disable_enhanced_features
-            else if (cov_optimizable(operation,branch))
+            else if (cov_optimisable(operation,branch))
                return synthesize_cov_expression::process(*this,operation,branch);
             #endif
-            else if (binext_optimizable(operation,branch))
+            else if (binext_optimisable(operation,branch))
                return synthesize_binary_ext_expression::process(*this,operation,branch);
             else
                return synthesize_expression<binary_node_t,2>(operation,branch);
@@ -23853,7 +23947,7 @@ namespace exprtk
 
                return error_node();
             }
-            // Can the condition be immediately evaluated? if so optimize.
+            // Can the condition be immediately evaluated? if so optimise.
             else if (details::is_constant_node(condition))
             {
                // True branch
@@ -23899,7 +23993,7 @@ namespace exprtk
 
                return error_node();
             }
-            // Can the condition be immediately evaluated? if so optimize.
+            // Can the condition be immediately evaluated? if so optimise.
             else if (details::is_constant_node(condition))
             {
                // True branch
@@ -23930,9 +24024,9 @@ namespace exprtk
                return error_node();
          }
          #else
-         inline expression_node_ptr conditional_string(expression_node_ptr ,
-                                                       expression_node_ptr ,
-                                                       expression_node_ptr ) const
+         inline expression_node_ptr conditional_string(expression_node_ptr,
+                                                       expression_node_ptr,
+                                                       expression_node_ptr) const
          {
             return error_node();
          }
@@ -24055,7 +24149,7 @@ namespace exprtk
 
          template <typename Allocator,
                    template <typename,typename> class Sequence>
-         inline expression_node_ptr const_optimize_switch(Sequence<expression_node_ptr,Allocator>& arg_list)
+         inline expression_node_ptr const_optimise_switch(Sequence<expression_node_ptr,Allocator>& arg_list)
          {
             expression_node_ptr result = error_node();
 
@@ -24091,7 +24185,7 @@ namespace exprtk
 
          template <typename Allocator,
                    template <typename,typename> class Sequence>
-         inline expression_node_ptr const_optimize_mswitch(Sequence<expression_node_ptr,Allocator>& arg_list)
+         inline expression_node_ptr const_optimise_mswitch(Sequence<expression_node_ptr,Allocator>& arg_list)
          {
             expression_node_ptr result = error_node();
 
@@ -24224,7 +24318,7 @@ namespace exprtk
                return error_node();
             }
             else if (is_constant_foldable(arg_list))
-               return const_optimize_switch(arg_list);
+               return const_optimise_switch(arg_list);
 
             switch ((arg_list.size() - 1) / 2)
             {
@@ -24258,7 +24352,7 @@ namespace exprtk
                return error_node();
             }
             else if (is_constant_foldable(arg_list))
-               return const_optimize_mswitch(arg_list);
+               return const_optimise_mswitch(arg_list);
             else
                return node_allocator_->allocate<details::multi_switch_node<Type> >(arg_list);
          }
@@ -24353,7 +24447,7 @@ namespace exprtk
             }
          }
 
-         inline expression_node_ptr const_optimize_sf3(const details::operator_type& operation,
+         inline expression_node_ptr const_optimise_sf3(const details::operator_type& operation,
                                                        expression_node_ptr (&branch)[3])
          {
             expression_node_ptr temp_node = error_node();
@@ -24401,7 +24495,7 @@ namespace exprtk
             return node_allocator_->allocate<literal_node_t>(v);
          }
 
-         inline expression_node_ptr varnode_optimize_sf3(const details::operator_type& operation, expression_node_ptr (&branch)[3])
+         inline expression_node_ptr varnode_optimise_sf3(const details::operator_type& operation, expression_node_ptr (&branch)[3])
          {
             typedef details::variable_node<Type>* variable_ptr;
 
@@ -24450,9 +24544,9 @@ namespace exprtk
             if (!all_nodes_valid(branch))
                return error_node();
             else if (is_constant_foldable(branch))
-               return const_optimize_sf3(operation,branch);
+               return const_optimise_sf3(operation,branch);
             else if (all_nodes_variables(branch))
-               return varnode_optimize_sf3(operation,branch);
+               return varnode_optimise_sf3(operation,branch);
             else
             {
                switch (operation)
@@ -24491,7 +24585,7 @@ namespace exprtk
             }
          }
 
-         inline expression_node_ptr const_optimize_sf4(const details::operator_type& operation, expression_node_ptr (&branch)[4])
+         inline expression_node_ptr const_optimise_sf4(const details::operator_type& operation, expression_node_ptr (&branch)[4])
          {
             expression_node_ptr temp_node = error_node();
 
@@ -24538,7 +24632,7 @@ namespace exprtk
             return node_allocator_->allocate<literal_node_t>(v);
          }
 
-         inline expression_node_ptr varnode_optimize_sf4(const details::operator_type& operation, expression_node_ptr (&branch)[4])
+         inline expression_node_ptr varnode_optimise_sf4(const details::operator_type& operation, expression_node_ptr (&branch)[4])
          {
             typedef details::variable_node<Type>* variable_ptr;
 
@@ -24589,9 +24683,9 @@ namespace exprtk
             if (!all_nodes_valid(branch))
                return error_node();
             else if (is_constant_foldable(branch))
-               return const_optimize_sf4(operation,branch);
+               return const_optimise_sf4(operation,branch);
             else if (all_nodes_variables(branch))
-               return varnode_optimize_sf4(operation,branch);
+               return varnode_optimise_sf4(operation,branch);
             switch (operation)
             {
                #define case_stmt(op0,op1)                                                     \
@@ -24631,7 +24725,7 @@ namespace exprtk
 
          template <typename Allocator,
                    template <typename,typename> class Sequence>
-         inline expression_node_ptr const_optimize_varargfunc(const details::operator_type& operation, Sequence<expression_node_ptr,Allocator>& arg_list)
+         inline expression_node_ptr const_optimise_varargfunc(const details::operator_type& operation, Sequence<expression_node_ptr,Allocator>& arg_list)
          {
             expression_node_ptr temp_node = error_node();
 
@@ -24674,7 +24768,7 @@ namespace exprtk
 
          template <typename Allocator,
                    template <typename,typename> class Sequence>
-         inline expression_node_ptr varnode_optimize_varargfunc(const details::operator_type& operation, Sequence<expression_node_ptr,Allocator>& arg_list)
+         inline expression_node_ptr varnode_optimise_varargfunc(const details::operator_type& operation, Sequence<expression_node_ptr,Allocator>& arg_list)
          {
             switch (operation)
             {
@@ -24731,13 +24825,13 @@ namespace exprtk
                return error_node();
             }
             else if (is_constant_foldable(arg_list))
-               return const_optimize_varargfunc(operation,arg_list);
+               return const_optimise_varargfunc(operation,arg_list);
             else if ((arg_list.size() == 1) && details::is_ivector_node(arg_list[0]))
                return vectorize_func(operation,arg_list);
             else if ((arg_list.size() == 1) && special_one_parameter_vararg(operation))
                return arg_list[0];
             else if (all_nodes_variables(arg_list))
-               return varnode_optimize_varargfunc(operation,arg_list);
+               return varnode_optimise_varargfunc(operation,arg_list);
 
             switch (operation)
             {
@@ -24768,7 +24862,7 @@ namespace exprtk
                return error_node();
             else
             {
-               // Can the function call be completely optimized?
+               // Can the function call be completely optimised?
                if (details::is_constant_node(result))
                   return result;
                else if (!all_nodes_valid(b))
@@ -25519,8 +25613,8 @@ namespace exprtk
          case_stmt(details::e_xnor,details::xnor_op) \
 
          #ifndef exprtk_disable_cardinal_pow_optimisation
-         template <template <typename,typename> class IPowNode>
-         inline expression_node_ptr cardinal_pow_optimization_impl(const T& v, const unsigned int& p)
+         template <typename TType, template <typename,typename> class IPowNode>
+         inline expression_node_ptr cardinal_pow_optimisation_impl(const TType& v, const unsigned int& p)
          {
             switch (p)
             {
@@ -25548,7 +25642,7 @@ namespace exprtk
             }
          }
 
-         inline expression_node_ptr cardinal_pow_optimization(const T& v, const T& c)
+         inline expression_node_ptr cardinal_pow_optimisation(const T& v, const T& c)
          {
             const bool not_recipricol = (c >= T(0));
             const int p = details::numeric::to_int32(details::numeric::abs(c));
@@ -25563,25 +25657,49 @@ namespace exprtk
             else
             {
                if (not_recipricol)
-                  return cardinal_pow_optimization_impl<details::ipow_node>(v,p);
+                  return cardinal_pow_optimisation_impl<T,details::ipow_node>(v,p);
                else
-                  return cardinal_pow_optimization_impl<details::ipowinv_node>(v,p);
+                  return cardinal_pow_optimisation_impl<T,details::ipowinv_node>(v,p);
             }
          }
 
-         inline bool cardinal_pow_optimizable(const details::operator_type& operation, const T& c)
+         inline bool cardinal_pow_optimisable(const details::operator_type& operation, const T& c)
          {
             return (details::e_pow == operation) && (details::numeric::abs(c) <= T(60)) && details::numeric::is_integer(c);
          }
+
+         inline expression_node_ptr cardinal_pow_optimisation(expression_node_ptr (&branch)[2])
+         {
+            const Type c = static_cast<details::literal_node<Type>*>(branch[1])->value();
+            const bool not_recipricol = (c >= T(0));
+            const int p = details::numeric::to_int32(details::numeric::abs(c));
+
+            node_allocator_->free(branch[1]);
+
+            if (0 == p)
+            {
+               details::free_all_nodes(*node_allocator_, branch);
+               return node_allocator_->allocate_c<literal_node_t>(T(1));
+            }
+            else if (not_recipricol)
+               return cardinal_pow_optimisation_impl<expression_node_ptr,details::bipow_node>(branch[0],p);
+            else
+               return cardinal_pow_optimisation_impl<expression_node_ptr,details::bipowninv_node>(branch[0],p);
+         }
          #else
-         inline expression_node_ptr cardinal_pow_optimization(T&, const T&)
+         inline expression_node_ptr cardinal_pow_optimisation(T&, const T&)
          {
             return error_node();
          }
 
-         inline bool cardinal_pow_optimizable(const details::operator_type&, const T&)
+         inline bool cardinal_pow_optimisable(const details::operator_type&, const T&)
          {
             return false;
+         }
+
+         inline expression_node_ptr cardinal_pow_optimisation(expression_node_ptr(&)[2])
+         {
+            return error_node();
          }
          #endif
 
@@ -26092,6 +26210,18 @@ namespace exprtk
                         return bocnode;
                      }
                   }
+                  else if (operation == details::e_pow)
+                  {
+                     // (v ^ c0) ^ c1 --> v ^(c0 * c1)
+                     details::boc_base_node<Type>* bocnode = static_cast<details::boc_base_node<Type>*>(branch[0]);
+                     details::operator_type boc_opr = bocnode->operation();
+
+                     if (details::e_pow == boc_opr)
+                     {
+                        bocnode->set_c(bocnode->c() * c);
+                        return bocnode;
+                     }
+                  }
                }
 
                #ifndef exprtk_disable_enhanced_features
@@ -26471,7 +26601,7 @@ namespace exprtk
          {
             result = error_node();
 
-            if (!operation_optimizable(operation))
+            if (!operation_optimisable(operation))
                return false;
 
             const std::string node_id = branch_to_id(branch);
@@ -26557,12 +26687,12 @@ namespace exprtk
 
                details::free_node(*(expr_gen.node_allocator_),branch[1]);
 
-               if (expr_gen.cardinal_pow_optimizable(operation,c))
+               if (expr_gen.cardinal_pow_optimisable(operation,c))
                {
                   if (std::equal_to<T>()(T(1),c))
                      return branch[0];
                   else
-                     return expr_gen.cardinal_pow_optimization(v,c);
+                     return expr_gen.cardinal_pow_optimisation(v,c);
                }
                else if ((T(0) == c) && (details::e_mul == operation))
                   return expr_gen(T(0));
@@ -26631,7 +26761,7 @@ namespace exprtk
             {
                details::operator_type sf3opr;
 
-               if (!expr_gen.sf3_optimizable(id,sf3opr))
+               if (!expr_gen.sf3_optimisable(id,sf3opr))
                   return false;
                else
                   result = synthesize_sf3ext_expression::template process<T0,T1,T2>(expr_gen,sf3opr,t0,t1,t2);
@@ -26715,7 +26845,7 @@ namespace exprtk
             {
                details::operator_type sf4opr;
 
-               if (!expr_gen.sf4_optimizable(id,sf4opr))
+               if (!expr_gen.sf4_optimisable(id,sf4opr))
                   return false;
                else
                   result = synthesize_sf4ext_expression::template process<T0,T1,T2,T3>(expr_gen,sf4opr,t0,t1,t2,t3);
@@ -27730,6 +27860,14 @@ namespace exprtk
 
                      return expr_gen.node_allocator_->
                                template allocate_rc<typename details::voc_node<Type,details::div_op<Type> > >(v,c0 * c1);
+                  }
+                  // (v ^ c0) ^ c1 --> (voc) v ^ (c0 * c1)
+                  else if ((details::e_pow == o0) && (details::e_pow == o1))
+                  {
+                     exprtk_debug(("(v ^ c0) ^ c1 --> (voc) v ^ (c0 * c1)\n"));
+
+                     return expr_gen.node_allocator_->
+                               template allocate_rc<typename details::voc_node<Type,details::pow_op<Type> > >(v,c0 * c1);
                   }
                }
 
@@ -31508,7 +31646,7 @@ namespace exprtk
             }
             else if ((details::e_default != operation))
             {
-               // Attempt simple constant folding optimization.
+               // Attempt simple constant folding optimisation.
                expression_node_ptr expression_point = node_allocator_->allocate<NodeType>(operation,branch);
 
                if (is_constant_foldable<N>(branch))
@@ -31537,7 +31675,7 @@ namespace exprtk
 
             typedef typename details::function_N_node<T,ifunction_t,N> function_N_node_t;
 
-            // Attempt simple constant folding optimization.
+            // Attempt simple constant folding optimisation.
 
             expression_node_ptr expression_point = node_allocator_->allocate<NodeType>(f);
             function_N_node_t* func_node_ptr = dynamic_cast<function_N_node_t*>(expression_point);

@@ -7,7 +7,7 @@ mathematical  expression parsing  and evaluation  engine. The  parsing
 engine  supports numerous  forms  of  functional and  logic processing
 semantics and is easily extendible.
 
-
+     ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
 [01 - CAPABILITIES]
 The  ExprTk expression  evaluator supports  the following  fundamental
@@ -49,7 +49,7 @@ arithmetic operations, functions and processes:
 
  (11) Calculus:        numerical integration and differentiation
 
-
+     ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
 [02 - EXAMPLE EXPRESSIONS]
 The  following  is  a  short listing  of  the  types  of  mathematical
@@ -76,7 +76,7 @@ expressions that can be parsed and evaluated using the ExprTk library.
   (19) ((x + 'abc') like '*123*') or ('a123b' ilike y)
   (20) sgn(+1.2^3.4z / -5.6y) <= {-7.8^9 / -10.11x }
 
-
+     ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
 [03 - COPYRIGHT NOTICE]
 Free  use  of  the  C++  Mathematical  Expression  Toolkit  Library is
@@ -85,7 +85,7 @@ version of the Common Public License.
 
 http://www.opensource.org/licenses/cpl1.0.php
 
-
+     ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
 [04 - DOWNLOADS & UPDATES]
 The most  recent version  of the C++ Mathematical  Expression  Toolkit
@@ -95,13 +95,13 @@ locations:
   (a) Download:   http://www.partow.net/programming/exprtk/index.html
   (b) Repository: https://github.com/ArashPartow/exprtk
 
-
+     ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
 [05 - INSTALLATION]
 The header  file exprtk.hpp  should be  placed in a project or  system
 include path (e.g: /usr/include/).
 
-
+     ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
 [06 - COMPILATION]
   (a) For a complete build: make clean all
@@ -109,7 +109,7 @@ include path (e.g: /usr/include/).
   (c) To strip executables: make strip_bin
   (d) Execute valgrind check: make valgrind_check
 
-
+     ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
 [07 - COMPILER COMPATIBILITY]
 ExprTk has been built error and warning free using the following set
@@ -120,11 +120,10 @@ of C++ compilers:
   (*) Clang/LLVM (1.1+)
   (*) PGI C++ (10.x+)
   (*) Microsoft Visual Studio C++ Compiler (8.1+)
-  (*) Comeau C++ Compiler (4.3+)
   (*) IBM XL C/C++ (9.x+)
   (*) C++ Builder (XE4+)
 
-
+     ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
 [08 - BUILT-IN OPERATIONS & FUNCTIONS]
 
@@ -604,7 +603,7 @@ appropriate may represent any of one the following:
    5. A string
    6. An expression comprised of [1], [2] or [3] (eg: 2 + x / vec[3])
 
-
+     ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
 [09 - Fundamental Types]
 ExprTk supports three fundamental types which can be used freely in
@@ -635,7 +634,7 @@ can be  assigned and  concatenated to  one another,  they can  also be
 manipulated via sub-ranges using the range definition syntax.  Strings
 however can not interact with scalar or vector types.
 
-
+     ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
 [10 - COMPONENTS]
 There are three primary components, that are specialized upon a  given
@@ -794,7 +793,7 @@ The above denoted AST will be evaluated in the following order:
 
 
 (3) Parser
-A  structure  which  takes  as input  a  string  representation  of an
+A  component  which  takes  as input  a  string  representation  of an
 expression and attempts to compile said input with the result being an
 instance  of  Expression.  If  an  error  is  encountered  during  the
 compilation  process, the  parser will  stop compiling  and return  an
@@ -802,7 +801,7 @@ error status code,  with a more  detailed description of  the error(s)
 and  its  location  within  the  input  provided  by  the  'get_error'
 interface.
 
-
+     ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
 [11 - COMPILATION OPTIONS]
 The exprtk::parser  when being  instantiated takes  as input  a set of
@@ -937,7 +936,7 @@ desired over the strength reduced form. In these situations it is best
 to turn off strength reduction optimisations  or to use a type with  a
 larger numerical bound.
 
-
+     ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
 [12 - SPECIAL FUNCTIONS]
 The purpose  of special  functions in  ExprTk is  to provide  compiler
@@ -1008,7 +1007,7 @@ correctly optimize such expressions for a given architecture.
                                    $f98(x,y,z,w) | (x ==  y) ? z : w
                                    $f99(x,y,z,w) | x*sin(y)+z*cos(w)
 
-
+     ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
 [13 - VARIABLE , VECTOR & STRING DEFINITION]
 ExprTk supports the definition of expression local variables,  vectors
@@ -1127,7 +1126,7 @@ based on the following priorities:
    (e) Symbol table functions
    (f) Unknown symbol resolver based variables
 
-
+     ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
 [14 - VECTOR PROCESSING]
 ExprTk  provides  support  for   various  forms  of  vector   oriented
@@ -1203,7 +1202,7 @@ not a vector but rather a single value.
    min(1 / x)  == (1 / 3)
    max(x / 2)  == (3 / 2)
 
-
+     ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
 [15 - USER DEFINED FUNCTIONS]
 ExprTk provides a means  whereby custom functions can  be defined  and
@@ -1310,6 +1309,7 @@ example defines a generic function called 'too':
          {
             ...
          }
+
          return T(0);
       }
    };
@@ -1735,7 +1735,7 @@ carried out:
       { ... }
    };
 
-
+     ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
 [16 - EXPRESSION DEPENDENTS]
 Any  expression  that  is  not  a  literal  (aka  constant)  will have
@@ -1881,7 +1881,7 @@ of the DEC in determining the 'assignments' of the given expression:
 Note: The assignments will only consist of variable types and as  such
 will not contain symbols denoting functions.
 
-
+     ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
 [17 - ENABLING AND DISABLING FEATURES]
 The parser can be configured via its settings instance to either allow
@@ -2239,7 +2239,7 @@ provided symbol names when calling the standard 'add_function' method.
 Normally if  a user  specified symbol  name conflicts  with any of the
 ExprTk reserved words, the add_function call will fail.
 
-
+     ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
 [18 - EXPRESSION RETURN VALUES]
 ExprTk expressions can return immediately from any point by  utilizing
@@ -2291,7 +2291,7 @@ expression will return normally.
       typedef typename type_t::vector_view vector_t;
       typedef typename type_t::string_view string_t;
 
-      const results_context_t& result = expression.results();
+      const results_context_t& results = expression.results();
 
       for (std::size_t i = 0; i < results.count(); ++i)
       {
@@ -2313,10 +2313,10 @@ expression will return normally.
    }
 
 
-Note: Processing of the return results is very similar to that of  the
+Note: Processing of the return results is similar to that of the
 generic function call parameters.
 
-
+     ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
 [19 - COMPILATION ERRORS]
 When attempting to compile  a malformed or otherwise  erroneous ExprTk
@@ -2426,7 +2426,7 @@ find,  within  the  symbol_table,  symbols  representing  variables or
 functions, to being unable to create new variables in the symbol_table
 via the 'unknown symbol resolver' mechanism.
 
-
+     ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
 [20 - EXPRTK NOTES]
 The following is a list of facts and suggestions one may want to take
@@ -2604,7 +2604,7 @@ into account when using ExprTk:
         (x + y) / (x - y);
       }
 
-
+     ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
 [21 - SIMPLE EXPRTK EXAMPLE]
 --- snip ---
@@ -2692,7 +2692,7 @@ int main()
 }
 --- snip ---
 
-
+     ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
 [22 - BUILD OPTIONS]
 When building ExprTk there are a number of defines that will enable or
@@ -2738,7 +2738,7 @@ This  define  will  disable all  string  processing  capabilities. Any
 expression that contains a string or string related syntax will result
 in a compilation failure.
 
-
+     ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
 [23 - FILES]
 The source distribution of ExprTk is comprised of the following set of
@@ -2766,7 +2766,7 @@ files:
    (19) exprtk_simple_example_15.cpp
    (20) exprtk_simple_example_16.cpp
 
-
+     ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
 [24 - LANGUAGE STRUCTURE]
 +-------------------------------------------------------------+
