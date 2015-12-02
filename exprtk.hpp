@@ -13568,7 +13568,7 @@ namespace exprtk
             init_branches<1>(branch_, brnch);
          }
 
-         ~bipow_node()
+        ~bipow_node()
          {
             cleanup_branches::execute<T,1>(branch_);
          }
@@ -13635,7 +13635,7 @@ namespace exprtk
             init_branches<1>(branch_, brnch);
          }
 
-         ~bipowninv_node()
+        ~bipowninv_node()
          {
             cleanup_branches::execute<T,1>(branch_);
          }
