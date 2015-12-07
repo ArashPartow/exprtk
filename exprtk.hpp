@@ -32069,7 +32069,7 @@ namespace exprtk
    }
 
    template <typename T>
-   inline T derivative(expression<T>& e,
+   inline T derivative(const expression<T>& e,
                        T& x,
                        const T& h = T(0.00000001))
    {
@@ -32088,7 +32088,7 @@ namespace exprtk
    }
 
    template <typename T>
-   inline T second_derivative(expression<T>& e,
+   inline T second_derivative(const expression<T>& e,
                               T& x,
                               const T& h = T(0.00001))
    {
