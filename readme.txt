@@ -1886,7 +1886,7 @@ will not contain symbols denoting functions.
 [17 - ENABLING AND DISABLING FEATURES]
 The parser can be configured via its settings instance to either allow
 or  disallow certain  features that  are available  within the  ExprTk
-grammar. The features fall into one of the following three categories:
+grammar. The features fall  into one  of the following six categories:
 
    (1) Base Functions
    (2) Control Flow Structures

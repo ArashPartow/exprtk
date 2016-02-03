@@ -2,7 +2,7 @@
  ******************************************************************
  *           C++ Mathematical Expression Toolkit Library          *
  *                                                                *
- * Author: Arash Partow (1999-2015)                               *
+ * Author: Arash Partow (1999-2016)                               *
  * URL: http://www.partow.net/programming/exprtk/index.html       *
  *                                                                *
  * Copyright notice:                                              *
@@ -405,14 +405,14 @@ namespace exprtk
 
       static const std::string cntrl_struct_list[] =
                                   {
-                                    "for", "if", "repeat", "switch", "while"
+                                     "if", "switch", "for", "while", "repeat"
                                   };
 
       static const std::size_t cntrl_struct_list_size = sizeof(cntrl_struct_list) / sizeof(std::string);
 
       static const std::string arithmetic_ops_list[] =
                                   {
-                                    "+", "-", "*", "/", "%",  "^"
+                                    "+", "-", "*", "/", "%", "^"
                                   };
 
       static const std::size_t arithmetic_ops_list_size = sizeof(arithmetic_ops_list) / sizeof(std::string);
@@ -488,7 +488,7 @@ namespace exprtk
 
       inline bool is_logic_opr(const std::string& lgc_opr)
       {
-         for (std::size_t i = 0; i < cntrl_struct_list_size; ++i)
+         for (std::size_t i = 0; i < logic_ops_list_size; ++i)
          {
             if (imatch(lgc_opr,logic_ops_list[i]))
             {
@@ -2401,9 +2401,10 @@ namespace exprtk
                8. 123.456E-3
             */
             const char* initial_itr = s_itr_;
-            bool dot_found         = false;
-            bool e_found           = false;
-            bool post_e_sign_found = false;
+            bool dot_found          = false;
+            bool e_found            = false;
+            bool post_e_sign_found  = false;
+            bool post_e_digit_found = false;
             token_t t;
 
             while (!is_end(s_itr_))
@@ -2450,7 +2451,7 @@ namespace exprtk
 
                   continue;
                }
-               else if (e_found && details::is_sign(*s_itr_))
+               else if (e_found && details::is_sign(*s_itr_) && !post_e_digit_found)
                {
                   if (post_e_sign_found)
                   {
@@ -2461,6 +2462,13 @@ namespace exprtk
                   }
 
                   post_e_sign_found = true;
+                  ++s_itr_;
+
+                  continue;
+               }
+               else if (e_found && details::is_digit(*s_itr_))
+               {
+                  post_e_digit_found = true;
                   ++s_itr_;
 
                   continue;
@@ -17708,7 +17716,7 @@ namespace exprtk
          {
             if (
                  (e_bf_unknown != bf) &&
-                 (static_cast<std::size_t>(bf) < details::base_function_list_size)
+                 (static_cast<std::size_t>(bf) < (details::base_function_list_size + 1))
                )
             {
                disabled_func_set_.insert(details::base_function_list[bf - 1]);
@@ -17721,7 +17729,7 @@ namespace exprtk
          {
             if (
                  (e_ctrl_unknown != ctrl_struct) &&
-                 (static_cast<std::size_t>(ctrl_struct) < details::cntrl_struct_list_size)
+                 (static_cast<std::size_t>(ctrl_struct) < (details::cntrl_struct_list_size + 1))
                )
             {
                disabled_ctrl_set_.insert(details::cntrl_struct_list[ctrl_struct - 1]);
@@ -17734,7 +17742,7 @@ namespace exprtk
          {
             if (
                  (e_logic_unknown != logic) &&
-                 (static_cast<std::size_t>(logic) < details::logic_ops_list_size)
+                 (static_cast<std::size_t>(logic) < (details::logic_ops_list_size + 1))
                )
             {
                disabled_logic_set_.insert(details::logic_ops_list[logic - 1]);
@@ -17747,7 +17755,7 @@ namespace exprtk
          {
             if (
                  (e_arith_unknown != arithmetic) &&
-                 (static_cast<std::size_t>(arithmetic) < details::arithmetic_ops_list_size)
+                 (static_cast<std::size_t>(arithmetic) < (details::arithmetic_ops_list_size + 1))
                )
             {
                disabled_arithmetic_set_.insert(details::arithmetic_ops_list[arithmetic - 1]);
@@ -17760,7 +17768,7 @@ namespace exprtk
          {
             if (
                  (e_assign_unknown != assignment) &&
-                 (static_cast<std::size_t>(assignment) < details::assignment_ops_list_size)
+                 (static_cast<std::size_t>(assignment) < (details::assignment_ops_list_size + 1))
                )
             {
                disabled_assignment_set_.insert(details::assignment_ops_list[assignment - 1]);
@@ -17773,7 +17781,7 @@ namespace exprtk
          {
             if (
                  (e_ineq_unknown != inequality) &&
-                 (static_cast<std::size_t>(inequality) < details::inequality_ops_list_size)
+                 (static_cast<std::size_t>(inequality) < (details::inequality_ops_list_size + 1))
                )
             {
                disabled_inequality_set_.insert(details::inequality_ops_list[inequality - 1]);
@@ -17786,7 +17794,7 @@ namespace exprtk
          {
             if (
                  (e_bf_unknown != bf) &&
-                 (static_cast<std::size_t>(bf) < details::base_function_list_size)
+                 (static_cast<std::size_t>(bf) < (details::base_function_list_size + 1))
                )
             {
                des_itr_t itr = disabled_func_set_.find(details::base_function_list[bf - 1]);
@@ -17804,7 +17812,7 @@ namespace exprtk
          {
             if (
                  (e_ctrl_unknown != ctrl_struct) &&
-                 (static_cast<std::size_t>(ctrl_struct) < details::cntrl_struct_list_size)
+                 (static_cast<std::size_t>(ctrl_struct) < (details::cntrl_struct_list_size + 1))
                )
             {
                des_itr_t itr = disabled_ctrl_set_.find(details::cntrl_struct_list[ctrl_struct - 1]);
@@ -17822,7 +17830,7 @@ namespace exprtk
          {
             if (
                  (e_logic_unknown != logic) &&
-                 (static_cast<std::size_t>(logic) < details::logic_ops_list_size)
+                 (static_cast<std::size_t>(logic) < (details::logic_ops_list_size + 1))
                )
             {
                des_itr_t itr = disabled_logic_set_.find(details::logic_ops_list[logic - 1]);
@@ -17840,7 +17848,7 @@ namespace exprtk
          {
             if (
                  (e_arith_unknown != arithmetic) &&
-                 (static_cast<std::size_t>(arithmetic) < details::arithmetic_ops_list_size)
+                 (static_cast<std::size_t>(arithmetic) < (details::arithmetic_ops_list_size + 1))
                )
             {
                des_itr_t itr = disabled_arithmetic_set_.find(details::arithmetic_ops_list[arithmetic - 1]);
@@ -17858,7 +17866,7 @@ namespace exprtk
          {
             if (
                  (e_assign_unknown != assignment) &&
-                 (static_cast<std::size_t>(assignment) < details::assignment_ops_list_size)
+                 (static_cast<std::size_t>(assignment) < (details::assignment_ops_list_size + 1))
                )
             {
                des_itr_t itr = disabled_assignment_set_.find(details::assignment_ops_list[assignment - 1]);
@@ -17876,7 +17884,7 @@ namespace exprtk
          {
             if (
                  (e_ineq_unknown != inequality) &&
-                 (static_cast<std::size_t>(inequality) < details::inequality_ops_list_size)
+                 (static_cast<std::size_t>(inequality) < (details::inequality_ops_list_size + 1))
                )
             {
                des_itr_t itr = disabled_inequality_set_.find(details::inequality_ops_list[inequality - 1]);
@@ -19018,6 +19026,10 @@ namespace exprtk
       template <std::size_t NumberofParameters>
       inline expression_node_ptr parse_function_call(ifunction<T>* function, const std::string& function_name)
       {
+         #ifdef _MSC_VER
+            #pragma warning(push)
+            #pragma warning(disable: 4127)
+         #endif
          if (0 == NumberofParameters)
          {
             set_error(
@@ -19027,6 +19039,9 @@ namespace exprtk
 
             return error_node();
          }
+         #ifdef _MSC_VER
+            #pragma warning(pop)
+         #endif
 
          expression_node_ptr branch[NumberofParameters];
          expression_node_ptr result  = error_node();
@@ -21904,7 +21919,7 @@ namespace exprtk
 
                return error_node();
             }
-            else if ((scope_element::e_string == se.type))
+            else if (scope_element::e_string == se.type)
             {
                str_node  = se.str_node;
                se.active = true;
@@ -22090,7 +22105,7 @@ namespace exprtk
 
                return error_node();
             }
-            else if ((scope_element::e_variable == se.type))
+            else if (scope_element::e_variable == se.type)
             {
                var_node  = se.var_node;
                se.active = true;
@@ -32019,7 +32034,7 @@ namespace exprtk
    };
 
    template <typename T>
-   inline T integrate(expression<T>& e,
+   inline T integrate(const expression<T>& e,
                       T& x,
                       const T& r0, const T& r1,
                       const std::size_t number_of_intervals = 1000000)
@@ -32043,12 +32058,12 @@ namespace exprtk
    }
 
    template <typename T>
-   inline T integrate(expression<T>& e,
+   inline T integrate(const expression<T>& e,
                       const std::string& variable_name,
                       const T& r0, const T& r1,
                       const std::size_t number_of_intervals = 1000000)
    {
-      symbol_table<T>& sym_table = e.get_symbol_table();
+      const symbol_table<T>& sym_table = e.get_symbol_table();
 
       if (!sym_table.valid())
          return std::numeric_limits<T>::quiet_NaN();
@@ -32069,7 +32084,7 @@ namespace exprtk
    }
 
    template <typename T>
-   inline T derivative(expression<T>& e,
+   inline T derivative(const expression<T>& e,
                        T& x,
                        const T& h = T(0.00000001))
    {
@@ -32088,7 +32103,7 @@ namespace exprtk
    }
 
    template <typename T>
-   inline T second_derivative(expression<T>& e,
+   inline T second_derivative(const expression<T>& e,
                               T& x,
                               const T& h = T(0.00001))
    {
@@ -32108,7 +32123,7 @@ namespace exprtk
    }
 
    template <typename T>
-   inline T third_derivative(expression<T>& e,
+   inline T third_derivative(const expression<T>& e,
                              T& x,
                              const T& h = T(0.0001))
    {
@@ -32127,11 +32142,11 @@ namespace exprtk
    }
 
    template <typename T>
-   inline T derivative(expression<T>& e,
+   inline T derivative(const expression<T>& e,
                        const std::string& variable_name,
                        const T& h = T(0.00000001))
    {
-      symbol_table<T>& sym_table = e.get_symbol_table();
+      const symbol_table<T>& sym_table = e.get_symbol_table();
 
       if (!sym_table.valid())
       {
@@ -32154,11 +32169,11 @@ namespace exprtk
    }
 
    template <typename T>
-   inline T second_derivative(expression<T>& e,
+   inline T second_derivative(const expression<T>& e,
                               const std::string& variable_name,
                               const T& h = T(0.00001))
    {
-      symbol_table<T>& sym_table = e.get_symbol_table();
+      const symbol_table<T>& sym_table = e.get_symbol_table();
 
       if (!sym_table.valid())
       {
@@ -32181,11 +32196,11 @@ namespace exprtk
    }
 
    template <typename T>
-   inline T third_derivative(expression<T>& e,
+   inline T third_derivative(const expression<T>& e,
                              const std::string& variable_name,
                              const T& h = T(0.0001))
    {
-      symbol_table<T>& sym_table = e.get_symbol_table();
+      const symbol_table<T>& sym_table = e.get_symbol_table();
 
       if (!sym_table.valid())
       {
@@ -33706,9 +33721,9 @@ namespace exprtk
    namespace information
    {
       static const char* library = "Mathematical Expression Toolkit";
-      static const char* version = "2.7182818284590452353602874713526"
-                                   "624977572470936999595749669676277";
-      static const char* date    = "20150731";
+      static const char* version = "2.71828182845904523536028747135266"
+                                   "2497757247093699959574966967627724";
+      static const char* date    = "20160113";
 
       static inline std::string data()
       {

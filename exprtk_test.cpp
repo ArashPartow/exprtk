@@ -3,7 +3,7 @@
  *         C++ Mathematical Expression Toolkit Library        *
  *                                                            *
  * Examples and Unit-Tests                                    *
- * Author: Arash Partow (1999-2015)                           *
+ * Author: Arash Partow (1999-2016)                           *
  * URL: http://www.partow.net/programming/exprtk/index.html   *
  *                                                            *
  * Copyright notice:                                          *
@@ -301,6 +301,14 @@ static const test_t global_test_list[] =
                     test_t("( 7 + 2 )",9.0),
                     test_t("( 8 + 1 )",9.0),
                     test_t("( 9 + 0 )",9.0),
+                    test_t("1E1+1",11.0),
+                    test_t("1e1+1",11.0),
+                    test_t("1E1-1", 9.0),
+                    test_t("1e1-1", 9.0),
+                    test_t("1E01+1",11.0),
+                    test_t("1e01+1",11.0),
+                    test_t("1E01-1", 9.0),
+                    test_t("1e01-1", 9.0),
                     test_t("1+2",+3.0),
                     test_t("1-2",-1.0),
                     test_t("1*2",+2.0),
