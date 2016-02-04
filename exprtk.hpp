@@ -28,8 +28,6 @@
  *                                                                *
  ******************************************************************
 */
-//test github desktop
-//didn't see the changes, try another line
 
 #ifndef INCLUDE_EXPRTK_HPP
 #define INCLUDE_EXPRTK_HPP
@@ -2092,6 +2090,10 @@ namespace exprtk
             return token_list_.empty();
          }
 
+		 token_list_t token_list() const
+		 {
+			return token_list_;
+		 }
          inline std::size_t size() const
          {
             return token_list_.size();
