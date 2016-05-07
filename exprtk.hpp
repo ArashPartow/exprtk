@@ -2892,10 +2892,12 @@ namespace exprtk
             {
                token t;
 
-               while (join(g.token_list_[i],g.token_list_[i + 1],t))
+               while (join(g[i],g[i + 1],t))
                {
                   g.token_list_[i] = t;
+
                   g.token_list_.erase(g.token_list_.begin() + (i + 1));
+
                   ++changes;
                }
             }
@@ -2914,9 +2916,10 @@ namespace exprtk
             {
                token t;
 
-               while (join(g.token_list_[i],g.token_list_[i + 1],g.token_list_[i + 2],t))
+               while (join(g[i],g[i + 1],g[i + 2],t))
                {
                   g.token_list_[i] = t;
+
                   g.token_list_.erase(g.token_list_.begin() + (i + 1),
                                       g.token_list_.begin() + (i + 3));
                   ++changes;
@@ -33721,9 +33724,9 @@ namespace exprtk
    namespace information
    {
       static const char* library = "Mathematical Expression Toolkit";
-      static const char* version = "2.71828182845904523536028747135266"
-                                   "2497757247093699959574966967627724";
-      static const char* date    = "20160113";
+      static const char* version = "2.718281828459045235360287471352662"
+                                   "49775724709369995957496696762772407";
+      static const char* date    = "20160606";
 
       static inline std::string data()
       {

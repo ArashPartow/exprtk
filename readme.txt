@@ -1639,11 +1639,11 @@ expression, an instance of each function needs to be registered with a
 symbol_table that  has been  associated with  the expression instance.
 The following demonstrates how all the pieces are put together:
 
-   typedef exprtk::symbol_table<double>    symbol_table_t;
-   typedef exprtk::expression<double>        expression_t;
-   typedef exprtk::parser<double>                parser_t;
-   typedef exprtk::function_compositor<T>    compositor_t;
-   typedef typename compositor_t::function     function_t;
+   typedef exprtk::symbol_table<double>      symbol_table_t;
+   typedef exprtk::expression<double>          expression_t;
+   typedef exprtk::parser<double>                  parser_t;
+   typedef exprtk::function_compositor<double> compositor_t;
+   typedef typename compositor_t::function       function_t;
 
    foo<double> f;
    boo<double> b;
