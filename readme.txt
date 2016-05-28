@@ -291,7 +291,7 @@ of C++ compilers:
 | nequal   | Not-equal test between x and y using normalized epsilon |
 +----------+---------------------------------------------------------+
 | root     | Nth-Root of x. where n is a positive integer.           |
-|          | (eg: root(x,3))                                         |
+|          | (eg: root(x,3) == x^(1/3))                              |
 +----------+---------------------------------------------------------+
 | round    | Round x to the nearest integer.  (eg: round(x))         |
 +----------+---------------------------------------------------------+
@@ -302,7 +302,7 @@ of C++ compilers:
 | sgn      | Sign of x, -1 where x < 0, +1 where x > 0, else zero.   |
 |          | (eg: sgn(x))                                            |
 +----------+---------------------------------------------------------+
-| sqrt     | Square root of x, where x > 0.  (eg: sqrt(x))           |
+| sqrt     | Square root of x, where x >= 0.  (eg: sqrt(x))          |
 +----------+---------------------------------------------------------+
 | sum      | Sum of all the inputs.                                  |
 |          | (eg: sum(x,y,z,w,u,v,t) == (x + y + z + w + u + v + t)) |
