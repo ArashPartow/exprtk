@@ -3816,7 +3816,7 @@ namespace exprtk
                    template <typename,typename> class Container>
          inline bool token_is_then_assign(const token_t::token_type& ttype,
                                           Container<std::string,Allocator>& token_list,
-                                          const bool advance_token = true)
+                                          const token_advance_mode mode = e_advance)
          {
             if (current_token_.type != ttype)
             {
@@ -3825,10 +3825,7 @@ namespace exprtk
 
             token_list.push_back(current_token_.value);
 
-            if (advance_token)
-            {
-               next_token();
-            }
+            advance_token(mode);
 
             return true;
          }
