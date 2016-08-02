@@ -94,6 +94,7 @@ locations:
 
   (a) Download:   http://www.partow.net/programming/exprtk/index.html
   (b) Repository: https://github.com/ArashPartow/exprtk
+                  https://github.com/ArashPartow/exprtk-extras
 
      ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
@@ -240,7 +241,7 @@ of C++ compilers:
 | ceil     | Smallest integer that is greater than or equal to x.    |
 +----------+---------------------------------------------------------+
 | clamp    | Clamp x in range between r0 and r1, where r0 < r1.      |
-|          | (eg: clamp(r0,x,r1)                                     |
+|          | (eg: clamp(r0,x,r1))                                    |
 +----------+---------------------------------------------------------+
 | equal    | Equality test between x and y using normalized epsilon  |
 +----------+---------------------------------------------------------+
@@ -762,12 +763,12 @@ Expression:  z := (x + y^-2.345) * sin(pi / min(w - 7.3,v))
  Variable(z)            [Multiplication]
                 ____________/      \___________
                /                               \
-              /                          [Unary-Func(sin)]
+              /                      [Unary-Function(sin)]
          [Addition]                            |
       ____/      \____                    [Division]
      /                \                 ___/      \___
  Variable(x)   [Exponentiation]        /              \
-              ______/   \______  Constant(pi)  [Binary-Func(min)]
+              ______/   \______  Constant(pi) [Binary-Function(min)]
              /                 \                ____/    \____
         Variable(y)        [Negation]          /              \
                                |              /           Variable(v)
@@ -800,6 +801,118 @@ compilation  process, the  parser will  stop compiling  and return  an
 error status code,  with a more  detailed description of  the error(s)
 and  its  location  within  the  input  provided  by  the  'get_error'
 interface.
+
+
+Note: The exprtk::expression  and exprtk::symbol_table components  are
+reference counted entities. Copy constructing or assigning to or  from
+either component will result in  a shallow copy and a  reference count
+increment,  rather  than  a  complete  replication.  Furthermore   the
+expression  and symbol_table  components being  Default-Constructible,
+Copy-Constructible  and  Copy-Assignable  make  them  compatible  with
+various  C++  standard  library   containers  and  adaptors  such   as
+std::vector, std::map, std::stack etc.
+
+The following is  an example of  two unique expressions,  after having
+being instantiated and  compiled, one expression  is  assigned to  the
+other. The diagrams depict  their initial and post  assignment states,
+including  which  control  block each  expression references and their
+associated reference counts.
+
+
+  exprtk::expression e0; // constructed expression, eg: x + 1
+  exprtk::expression e1; // constructed expression, eg: 2z + y
+
+  +-----[ e0 cntrl block]----+     +-----[ e1 cntrl block]-----+
+  | 1. Expression Node 'x+1' |     | 1. Expression Node '2z+y' |
+  | 2. Ref Count: 1          |<-+  | 2. Ref Count: 1           |<-+
+  +--------------------------+  |  +---------------------------+  |
+                                |                                 |
+    +--[ e0 expression]--+      |    +--[ e1 expression]--+       |
+    | 1. Reference to    ]------+    | 1. Reference to    ]-------+
+    | e0 Control Block   |           | e1 Control Block   |
+    +--------------------+           +--------------------+
+
+
+  e0 = e1; // e0 and e1 are now 2z+y
+
+               +-----[ e1 cntrl block]-----+
+               | 1. Expression Node '2z+y' |
+  +----------->| 2. Ref Count: 2           |<----------+
+  |            +---------------------------+           |
+  |                                                    |
+  |   +--[ e0 expression]--+  +--[ e1 expression]--+   |
+  +---[ 1. Reference to    |  | 1. Reference to    ]---+
+      | e1 Control Block   |  | e1 Control Block   |
+      +--------------------+  +--------------------+
+
+The reason for  the above complexity  and restrictions of  deep copies
+for the expression and symbol_table components is because  expressions
+may include user defined variables or functions. These are embedded as
+references into the expression's AST. When copying an expression, said
+references  need to  also  be  copied. if  the references  are blindly
+copied,  then it  will  result  in two  or more  identical expressions
+utilizing the exact same  references for variables. This  obviously is
+not the  default assumed  scenario and  will give  rise to non-obvious
+behaviours  when  using the  expressions in  various contexts such  as
+muli-threading et al.
+
+The prescribed method for cloning an expression is to compile it  from
+its string form. Doing so will allow the one to properly consider  the
+exact source of user defined variables and functions.
+
+Note:  The  exprtk::parser  is  a  non-copyable  and  non-thread  safe
+component, and should only be shared via either a reference, a  shared
+pointer  or  a  std::ref  mechanism,  and  considerations  relating to
+synchronisation  taken  into  account  where  appropriate.  The parser
+represents an object factory,  specifically a factory of  expressions,
+and generally should  not be instantiated  solely on a  per expression
+compilation basis.
+
+The  following  diagram  and  example depicts  the  flow  of  data and
+operations  for  compiling  multiple expressions  via  the  parser and
+inserting  the  newly  minted  exprtk::expression  instances  into   a
+std::vector.
+
+
+                        +--[exprtk::parser]--+
+                        | expression factory |
+                     +---->- compile(....) ->---+
+                     |  +--------------------+  |
+  Expressions        |                          |   Expressions as
+  in string form     A                          V   exprtk::expression
+                     |                          |   instances
+  [s0:'x+1'     ]-+  |                          |   +-[e0: x+1]
+                  |  |                          |   |
+  [s1:'2z+y']-----+--+                          +-->+-[e1: 2z+y]
+                  |                                 |
+  [s2:'sin(k+w)']-+                                 +-[e2: sin(k+w)]
+
+
+   const std::string expression_str[3]
+                       = { "x + 1", "2x + y", "sin(k + w)" };
+
+   std::vector<expression_t> expression_list;
+
+   parser_t             parser;
+   expression_t     expression;
+   symbol_table_t symbol_table;
+
+   expression.register_symbol_table(symbol_table);
+
+   for (std::size_t i = 0; i < 3; ++i)
+   {
+      if (parser.compile(expression_str[i],expression))
+      {
+         expression_list.push_back(expression);
+      }
+      else
+        std::cout << "Error in " << expression_str[i] << "\n";
+   }
+
+   for (auto e : expression_list)
+   {
+      e.value();
+   }
 
      ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
@@ -1060,9 +1173,9 @@ zero. The following are examples of vector definitions:
 
 
 (3) String Definition
-Strings are a sequence of  8-bit characters. They can only  be defined
-with an explicit initialisation  value. The following are  examples of
-string variable definitions:
+Strings are sequences comprised of 8-bit characters. They can only be
+defined  with an explicit  initialisation  value. The  following  are
+examples of string variable definitions:
 
    (a) Initialise to a string
        var x := 'abc';
@@ -1095,6 +1208,9 @@ Variable and vector  definitions have a  return value. In  the case of
 variable definitions, the value  to which the variable  is initialised
 will be returned. Where as for vectors, the value of the first element
 (eg: v[0]) will be returned.
+
+   8 == ((var x := 7;) + 1)
+   4 == (var y[3] := {4, 5, 6};)
 
 
 (5) Variable/Vector Assignment
@@ -1700,7 +1816,7 @@ the function can be disabled.
    {
       foo() : exprtk::ifunction<T>(3)
       {
-          exprtk::disable_has_side_effects(*this);
+         exprtk::disable_has_side_effects(*this);
       }
 
       T operator()(const T& v1, const T& v2, const T& v3)
