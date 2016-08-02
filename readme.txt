@@ -881,7 +881,7 @@ std::vector.
   Expressions        |                          |   Expressions as
   in string form     A                          V   exprtk::expression
                      |                          |   instances
-  [s0:'x+1'     ]-+  |                          |   +-[e0: x+1]
+  [s0:'x+1']------+  |                          |   +-[e0: x+1]
                   |  |                          |   |
   [s1:'2z+y']-----+--+                          +-->+-[e1: 2z+y]
                   |                                 |

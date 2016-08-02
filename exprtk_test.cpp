@@ -3139,6 +3139,7 @@ double foo2(double v0, double v1) { return v0 + v1; }
 double foo3(double v0, double v1, double v2) { return v0 + v1 + v2; }
 double foo4(double v0, double v1, double v2, double v3) { return v0 + v1 + v2 + v3; }
 double foo5(double v0, double v1, double v2, double v3, double v4) { return v0 + v1 + v2 + v3 + v4; }
+double foo6(double v0, double v1, double v2, double v3, double v4, double v5) { return v0 + v1 + v2 + v3 + v4 + v5; }
 
 template <typename T>
 inline bool run_test09()
@@ -3241,11 +3242,12 @@ inline bool run_test09()
 
       const std::string expression_list[] =
                            {
-                             "foo1(1)         == 1",
-                             "foo2(1,2)       == (1 + 2)",
-                             "foo3(1,2,3)     == (1 + 2 + 3)",
-                             "foo4(1,2,3,4)   == (1 + 2 + 3 + 4)",
-                             "foo5(1,2,3,4,5) == (1 + 2 + 3 + 4 + 5)"
+                             "foo1(1)           == 1",
+                             "foo2(1,2)         == (1 + 2)",
+                             "foo3(1,2,3)       == (1 + 2 + 3)",
+                             "foo4(1,2,3,4)     == (1 + 2 + 3 + 4)",
+                             "foo5(1,2,3,4,5)   == (1 + 2 + 3 + 4 + 5)",
+                             "foo6(1,2,3,4,5,6) == (1 + 2 + 3 + 4 + 5 + 6)"
                            };
 
       const std::size_t expression_list_size = sizeof(expression_list) / sizeof(std::string);
@@ -3257,6 +3259,7 @@ inline bool run_test09()
       symbol_table.add_function("foo3",foo3);
       symbol_table.add_function("foo4",foo4);
       symbol_table.add_function("foo5",foo5);
+      symbol_table.add_function("foo6",foo6);
 
       for (std::size_t i = 0; i < expression_list_size; ++i)
       {

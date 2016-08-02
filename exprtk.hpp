@@ -14468,7 +14468,7 @@ namespace exprtk
          freefunc6(ff6_functor ff) : exprtk::ifunction<T>(6), f(ff) {}
          inline T operator()(const T& v0, const T& v1, const T& v2, const T& v3, const T& v4, const T& v5)
          { return f(v0,v1,v2,v3,v4,v5); }
-         ff5_functor f;
+         ff6_functor f;
       };
 
       template <typename Type, typename RawType>
@@ -14953,18 +14953,21 @@ namespace exprtk
 
       inline symbol_table<T>& operator=(const symbol_table<T>& st)
       {
-         if (holder_)
+         if (this != &st)
          {
-            if (0 == --holder_->ref_count)
+            if (holder_)
             {
-               delete holder_;
+               if (0 == --holder_->ref_count)
+               {
+                  delete holder_;
+               }
+
+               holder_ = 0;
             }
 
-            holder_ = 0;
+            holder_ = st.holder_;
+            holder_->ref_count++;
          }
-
-         holder_ = st.holder_;
-         holder_->ref_count++;
 
          return *this;
       }
