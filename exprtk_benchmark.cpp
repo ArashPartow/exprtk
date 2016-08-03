@@ -46,14 +46,13 @@ const std::string expression_list[] = {
                                          "if((y + (x * 2.2)) <= (x + y + 1.1), x - y, x * y) + 2 * pi / x"
                                       };
 
-const std::size_t expression_list_size = sizeof(expression_list) / sizeof(std::string);
+const std::size_t global_expression_list_size = sizeof(global_expression_list) / sizeof(std::string);
 
-
-static const double lower_bound_x = -100.0;
-static const double lower_bound_y = -100.0;
-static const double upper_bound_x = +100.0;
-static const double upper_bound_y = +100.0;
-static const double delta = 0.0111;
+static const double global_lower_bound_x = -100.0;
+static const double global_lower_bound_y = -100.0;
+static const double global_upper_bound_x = +100.0;
+static const double global_upper_bound_y = +100.0;
+static const double global_delta         = 0.0111;
 
 
 template <typename T,
@@ -64,16 +63,16 @@ bool load_expression(exprtk::symbol_table<T>& symbol_table,
 {
    exprtk::parser<double> parser;
 
-   for (std::size_t i = 0; i < expression_list_size; ++i)
+   for (std::size_t i = 0; i < global_expression_list_size; ++i)
    {
       exprtk::expression<double> expression;
       expression.register_symbol_table(symbol_table);
 
-      if (!parser.compile(expression_list[i],expression))
+      if (!parser.compile(global_expression_list[i],expression))
       {
          printf("[load_expression] - Parser Error: %s\tExpression: %s\n",
                 parser.error().c_str(),
-                expression_list[i].c_str());
+                global_expression_list[i].c_str());
 
          return false;
       }
@@ -95,9 +94,9 @@ void run_exprtk_benchmark(T& x, T& y,
    exprtk::timer timer;
    timer.start();
 
-   for (x = lower_bound_x; x <= upper_bound_x; x += delta)
+   for (x = global_lower_bound_x; x <= global_upper_bound_x; x += global_delta)
    {
-      for (y = lower_bound_y; y <= upper_bound_y; y += delta)
+      for (y = global_lower_bound_y; y <= global_upper_bound_y; y += global_delta)
       {
          total += expression.value();
          ++count;
@@ -126,9 +125,9 @@ void run_native_benchmark(T& x, T& y, NativeFunction f, const std::string& expr_
    exprtk::timer timer;
    timer.start();
 
-   for (x = lower_bound_x; x <= upper_bound_x; x += delta)
+   for (x = global_lower_bound_x; x <= global_upper_bound_x; x += global_delta)
    {
-      for (y = lower_bound_y; y <= upper_bound_y; y += delta)
+      for (y = global_lower_bound_y; y <= global_upper_bound_y; y += global_delta)
       {
          total += f(x,y);
          ++count;
@@ -155,18 +154,18 @@ bool run_parse_benchmark(exprtk::symbol_table<T>& symbol_table)
 
    expression.register_symbol_table(symbol_table);
 
-   for (std::size_t i = 0; i < expression_list_size; ++i)
+   for (std::size_t i = 0; i < global_expression_list_size; ++i)
    {
       exprtk::timer timer;
       timer.start();
 
       for (std::size_t r = 0; r < rounds; ++r)
       {
-         if (!parser.compile(expression_list[i],expression))
+         if (!parser.compile(global_expression_list[i],expression))
          {
             printf("[run_parse_benchmark] - Parser Error: %s\tExpression: %s\n",
                    parser.error().c_str(),
-                   expression_list[i].c_str());
+                   global_expression_list[i].c_str());
 
             return false;
          }
@@ -177,7 +176,7 @@ bool run_parse_benchmark(exprtk::symbol_table<T>& symbol_table)
       printf("[parse] Total Time:%12.8f  Rate:%14.3fparse/sec Expression: %s\n",
              timer.time(),
              rounds / timer.time(),
-             expression_list[i].c_str());
+             global_expression_list[i].c_str());
    }
 
    return true;
@@ -315,40 +314,40 @@ int main(int argc, char* argv[])
    symbol_table.add_variable("x",x);
    symbol_table.add_variable("y",y);
 
-   std::deque<exprtk::expression<double> > expr_list;
+   std::deque<exprtk::expression<double> > compiled_expr_list;
 
-   if (!load_expression(symbol_table,expr_list))
+   if (!load_expression(symbol_table,compiled_expr_list))
    {
       return 1;
    }
 
    {
       std::cout << "--- EXPRTK ---" << std::endl;
-      for (std::size_t i = 0; i < expr_list.size(); ++i)
+      for (std::size_t i = 0; i < compiled_expr_list.size(); ++i)
       {
-         run_exprtk_benchmark(x,y,expr_list[i],expression_list[i]);
+         run_exprtk_benchmark(x,y,compiled_expr_list[i],global_expression_list[i]);
       }
    }
 
    {
       std::cout << "--- NATIVE ---" << std::endl;
-      run_native_benchmark(x,y,native<double>::func00,expression_list[ 0]);
-      run_native_benchmark(x,y,native<double>::func01,expression_list[ 1]);
-      run_native_benchmark(x,y,native<double>::func02,expression_list[ 2]);
-      run_native_benchmark(x,y,native<double>::func03,expression_list[ 3]);
-      run_native_benchmark(x,y,native<double>::func04,expression_list[ 4]);
-      run_native_benchmark(x,y,native<double>::func05,expression_list[ 5]);
-      run_native_benchmark(x,y,native<double>::func06,expression_list[ 6]);
-      run_native_benchmark(x,y,native<double>::func07,expression_list[ 7]);
-      run_native_benchmark(x,y,native<double>::func08,expression_list[ 8]);
-      run_native_benchmark(x,y,native<double>::func09,expression_list[ 9]);
-      run_native_benchmark(x,y,native<double>::func10,expression_list[10]);
-      run_native_benchmark(x,y,native<double>::func11,expression_list[11]);
-      run_native_benchmark(x,y,native<double>::func12,expression_list[12]);
-      run_native_benchmark(x,y,native<double>::func13,expression_list[13]);
-      run_native_benchmark(x,y,native<double>::func14,expression_list[14]);
-      run_native_benchmark(x,y,native<double>::func15,expression_list[15]);
-      run_native_benchmark(x,y,native<double>::func16,expression_list[16]);
+      run_native_benchmark(x,y,native<double>::func00,global_expression_list[ 0]);
+      run_native_benchmark(x,y,native<double>::func01,global_expression_list[ 1]);
+      run_native_benchmark(x,y,native<double>::func02,global_expression_list[ 2]);
+      run_native_benchmark(x,y,native<double>::func03,global_expression_list[ 3]);
+      run_native_benchmark(x,y,native<double>::func04,global_expression_list[ 4]);
+      run_native_benchmark(x,y,native<double>::func05,global_expression_list[ 5]);
+      run_native_benchmark(x,y,native<double>::func06,global_expression_list[ 6]);
+      run_native_benchmark(x,y,native<double>::func07,global_expression_list[ 7]);
+      run_native_benchmark(x,y,native<double>::func08,global_expression_list[ 8]);
+      run_native_benchmark(x,y,native<double>::func09,global_expression_list[ 9]);
+      run_native_benchmark(x,y,native<double>::func10,global_expression_list[10]);
+      run_native_benchmark(x,y,native<double>::func11,global_expression_list[11]);
+      run_native_benchmark(x,y,native<double>::func12,global_expression_list[12]);
+      run_native_benchmark(x,y,native<double>::func13,global_expression_list[13]);
+      run_native_benchmark(x,y,native<double>::func14,global_expression_list[14]);
+      run_native_benchmark(x,y,native<double>::func15,global_expression_list[15]);
+      run_native_benchmark(x,y,native<double>::func16,global_expression_list[16]);
    }
 
    {
@@ -516,7 +515,7 @@ void perform_file_based_benchmark(const std::string& file_name, const std::size_
 
    for (std::size_t i = 0; i < expression_list.size(); ++i)
    {
-      expression_t& e = expression_list[i];
+      expression_t& expression = expression_list[i];
 
       a = 1.1;
       b = 2.2;
@@ -531,7 +530,7 @@ void perform_file_based_benchmark(const std::string& file_name, const std::size_
 
       for (std::size_t r = 0; r < rounds; ++r)
       {
-         sum += e.value();
+         sum += expression.value();
          std::swap(a,b);
          std::swap(x,y);
       }
