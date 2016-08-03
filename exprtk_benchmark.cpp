@@ -26,25 +26,26 @@
 #include "exprtk.hpp"
 
 
-const std::string expression_list[] = {
-                                         "(y + x)",
-                                         "2 * (y + x)",
-                                         "(2 * y + 2 * x)",
-                                         "((1.23 * x^2) / y) - 123.123",
-                                         "(y + x / y) * (x - y / x)",
-                                         "x / ((x + y) + (x - y)) / y",
-                                         "1 - ((x * y) + (y / x)) - 3",
-                                         "(5.5 + x) + (2 * x - 2 / 3 * y) * (x / 3 + y / 4) + (y + 7.7)",
-                                         "1.1x^1 + 2.2y^2 - 3.3x^3 + 4.4y^15 - 5.5x^23 + 6.6y^55",
-                                         "sin(2 * x) + cos(pi / y)",
-                                         "1 - sin(2 * x) + cos(pi / y)",
-                                         "sqrt(111.111 - sin(2 * x) + cos(pi / y) / 333.333)",
-                                         "(x^2 / sin(2 * pi / y)) - x / 2",
-                                         "x + (cos(y - sin(2 / x * pi)) - sin(x - cos(2 * y / pi))) - y",
-                                         "clamp(-1.0, sin(2 * pi * x) + cos(y / 2 * pi), +1.0)",
-                                         "max(3.33, min(sqrt(1 - sin(2 * x) + cos(pi / y) / 3), 1.11))",
-                                         "if((y + (x * 2.2)) <= (x + y + 1.1), x - y, x * y) + 2 * pi / x"
-                                      };
+const std::string global_expression_list[]
+                     = {
+                          "(y + x)",
+                          "2 * (y + x)",
+                          "(2 * y + 2 * x)",
+                          "((1.23 * x^2) / y) - 123.123",
+                          "(y + x / y) * (x - y / x)",
+                          "x / ((x + y) + (x - y)) / y",
+                          "1 - ((x * y) + (y / x)) - 3",
+                          "(5.5 + x) + (2 * x - 2 / 3 * y) * (x / 3 + y / 4) + (y + 7.7)",
+                          "1.1x^1 + 2.2y^2 - 3.3x^3 + 4.4y^15 - 5.5x^23 + 6.6y^55",
+                          "sin(2 * x) + cos(pi / y)",
+                          "1 - sin(2 * x) + cos(pi / y)",
+                          "sqrt(111.111 - sin(2 * x) + cos(pi / y) / 333.333)",
+                          "(x^2 / sin(2 * pi / y)) - x / 2",
+                          "x + (cos(y - sin(2 / x * pi)) - sin(x - cos(2 * y / pi))) - y",
+                          "clamp(-1.0, sin(2 * pi * x) + cos(y / 2 * pi), +1.0)",
+                          "max(3.33, min(sqrt(1 - sin(2 * x) + cos(pi / y) / 3), 1.11))",
+                          "if((y + (x * 2.2)) <= (x + y + 1.1), x - y, x * y) + 2 * pi / x"
+                       };
 
 const std::size_t global_expression_list_size = sizeof(global_expression_list) / sizeof(std::string);
 
