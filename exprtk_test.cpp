@@ -1193,7 +1193,7 @@ inline bool run_test00()
 template <typename T>
 struct test_xy
 {
-   test_xy(std::string e, const T& v0, const T& v1, const T& r)
+   test_xy(const std::string& e, const T& v0, const T& v1, const T& r)
    : expr(e),
      x(v0),
      y(v1),
@@ -1209,7 +1209,7 @@ struct test_xy
 template <typename T>
 struct test_xyzw
 {
-   test_xyzw(std::string e, const T& v0, const T& v1, const T& v2, const T& v3, const T& r)
+   test_xyzw(const std::string& e, const T& v0, const T& v1, const T& v2, const T& v3, const T& r)
    : expr(e),
      x(v0),
      y(v1),
@@ -1850,7 +1850,7 @@ inline bool run_test01()
 template <typename T>
 struct test_ab
 {
-   test_ab(std::string e, const std::string& v0, const std::string& v1, const T& r)
+   test_ab(const std::string& e, const std::string& v0, const std::string& v1, const T& r)
    : expr(e),
      a(v0),
      b(v1),
@@ -5342,6 +5342,35 @@ struct rem_space_and_uppercase : public exprtk::igeneric_function<T>
 };
 
 template <typename T>
+struct vararg_func : public exprtk::igeneric_function<T>
+{
+   typedef typename exprtk::igeneric_function<T>::parameter_list_t
+                                                  parameter_list_t;
+
+   typedef typename exprtk::igeneric_function<T>::generic_type
+                                                  generic_type;
+
+   typedef typename generic_type::scalar_view scalar_t;
+   typedef typename generic_type::vector_view vector_t;
+
+   vararg_func()
+   : exprtk::igeneric_function<T>("Z|T*|V")
+   {}
+
+   inline T operator()(const std::size_t& ps_index, parameter_list_t /*arglist*/)
+   {
+      switch (ps_index)
+      {                         // Overload resolution:
+         case 0  : return T(0); // Z  - Zero arguments
+         case 1  : return T(1); // T* - One or more scalars
+         case 2  : return T(2); // V  - One vector
+         default : return std::numeric_limits<T>::quiet_NaN();
+      }
+   }
+};
+
+
+template <typename T>
 inline bool run_test18()
 {
    {
@@ -5868,7 +5897,7 @@ inline bool run_test18()
 
          if (!parser.compile(program,expression))
          {
-            printf("Error: %s\tExpression: %s\n",
+            printf("run_test18() - Error: %s\tExpression: %s\n",
                    parser.error().c_str(),
                    program.c_str());
 
@@ -5923,6 +5952,77 @@ inline bool run_test18()
          {
             printf("run_test18() - Error in evaluation! (4) Expression: %s  Check: s4\n",
                    program.c_str());
+            failure = true;
+         }
+      }
+
+      if (failure)
+         return false;
+   }
+
+   {
+      bool failure = false;
+
+      typedef exprtk::symbol_table<T> symbol_table_t;
+      typedef exprtk::expression<T>     expression_t;
+      typedef exprtk::parser<T>             parser_t;
+
+      symbol_table_t symbol_table;
+
+      T v[4] = {T(5), T(6), T(7), T(8)};
+
+      symbol_table.add_vector("v",v);
+
+      vararg_func<T> vaf;
+      symbol_table.add_function("vararg_func",vaf);
+
+      expression_t expression;
+      expression.register_symbol_table(symbol_table);
+
+      parser_t parser;
+
+      std::string programs[] =
+                     {
+                        "equal(0,vararg_func())",
+                        "equal(1,vararg_func() + 1)",
+                        "equal(1,1 + vararg_func())",
+                        "equal(1,vararg_func + 1)",
+                        "equal(1,1 + vararg_func)",
+                        "equal(0,vararg_func() + vararg_func)",
+                        "equal(0,vararg_func + vararg_func())",
+                        "equal(1,vararg_func + vararg_func(1))",
+                        "equal(1,vararg_func + vararg_func(1,2))",
+                        "equal(2,vararg_func + vararg_func(v))",
+                        "equal(1,vararg_func() + vararg_func(1))",
+                        "equal(1,vararg_func() + vararg_func(1,2))",
+                        "equal(2,vararg_func() + vararg_func(v))",
+                        "equal(2,vararg_func(v))",
+                        "equal(1,vararg_func(1))",
+                        "equal(1,vararg_func(1,2,3))",
+                        "equal(1,vararg_func(5,6,7,8))",
+                        "equal(5,vararg_func(v) + 3)",
+                        "equal(5,vararg_func(1) + 4)",
+                        "equal(6,vararg_func(1,2,3) + 5)",
+                        "equal(7,vararg_func(5,6,7,8) + 6)"
+                     };
+
+      static const std::size_t programs_size = sizeof(programs) / sizeof(std::string);
+
+      for (std::size_t i = 0; i < programs_size; ++i)
+      {
+         if (!parser.compile(programs[i],expression))
+         {
+            printf("run_test18() - Error: %s\tExpression: %s\n",
+                   parser.error().c_str(),
+                   programs[i].c_str());
+
+            failure = true;
+         }
+         else if (T(1) != expression.value())
+         {
+            printf("run_test18() - Error in evaluation! (5) Expression: %s\n",
+                   programs[i].c_str());
+
             failure = true;
          }
       }

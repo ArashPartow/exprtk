@@ -1334,23 +1334,23 @@ embedded into the expression.
 
 There are five types of function interface:
 
-   +---+----------------------+-------------+
-   | # |         Name         | Return Type |
-   +---+----------------------+-------------+
-   | 1 | ifunction            | Scalar      |
-   | 2 | ivararg_function     | Scalar      |
-   | 3 | igeneric_function    | Scalar      |
-   | 4 | igeneric_function II | String      |
-   | 5 | function_compositor  | Scalar      |
-   +---+----------------------+-------------+
-
+  +---+----------------------+-------------+----------------------+
+  | # |         Name         | Return Type | Input Types          |
+  +---+----------------------+-------------+----------------------+
+  | 1 | ifunction            | Scalar      | Scalar               |
+  | 2 | ivararg_function     | Scalar      | Scalar               |
+  | 3 | igeneric_function    | Scalar      | Scalar,Vector,String |
+  | 4 | igeneric_function II | String      | Scalar,Vector,String |
+  | 5 | function_compositor  | Scalar      | Scalar               |
+  +---+----------------------+-------------+----------------------+
 
 (1) ifunction
-This  interface  supports  zero  to  20  input  parameters.  The usage
-requires a custom function be  derived from ifunction and to  override
-one  of the  21 function  operators. As  part of  the constructor  the
-custom function will define how many parameters it expects to  handle.
-The following example defines a 3 parameter function called 'foo':
+This interface supports zero to 20 input parameters of only the scalar
+type (numbers). The  usage requires a custom function be  derived from
+ifunction and to override one of the 21 function operators. As part of
+the constructor the custom function will define how many parameters it
+expects  to  handle.  The  following  example  defines  a  3 parameter
+function called 'foo':
 
    template <typename T>
    struct foo : public exprtk::ifunction<T>
@@ -1366,8 +1366,8 @@ The following example defines a 3 parameter function called 'foo':
 
 
 (2) ivararg_function
-This interface supports a variable  number of arguments as input  into
-the  function.  The  function operator  interface  uses  a std::vector
+This interface supports a variable number of scalar arguments as input
+into the function. The function operator interface uses a  std::vector
 specialized upon type T to facilitate parameter passing. The following
 example defines a vararg function called 'boo':
 
@@ -1504,12 +1504,13 @@ listing of said characters and their meanings:
    (1) T - Scalar
    (2) V - Vector
    (3) S - String
-   (4) ? - Any type (Scalar, Vector or String)
-   (5) * - Wildcard operator
-   (6) | - Parameter sequence delimiter
+   (4) Z - Zero or no parameters
+   (5) ? - Any type (Scalar, Vector or String)
+   (6) * - Wildcard operator
+   (7) | - Parameter sequence delimiter
 
 
-No other characters other than  the six denoted above may  be included
+No other characters other than the seven denoted above may be included
 in the parameter sequence  definition. If any such  invalid characters
 do exist, registration of the associated generic function to a  symbol
 table ('add_function' method) will fail. If the parameter sequence  is
@@ -1544,6 +1545,12 @@ parameters in the following sequence:
    (2) Vector
    (3) Scalar
    (4) Scalar
+
+Note: The  'Z' or  no parameter option may not be  used in conjunction
+with any other type option in a parameter sequence. When  incorporated
+in the parameter sequence list, the no parameter option indicates that
+the function may be invoked  without any parameters being passed.  For
+more information refer to the section: 'Zero Parameter Functions'
 
 
 (4) igeneric_function II
@@ -1850,6 +1857,11 @@ carried out:
       inline T operator()(const std::vector<T>& arglist)
       { ... }
    };
+
+
+Note: For  the igeneric_function  type, there  also needs  to be a 'Z'
+parameter sequence  defined inorder  for the  zero parameter  trait to
+properly take effect otherwise a compilation error will occur.
 
      ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
@@ -2822,6 +2834,7 @@ the ExprTk header. The defines are as follows:
    (4) exprtk_disable_sc_andor
    (5) exprtk_disable_enhanced_features
    (6) exprtk_disable_string_capabilities
+   (7) exprtk_disable_superscalar_unroll
 
 
 (1) exprtk_enable_debugging
@@ -2853,6 +2866,14 @@ of expression evaluations.
 This  define  will  disable all  string  processing  capabilities. Any
 expression that contains a string or string related syntax will result
 in a compilation failure.
+
+(7) exprtk_disable_superscalar_unroll
+This define will set  the loop unroll batch  size to 4 operations  per
+loop  instead of  the default  8 operations.  This define  is used  in
+operations that  involve vectors  and aggregations  over vectors. When
+targeting  non-superscalar  architectures, it  may  be recommended  to
+build using this particular option if efficiency of evaluations is  of
+concern.
 
      ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 

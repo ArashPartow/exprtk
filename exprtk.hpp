@@ -601,8 +601,10 @@ namespace exprtk
                                  std::size_t&       diff_index,
                                  char&              diff_value)
       {
-         if (str.empty() || pattern.empty())
-            return false;
+         if (str.empty())
+         {
+            return ("Z" == pattern);
+         }
          else if ('*' == pattern[0])
             return false;
 
@@ -1875,6 +1877,7 @@ namespace exprtk
          //typedef T Type;
          //typedef const T Type;
          typedef const T& Type;
+         typedef       T& RefType;
          typedef T (*qfunc_t)(Type t0, Type t1, Type t2, Type t3);
          typedef T (*tfunc_t)(Type t0, Type t1, Type t2);
          typedef T (*bfunc_t)(Type t0, Type t1);
@@ -2186,6 +2189,7 @@ namespace exprtk
          {
             const char* begin_itr = ((base_itr_ + begin) < s_end_) ? (base_itr_ + begin) : s_end_;
             const char* end_itr   = ((base_itr_ +   end) < s_end_) ? (base_itr_ +   end) : s_end_;
+
             return std::string(begin_itr,end_itr);
          }
 
@@ -2244,7 +2248,7 @@ namespace exprtk
                }
             };
 
-            int mode = 0;
+            int mode      = 0;
             int increment = 0;
 
             if (is_end(s_itr_) || is_end((s_itr_ + 1)))
@@ -5226,6 +5230,7 @@ namespace exprtk
          {
             const T arg0 = branch_[0].first->value();
             const T arg1 = branch_[1].first->value();
+
             return Operation::process(arg0,arg1);
          }
 
@@ -6795,7 +6800,7 @@ namespace exprtk
 
          static std::string null_value;
 
-         explicit string_range_node(std::string& v, range_t rp)
+         explicit string_range_node(std::string& v, const range_t& rp)
          : value_(&v),
            rp_(rp)
          {}
@@ -6878,7 +6883,7 @@ namespace exprtk
 
          typedef range_pack<T> range_t;
 
-         explicit const_string_range_node(const std::string& v, range_t rp)
+         explicit const_string_range_node(const std::string& v, const range_t& rp)
          : value_(v),
            rp_(rp)
          {}
@@ -6951,7 +6956,7 @@ namespace exprtk
          typedef range_interface<T>          irange_t;
          typedef irange_t*                 irange_ptr;
 
-         generic_string_range_node(expression_ptr str_branch, range_t brange)
+         generic_string_range_node(expression_ptr str_branch, const range_t& brange)
          : initialised_(false),
            branch_(str_branch),
            branch_deletable_(branch_deletable(branch_)),
@@ -7847,14 +7852,14 @@ namespace exprtk
          {
             if (initialised_)
             {
-               std::size_t r0 = 0;
-               std::size_t r1 = 0;
-
                if (is_true(test_))
                {
                   consequent_->value();
 
                   range_t& range = str0_range_ptr_->range_ref();
+
+                  std::size_t r0 = 0;
+                  std::size_t r1 = 0;
 
                   if (range(r0,r1,str0_base_ptr_->size()))
                   {
@@ -8486,6 +8491,28 @@ namespace exprtk
          vector_elem_node<T>* vec_node_ptr_;
       };
 
+      namespace loop_unroll
+      {
+         #ifndef exprtk_disable_superscalar_unroll
+         const std::size_t loop_batch_size = 8;
+         #else
+         const std::size_t loop_batch_size = 4;
+         #endif
+
+         struct details
+         {
+            details(const std::size_t& vsize)
+            : batch_size(loop_batch_size),
+              remainder (vsize % batch_size),
+              upper_bound(static_cast<int>(vsize - (remainder ? loop_batch_size : 0)))
+            {}
+
+            int  batch_size;
+            int   remainder;
+            int upper_bound;
+         };
+      }
+
       template <typename T>
       class assignment_vec_node : public binary_node     <T>,
                                   public vector_interface<T>
@@ -8516,9 +8543,34 @@ namespace exprtk
                vector_holder<T>& vec_hldr = vec_node_ptr_->ref();
                const T v = binary_node<T>::branch_[1].first->value();
 
-               for (std::size_t i = 0; i < vec_size_; ++i)
+               loop_unroll::details lud(vec_size_);
+               int i = 0;
+
+               for (; i < lud.upper_bound; i += lud.batch_size)
                {
-                  (*vec_hldr[i]) = v;
+                  (*vec_hldr[i    ]) = v;
+                  (*vec_hldr[i + 1]) = v;
+                  (*vec_hldr[i + 2]) = v;
+                  (*vec_hldr[i + 3]) = v;
+                  #ifndef exprtk_disable_superscalar_unroll
+                  (*vec_hldr[i + 4]) = v;
+                  (*vec_hldr[i + 5]) = v;
+                  (*vec_hldr[i + 6]) = v;
+                  (*vec_hldr[i + 7]) = v;
+                  #endif
+               }
+
+               switch (lud.remainder)
+               {
+                  #ifndef exprtk_disable_superscalar_unroll
+                  case 7 : (*vec_hldr[i++]) = v;
+                  case 6 : (*vec_hldr[i++]) = v;
+                  case 5 : (*vec_hldr[i++]) = v;
+                  case 4 : (*vec_hldr[i++]) = v;
+                  #endif
+                  case 3 : (*vec_hldr[i++]) = v;
+                  case 2 : (*vec_hldr[i++]) = v;
+                  case 1 : (*vec_hldr[i++]) = v;
                }
 
                return vec_node_ptr_->value();
@@ -8608,9 +8660,34 @@ namespace exprtk
                vector_holder<T>& vec0 = vec0_node_ptr_->ref();
                vector_holder<T>& vec1 = vec1_node_ptr_->ref();
 
-               for (std::size_t i = 0; i < vec_size_; ++i)
+               loop_unroll::details lud(vec_size_);
+               int i = 0;
+
+               for (; i < lud.upper_bound; i += lud.batch_size)
                {
-                  (*vec0[i]) = (*vec1[i]);
+                  (*vec0[i    ]) = (*vec1[i    ]);
+                  (*vec0[i + 1]) = (*vec1[i + 1]);
+                  (*vec0[i + 2]) = (*vec1[i + 2]);
+                  (*vec0[i + 3]) = (*vec1[i + 3]);
+                  #ifndef exprtk_disable_superscalar_unroll
+                  (*vec0[i + 4]) = (*vec1[i + 4]);
+                  (*vec0[i + 5]) = (*vec1[i + 5]);
+                  (*vec0[i + 6]) = (*vec1[i + 6]);
+                  (*vec0[i + 7]) = (*vec1[i + 7]);
+                  #endif
+               }
+
+               switch (lud.remainder)
+               {
+                  #ifndef exprtk_disable_superscalar_unroll
+                  case 7 : { (*vec0[i]) = (*vec1[i]); ++i; }
+                  case 6 : { (*vec0[i]) = (*vec1[i]); ++i; }
+                  case 5 : { (*vec0[i]) = (*vec1[i]); ++i; }
+                  case 4 : { (*vec0[i]) = (*vec1[i]); ++i; }
+                  #endif
+                  case 3 : { (*vec0[i]) = (*vec1[i]); ++i; }
+                  case 2 : { (*vec0[i]) = (*vec1[i]); ++i; }
+                  case 1 : { (*vec0[i]) = (*vec1[i]); ++i; }
                }
 
                return vec0_node_ptr_->value();
@@ -8751,10 +8828,34 @@ namespace exprtk
                vector_holder<T>& vec_hldr = vec_node_ptr_->ref();
                const T v = binary_node<T>::branch_[1].first->value();
 
-               for (std::size_t i = 0; i < vec_size_; ++i)
+               loop_unroll::details lud(vec_size_);
+               int i = 0;
+
+               for (; i < lud.upper_bound; i += lud.batch_size)
                {
-                  T& vec_i = *vec_hldr[i];
-                     vec_i = Operation::process(vec_i,v);
+                  Operation::assign(*vec_hldr[i    ],v);
+                  Operation::assign(*vec_hldr[i + 1],v);
+                  Operation::assign(*vec_hldr[i + 2],v);
+                  Operation::assign(*vec_hldr[i + 3],v);
+                  #ifndef exprtk_disable_superscalar_unroll
+                  Operation::assign(*vec_hldr[i + 4],v);
+                  Operation::assign(*vec_hldr[i + 5],v);
+                  Operation::assign(*vec_hldr[i + 6],v);
+                  Operation::assign(*vec_hldr[i + 7],v);
+                  #endif
+               }
+
+               switch (lud.remainder)
+               {
+                  #ifndef exprtk_disable_superscalar_unroll
+                  case 7 : Operation::assign((*vec_hldr[i++]),v);
+                  case 6 : Operation::assign((*vec_hldr[i++]),v);
+                  case 5 : Operation::assign((*vec_hldr[i++]),v);
+                  case 4 : Operation::assign((*vec_hldr[i++]),v);
+                  #endif
+                  case 3 : Operation::assign((*vec_hldr[i++]),v);
+                  case 2 : Operation::assign((*vec_hldr[i++]),v);
+                  case 1 : Operation::assign((*vec_hldr[i++]),v);
                }
 
                return vec_node_ptr_->value();
@@ -8845,12 +8946,36 @@ namespace exprtk
                vector_holder<T>& vec0 = vec0_node_ptr_->ref();
                vector_holder<T>& vec1 = vec1_node_ptr_->ref();
 
-               for (std::size_t i = 0; i < vec_size_; ++i)
+               loop_unroll::details lud(vec_size_);
+               int i = 0;
+
+               #define exprtk_loop(N)                                            \
+               (*vec0[i + N]) = Operation::process((*vec0[i + N]),*vec1[i + N]); \
+
+               for (; i < lud.upper_bound; i += lud.batch_size)
                {
-                  T& vec0_i = *vec0[i];
-                  T& vec1_i = *vec1[i];
-                  vec0_i = Operation::process(vec0_i,vec1_i);
+                  exprtk_loop(0) exprtk_loop(1)
+                  exprtk_loop(2) exprtk_loop(3)
+                  #ifndef exprtk_disable_superscalar_unroll
+                  exprtk_loop(4) exprtk_loop(5)
+                  exprtk_loop(6) exprtk_loop(7)
+                  #endif
                }
+
+               switch (lud.remainder)
+               {
+                  #ifndef exprtk_disable_superscalar_unroll
+                  case 7 : { exprtk_loop(0) ++i; }
+                  case 6 : { exprtk_loop(0) ++i; }
+                  case 5 : { exprtk_loop(0) ++i; }
+                  case 4 : { exprtk_loop(0) ++i; }
+                  #endif
+                  case 3 : { exprtk_loop(0) ++i; }
+                  case 2 : { exprtk_loop(0) ++i; }
+                  case 1 : { exprtk_loop(0) ++i; }
+               }
+
+               #undef exprtk_loop
 
                return vec0_node_ptr_->value();
             }
@@ -9246,15 +9371,36 @@ namespace exprtk
                vector_holder<T>& vec1 = vec1_node_ptr_->ref();
                vector_holder<T>& vec2 = *temp_;
 
-               for (std::size_t i = 0; i < vec_size_; ++i)
+               loop_unroll::details lud(vec_size_);
+               int i = 0;
+
+               #define exprtk_loop(N)                                              \
+               (*vec2[i + N]) = Operation::process((*vec0[i + N]),(*vec1[i + N])); \
+
+               for (; i < lud.upper_bound; i += lud.batch_size)
                {
-
-                  T& vec0_i = *vec0[i];
-                  T& vec1_i = *vec1[i];
-                  T& vec2_i = *vec2[i];
-
-                  vec2_i = Operation::process(vec0_i,vec1_i);
+                  exprtk_loop(0) exprtk_loop(1)
+                  exprtk_loop(2) exprtk_loop(3)
+                  #ifndef exprtk_disable_superscalar_unroll
+                  exprtk_loop(4) exprtk_loop(5)
+                  exprtk_loop(6) exprtk_loop(7)
+                  #endif
                }
+
+               switch (lud.remainder)
+               {
+                  #ifndef exprtk_disable_superscalar_unroll
+                  case 7 : { exprtk_loop(0); ++i; }
+                  case 6 : { exprtk_loop(0); ++i; }
+                  case 5 : { exprtk_loop(0); ++i; }
+                  case 4 : { exprtk_loop(0); ++i; }
+                  #endif
+                  case 3 : { exprtk_loop(0); ++i; }
+                  case 2 : { exprtk_loop(0); ++i; }
+                  case 1 : { exprtk_loop(0); ++i; }
+               }
+
+               #undef exprtk_loop
 
                return *vec2[0];
             }
@@ -9355,13 +9501,36 @@ namespace exprtk
                vector_holder<T>& vec0 = vec0_node_ptr_->ref();
                vector_holder<T>& vec1 = *temp_;
 
-               for (std::size_t i = 0; i < vec_size_; ++i)
-               {
-                  T& vec0_i = *vec0[i];
-                  T& vec1_i = *vec1[i];
+               loop_unroll::details lud(vec_size_);
+               int i = 0;
 
-                  vec1_i = Operation::process(vec0_i,v);
+               #define exprtk_loop(N)                                 \
+               (*vec1[i + N]) = Operation::process((*vec0[i + N]),v); \
+
+               for (; i < lud.upper_bound; i += lud.batch_size)
+               {
+                  exprtk_loop(0) exprtk_loop(1)
+                  exprtk_loop(2) exprtk_loop(3)
+                  #ifndef exprtk_disable_superscalar_unroll
+                  exprtk_loop(4) exprtk_loop(5)
+                  exprtk_loop(6) exprtk_loop(7)
+                  #endif
                }
+
+               switch (lud.remainder)
+               {
+                  #ifndef exprtk_disable_superscalar_unroll
+                  case 7 : { exprtk_loop(0); ++i; }
+                  case 6 : { exprtk_loop(0); ++i; }
+                  case 5 : { exprtk_loop(0); ++i; }
+                  case 4 : { exprtk_loop(0); ++i; }
+                  #endif
+                  case 3 : { exprtk_loop(0); ++i; }
+                  case 2 : { exprtk_loop(0); ++i; }
+                  case 1 : { exprtk_loop(0); ++i; }
+               }
+
+               #undef exprtk_loop
 
                return *vec1[0];
             }
@@ -9460,13 +9629,36 @@ namespace exprtk
                vector_holder<T>& vec1 = vec1_node_ptr_->ref();
                vector_holder<T>& vec2 = *temp_;
 
-               for (std::size_t i = 0; i < vec_size_; ++i)
-               {
-                  T& vec1_i = *vec1[i];
-                  T& vec2_i = *vec2[i];
+               loop_unroll::details lud(vec_size_);
+               int i = 0;
 
-                  vec2_i = Operation::process(v,vec1_i);
+               #define exprtk_loop(N)                                 \
+               (*vec2[i + N]) = Operation::process(v,(*vec1[i + N])); \
+
+               for (; i < lud.upper_bound; i += lud.batch_size)
+               {
+                  exprtk_loop(0) exprtk_loop(1)
+                  exprtk_loop(2) exprtk_loop(3)
+                  #ifndef exprtk_disable_superscalar_unroll
+                  exprtk_loop(4) exprtk_loop(5)
+                  exprtk_loop(6) exprtk_loop(7)
+                  #endif
                }
+
+               switch (lud.remainder)
+               {
+                  #ifndef exprtk_disable_superscalar_unroll
+                  case 7 : { exprtk_loop(0); ++i; }
+                  case 6 : { exprtk_loop(0); ++i; }
+                  case 5 : { exprtk_loop(0); ++i; }
+                  case 4 : { exprtk_loop(0); ++i; }
+                  #endif
+                  case 3 : { exprtk_loop(0); ++i; }
+                  case 2 : { exprtk_loop(0); ++i; }
+                  case 1 : { exprtk_loop(0); ++i; }
+               }
+
+               #undef exprtk_loop
 
                return *vec2[0];
             }
@@ -9562,12 +9754,34 @@ namespace exprtk
                vector_holder<T>& vec0 = vec0_node_ptr_->ref();
                vector_holder<T>& vec1 = *temp_;
 
-               for (std::size_t i = 0; i < vec_size_; ++i)
-               {
-                  T& vec0_i = *vec0[i];
-                  T& vec1_i = *vec1[i];
+               loop_unroll::details lud(vec_size_);
+               int i = 0;
 
-                  vec1_i = Operation::process(vec0_i);
+               for (; i < lud.upper_bound; i += lud.batch_size)
+               {
+                  (*vec1[i    ]) = Operation::process((*vec0[i    ]));
+                  (*vec1[i + 1]) = Operation::process((*vec0[i + 1]));
+                  (*vec1[i + 2]) = Operation::process((*vec0[i + 2]));
+                  (*vec1[i + 3]) = Operation::process((*vec0[i + 3]));
+                  #ifndef exprtk_disable_superscalar_unroll
+                  (*vec1[i + 4]) = Operation::process((*vec0[i + 4]));
+                  (*vec1[i + 5]) = Operation::process((*vec0[i + 5]));
+                  (*vec1[i + 6]) = Operation::process((*vec0[i + 6]));
+                  (*vec1[i + 7]) = Operation::process((*vec0[i + 7]));
+                  #endif
+               }
+
+               switch (lud.remainder)
+               {
+                  #ifndef exprtk_disable_superscalar_unroll
+                  case 7 : { (*vec1[i]) = Operation::process((*vec0[i])); ++i; }
+                  case 6 : { (*vec1[i]) = Operation::process((*vec0[i])); ++i; }
+                  case 5 : { (*vec1[i]) = Operation::process((*vec0[i])); ++i; }
+                  case 4 : { (*vec1[i]) = Operation::process((*vec0[i])); ++i; }
+                  #endif
+                  case 3 : { (*vec1[i]) = Operation::process((*vec0[i])); ++i; }
+                  case 2 : { (*vec1[i]) = Operation::process((*vec0[i])); ++i; }
+                  case 1 : { (*vec1[i]) = Operation::process((*vec0[i])); ++i; }
                }
 
                return *vec1[0];
@@ -10610,6 +10824,7 @@ namespace exprtk
       struct opr_base
       {
          typedef typename details::functor_t<T>::Type Type;
+         typedef typename details::functor_t<T>::RefType RefType;
          typedef typename details::functor_t<T> functor_t;
          typedef typename functor_t::qfunc_t quaternary_functor_t;
          typedef typename functor_t::tfunc_t    trinary_functor_t;
@@ -10621,8 +10836,10 @@ namespace exprtk
       struct add_op : public opr_base<T>
       {
          typedef typename opr_base<T>::Type Type;
+         typedef typename opr_base<T>::RefType RefType;
          static inline T process(Type t1, Type t2) { return t1 + t2; }
          static inline T process(Type t1, Type t2, Type t3) { return t1 + t2 + t3; }
+         static inline void assign(RefType& t1, Type t2) { t1 += t2; }
          static inline typename expression_node<T>::node_type type() { return expression_node<T>::e_add; }
          static inline details::operator_type operation() { return details::e_add; }
       };
@@ -10631,8 +10848,10 @@ namespace exprtk
       struct mul_op : public opr_base<T>
       {
          typedef typename opr_base<T>::Type Type;
+         typedef typename opr_base<T>::RefType RefType;
          static inline T process(Type t1, Type t2) { return t1 * t2; }
          static inline T process(Type t1, Type t2, Type t3) { return t1 * t2 * t3; }
+         static inline void assign(RefType& t1, Type t2) { t1 *= t2; }
          static inline typename expression_node<T>::node_type type() { return expression_node<T>::e_mul; }
          static inline details::operator_type operation() { return details::e_mul; }
       };
@@ -10641,8 +10860,10 @@ namespace exprtk
       struct sub_op : public opr_base<T>
       {
          typedef typename opr_base<T>::Type Type;
+         typedef typename opr_base<T>::RefType RefType;
          static inline T process(Type t1, Type t2) { return t1 - t2; }
          static inline T process(Type t1, Type t2, Type t3) { return t1 - t2 - t3; }
+         static inline void assign(RefType& t1, Type t2) { t1 -= t2; }
          static inline typename expression_node<T>::node_type type() { return expression_node<T>::e_sub; }
          static inline details::operator_type operation() { return details::e_sub; }
       };
@@ -10651,8 +10872,10 @@ namespace exprtk
       struct div_op : public opr_base<T>
       {
          typedef typename opr_base<T>::Type Type;
+         typedef typename opr_base<T>::RefType RefType;
          static inline T process(Type t1, Type t2) { return t1 / t2; }
          static inline T process(Type t1, Type t2, Type t3) { return t1 / t2 / t3; }
+         static inline void assign(RefType& t1, Type t2) { t1 /= t2; }
          static inline typename expression_node<T>::node_type type() { return expression_node<T>::e_div; }
          static inline details::operator_type operation() { return details::e_div; }
       };
@@ -10661,7 +10884,9 @@ namespace exprtk
       struct mod_op : public opr_base<T>
       {
          typedef typename opr_base<T>::Type Type;
+         typedef typename opr_base<T>::RefType RefType;
          static inline T process(Type t1, Type t2) { return numeric::modulus<T>(t1,t2); }
+         static inline void assign(RefType& t1, Type t2) { t1 = numeric::modulus<T>(t1,t2); }
          static inline typename expression_node<T>::node_type type() { return expression_node<T>::e_mod; }
          static inline details::operator_type operation() { return details::e_mod; }
       };
@@ -10670,7 +10895,9 @@ namespace exprtk
       struct pow_op : public opr_base<T>
       {
          typedef typename opr_base<T>::Type Type;
+         typedef typename opr_base<T>::RefType RefType;
          static inline T process(Type t1, Type t2) { return numeric::pow<T>(t1,t2); }
+         static inline void assign(RefType& t1, Type t2) { t1 = numeric::pow<T>(t1,t2); }
          static inline typename expression_node<T>::node_type type() { return expression_node<T>::e_pow; }
          static inline details::operator_type operation() { return details::e_pow; }
       };
@@ -11454,14 +11681,64 @@ namespace exprtk
          {
             vector_holder<T>& vec = v->vec()->ref();
 
-            T result = T(0);
+            loop_unroll::details lud(vec.size());
+            int i = 0;
 
-            for (std::size_t i = 0; i < vec.size(); ++i)
+            if (vec.size() <= static_cast<std::size_t>(lud.batch_size))
             {
-              result += (*vec[i]);
+               T result = T(0);
+
+               switch (vec.size())
+               {
+                  #ifndef exprtk_disable_superscalar_unroll
+                  case 8 : result += (*vec[i++]);
+                  case 7 : result += (*vec[i++]);
+                  case 6 : result += (*vec[i++]);
+                  case 5 : result += (*vec[i++]);
+                  #endif
+                  case 4 : result += (*vec[i++]);
+                  case 3 : result += (*vec[i++]);
+                  case 2 : result += (*vec[i++]);
+                  case 1 : result += (*vec[i++]);
+               }
+
+               return result;
             }
 
-            return result;
+            T r[8] = { T(0), T(0), T(0), T(0), T(0), T(0), T(0), T(0) };
+
+            for (; i < lud.upper_bound; i += lud.batch_size)
+            {
+               r[0] += (*vec[i    ]);
+               r[1] += (*vec[i + 1]);
+               r[2] += (*vec[i + 2]);
+               r[3] += (*vec[i + 3]);
+               #ifndef exprtk_disable_superscalar_unroll
+               r[4] += (*vec[i + 4]);
+               r[5] += (*vec[i + 5]);
+               r[6] += (*vec[i + 6]);
+               r[7] += (*vec[i + 7]);
+               #endif
+            }
+
+            switch (lud.remainder)
+            {
+               #ifndef exprtk_disable_superscalar_unroll
+               case 7 : r[0] += (*vec[i++]);
+               case 6 : r[0] += (*vec[i++]);
+               case 5 : r[0] += (*vec[i++]);
+               case 4 : r[0] += (*vec[i++]);
+               #endif
+               case 3 : r[0] += (*vec[i++]);
+               case 2 : r[0] += (*vec[i++]);
+               case 1 : r[0] += (*vec[i++]);
+            }
+
+            return (r[0] + r[1] + r[2] + r[3])
+                   #ifndef exprtk_disable_superscalar_unroll
+                 + (r[4] + r[5] + r[6] + r[7])
+                   #endif
+                   ;
          }
       };
 
@@ -11474,14 +11751,64 @@ namespace exprtk
          {
             vector_holder<T>& vec = v->vec()->ref();
 
-            T result = (*vec[0]);
+            loop_unroll::details lud(vec.size());
+            int i = 0;
 
-            for (std::size_t i = 1; i < vec.size(); ++i)
+            if (vec.size() <= static_cast<std::size_t>(lud.batch_size))
             {
-              result *= (*vec[i]);
+               T result = T(1);
+
+               switch (vec.size())
+               {
+                  #ifndef exprtk_disable_superscalar_unroll
+                  case 8 : result *= (*vec[i++]);
+                  case 7 : result *= (*vec[i++]);
+                  case 6 : result *= (*vec[i++]);
+                  case 5 : result *= (*vec[i++]);
+                  #endif
+                  case 4 : result *= (*vec[i++]);
+                  case 3 : result *= (*vec[i++]);
+                  case 2 : result *= (*vec[i++]);
+                  case 1 : result *= (*vec[i++]);
+               }
+
+               return result;
             }
 
-            return result;
+            T r[8] = { T(1), T(1), T(1), T(1), T(1), T(1), T(1), T(1) };
+
+            for (; i < lud.upper_bound; i += lud.batch_size)
+            {
+               r[0] *= (*vec[i    ]);
+               r[1] *= (*vec[i + 1]);
+               r[2] *= (*vec[i + 2]);
+               r[3] *= (*vec[i + 3]);
+               #ifndef exprtk_disable_superscalar_unroll
+               r[4] *= (*vec[i + 4]);
+               r[5] *= (*vec[i + 5]);
+               r[6] *= (*vec[i + 6]);
+               r[7] *= (*vec[i + 7]);
+               #endif
+            }
+
+            switch (lud.remainder)
+            {
+               #ifndef exprtk_disable_superscalar_unroll
+               case 7 : r[0] *= (*vec[i++]);
+               case 6 : r[0] *= (*vec[i++]);
+               case 5 : r[0] *= (*vec[i++]);
+               case 4 : r[0] *= (*vec[i++]);
+               #endif
+               case 3 : r[0] *= (*vec[i++]);
+               case 2 : r[0] *= (*vec[i++]);
+               case 1 : r[0] *= (*vec[i++]);
+            }
+
+            return (r[0] * r[1] * r[2] * r[3])
+                   #ifndef exprtk_disable_superscalar_unroll
+                 * (r[4] * r[5] * r[6] * r[7])
+                   #endif
+                   ;
          }
       };
 
@@ -11496,9 +11823,34 @@ namespace exprtk
 
             T result = T(0);
 
-            for (std::size_t i = 0; i < vec.size(); ++i)
+            loop_unroll::details lud(vec.size());
+            int i = 0;
+
+            for (; i < lud.upper_bound; i += lud.batch_size)
             {
-              result += (*vec[i]);
+               result += (*vec[i]);
+               result += (*vec[i + 1]);
+               result += (*vec[i + 2]);
+               result += (*vec[i + 3]);
+               #ifndef exprtk_disable_superscalar_unroll
+               result += (*vec[i + 4]);
+               result += (*vec[i + 5]);
+               result += (*vec[i + 6]);
+               result += (*vec[i + 7]);
+               #endif
+            }
+
+            switch (lud.remainder)
+            {
+               #ifndef exprtk_disable_superscalar_unroll
+               case 7 : result += (*vec[i++]);
+               case 6 : result += (*vec[i++]);
+               case 5 : result += (*vec[i++]);
+               case 4 : result += (*vec[i++]);
+               #endif
+               case 3 : result += (*vec[i++]);
+               case 2 : result += (*vec[i++]);
+               case 1 : result += (*vec[i++]);
             }
 
             return result / vec.size();
@@ -15293,7 +15645,7 @@ namespace exprtk
             return false;
          else if (symbol_exists(function_name))
             return false;
-         else if (std::string::npos != function.parameter_sequence.find_first_not_of("STV*?|"))
+         else if (std::string::npos != function.parameter_sequence.find_first_not_of("STVZ*?|"))
             return false;
          else if (generic_function_t::e_rtrn_scalar == function.rtrn_type)
             return local_data().generic_function_store.add(function_name,function);
@@ -15614,8 +15966,9 @@ namespace exprtk
       inline bool symbol_exists(const std::string& symbol_name, const bool check_reserved_symb = true) const
       {
          /*
-            Will return true if symbol_name exists as either a reserved symbol,
-            variable, stringvar or function name in any of the type stores.
+            Function will return true if symbol_name exists as either a
+            reserved symbol, variable, stringvar or function name in any
+            of the type stores.
          */
          if (!valid())
             return false;
@@ -15787,7 +16140,7 @@ namespace exprtk
       {
          if (symbol.empty())
             return false;
-         if (!details::is_letter(symbol[0]))
+         else if (!details::is_letter(symbol[0]))
             return false;
          else if (symbol.size() > 1)
          {
@@ -15811,7 +16164,7 @@ namespace exprtk
       {
          if (symbol.empty())
             return false;
-         if (!details::is_letter(symbol[0]))
+         else if (!details::is_letter(symbol[0]))
             return false;
          else if (symbol.size() > 1)
          {
@@ -16149,7 +16502,7 @@ namespace exprtk
             {
                typename expression_holder::data_type dt = expression_holder::e_data;
 
-               switch(data_mode)
+               switch (data_mode)
                {
                   case 0 : dt = expression_holder::e_data;    break;
                   case 1 : dt = expression_holder::e_vecdata; break;
@@ -17314,6 +17667,7 @@ namespace exprtk
             }
 
             std::sort(symbol_name_list_.begin(),symbol_name_list_.end());
+
             std::unique_copy(symbol_name_list_.begin(),
                              symbol_name_list_.end(),
                              std::back_inserter(symbols_list));
@@ -17337,6 +17691,7 @@ namespace exprtk
             }
 
             std::sort(assignment_name_list_.begin(),assignment_name_list_.end());
+
             std::unique_copy(assignment_name_list_.begin(),
                              assignment_name_list_.end(),
                              std::back_inserter(assignment_list));
@@ -21219,6 +21574,14 @@ namespace exprtk
             return !invalid_state_;
          }
 
+         bool allow_zero_parameters() const
+         {
+            return
+               param_seq_list_.end() != std::find(param_seq_list_.begin(),
+                                                  param_seq_list_.end(),
+                                                  "Z");
+         }
+
       private:
 
          void split(const std::string& s)
@@ -21245,7 +21608,12 @@ namespace exprtk
                   {
                      const std::string curr_str = str.substr(s,e - s);
 
-                     if (std::string::npos == curr_str.find_first_not_of("STV*?|"))
+                     if ("Z" == curr_str)
+                     {
+                        psl.push_back(curr_str);
+                        return true;
+                     }
+                     else if (std::string::npos == curr_str.find_first_not_of("STV*?|"))
                      {
                         psl.push_back(curr_str);
                         return true;
@@ -21327,16 +21695,34 @@ namespace exprtk
             return error_node();
          }
 
+         if (
+              !function->parameter_sequence.empty() &&
+              function->allow_zero_parameters    () &&
+              !tc      .allow_zero_parameters    ()
+            )
+         {
+            set_error(
+               make_error(parser_error::e_syntax,
+                          current_token(),
+                          "ERR116 - Mismatch in zero parameter condition for generic function: "
+                          + function_name));
+
+            return error_node();
+         }
+
          if (token_is(token_t::e_lbracket))
          {
             if (token_is(token_t::e_rbracket))
             {
-               if (!function->allow_zero_parameters())
+               if (
+                    !function->allow_zero_parameters() &&
+                    !tc       .allow_zero_parameters()
+                  )
                {
                   set_error(
                      make_error(parser_error::e_syntax,
                                 current_token(),
-                                "ERR116 - Zero parameter call to generic function: "
+                                "ERR117 - Zero parameter call to generic function: "
                                 + function_name + " not allowed"));
 
                   return error_node();
@@ -21367,19 +21753,23 @@ namespace exprtk
                      set_error(
                         make_error(parser_error::e_syntax,
                                    current_token(),
-                                   "ERR117 - Expected ',' for call to generic function: " + function_name));
+                                   "ERR118 - Expected ',' for call to generic function: " + function_name));
 
                      return error_node();
                   }
                }
             }
          }
-         else if (!function->allow_zero_parameters())
+         else if (
+                   !function->parameter_sequence.empty() &&
+                   function->allow_zero_parameters    () &&
+                   !tc      .allow_zero_parameters    ()
+                 )
          {
             set_error(
                make_error(parser_error::e_syntax,
                           current_token(),
-                          "ERR118 - Zero parameter call to generic function: "
+                          "ERR119 - Zero parameter call to generic function: "
                           + function_name + " not allowed"));
 
             return error_node();
@@ -21392,7 +21782,7 @@ namespace exprtk
             set_error(
                make_error(parser_error::e_syntax,
                           current_token(),
-                          "ERR119 - Expected ',' for call to generic function: " + function_name));
+                          "ERR120 - Expected ',' for call to generic function: " + function_name));
 
             return error_node();
          }
@@ -21458,7 +21848,7 @@ namespace exprtk
                      set_error(
                         make_error(parser_error::e_syntax,
                                    current_token(),
-                                   "ERR120 - Expected ',' for call to string function: " + function_name));
+                                   "ERR121 - Expected ',' for call to string function: " + function_name));
 
                      return error_node();
                   }
@@ -21473,7 +21863,7 @@ namespace exprtk
             set_error(
                make_error(parser_error::e_syntax,
                           current_token(),
-                          "ERR121 - Expected ',' for call to string function: " + function_name));
+                          "ERR122 - Expected ',' for call to string function: " + function_name));
 
             return error_node();
          }
@@ -21509,7 +21899,7 @@ namespace exprtk
                p.set_error(
                     make_error(parser_error::e_syntax,
                                p.current_token(),
-                               "ERR122 - Expected '(' for special function"));
+                               "ERR123 - Expected '(' for special function"));
 
                return error_node();
             }
@@ -21529,7 +21919,7 @@ namespace exprtk
                      p.set_error(
                           make_error(parser_error::e_syntax,
                                      p.current_token(),
-                                     "ERR123 - Expected ',' before next parameter of special function"));
+                                     "ERR124 - Expected ',' before next parameter of special function"));
 
                      return p.error_node();
                   }
@@ -21558,7 +21948,7 @@ namespace exprtk
             set_error(
                make_error(parser_error::e_token,
                           current_token(),
-                          "ERR124 - Invalid special function[1]: " + current_token().value));
+                          "ERR125 - Invalid special function[1]: " + current_token().value));
 
             return error_node();
          }
@@ -21570,7 +21960,7 @@ namespace exprtk
             set_error(
                make_error(parser_error::e_token,
                           current_token(),
-                          "ERR125 - Invalid special function[2]: " + current_token().value));
+                          "ERR126 - Invalid special function[2]: " + current_token().value));
 
             return error_node();
          }
@@ -21601,7 +21991,7 @@ namespace exprtk
             set_error(
                make_error(parser_error::e_syntax,
                           current_token(),
-                          "ERR126 - Break call within a break call is not allowed"));
+                          "ERR127 - Break call within a break call is not allowed"));
 
             return error_node();
          }
@@ -21623,7 +22013,7 @@ namespace exprtk
                   set_error(
                      make_error(parser_error::e_syntax,
                                 current_token(),
-                                "ERR127 - Failed to parse return expression for 'break' statement"));
+                                "ERR128 - Failed to parse return expression for 'break' statement"));
 
                   return error_node();
                }
@@ -21632,7 +22022,7 @@ namespace exprtk
                   set_error(
                      make_error(parser_error::e_syntax,
                                 current_token(),
-                                "ERR128 - Expected ']' at the completion of break's return expression"));
+                                "ERR129 - Expected ']' at the completion of break's return expression"));
 
                   free_node(node_allocator_,return_expr);
 
@@ -21649,7 +22039,7 @@ namespace exprtk
             set_error(
                make_error(parser_error::e_syntax,
                           current_token(),
-                          "ERR129 - Invalid use of 'break', allowed only in the scope of a loop"));
+                          "ERR130 - Invalid use of 'break', allowed only in the scope of a loop"));
          }
 
          return error_node();
@@ -21671,7 +22061,7 @@ namespace exprtk
             set_error(
                make_error(parser_error::e_syntax,
                           current_token(),
-                          "ERR130 - Invalid use of 'continue', allowed only in the scope of a loop"));
+                          "ERR131 - Invalid use of 'continue', allowed only in the scope of a loop"));
 
             return error_node();
          }
@@ -21687,7 +22077,7 @@ namespace exprtk
             set_error(
                make_error(parser_error::e_syntax,
                           current_token(),
-                          "ERR131 - Expected '[' as part of vector size definition"));
+                          "ERR132 - Expected '[' as part of vector size definition"));
 
             return error_node();
          }
@@ -21696,7 +22086,7 @@ namespace exprtk
             set_error(
                make_error(parser_error::e_syntax,
                           current_token(),
-                          "ERR132 - Failed to determine size of vector '" + vec_name + "'"));
+                          "ERR133 - Failed to determine size of vector '" + vec_name + "'"));
 
             return error_node();
          }
@@ -21707,7 +22097,7 @@ namespace exprtk
             set_error(
                make_error(parser_error::e_syntax,
                           current_token(),
-                          "ERR133 - Expected a literal number as size of vector '" + vec_name + "'"));
+                          "ERR134 - Expected a literal number as size of vector '" + vec_name + "'"));
 
             return error_node();
          }
@@ -21725,7 +22115,7 @@ namespace exprtk
             set_error(
                make_error(parser_error::e_syntax,
                           current_token(),
-                          "ERR134 - Invalid vector size. Must be an integer greater than zero, size: " +
+                          "ERR135 - Invalid vector size. Must be an integer greater than zero, size: " +
                           details::to_str(details::numeric::to_int32(vector_size))));
 
             return error_node();
@@ -21742,7 +22132,7 @@ namespace exprtk
             set_error(
                make_error(parser_error::e_syntax,
                           current_token(),
-                          "ERR135 - Expected ']' as part of vector size definition"));
+                          "ERR136 - Expected ']' as part of vector size definition"));
 
             return error_node();
          }
@@ -21753,7 +22143,7 @@ namespace exprtk
                set_error(
                   make_error(parser_error::e_syntax,
                              current_token(),
-                             "ERR136 - Expected ':=' as part of vector definition"));
+                             "ERR137 - Expected ':=' as part of vector definition"));
 
                return error_node();
             }
@@ -21766,7 +22156,7 @@ namespace exprtk
                   set_error(
                      make_error(parser_error::e_syntax,
                                 current_token(),
-                                "ERR137 - Failed to parse single vector initialiser"));
+                                "ERR138 - Failed to parse single vector initialiser"));
 
                   return error_node();
                }
@@ -21778,7 +22168,7 @@ namespace exprtk
                   set_error(
                      make_error(parser_error::e_syntax,
                                 current_token(),
-                                "ERR138 - Expected ']' to close single value vector initialiser"));
+                                "ERR139 - Expected ']' to close single value vector initialiser"));
 
                   return error_node();
                }
@@ -21790,7 +22180,7 @@ namespace exprtk
                set_error(
                   make_error(parser_error::e_syntax,
                              current_token(),
-                             "ERR139 - Expected '{' as part of vector initialiser list"));
+                             "ERR140 - Expected '{' as part of vector initialiser list"));
 
                return error_node();
             }
@@ -21805,7 +22195,7 @@ namespace exprtk
                      set_error(
                         make_error(parser_error::e_syntax,
                                    current_token(),
-                                   "ERR140 - Expected '{' as part of vector initialiser list"));
+                                   "ERR141 - Expected '{' as part of vector initialiser list"));
 
                      return error_node();
                   }
@@ -21822,7 +22212,7 @@ namespace exprtk
                      set_error(
                         make_error(parser_error::e_syntax,
                                    current_token(),
-                                   "ERR141 - Expected ',' between vector initialisers"));
+                                   "ERR142 - Expected ',' between vector initialisers"));
 
                      return error_node();
                   }
@@ -21843,7 +22233,7 @@ namespace exprtk
                   set_error(
                      make_error(parser_error::e_syntax,
                                 current_token(),
-                                "ERR142 - Expected ';' at end of vector definition"));
+                                "ERR143 - Expected ';' at end of vector definition"));
 
                   return error_node();
                }
@@ -21854,7 +22244,7 @@ namespace exprtk
                set_error(
                   make_error(parser_error::e_syntax,
                              current_token(),
-                             "ERR143 - Initialiser list larger than the number of elements in the vector: '" + vec_name + "'"));
+                             "ERR144 - Initialiser list larger than the number of elements in the vector: '" + vec_name + "'"));
 
                return error_node();
             }
@@ -21873,7 +22263,7 @@ namespace exprtk
                set_error(
                   make_error(parser_error::e_syntax,
                              current_token(),
-                             "ERR144 - Illegal redefinition of local vector: '" + vec_name + "'"));
+                             "ERR145 - Illegal redefinition of local vector: '" + vec_name + "'"));
 
                return error_node();
             }
@@ -21906,7 +22296,7 @@ namespace exprtk
                set_error(
                   make_error(parser_error::e_syntax,
                              current_token(),
-                             "ERR145 - Failed to add new local vector '" + vec_name + "' to SEM"));
+                             "ERR146 - Failed to add new local vector '" + vec_name + "' to SEM"));
 
                sem_.free_element(nse);
 
@@ -21951,7 +22341,7 @@ namespace exprtk
                set_error(
                   make_error(parser_error::e_syntax,
                              current_token(),
-                             "ERR146 - Illegal redefinition of local variable: '" + str_name + "'"));
+                             "ERR147 - Illegal redefinition of local variable: '" + str_name + "'"));
 
                free_node(node_allocator_,initialisation_expression);
 
@@ -21982,7 +22372,7 @@ namespace exprtk
                set_error(
                   make_error(parser_error::e_syntax,
                              current_token(),
-                             "ERR147 - Failed to add new local string variable '" + str_name + "' to SEM"));
+                             "ERR148 - Failed to add new local string variable '" + str_name + "' to SEM"));
 
                free_node(node_allocator_,initialisation_expression);
 
@@ -22027,7 +22417,7 @@ namespace exprtk
             set_error(
                make_error(parser_error::e_syntax,
                           current_token(),
-                          "ERR148 - Illegal variable definition"));
+                          "ERR149 - Illegal variable definition"));
 
             return error_node();
          }
@@ -22047,7 +22437,7 @@ namespace exprtk
             set_error(
                make_error(parser_error::e_syntax,
                           current_token(),
-                          "ERR149 - Expected a symbol for variable definition"));
+                          "ERR150 - Expected a symbol for variable definition"));
 
             return error_node();
          }
@@ -22056,7 +22446,7 @@ namespace exprtk
             set_error(
                make_error(parser_error::e_syntax,
                           current_token(),
-                          "ERR150 - Illegal redefinition of reserved keyword: '" + var_name + "'"));
+                          "ERR151 - Illegal redefinition of reserved keyword: '" + var_name + "'"));
 
             return error_node();
          }
@@ -22065,7 +22455,7 @@ namespace exprtk
             set_error(
                make_error(parser_error::e_syntax,
                           current_token(),
-                          "ERR151 - Illegal redefinition of variable '" + var_name + "'"));
+                          "ERR152 - Illegal redefinition of variable '" + var_name + "'"));
 
             return error_node();
          }
@@ -22074,7 +22464,7 @@ namespace exprtk
             set_error(
                make_error(parser_error::e_syntax,
                           current_token(),
-                          "ERR152 - Illegal redefinition of local variable: '" + var_name + "'"));
+                          "ERR153 - Illegal redefinition of local variable: '" + var_name + "'"));
 
             return error_node();
          }
@@ -22093,7 +22483,7 @@ namespace exprtk
                set_error(
                   make_error(parser_error::e_syntax,
                              current_token(),
-                             "ERR153 - Failed to parse initialisation expression"));
+                             "ERR154 - Failed to parse initialisation expression"));
 
                return error_node();
             }
@@ -22110,7 +22500,7 @@ namespace exprtk
                set_error(
                   make_error(parser_error::e_syntax,
                              current_token(),
-                             "ERR154 - Expected ';' after variable definition"));
+                             "ERR155 - Expected ';' after variable definition"));
 
                free_node(node_allocator_,initialisation_expression);
 
@@ -22137,7 +22527,7 @@ namespace exprtk
                set_error(
                   make_error(parser_error::e_syntax,
                              current_token(),
-                             "ERR155 - Illegal redefinition of local variable: '" + var_name + "'"));
+                             "ERR156 - Illegal redefinition of local variable: '" + var_name + "'"));
 
                free_node(node_allocator_,initialisation_expression);
 
@@ -22168,7 +22558,7 @@ namespace exprtk
                set_error(
                   make_error(parser_error::e_syntax,
                              current_token(),
-                             "ERR156 - Failed to add new local variable '" + var_name + "' to SEM"));
+                             "ERR157 - Failed to add new local variable '" + var_name + "' to SEM"));
 
                free_node(node_allocator_,initialisation_expression);
 
@@ -22204,7 +22594,7 @@ namespace exprtk
             set_error(
                make_error(parser_error::e_syntax,
                           current_token(),
-                          "ERR157 - Expected a '{}' for uninitialised var definition"));
+                          "ERR158 - Expected a '{}' for uninitialised var definition"));
 
             return error_node();
          }
@@ -22213,7 +22603,7 @@ namespace exprtk
             set_error(
                make_error(parser_error::e_syntax,
                           current_token(),
-                          "ERR158 - Expected ';' after uninitialised variable definition"));
+                          "ERR159 - Expected ';' after uninitialised variable definition"));
 
             return error_node();
          }
@@ -22229,7 +22619,7 @@ namespace exprtk
                set_error(
                   make_error(parser_error::e_syntax,
                              current_token(),
-                             "ERR159 - Illegal redefinition of local variable: '" + var_name + "'"));
+                             "ERR160 - Illegal redefinition of local variable: '" + var_name + "'"));
 
                return error_node();
             }
@@ -22258,7 +22648,7 @@ namespace exprtk
                set_error(
                   make_error(parser_error::e_syntax,
                              current_token(),
-                             "ERR160 - Failed to add new local variable '" + var_name + "' to SEM"));
+                             "ERR161 - Failed to add new local variable '" + var_name + "' to SEM"));
 
                sem_.free_element(nse);
 
@@ -22290,7 +22680,7 @@ namespace exprtk
             set_error(
                make_error(parser_error::e_syntax,
                           current_token(),
-                          "ERR161 - Expected '(' at start of swap statement"));
+                          "ERR162 - Expected '(' at start of swap statement"));
 
             return error_node();
          }
@@ -22308,7 +22698,7 @@ namespace exprtk
             set_error(
                make_error(parser_error::e_syntax,
                           current_token(),
-                          "ERR162 - Expected a symbol for variable or vector element definition"));
+                          "ERR163 - Expected a symbol for variable or vector element definition"));
 
             return error_node();
          }
@@ -22319,7 +22709,7 @@ namespace exprtk
                set_error(
                   make_error(parser_error::e_syntax,
                              current_token(),
-                             "ERR163 - First parameter to swap is an invalid vector element: '" + var0_name + "'"));
+                             "ERR164 - First parameter to swap is an invalid vector element: '" + var0_name + "'"));
 
                return error_node();
             }
@@ -22351,7 +22741,7 @@ namespace exprtk
                set_error(
                   make_error(parser_error::e_syntax,
                              current_token(),
-                             "ERR164 - First parameter to swap is an invalid variable: '" + var0_name + "'"));
+                             "ERR165 - First parameter to swap is an invalid variable: '" + var0_name + "'"));
 
                return error_node();
             }
@@ -22364,7 +22754,7 @@ namespace exprtk
             set_error(
                 make_error(parser_error::e_syntax,
                            current_token(),
-                           "ERR165 - Expected ',' between parameters to swap"));
+                           "ERR166 - Expected ',' between parameters to swap"));
 
             if (variable0_generated)
             {
@@ -22381,7 +22771,7 @@ namespace exprtk
             set_error(
                make_error(parser_error::e_syntax,
                           current_token(),
-                          "ERR166 - Expected a symbol for variable or vector element definition"));
+                          "ERR167 - Expected a symbol for variable or vector element definition"));
 
             if (variable0_generated)
             {
@@ -22397,7 +22787,7 @@ namespace exprtk
                set_error(
                   make_error(parser_error::e_syntax,
                              current_token(),
-                             "ERR167 - Second parameter to swap is an invalid vector element: '" + var1_name + "'"));
+                             "ERR168 - Second parameter to swap is an invalid vector element: '" + var1_name + "'"));
 
                if (variable0_generated)
                {
@@ -22434,7 +22824,7 @@ namespace exprtk
                set_error(
                   make_error(parser_error::e_syntax,
                              current_token(),
-                             "ERR168 - Second parameter to swap is an invalid variable: '" + var1_name + "'"));
+                             "ERR169 - Second parameter to swap is an invalid variable: '" + var1_name + "'"));
 
                if (variable0_generated)
                {
@@ -22452,7 +22842,7 @@ namespace exprtk
             set_error(
                make_error(parser_error::e_syntax,
                           current_token(),
-                          "ERR169 - Expected ')' at end of swap statement"));
+                          "ERR170 - Expected ')' at end of swap statement"));
 
             if (variable0_generated)
             {
@@ -22505,7 +22895,7 @@ namespace exprtk
             set_error(
                make_error(parser_error::e_syntax,
                           current_token(),
-                          "ERR170 - Return call within a return call is not allowed"));
+                          "ERR171 - Return call within a return call is not allowed"));
 
             return error_node();
          }
@@ -22528,7 +22918,7 @@ namespace exprtk
             set_error(
                make_error(parser_error::e_syntax,
                           current_token(),
-                          "ERR171 - Expected '[' at start of return statement"));
+                          "ERR172 - Expected '[' at start of return statement"));
 
             return error_node();
          }
@@ -22550,7 +22940,7 @@ namespace exprtk
                   set_error(
                      make_error(parser_error::e_syntax,
                                 current_token(),
-                                "ERR172 - Expected ',' between values during call to return"));
+                                "ERR173 - Expected ',' between values during call to return"));
 
                   return error_node();
                }
@@ -22561,7 +22951,7 @@ namespace exprtk
             set_error(
                make_error(parser_error::e_syntax,
                           current_token(),
-                          "ERR173 - Zero parameter return statement not allowed"));
+                          "ERR174 - Zero parameter return statement not allowed"));
 
             return error_node();
          }
@@ -22575,7 +22965,7 @@ namespace exprtk
                set_error(
                   make_error(parser_error::e_syntax,
                              prev_token,
-                             "ERR174 - Invalid ']' found during return call"));
+                             "ERR175 - Invalid ']' found during return call"));
 
                return error_node();
             }
@@ -22621,7 +23011,7 @@ namespace exprtk
                set_error(
                   make_error(parser_error::e_syntax,
                              current_token(),
-                             "ERR175 - Invalid sequence of variable '"+ symbol + "' and bracket"));
+                             "ERR176 - Invalid sequence of variable '"+ symbol + "' and bracket"));
 
                return false;
             }
@@ -22668,7 +23058,7 @@ namespace exprtk
                set_error(
                   make_error(parser_error::e_syntax,
                              current_token(),
-                             "ERR176 - Invalid sequence of brackets"));
+                             "ERR177 - Invalid sequence of brackets"));
 
                return false;
             }
@@ -22769,7 +23159,7 @@ namespace exprtk
                   set_error(
                      make_error(parser_error::e_syntax,
                                 current_token(),
-                                "ERR177 - Failed to generate node for function: '" + symbol + "'"));
+                                "ERR178 - Failed to generate node for function: '" + symbol + "'"));
 
                   return error_node();
                }
@@ -22794,7 +23184,7 @@ namespace exprtk
                   set_error(
                      make_error(parser_error::e_syntax,
                                 current_token(),
-                                "ERR178 - Failed to generate node for vararg function: '" + symbol + "'"));
+                                "ERR179 - Failed to generate node for vararg function: '" + symbol + "'"));
 
                   return error_node();
                }
@@ -22819,7 +23209,7 @@ namespace exprtk
                   set_error(
                      make_error(parser_error::e_syntax,
                                 current_token(),
-                                "ERR179 - Failed to generate node for generic function: '" + symbol + "'"));
+                                "ERR180 - Failed to generate node for generic function: '" + symbol + "'"));
 
                   return error_node();
                }
@@ -22844,7 +23234,7 @@ namespace exprtk
                   set_error(
                      make_error(parser_error::e_syntax,
                                 current_token(),
-                                "ERR180 - Failed to generate node for string function: '" + symbol + "'"));
+                                "ERR181 - Failed to generate node for string function: '" + symbol + "'"));
 
                   return error_node();
                }
@@ -22865,7 +23255,7 @@ namespace exprtk
                   set_error(
                      make_error(parser_error::e_syntax,
                                 current_token(),
-                                "ERR181 - Invalid use of reserved symbol '" + symbol + "'"));
+                                "ERR182 - Invalid use of reserved symbol '" + symbol + "'"));
 
                   return error_node();
                }
@@ -22922,7 +23312,7 @@ namespace exprtk
                   set_error(
                      make_error(parser_error::e_symtab,
                                 current_token(),
-                                "ERR182 - Failed to create variable: '" + symbol + "'"));
+                                "ERR183 - Failed to create variable: '" + symbol + "'"));
 
                   return error_node();
                }
@@ -22932,7 +23322,7 @@ namespace exprtk
          set_error(
             make_error(parser_error::e_syntax,
                        current_token(),
-                       "ERR183 - Undefined symbol: '" + symbol + "'"));
+                       "ERR184 - Undefined symbol: '" + symbol + "'"));
 
          return error_node();
       }
@@ -23033,7 +23423,7 @@ namespace exprtk
             set_error(
                make_error(parser_error::e_symtab,
                           current_token(),
-                          "ERR184 - Variable or function detected, yet symbol-table is invalid, Symbol: " + current_token().value));
+                          "ERR185 - Variable or function detected, yet symbol-table is invalid, Symbol: " + current_token().value));
 
             return error_node();
          }
@@ -23058,7 +23448,7 @@ namespace exprtk
                set_error(
                   make_error(parser_error::e_numeric,
                              current_token(),
-                             "ERR185 - Failed to convert '" + current_token().value + "' to a number"));
+                             "ERR186 - Failed to convert '" + current_token().value + "' to a number"));
 
                return error_node();
             }
@@ -23084,7 +23474,7 @@ namespace exprtk
                set_error(
                   make_error(parser_error::e_syntax,
                              current_token(),
-                             "ERR186 - Expected ')' instead of: '" + current_token().value + "'"));
+                             "ERR187 - Expected ')' instead of: '" + current_token().value + "'"));
 
                free_node(node_allocator_,branch);
 
@@ -23108,7 +23498,7 @@ namespace exprtk
                set_error(
                   make_error(parser_error::e_syntax,
                              current_token(),
-                             "ERR187 - Expected ']' instead of: '" + current_token().value + "'"));
+                             "ERR188 - Expected ']' instead of: '" + current_token().value + "'"));
 
                free_node(node_allocator_,branch);
 
@@ -23132,7 +23522,7 @@ namespace exprtk
                set_error(
                   make_error(parser_error::e_syntax,
                              current_token(),
-                             "ERR188 - Expected '}' instead of: '" + current_token().value + "'"));
+                             "ERR189 - Expected '}' instead of: '" + current_token().value + "'"));
 
                free_node(node_allocator_,branch);
 
@@ -23171,7 +23561,7 @@ namespace exprtk
             set_error(
                make_error(parser_error::e_syntax,
                           current_token(),
-                          "ERR189 - Premature end of expression[1]"));
+                          "ERR190 - Premature end of expression[1]"));
 
             return error_node();
          }
@@ -23180,7 +23570,7 @@ namespace exprtk
             set_error(
                make_error(parser_error::e_syntax,
                           current_token(),
-                          "ERR190 - Premature end of expression[2]"));
+                          "ERR191 - Premature end of expression[2]"));
 
             return error_node();
          }
@@ -23767,7 +24157,7 @@ namespace exprtk
 
             bool result = false;
 
-            if (b0_string ^ b1_string)
+            if (b0_string != b1_string)
                result = true;
             else if (!valid_string_operation(operation) && b0_string && b1_string)
                result = true;
@@ -23788,7 +24178,7 @@ namespace exprtk
 
             bool result = false;
 
-            if ((b0_string ^ b1_string) || (b1_string ^ b2_string))
+            if ((b0_string != b1_string) || (b1_string != b2_string))
                result = true;
             else if ((details::e_inrange != operation) && b0_string && b1_string && b2_string)
                result = true;

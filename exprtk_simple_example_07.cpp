@@ -48,9 +48,9 @@ void logic()
 
    for (int i = 0; i < 8; ++i)
    {
-      symbol_table.get_variable("A")->ref() = T(i & 0x01 ? 1 : 0);
-      symbol_table.get_variable("B")->ref() = T(i & 0x02 ? 1 : 0);
-      symbol_table.get_variable("C")->ref() = T(i & 0x04 ? 1 : 0);
+      symbol_table.get_variable("A")->ref() = T((i & 0x01) ? 1 : 0);
+      symbol_table.get_variable("B")->ref() = T((i & 0x02) ? 1 : 0);
+      symbol_table.get_variable("C")->ref() = T((i & 0x04) ? 1 : 0);
 
       int result = static_cast<int>(expression.value());
 
