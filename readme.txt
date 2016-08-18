@@ -849,8 +849,8 @@ The reason for  the above complexity  and restrictions of  deep copies
 for the expression and symbol_table components is because  expressions
 may include user defined variables or functions. These are embedded as
 references into the expression's AST. When copying an expression, said
-references  need to  also  be  copied. if  the references  are blindly
-copied,  then it  will  result  in two  or more  identical expressions
+references  need to  also  be  copied. If  the references  are blindly
+copied,  it  will then  result  in two  or more  identical expressions
 utilizing the exact same  references for variables. This  obviously is
 not the  default assumed  scenario and  will give  rise to non-obvious
 behaviours  when  using the  expressions in  various contexts such  as

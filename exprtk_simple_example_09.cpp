@@ -44,8 +44,8 @@ void primes()
       .add(
       function_t(
            "is_prime_impl1",
-           "if(y == 1,true,                "
-           "   if(0 == (x % y),false,      "
+           "if (y == 1,true,               "
+           "   if (0 == (x % y),false,     "
            "      is_prime_impl1(x,y - 1)))",
            "x","y"));
 
@@ -53,8 +53,8 @@ void primes()
       .add(
       function_t(
            "is_prime1",
-           "if(frac(x) != 0, false,                                "
-           "   if(x <= 0, false,                                   "
+           "if (frac(x) != 0, false,                               "
+           "   if (x <= 0, false,                                  "
            "      is_prime_impl1(x,min(x - 1,trunc(sqrt(x)) + 1))))",
            "x"));
 

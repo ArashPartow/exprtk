@@ -4218,6 +4218,28 @@ namespace exprtk
          unsigned int num_params;
       };
 
+      namespace loop_unroll
+      {
+         #ifndef exprtk_disable_superscalar_unroll
+         const std::size_t loop_batch_size = 8;
+         #else
+         const std::size_t loop_batch_size = 4;
+         #endif
+
+         struct details
+         {
+            details(const std::size_t& vsize)
+            : batch_size(loop_batch_size),
+              remainder (vsize % batch_size),
+              upper_bound(static_cast<int>(vsize - (remainder ? loop_batch_size : 0)))
+            {}
+
+            int  batch_size;
+            int   remainder;
+            int upper_bound;
+         };
+      }
+
       namespace numeric
       {
          namespace details
@@ -4994,7 +5016,7 @@ namespace exprtk
 
          const char* base() const
          {
-           return value_.data();
+            return value_.data();
          }
 
          std::size_t size() const
@@ -6747,7 +6769,7 @@ namespace exprtk
 
          const char* base() const
          {
-           return (*value_).data();
+            return &(*value_)[0];
          }
 
          std::size_t size() const
@@ -6827,7 +6849,7 @@ namespace exprtk
 
          const char* base() const
          {
-           return (*value_).data();
+            return &(*value_)[0];
          }
 
          std::size_t size() const
@@ -6905,7 +6927,7 @@ namespace exprtk
 
          const char* base() const
          {
-           return value_.data();
+            return value_.data();
          }
 
          std::size_t size() const
@@ -7036,7 +7058,7 @@ namespace exprtk
 
          const char* base() const
          {
-           return value_.data();
+            return &value_[0];
          }
 
          std::size_t size() const
@@ -7175,7 +7197,7 @@ namespace exprtk
 
          const char* base() const
          {
-           return value_.data();
+            return &value_[0];
          }
 
          std::size_t size() const
@@ -7291,6 +7313,143 @@ namespace exprtk
          bool initialised_;
          strvar_node_ptr str0_node_ptr_;
          strvar_node_ptr str1_node_ptr_;
+      };
+
+      template <typename T>
+      class swap_genstrings_node : public binary_node<T>
+      {
+      public:
+
+         typedef expression_node <T>* expression_ptr;
+         typedef string_base_node<T>*   str_base_ptr;
+         typedef range_pack      <T>         range_t;
+         typedef range_t*                  range_ptr;
+         typedef range_interface<T>         irange_t;
+         typedef irange_t*                irange_ptr;
+
+         swap_genstrings_node(expression_ptr branch0,
+                              expression_ptr branch1)
+         : binary_node<T>(details::e_default,branch0,branch1),
+           str0_base_ptr_ (0),
+           str1_base_ptr_ (0),
+           str0_range_ptr_(0),
+           str1_range_ptr_(0),
+           initialised_(false)
+         {
+            if (is_generally_string_node(binary_node<T>::branch_[0].first))
+            {
+               str0_base_ptr_ = dynamic_cast<str_base_ptr>(binary_node<T>::branch_[0].first);
+
+               if (0 == str0_base_ptr_)
+                  return;
+
+               irange_ptr range_ptr = dynamic_cast<irange_ptr>(binary_node<T>::branch_[0].first);
+
+               if (0 == range_ptr)
+                  return;
+
+               str0_range_ptr_ = &(range_ptr->range_ref());
+            }
+
+            if (is_generally_string_node(binary_node<T>::branch_[1].first))
+            {
+               str1_base_ptr_ = dynamic_cast<str_base_ptr>(binary_node<T>::branch_[1].first);
+
+               if (0 == str1_base_ptr_)
+                  return;
+
+               irange_ptr range_ptr = dynamic_cast<irange_ptr>(binary_node<T>::branch_[1].first);
+
+               if (0 == range_ptr)
+                  return;
+
+               str1_range_ptr_ = &(range_ptr->range_ref());
+            }
+
+            initialised_ = str0_base_ptr_  &&
+                           str1_base_ptr_  &&
+                           str0_range_ptr_ &&
+                           str1_range_ptr_ ;
+         }
+
+         inline T value() const
+         {
+            if (initialised_)
+            {
+               binary_node<T>::branch_[0].first->value();
+               binary_node<T>::branch_[1].first->value();
+
+               std::size_t str0_r0 = 0;
+               std::size_t str0_r1 = 0;
+
+               std::size_t str1_r0 = 0;
+               std::size_t str1_r1 = 0;
+
+               range_t& range0 = (*str0_range_ptr_);
+               range_t& range1 = (*str1_range_ptr_);
+
+               if (
+                    range0(str0_r0,str0_r1,str0_base_ptr_->size()) &&
+                    range1(str1_r0,str1_r1,str1_base_ptr_->size())
+                  )
+               {
+                  const std::size_t size0    = range0.cache_size();
+                  const std::size_t size1    = range1.cache_size();
+                  const std::size_t max_size = std::min(size0,size1);
+
+                  char* s0 = const_cast<char*>(str0_base_ptr_->base() + str0_r0);
+                  char* s1 = const_cast<char*>(str1_base_ptr_->base() + str1_r0);
+
+                  loop_unroll::details lud(max_size);
+                  int i = 0;
+
+                  for (; i < lud.upper_bound; i += lud.batch_size)
+                  {
+                     std::swap(s0[i    ], s1[i    ]);
+                     std::swap(s0[i + 1], s1[i + 1]);
+                     std::swap(s0[i + 2], s1[i + 2]);
+                     std::swap(s0[i + 3], s1[i + 3]);
+                     #ifndef exprtk_disable_superscalar_unroll
+                     std::swap(s0[i + 4], s1[i + 4]);
+                     std::swap(s0[i + 5], s1[i + 5]);
+                     std::swap(s0[i + 6], s1[i + 6]);
+                     std::swap(s0[i + 7], s1[i + 7]);
+                     #endif
+                  }
+
+                  switch (lud.remainder)
+                  {
+                     #ifndef exprtk_disable_superscalar_unroll
+                     case 7 : { std::swap(s0[i],s1[i]); ++i; }
+                     case 6 : { std::swap(s0[i],s1[i]); ++i; }
+                     case 5 : { std::swap(s0[i],s1[i]); ++i; }
+                     case 4 : { std::swap(s0[i],s1[i]); ++i; }
+                     #endif
+                     case 3 : { std::swap(s0[i],s1[i]); ++i; }
+                     case 2 : { std::swap(s0[i],s1[i]); ++i; }
+                     case 1 : { std::swap(s0[i],s1[i]); ++i; }
+                  }
+               }
+            }
+
+            return std::numeric_limits<T>::quiet_NaN();
+         }
+
+         inline typename expression_node<T>::node_type type() const
+         {
+            return expression_node<T>::e_strswap;
+         }
+
+      private:
+
+         swap_genstrings_node(swap_genstrings_node<T>&);
+         swap_genstrings_node<T>& operator=(swap_genstrings_node<T>&);
+
+         str_base_ptr str0_base_ptr_;
+         str_base_ptr str1_base_ptr_;
+         range_ptr    str0_range_ptr_;
+         range_ptr    str1_range_ptr_;
+         bool         initialised_;
       };
 
       template <typename T>
@@ -7765,7 +7924,7 @@ namespace exprtk
 
          const char* base() const
          {
-           return value_.data();
+            return &value_[0];
          }
 
          std::size_t size() const
@@ -7885,7 +8044,7 @@ namespace exprtk
 
          const char* base() const
          {
-           return value_.data();
+            return &value_[0];
          }
 
          std::size_t size() const
@@ -8490,28 +8649,6 @@ namespace exprtk
 
          vector_elem_node<T>* vec_node_ptr_;
       };
-
-      namespace loop_unroll
-      {
-         #ifndef exprtk_disable_superscalar_unroll
-         const std::size_t loop_batch_size = 8;
-         #else
-         const std::size_t loop_batch_size = 4;
-         #endif
-
-         struct details
-         {
-            details(const std::size_t& vsize)
-            : batch_size(loop_batch_size),
-              remainder (vsize % batch_size),
-              upper_bound(static_cast<int>(vsize - (remainder ? loop_batch_size : 0)))
-            {}
-
-            int  batch_size;
-            int   remainder;
-            int upper_bound;
-         };
-      }
 
       template <typename T>
       class assignment_vec_node : public binary_node     <T>,
@@ -10519,7 +10656,7 @@ namespace exprtk
 
          const char* base() const
          {
-           return ret_string_.data();
+           return &ret_string_[0];
          }
 
          std::size_t size() const
@@ -21185,30 +21322,44 @@ namespace exprtk
       {
          const std::string symbol = current_token().value;
 
-         if (!symtab_store_.is_conststr_stringvar(symbol))
-         {
-            set_error(
-               make_error(parser_error::e_syntax,
-                          current_token(),
-                          "ERR101 - Unknown string symbol"));
-
-            return error_node();
-         }
-
-         expression_node_ptr result = symtab_store_.get_stringvar(symbol);
-
          typedef details::stringvar_node<T>* strvar_node_t;
+
+         expression_node_ptr result   = error_node();
          strvar_node_t const_str_node = static_cast<strvar_node_t>(0);
+         bool is_const_string         = false;
 
-         const bool is_const_string = symtab_store_.is_constant_string(symbol);
+         scope_element& se = sem_.get_active_element(symbol);
 
-         if (is_const_string)
+         if (scope_element::e_string == se.type)
          {
-            const_str_node = static_cast<strvar_node_t>(result);
-            result = expression_generator_(const_str_node->str());
+            se.active = true;
+            result    = se.str_node;
+            lodge_symbol(symbol,e_st_local_string);
          }
+         else
+         {
+            if (!symtab_store_.is_conststr_stringvar(symbol))
+            {
+               set_error(
+                  make_error(parser_error::e_syntax,
+                             current_token(),
+                             "ERR101 - Unknown string symbol"));
 
-         lodge_symbol(symbol,e_st_string);
+               return error_node();
+            }
+
+            result = symtab_store_.get_stringvar(symbol);
+
+            is_const_string = symtab_store_.is_constant_string(symbol);
+
+            if (is_const_string)
+            {
+               const_str_node = static_cast<strvar_node_t>(result);
+               result = expression_generator_(const_str_node->str());
+            }
+
+            lodge_symbol(symbol,e_st_string);
+         }
 
          if (peek_token_is(token_t::e_lsqrbracket))
          {
@@ -23122,12 +23273,7 @@ namespace exprtk
                #ifndef exprtk_disable_string_capabilities
                else if (scope_element::e_string == se.type)
                {
-                  se.active = true;
-                  lodge_symbol(symbol,e_st_local_string);
-
-                  next_token();
-
-                  return se.str_node;
+                  return parse_string();
                }
                #endif
             }
@@ -25895,7 +26041,10 @@ namespace exprtk
             #ifndef exprtk_disable_string_capabilities
             else if (v0_is_str && v1_is_str)
             {
-               result = node_allocator_->allocate<details::swap_string_node<T> >(branch[0],branch[1]);
+               if (is_string_node(branch[0]) && is_string_node(branch[1]))
+                  result = node_allocator_->allocate<details::swap_string_node<T> >(branch[0],branch[1]);
+               else
+                  result = node_allocator_->allocate<details::swap_genstrings_node<T> >(branch[0],branch[1]);
             }
             #endif
             else
