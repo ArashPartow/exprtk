@@ -4223,6 +4223,8 @@ inline bool run_test10()
         "var x[3] := {-1,-2,-3};    sum(abs(x)  ) == 6",
         "var x[3] := {0.1,0.2,0.3}; sum(trunc(x)) == 0",
 
+        "var x[10^6]:=[2];var y[10^6]:=[3]; var s:=0;equal(for(var i:=0; i<10;i+=1){s+= sum(5 *(2x-y/3)) + i;},150000045.0)",
+
         "var x := 2; (~{ for (var i := 0; i < 10; i += 1) { for (var j := 0; j <= i;  "
         "j += 1) { var y := 3; if ((i + j + y + x) < 6) { y += x; continue; } else    "
         "break[i + j]; } } } + ~{ for (var i := 0; i < 10; i += 1) { for (var j := 0; "

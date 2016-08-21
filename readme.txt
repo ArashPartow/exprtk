@@ -622,11 +622,12 @@ double, MPFR et al).
 
 
 (2) Vector Type
-The vector type is  a fixed size sequence  of scalar values. A  vector
-can  be indexed  resulting  in  a scalar  value. Operations  between a
-vector and scalar will result in a vector with a size equal to that of
-the original vector, whereas operations between vectors will result in
-a vector of size equal to that of the smaller of the two.
+The vector type is a fixed size sequence of contiguous scalar  values.
+A  vector  can be  indexed  resulting in  a  scalar value.  Operations
+between a vector and scalar will result in a vector with a size  equal
+to that  of the  original vector,  whereas operations  between vectors
+will result in a  vector of size equal  to that of the  smaller of the
+two.
 
 
 (3) String Type
