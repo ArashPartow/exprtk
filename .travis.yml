@@ -9,3 +9,4 @@ compiler:
 
 script:
   - make clean all
+  - ./exprtk_test
