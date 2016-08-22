@@ -10983,7 +10983,7 @@ namespace exprtk
          typedef typename opr_base<T>::RefType RefType;
          static inline T process(Type t1, Type t2) { return t1 + t2; }
          static inline T process(Type t1, Type t2, Type t3) { return t1 + t2 + t3; }
-         static inline void assign(RefType& t1, Type t2) { t1 += t2; }
+         static inline void assign(RefType t1, Type t2) { t1 += t2; }
          static inline typename expression_node<T>::node_type type() { return expression_node<T>::e_add; }
          static inline details::operator_type operation() { return details::e_add; }
       };
@@ -10995,7 +10995,7 @@ namespace exprtk
          typedef typename opr_base<T>::RefType RefType;
          static inline T process(Type t1, Type t2) { return t1 * t2; }
          static inline T process(Type t1, Type t2, Type t3) { return t1 * t2 * t3; }
-         static inline void assign(RefType& t1, Type t2) { t1 *= t2; }
+         static inline void assign(RefType t1, Type t2) { t1 *= t2; }
          static inline typename expression_node<T>::node_type type() { return expression_node<T>::e_mul; }
          static inline details::operator_type operation() { return details::e_mul; }
       };
@@ -11007,7 +11007,7 @@ namespace exprtk
          typedef typename opr_base<T>::RefType RefType;
          static inline T process(Type t1, Type t2) { return t1 - t2; }
          static inline T process(Type t1, Type t2, Type t3) { return t1 - t2 - t3; }
-         static inline void assign(RefType& t1, Type t2) { t1 -= t2; }
+         static inline void assign(RefType t1, Type t2) { t1 -= t2; }
          static inline typename expression_node<T>::node_type type() { return expression_node<T>::e_sub; }
          static inline details::operator_type operation() { return details::e_sub; }
       };
@@ -11019,7 +11019,7 @@ namespace exprtk
          typedef typename opr_base<T>::RefType RefType;
          static inline T process(Type t1, Type t2) { return t1 / t2; }
          static inline T process(Type t1, Type t2, Type t3) { return t1 / t2 / t3; }
-         static inline void assign(RefType& t1, Type t2) { t1 /= t2; }
+         static inline void assign(RefType t1, Type t2) { t1 /= t2; }
          static inline typename expression_node<T>::node_type type() { return expression_node<T>::e_div; }
          static inline details::operator_type operation() { return details::e_div; }
       };
@@ -11030,7 +11030,7 @@ namespace exprtk
          typedef typename opr_base<T>::Type Type;
          typedef typename opr_base<T>::RefType RefType;
          static inline T process(Type t1, Type t2) { return numeric::modulus<T>(t1,t2); }
-         static inline void assign(RefType& t1, Type t2) { t1 = numeric::modulus<T>(t1,t2); }
+         static inline void assign(RefType t1, Type t2) { t1 = numeric::modulus<T>(t1,t2); }
          static inline typename expression_node<T>::node_type type() { return expression_node<T>::e_mod; }
          static inline details::operator_type operation() { return details::e_mod; }
       };
@@ -11041,7 +11041,7 @@ namespace exprtk
          typedef typename opr_base<T>::Type Type;
          typedef typename opr_base<T>::RefType RefType;
          static inline T process(Type t1, Type t2) { return numeric::pow<T>(t1,t2); }
-         static inline void assign(RefType& t1, Type t2) { t1 = numeric::pow<T>(t1,t2); }
+         static inline void assign(RefType t1, Type t2) { t1 = numeric::pow<T>(t1,t2); }
          static inline typename expression_node<T>::node_type type() { return expression_node<T>::e_pow; }
          static inline details::operator_type operation() { return details::e_pow; }
       };
