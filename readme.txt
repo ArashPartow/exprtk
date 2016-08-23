@@ -1166,10 +1166,18 @@ zero. The following are examples of vector definitions:
    (e) Initialise the first three (all) values
        var x[3] := { 1, 2, 3 };
 
-   (f) Error as there are too many initialisers
+   (f) Initialise vector from a vector
+       var x[4] := { 1, 2, 3, 4 };
+       var y[3] := x;
+
+   (g) Initialise vector from a smaller vector
+       var x[3] := { 1, 2, 3 };
+       var y[5] := x;   // 1, 2, 3, ??, ??
+
+   (h) Error as there are too many initialisers
        var x[3] := { 1, 2, 3, 4 };
 
-   (g) Error as a vector of size zero is not allowed.
+   (i) Error as a vector of size zero is not allowed.
        var x[0];
 
 

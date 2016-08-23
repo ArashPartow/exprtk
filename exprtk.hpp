@@ -6470,7 +6470,7 @@ namespace exprtk
 
          inline T value() const
          {
-           return *(vector_base_ + static_cast<std::size_t>(details::numeric::to_int64(index_->value())));
+            return *(vector_base_ + static_cast<std::size_t>(details::numeric::to_int64(index_->value())));
          }
 
          inline T& ref()
@@ -10503,17 +10503,6 @@ namespace exprtk
 
                   ts.size = 1;
                   ts.data = &var->ref();
-                  ts.type = type_store_t::e_scalar;
-               }
-               else if (is_vector_elem_node(arg_list_[i]))
-               {
-                  vector_elem_node_ptr_t var = vector_elem_node_ptr_t(0);
-
-                  if (0 == (var = dynamic_cast<vector_elem_node_ptr_t>(arg_list_[i])))
-                     return false;
-
-                  ts.size = 1;
-                  ts.data = reinterpret_cast<void*>(&var->ref());
                   ts.type = type_store_t::e_scalar;
                }
                else
@@ -22276,6 +22265,7 @@ namespace exprtk
          scoped_vec_delete<expression_node_t> svd(*this,vec_initilizer_list);
 
          bool single_value_initialiser = false;
+         bool vec_to_vec_initialiser   = false;
 
          if (!token_is(token_t::e_rsqrbracket))
          {
@@ -22327,12 +22317,44 @@ namespace exprtk
             }
             else if (!token_is(token_t::e_lcrlbracket))
             {
-               set_error(
-                  make_error(parser_error::e_syntax,
-                             current_token(),
-                             "ERR140 - Expected '{' as part of vector initialiser list"));
+               expression_node_ptr initialiser = error_node();
 
-               return error_node();
+               // Is this a vector to vector assignment and initialisation?
+               if (token_t::e_symbol == current_token().type)
+               {
+                  // Is it a locally defined vector?
+                  scope_element& se = sem_.get_active_element(current_token().value);
+
+                  if (scope_element::e_vector == se.type)
+                  {
+                     if ((initialiser = parse_expression()))
+                        vec_initilizer_list.push_back(initialiser);
+                     else
+                        return error_node();
+                  }
+                  // Are we dealing with a user defined vector?
+                  else if (symtab_store_.is_vector(current_token().value))
+                  {
+                     lodge_symbol(current_token().value,e_st_vector);
+
+                     if ((initialiser = parse_expression()))
+                        vec_initilizer_list.push_back(initialiser);
+                     else
+                        return error_node();
+                  }
+               }
+
+               if (0 == initialiser)
+               {
+                  set_error(
+                     make_error(parser_error::e_syntax,
+                                current_token(),
+                                "ERR140 - Expected '{' as part of vector initialiser list"));
+
+                  return error_node();
+               }
+               else
+                  vec_to_vec_initialiser = true;
             }
             else if (!token_is(token_t::e_rcrlbracket))
             {
@@ -22464,13 +22486,20 @@ namespace exprtk
 
          lodge_symbol(vec_name,e_st_local_vector);
 
-         expression_node_ptr result =
-                node_allocator_
-                   .allocate<details::vector_assignment_node<T> >(
-                      (*vec_holder)[0],
-                      vec_size,
-                      vec_initilizer_list,
-                      single_value_initialiser);
+         expression_node_ptr result = error_node();
+
+         if (vec_to_vec_initialiser)
+            result = expression_generator_(
+                        details::e_assign,
+                        node_allocator_.allocate<vector_node_t>(vec_holder),
+                        vec_initilizer_list[0]);
+         else
+            result = node_allocator_
+                        .allocate<details::vector_assignment_node<T> >(
+                           (*vec_holder)[0],
+                           vec_size,
+                           vec_initilizer_list,
+                           single_value_initialiser);
 
          svd.delete_ptr = (0 == result);
 
@@ -23386,7 +23415,7 @@ namespace exprtk
             }
          }
 
-         // Are we dealing with a vector element?
+         // Are we dealing with a vector?
          if (symtab_store_.is_vector(symbol))
          {
             lodge_symbol(symbol,e_st_vector);
