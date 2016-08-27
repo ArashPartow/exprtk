@@ -4221,14 +4221,15 @@ namespace exprtk
       namespace loop_unroll
       {
          #ifndef exprtk_disable_superscalar_unroll
-         const std::size_t loop_batch_size = 8;
+         const std::size_t global_loop_batch_size = 16;
          #else
-         const std::size_t loop_batch_size = 4;
+         const std::size_t global_loop_batch_size = 4;
          #endif
 
          struct details
          {
-            details(const std::size_t& vsize)
+            details(const std::size_t& vsize,
+                    const std::size_t loop_batch_size = global_loop_batch_size)
             : batch_size(loop_batch_size),
               remainder (vsize % batch_size),
               upper_bound(static_cast<int>(vsize - (remainder ? loop_batch_size : 0)))
@@ -7406,34 +7407,49 @@ namespace exprtk
                   char* s1 = const_cast<char*>(str1_base_ptr_->base() + str1_r0);
 
                   loop_unroll::details lud(max_size);
-                  int i = 0;
+                  const char* upper_bound = s0 + lud.upper_bound;
 
-                  for (; i < lud.upper_bound; i += lud.batch_size)
+                  while (s0 < upper_bound)
                   {
-                     std::swap(s0[i    ], s1[i    ]);
-                     std::swap(s0[i + 1], s1[i + 1]);
-                     std::swap(s0[i + 2], s1[i + 2]);
-                     std::swap(s0[i + 3], s1[i + 3]);
+                     #define exprtk_loop(N)   \
+                     std::swap(s0[N], s1[N]); \
+
+                     exprtk_loop( 0) exprtk_loop( 1)
+                     exprtk_loop( 2) exprtk_loop( 3)
                      #ifndef exprtk_disable_superscalar_unroll
-                     std::swap(s0[i + 4], s1[i + 4]);
-                     std::swap(s0[i + 5], s1[i + 5]);
-                     std::swap(s0[i + 6], s1[i + 6]);
-                     std::swap(s0[i + 7], s1[i + 7]);
+                     exprtk_loop( 4) exprtk_loop( 5)
+                     exprtk_loop( 6) exprtk_loop( 7)
+                     exprtk_loop( 8) exprtk_loop( 9)
+                     exprtk_loop(10) exprtk_loop(11)
+                     exprtk_loop(12) exprtk_loop(13)
+                     exprtk_loop(14) exprtk_loop(15)
                      #endif
+
+                     s0 += lud.batch_size;
+                     s1 += lud.batch_size;
                   }
+
+                  int i = 0;
 
                   switch (lud.remainder)
                   {
+                     #define case_stmt(N)                      \
+                     case N : { std::swap(s0[i],s1[i]); ++i; } \
+
                      #ifndef exprtk_disable_superscalar_unroll
-                     case 7 : { std::swap(s0[i],s1[i]); ++i; }
-                     case 6 : { std::swap(s0[i],s1[i]); ++i; }
-                     case 5 : { std::swap(s0[i],s1[i]); ++i; }
-                     case 4 : { std::swap(s0[i],s1[i]); ++i; }
+                     case_stmt(15) case_stmt(14)
+                     case_stmt(13) case_stmt(12)
+                     case_stmt(11) case_stmt(10)
+                     case_stmt( 9) case_stmt( 8)
+                     case_stmt( 7) case_stmt( 6)
+                     case_stmt( 5) case_stmt( 4)
                      #endif
-                     case 3 : { std::swap(s0[i],s1[i]); ++i; }
-                     case 2 : { std::swap(s0[i],s1[i]); ++i; }
-                     case 1 : { std::swap(s0[i],s1[i]); ++i; }
+                     case_stmt( 3) case_stmt( 2)
+                     case_stmt( 1)
                   }
+
+                  #undef exprtk_loop
+                  #undef case_stmt
                }
             }
 
@@ -8687,34 +8703,46 @@ namespace exprtk
                T* vec = vec_node_ptr_->ref().data();
 
                loop_unroll::details lud(vec_size_);
-               int i = 0;
+               const T* upper_bound = vec + lud.upper_bound;
 
-               for (; i < lud.upper_bound; i += lud.batch_size)
+               while (vec < upper_bound)
                {
-                  vec[i    ] = v;
-                  vec[i + 1] = v;
-                  vec[i + 2] = v;
-                  vec[i + 3] = v;
+                 #define exprtk_loop(N) \
+                  vec[N] = v;           \
+
+                  exprtk_loop( 0) exprtk_loop( 1)
+                  exprtk_loop( 2) exprtk_loop( 3)
                   #ifndef exprtk_disable_superscalar_unroll
-                  vec[i + 4] = v;
-                  vec[i + 5] = v;
-                  vec[i + 6] = v;
-                  vec[i + 7] = v;
+                  exprtk_loop( 4) exprtk_loop( 5)
+                  exprtk_loop( 6) exprtk_loop( 7)
+                  exprtk_loop( 8) exprtk_loop( 9)
+                  exprtk_loop(10) exprtk_loop(11)
+                  exprtk_loop(12) exprtk_loop(13)
+                  exprtk_loop(14) exprtk_loop(15)
                   #endif
+
+                  vec += lud.batch_size;
                }
 
                switch (lud.remainder)
                {
+                  #define case_stmt(N) \
+                  case N : *vec++ = v; \
+
                   #ifndef exprtk_disable_superscalar_unroll
-                  case 7 : vec[i++] = v;
-                  case 6 : vec[i++] = v;
-                  case 5 : vec[i++] = v;
-                  case 4 : vec[i++] = v;
+                  case_stmt(15) case_stmt(14)
+                  case_stmt(13) case_stmt(12)
+                  case_stmt(11) case_stmt(10)
+                  case_stmt( 9) case_stmt( 8)
+                  case_stmt( 7) case_stmt( 6)
+                  case_stmt( 5) case_stmt( 4)
                   #endif
-                  case 3 : vec[i++] = v;
-                  case 2 : vec[i++] = v;
-                  case 1 : vec[i++] = v;
+                  case_stmt( 3) case_stmt( 2)
+                  case_stmt( 1)
                }
+
+               #undef exprtk_loop
+               #undef case_stmt
 
                return vec_node_ptr_->value();
             }
@@ -8804,34 +8832,47 @@ namespace exprtk
                T* vec1 = vec1_node_ptr_->ref().data();
 
                loop_unroll::details lud(vec_size_);
-               int i = 0;
+               const T* upper_bound = vec0 + lud.upper_bound;
 
-               for (; i < lud.upper_bound; i += lud.batch_size)
+               while (vec0 < upper_bound)
                {
-                  vec0[i    ] = vec1[i    ];
-                  vec0[i + 1] = vec1[i + 1];
-                  vec0[i + 2] = vec1[i + 2];
-                  vec0[i + 3] = vec1[i + 3];
+                  #define exprtk_loop(N) \
+                  vec0[N] = vec1[N];     \
+
+                  exprtk_loop( 0) exprtk_loop( 1)
+                  exprtk_loop( 2) exprtk_loop( 3)
                   #ifndef exprtk_disable_superscalar_unroll
-                  vec0[i + 4] = vec1[i + 4];
-                  vec0[i + 5] = vec1[i + 5];
-                  vec0[i + 6] = vec1[i + 6];
-                  vec0[i + 7] = vec1[i + 7];
+                  exprtk_loop( 4) exprtk_loop( 5)
+                  exprtk_loop( 6) exprtk_loop( 7)
+                  exprtk_loop( 8) exprtk_loop( 9)
+                  exprtk_loop(10) exprtk_loop(11)
+                  exprtk_loop(12) exprtk_loop(13)
+                  exprtk_loop(14) exprtk_loop(15)
                   #endif
+
+                  vec0 += lud.batch_size;
+                  vec1 += lud.batch_size;
                }
 
                switch (lud.remainder)
                {
+                  #define case_stmt(N)        \
+                  case N : *vec0++ = *vec1++; \
+
                   #ifndef exprtk_disable_superscalar_unroll
-                  case 7 : { vec0[i] = vec1[i]; ++i; }
-                  case 6 : { vec0[i] = vec1[i]; ++i; }
-                  case 5 : { vec0[i] = vec1[i]; ++i; }
-                  case 4 : { vec0[i] = vec1[i]; ++i; }
+                  case_stmt(15) case_stmt(14)
+                  case_stmt(13) case_stmt(12)
+                  case_stmt(11) case_stmt(10)
+                  case_stmt( 9) case_stmt( 8)
+                  case_stmt( 7) case_stmt( 6)
+                  case_stmt( 5) case_stmt( 4)
                   #endif
-                  case 3 : { vec0[i] = vec1[i]; ++i; }
-                  case 2 : { vec0[i] = vec1[i]; ++i; }
-                  case 1 : { vec0[i] = vec1[i]; ++i; }
+                  case_stmt( 3) case_stmt( 2)
+                  case_stmt( 1)
                }
+
+               #undef exprtk_loop
+               #undef case_stmt
 
                return vec0_node_ptr_->value();
             }
@@ -8973,34 +9014,46 @@ namespace exprtk
                T* vec = vec_node_ptr_->ref().data();
 
                loop_unroll::details lud(vec_size_);
-               int i = 0;
+               const T* upper_bound = vec + lud.upper_bound;
 
-               for (; i < lud.upper_bound; i += lud.batch_size)
+               while (vec < upper_bound)
                {
-                  Operation::assign(vec[i    ],v);
-                  Operation::assign(vec[i + 1],v);
-                  Operation::assign(vec[i + 2],v);
-                  Operation::assign(vec[i + 3],v);
+                  #define exprtk_loop(N)       \
+                  Operation::assign(vec[N],v); \
+
+                  exprtk_loop( 0) exprtk_loop( 1)
+                  exprtk_loop( 2) exprtk_loop( 3)
                   #ifndef exprtk_disable_superscalar_unroll
-                  Operation::assign(vec[i + 4],v);
-                  Operation::assign(vec[i + 5],v);
-                  Operation::assign(vec[i + 6],v);
-                  Operation::assign(vec[i + 7],v);
+                  exprtk_loop( 4) exprtk_loop( 5)
+                  exprtk_loop( 6) exprtk_loop( 7)
+                  exprtk_loop( 8) exprtk_loop( 9)
+                  exprtk_loop(10) exprtk_loop(11)
+                  exprtk_loop(12) exprtk_loop(13)
+                  exprtk_loop(14) exprtk_loop(15)
                   #endif
+
+                  vec += lud.batch_size;
                }
 
                switch (lud.remainder)
                {
+                  #define case_stmt(N)                  \
+                  case N : Operation::assign(*vec++,v); \
+
                   #ifndef exprtk_disable_superscalar_unroll
-                  case 7 : Operation::assign(vec[i++],v);
-                  case 6 : Operation::assign(vec[i++],v);
-                  case 5 : Operation::assign(vec[i++],v);
-                  case 4 : Operation::assign(vec[i++],v);
+                  case_stmt(15) case_stmt(14)
+                  case_stmt(13) case_stmt(12)
+                  case_stmt(11) case_stmt(10)
+                  case_stmt( 9) case_stmt( 8)
+                  case_stmt( 7) case_stmt( 6)
+                  case_stmt( 5) case_stmt( 4)
                   #endif
-                  case 3 : Operation::assign(vec[i++],v);
-                  case 2 : Operation::assign(vec[i++],v);
-                  case 1 : Operation::assign(vec[i++],v);
+                  case_stmt( 3) case_stmt( 2)
+                  case_stmt( 1)
                }
+
+               #undef exprtk_loop
+               #undef case_stmt
 
                return vec_node_ptr_->value();
             }
@@ -9091,35 +9144,49 @@ namespace exprtk
                T* vec1 = vec1_node_ptr_->ref().data();
 
                loop_unroll::details lud(vec_size_);
-               int i = 0;
+               const T* upper_bound = vec0 + lud.upper_bound;
 
-               #define exprtk_loop(N)                                     \
-               vec0[i + N] = Operation::process(vec0[i + N],vec1[i + N]); \
-
-               for (; i < lud.upper_bound; i += lud.batch_size)
+               while (vec0 < upper_bound)
                {
-                  exprtk_loop(0) exprtk_loop(1)
-                  exprtk_loop(2) exprtk_loop(3)
+                  #define exprtk_loop(N)                         \
+                  vec0[N] = Operation::process(vec0[N],vec1[N]); \
+
+                  exprtk_loop( 0) exprtk_loop( 1)
+                  exprtk_loop( 2) exprtk_loop( 3)
                   #ifndef exprtk_disable_superscalar_unroll
-                  exprtk_loop(4) exprtk_loop(5)
-                  exprtk_loop(6) exprtk_loop(7)
+                  exprtk_loop( 4) exprtk_loop( 5)
+                  exprtk_loop( 6) exprtk_loop( 7)
+                  exprtk_loop( 8) exprtk_loop( 9)
+                  exprtk_loop(10) exprtk_loop(11)
+                  exprtk_loop(12) exprtk_loop(13)
+                  exprtk_loop(14) exprtk_loop(15)
                   #endif
+
+                  vec0 += lud.batch_size;
+                  vec1 += lud.batch_size;
                }
+
+               int i = 0;
 
                switch (lud.remainder)
                {
+                  #define case_stmt(N)                                             \
+                  case N : { vec0[i] = Operation::process(vec0[i],vec1[i]); ++i; } \
+
                   #ifndef exprtk_disable_superscalar_unroll
-                  case 7 : { exprtk_loop(0) ++i; }
-                  case 6 : { exprtk_loop(0) ++i; }
-                  case 5 : { exprtk_loop(0) ++i; }
-                  case 4 : { exprtk_loop(0) ++i; }
+                  case_stmt(15) case_stmt(14)
+                  case_stmt(13) case_stmt(12)
+                  case_stmt(11) case_stmt(10)
+                  case_stmt( 9) case_stmt( 8)
+                  case_stmt( 7) case_stmt( 6)
+                  case_stmt( 5) case_stmt( 4)
                   #endif
-                  case 3 : { exprtk_loop(0) ++i; }
-                  case 2 : { exprtk_loop(0) ++i; }
-                  case 1 : { exprtk_loop(0) ++i; }
+                  case_stmt( 3) case_stmt( 2)
+                  case_stmt( 1)
                }
 
                #undef exprtk_loop
+               #undef case_stmt
 
                return vec0_node_ptr_->value();
             }
@@ -9516,37 +9583,52 @@ namespace exprtk
                T* vec2 = (*temp_).data();
 
                loop_unroll::details lud(vec_size_);
-               int i = 0;
+               const T* upper_bound = vec2 + lud.upper_bound;
 
-               #define exprtk_loop(N)                                     \
-               vec2[i + N] = Operation::process(vec0[i + N],vec1[i + N]); \
-
-               for (; i < lud.upper_bound; i += lud.batch_size)
+               while (vec2 < upper_bound)
                {
-                  exprtk_loop(0) exprtk_loop(1)
-                  exprtk_loop(2) exprtk_loop(3)
+                  #define exprtk_loop(N)                         \
+                  vec2[N] = Operation::process(vec0[N],vec1[N]); \
+
+                  exprtk_loop( 0) exprtk_loop( 1)
+                  exprtk_loop( 2) exprtk_loop( 3)
                   #ifndef exprtk_disable_superscalar_unroll
-                  exprtk_loop(4) exprtk_loop(5)
-                  exprtk_loop(6) exprtk_loop(7)
+                  exprtk_loop( 4) exprtk_loop( 5)
+                  exprtk_loop( 6) exprtk_loop( 7)
+                  exprtk_loop( 8) exprtk_loop( 9)
+                  exprtk_loop(10) exprtk_loop(11)
+                  exprtk_loop(12) exprtk_loop(13)
+                  exprtk_loop(14) exprtk_loop(15)
                   #endif
+
+                  vec0 += lud.batch_size;
+                  vec1 += lud.batch_size;
+                  vec2 += lud.batch_size;
                }
+
+               int i = 0;
 
                switch (lud.remainder)
                {
+                  #define case_stmt(N)                                             \
+                  case N : { vec2[i] = Operation::process(vec0[i],vec1[i]); ++i; } \
+
                   #ifndef exprtk_disable_superscalar_unroll
-                  case 7 : { exprtk_loop(0); ++i; }
-                  case 6 : { exprtk_loop(0); ++i; }
-                  case 5 : { exprtk_loop(0); ++i; }
-                  case 4 : { exprtk_loop(0); ++i; }
+                  case_stmt(15) case_stmt(14)
+                  case_stmt(13) case_stmt(12)
+                  case_stmt(11) case_stmt(10)
+                  case_stmt( 9) case_stmt( 8)
+                  case_stmt( 7) case_stmt( 6)
+                  case_stmt( 5) case_stmt( 4)
                   #endif
-                  case 3 : { exprtk_loop(0); ++i; }
-                  case 2 : { exprtk_loop(0); ++i; }
-                  case 1 : { exprtk_loop(0); ++i; }
+                  case_stmt( 3) case_stmt( 2)
+                  case_stmt( 1)
                }
 
                #undef exprtk_loop
+               #undef case_stmt
 
-               return vec2[0];
+               return ((*temp_).data())[0];
             }
             else
                return std::numeric_limits<T>::quiet_NaN();
@@ -9646,37 +9728,51 @@ namespace exprtk
                T* vec1 = (*temp_).data();
 
                loop_unroll::details lud(vec_size_);
-               int i = 0;
+               const T* upper_bound = vec0 + lud.upper_bound;
 
-               #define exprtk_loop(N)                           \
-               vec1[i + N] = Operation::process(vec0[i + N],v); \
-
-               for (; i < lud.upper_bound; i += lud.batch_size)
+               while (vec0 < upper_bound)
                {
-                  exprtk_loop(0) exprtk_loop(1)
-                  exprtk_loop(2) exprtk_loop(3)
+                  #define exprtk_loop(N)                   \
+                  vec1[N] = Operation::process(vec0[N],v); \
+
+                  exprtk_loop( 0) exprtk_loop( 1)
+                  exprtk_loop( 2) exprtk_loop( 3)
                   #ifndef exprtk_disable_superscalar_unroll
-                  exprtk_loop(4) exprtk_loop(5)
-                  exprtk_loop(6) exprtk_loop(7)
+                  exprtk_loop( 4) exprtk_loop( 5)
+                  exprtk_loop( 6) exprtk_loop( 7)
+                  exprtk_loop( 8) exprtk_loop( 9)
+                  exprtk_loop(10) exprtk_loop(11)
+                  exprtk_loop(12) exprtk_loop(13)
+                  exprtk_loop(14) exprtk_loop(15)
                   #endif
+
+                  vec0 += lud.batch_size;
+                  vec1 += lud.batch_size;
                }
+
+               int i = 0;
 
                switch (lud.remainder)
                {
+                  #define case_stmt(N)                                       \
+                  case N : { vec1[i] = Operation::process(vec0[i],v); ++i; } \
+
                   #ifndef exprtk_disable_superscalar_unroll
-                  case 7 : { exprtk_loop(0); ++i; }
-                  case 6 : { exprtk_loop(0); ++i; }
-                  case 5 : { exprtk_loop(0); ++i; }
-                  case 4 : { exprtk_loop(0); ++i; }
+                  case_stmt(15) case_stmt(14)
+                  case_stmt(13) case_stmt(12)
+                  case_stmt(11) case_stmt(10)
+                  case_stmt( 9) case_stmt( 8)
+                  case_stmt( 7) case_stmt( 6)
+                  case_stmt( 5) case_stmt( 4)
                   #endif
-                  case 3 : { exprtk_loop(0); ++i; }
-                  case 2 : { exprtk_loop(0); ++i; }
-                  case 1 : { exprtk_loop(0); ++i; }
+                  case_stmt( 3) case_stmt( 2)
+                  case_stmt( 1)
                }
 
                #undef exprtk_loop
+               #undef case_stmt
 
-               return vec1[0];
+               return (vec0_node_ptr_->ref().data())[0];
             }
             else
                return std::numeric_limits<T>::quiet_NaN();
@@ -9774,37 +9870,51 @@ namespace exprtk
                T* vec2 = (*temp_).data();
 
                loop_unroll::details lud(vec_size_);
-               int i = 0;
+               const T* upper_bound = vec1 + lud.upper_bound;
 
-               #define exprtk_loop(N)                           \
-               vec2[i + N] = Operation::process(v,vec1[i + N]); \
-
-               for (; i < lud.upper_bound; i += lud.batch_size)
+               while (vec1 < upper_bound)
                {
-                  exprtk_loop(0) exprtk_loop(1)
-                  exprtk_loop(2) exprtk_loop(3)
+                  #define exprtk_loop(N)                   \
+                  vec2[N] = Operation::process(v,vec1[N]); \
+
+                  exprtk_loop( 0) exprtk_loop( 1)
+                  exprtk_loop( 2) exprtk_loop( 3)
                   #ifndef exprtk_disable_superscalar_unroll
-                  exprtk_loop(4) exprtk_loop(5)
-                  exprtk_loop(6) exprtk_loop(7)
+                  exprtk_loop( 4) exprtk_loop( 5)
+                  exprtk_loop( 6) exprtk_loop( 7)
+                  exprtk_loop( 8) exprtk_loop( 9)
+                  exprtk_loop(10) exprtk_loop(11)
+                  exprtk_loop(12) exprtk_loop(13)
+                  exprtk_loop(14) exprtk_loop(15)
                   #endif
+
+                  vec1 += lud.batch_size;
+                  vec2 += lud.batch_size;
                }
+
+               int i = 0;
 
                switch (lud.remainder)
                {
+                  #define case_stmt(N)                                       \
+                  case N : { vec2[i] = Operation::process(v,vec1[i]); ++i; } \
+
                   #ifndef exprtk_disable_superscalar_unroll
-                  case 7 : { exprtk_loop(0); ++i; }
-                  case 6 : { exprtk_loop(0); ++i; }
-                  case 5 : { exprtk_loop(0); ++i; }
-                  case 4 : { exprtk_loop(0); ++i; }
+                  case_stmt(15) case_stmt(14)
+                  case_stmt(13) case_stmt(12)
+                  case_stmt(11) case_stmt(10)
+                  case_stmt( 9) case_stmt( 8)
+                  case_stmt( 7) case_stmt( 6)
+                  case_stmt( 5) case_stmt( 4)
                   #endif
-                  case 3 : { exprtk_loop(0); ++i; }
-                  case 2 : { exprtk_loop(0); ++i; }
-                  case 1 : { exprtk_loop(0); ++i; }
+                  case_stmt( 3) case_stmt( 2)
+                  case_stmt( 1)
                }
 
                #undef exprtk_loop
+               #undef case_stmt
 
-               return vec2[0];
+               return ((*temp_).data())[0];
             }
             else
                return std::numeric_limits<T>::quiet_NaN();
@@ -9899,36 +10009,51 @@ namespace exprtk
                T* vec1 = (*temp_).data();
 
                loop_unroll::details lud(vec_size_);
-               int i = 0;
+               const T* upper_bound = vec0 + lud.upper_bound;
 
-               for (; i < lud.upper_bound; i += lud.batch_size)
+               while (vec0 < upper_bound)
                {
-                  vec1[i    ] = Operation::process(vec0[i    ]);
-                  vec1[i + 1] = Operation::process(vec0[i + 1]);
-                  vec1[i + 2] = Operation::process(vec0[i + 2]);
-                  vec1[i + 3] = Operation::process(vec0[i + 3]);
+                  #define exprtk_loop(N)                 \
+                  vec1[N] = Operation::process(vec0[N]); \
+
+                  exprtk_loop( 0) exprtk_loop( 1)
+                  exprtk_loop( 2) exprtk_loop( 3)
                   #ifndef exprtk_disable_superscalar_unroll
-                  vec1[i + 4] = Operation::process(vec0[i + 4]);
-                  vec1[i + 5] = Operation::process(vec0[i + 5]);
-                  vec1[i + 6] = Operation::process(vec0[i + 6]);
-                  vec1[i + 7] = Operation::process(vec0[i + 7]);
+                  exprtk_loop( 4) exprtk_loop( 5)
+                  exprtk_loop( 6) exprtk_loop( 7)
+                  exprtk_loop( 8) exprtk_loop( 9)
+                  exprtk_loop(10) exprtk_loop(11)
+                  exprtk_loop(12) exprtk_loop(13)
+                  exprtk_loop(14) exprtk_loop(15)
                   #endif
+
+                  vec0 += lud.batch_size;
+                  vec1 += lud.batch_size;
                }
+
+               int i = 0;
 
                switch (lud.remainder)
                {
+                  #define case_stmt(N)                                     \
+                  case N : { vec1[i] = Operation::process(vec0[i]); ++i; } \
+
                   #ifndef exprtk_disable_superscalar_unroll
-                  case 7 : { vec1[i] = Operation::process(vec0[i]); ++i; }
-                  case 6 : { vec1[i] = Operation::process(vec0[i]); ++i; }
-                  case 5 : { vec1[i] = Operation::process(vec0[i]); ++i; }
-                  case 4 : { vec1[i] = Operation::process(vec0[i]); ++i; }
+                  case_stmt(15) case_stmt(14)
+                  case_stmt(13) case_stmt(12)
+                  case_stmt(11) case_stmt(10)
+                  case_stmt( 9) case_stmt( 8)
+                  case_stmt( 7) case_stmt( 6)
+                  case_stmt( 5) case_stmt( 4)
                   #endif
-                  case 3 : { vec1[i] = Operation::process(vec0[i]); ++i; }
-                  case 2 : { vec1[i] = Operation::process(vec0[i]); ++i; }
-                  case 1 : { vec1[i] = Operation::process(vec0[i]); ++i; }
+                  case_stmt( 3) case_stmt( 2)
+                  case_stmt( 1)
                }
 
-               return vec1[0];
+               #undef exprtk_loop
+               #undef case_stmt
+
+               return ((*temp_).data())[0];
             }
             else
                return std::numeric_limits<T>::quiet_NaN();
@@ -11816,61 +11941,87 @@ namespace exprtk
             const std::size_t vec_size = v->vec()->ref().size();
 
             loop_unroll::details lud(vec_size);
-            int i = 0;
 
             if (vec_size <= static_cast<std::size_t>(lud.batch_size))
             {
                T result = T(0);
+               int i    = 0;
 
                switch (vec_size)
                {
+                  #define case_stmt(N)         \
+                  case N : result += vec[i++]; \
+
                   #ifndef exprtk_disable_superscalar_unroll
-                  case 8 : result += vec[i++];
-                  case 7 : result += vec[i++];
-                  case 6 : result += vec[i++];
-                  case 5 : result += vec[i++];
+                  case_stmt(16) case_stmt(15)
+                  case_stmt(14) case_stmt(13)
+                  case_stmt(12) case_stmt(11)
+                  case_stmt(10) case_stmt( 9)
+                  case_stmt( 8) case_stmt( 7)
+                  case_stmt( 6) case_stmt( 5)
                   #endif
-                  case 4 : result += vec[i++];
-                  case 3 : result += vec[i++];
-                  case 2 : result += vec[i++];
-                  case 1 : result += vec[i++];
+                  case_stmt( 4) case_stmt( 3)
+                  case_stmt( 2) case_stmt( 1)
                }
+
+               #undef case_stmt
 
                return result;
             }
 
-            T r[8] = { T(0), T(0), T(0), T(0), T(0), T(0), T(0), T(0) };
+            T r[] = {
+                      T(0), T(0), T(0), T(0), T(0), T(0), T(0), T(0),
+                      T(0), T(0), T(0), T(0), T(0), T(0), T(0), T(0)
+                    };
 
-            for (; i < lud.upper_bound; i += lud.batch_size)
+            const T* upper_bound = vec + lud.upper_bound;
+
+            while (vec < upper_bound)
             {
-               r[0] += vec[i    ];
-               r[1] += vec[i + 1];
-               r[2] += vec[i + 2];
-               r[3] += vec[i + 3];
+               #define exprtk_loop(N) \
+               r[N] += vec[N];        \
+
+               exprtk_loop( 0) exprtk_loop( 1)
+               exprtk_loop( 2) exprtk_loop( 3)
                #ifndef exprtk_disable_superscalar_unroll
-               r[4] += vec[i + 4];
-               r[5] += vec[i + 5];
-               r[6] += vec[i + 6];
-               r[7] += vec[i + 7];
+               exprtk_loop( 4) exprtk_loop( 5)
+               exprtk_loop( 6) exprtk_loop( 7)
+               exprtk_loop( 8) exprtk_loop( 9)
+               exprtk_loop(10) exprtk_loop(11)
+               exprtk_loop(12) exprtk_loop(13)
+               exprtk_loop(14) exprtk_loop(15)
                #endif
+
+               vec += lud.batch_size;
             }
+
+            int i = 0;
 
             switch (lud.remainder)
             {
+               #define case_stmt(N)       \
+               case N : r[0] += vec[i++]; \
+
                #ifndef exprtk_disable_superscalar_unroll
-               case 7 : r[0] += vec[i++];
-               case 6 : r[0] += vec[i++];
-               case 5 : r[0] += vec[i++];
-               case 4 : r[0] += vec[i++];
+               case_stmt(15) case_stmt(14)
+               case_stmt(13) case_stmt(12)
+               case_stmt(11) case_stmt(10)
+               case_stmt( 9) case_stmt( 8)
+               case_stmt( 7) case_stmt( 6)
+               case_stmt( 5) case_stmt( 4)
                #endif
-               case 3 : r[0] += vec[i++];
-               case 2 : r[0] += vec[i++];
-               case 1 : r[0] += vec[i++];
+               case_stmt( 3) case_stmt( 2)
+               case_stmt( 1)
             }
 
-            return (r[0] + r[1] + r[2] + r[3])
+            #undef exprtk_loop
+            #undef case_stmt
+
+            return (r[ 0] + r[ 1] + r[ 2] + r[ 3])
                    #ifndef exprtk_disable_superscalar_unroll
-                 + (r[4] + r[5] + r[6] + r[7])
+                 + (r[ 4] + r[ 5] + r[ 6] + r[ 7])
+                 + (r[ 8] + r[ 9] + r[10] + r[11])
+                 + (r[12] + r[13] + r[14] + r[15])
                    #endif
                    ;
          }
@@ -11887,61 +12038,87 @@ namespace exprtk
             const std::size_t vec_size = v->vec()->ref().size();
 
             loop_unroll::details lud(vec_size);
-            int i = 0;
 
             if (vec_size <= static_cast<std::size_t>(lud.batch_size))
             {
                T result = T(1);
+               int i    = 0;
 
                switch (vec_size)
                {
+                  #define case_stmt(N)         \
+                  case N : result *= vec[i++]; \
+
                   #ifndef exprtk_disable_superscalar_unroll
-                  case 8 : result *= vec[i++];
-                  case 7 : result *= vec[i++];
-                  case 6 : result *= vec[i++];
-                  case 5 : result *= vec[i++];
+                  case_stmt(16) case_stmt(15)
+                  case_stmt(14) case_stmt(13)
+                  case_stmt(12) case_stmt(11)
+                  case_stmt(10) case_stmt( 9)
+                  case_stmt( 8) case_stmt( 7)
+                  case_stmt( 6) case_stmt( 5)
                   #endif
-                  case 4 : result *= vec[i++];
-                  case 3 : result *= vec[i++];
-                  case 2 : result *= vec[i++];
-                  case 1 : result *= vec[i++];
+                  case_stmt( 4) case_stmt( 3)
+                  case_stmt( 2) case_stmt( 1)
                }
+
+               #undef case_stmt
 
                return result;
             }
 
-            T r[8] = { T(1), T(1), T(1), T(1), T(1), T(1), T(1), T(1) };
+            T r[] = {
+                      T(1), T(1), T(1), T(1), T(1), T(1), T(1), T(1),
+                      T(1), T(1), T(1), T(1), T(1), T(1), T(1), T(1)
+                    };
 
-            for (; i < lud.upper_bound; i += lud.batch_size)
+            const T* upper_bound = vec + lud.upper_bound;
+
+            while (vec < upper_bound)
             {
-               r[0] *= (vec[i    ]);
-               r[1] *= (vec[i + 1]);
-               r[2] *= (vec[i + 2]);
-               r[3] *= (vec[i + 3]);
+               #define exprtk_loop(N) \
+               r[N] *= vec[N];        \
+
+               exprtk_loop( 0) exprtk_loop( 1)
+               exprtk_loop( 2) exprtk_loop( 3)
                #ifndef exprtk_disable_superscalar_unroll
-               r[4] *= (vec[i + 4]);
-               r[5] *= (vec[i + 5]);
-               r[6] *= (vec[i + 6]);
-               r[7] *= (vec[i + 7]);
+               exprtk_loop( 4) exprtk_loop( 5)
+               exprtk_loop( 6) exprtk_loop( 7)
+               exprtk_loop( 8) exprtk_loop( 9)
+               exprtk_loop(10) exprtk_loop(11)
+               exprtk_loop(12) exprtk_loop(13)
+               exprtk_loop(14) exprtk_loop(15)
                #endif
+
+               vec += lud.batch_size;
             }
+
+            int i = 0;
 
             switch (lud.remainder)
             {
+               #define case_stmt(N)       \
+               case N : r[0] *= vec[i++]; \
+
                #ifndef exprtk_disable_superscalar_unroll
-               case 7 : r[0] *= (vec[i++]);
-               case 6 : r[0] *= (vec[i++]);
-               case 5 : r[0] *= (vec[i++]);
-               case 4 : r[0] *= (vec[i++]);
+               case_stmt(15) case_stmt(14)
+               case_stmt(13) case_stmt(12)
+               case_stmt(11) case_stmt(10)
+               case_stmt( 9) case_stmt( 8)
+               case_stmt( 7) case_stmt( 6)
+               case_stmt( 5) case_stmt( 4)
                #endif
-               case 3 : r[0] *= (vec[i++]);
-               case 2 : r[0] *= (vec[i++]);
-               case 1 : r[0] *= (vec[i++]);
+               case_stmt( 3) case_stmt( 2)
+               case_stmt( 1)
             }
 
-            return (r[0] * r[1] * r[2] * r[3])
+            #undef exprtk_loop
+            #undef case_stmt
+
+            return (r[ 0] * r[ 1] * r[ 2] * r[ 3])
                    #ifndef exprtk_disable_superscalar_unroll
-                 * (r[4] * r[5] * r[6] * r[7])
+                 + (r[ 4] * r[ 5] * r[ 6] * r[ 7])
+                 + (r[ 8] * r[ 9] * r[10] * r[11])
+                 + (r[12] * r[13] * r[14] * r[15])
                    #endif
                    ;
          }
@@ -11954,42 +12131,9 @@ namespace exprtk
 
          static inline T process(const ivector_ptr v)
          {
-            const T* vec = v->vec()->ref().data();
             const std::size_t vec_size = v->vec()->ref().size();
 
-            T result = T(0);
-
-            loop_unroll::details lud(vec_size);
-            int i = 0;
-
-            for (; i < lud.upper_bound; i += lud.batch_size)
-            {
-               result += vec[i    ];
-               result += vec[i + 1];
-               result += vec[i + 2];
-               result += vec[i + 3];
-               #ifndef exprtk_disable_superscalar_unroll
-               result += vec[i + 4];
-               result += vec[i + 5];
-               result += vec[i + 6];
-               result += vec[i + 7];
-               #endif
-            }
-
-            switch (lud.remainder)
-            {
-               #ifndef exprtk_disable_superscalar_unroll
-               case 7 : result += vec[i++];
-               case 6 : result += vec[i++];
-               case 5 : result += vec[i++];
-               case 4 : result += vec[i++];
-               #endif
-               case 3 : result += vec[i++];
-               case 2 : result += vec[i++];
-               case 1 : result += vec[i++];
-            }
-
-            return result / vec_size;
+            return vec_add_op<T>::process(v) / vec_size;
          }
       };
 
@@ -12007,10 +12151,10 @@ namespace exprtk
 
             for (std::size_t i = 1; i < vec_size; ++i)
             {
-              T v_i = vec[i];
+               T v_i = vec[i];
 
-              if (v_i < result)
-                result = v_i;
+               if (v_i < result)
+                  result = v_i;
             }
 
             return result;
@@ -12031,9 +12175,10 @@ namespace exprtk
 
             for (std::size_t i = 1; i < vec_size; ++i)
             {
-              T v_i = vec[i];
-              if (v_i > result)
-                result = v_i;
+               T v_i = vec[i];
+
+               if (v_i > result)
+                  result = v_i;
             }
 
             return result;
