@@ -9223,284 +9223,6 @@ namespace exprtk
       };
 
       template <typename T, typename Operation>
-      class eqineq_vecvec_node : public binary_node     <T>,
-                                 public vector_interface<T>
-      {
-      public:
-
-         typedef expression_node<T>*  expression_ptr;
-         typedef vector_node<T>*     vector_node_ptr;
-
-         eqineq_vecvec_node(const operator_type& opr,
-                            expression_ptr branch0,
-                            expression_ptr branch1)
-         : binary_node<T>(opr,branch0,branch1),
-           vec0_node_ptr_(0),
-           vec1_node_ptr_(0),
-           vec_size_     (0),
-           initialised_(false)
-         {
-
-            if (is_vector_node(binary_node<T>::branch_[0].first))
-            {
-               vec0_node_ptr_ = static_cast<vector_node<T>*>(binary_node<T>::branch_[0].first);
-            }
-            else if (is_ivector_node(binary_node<T>::branch_[0].first))
-            {
-               vector_interface<T>* vi = reinterpret_cast<vector_interface<T>*>(0);
-
-               if (0 != (vi = dynamic_cast<vector_interface<T>*>(binary_node<T>::branch_[0].first)))
-               {
-                  vec0_node_ptr_ = vi->vec();
-               }
-            }
-
-            if (is_vector_node(binary_node<T>::branch_[1].first))
-            {
-               vec1_node_ptr_ = static_cast<vector_node<T>*>(binary_node<T>::branch_[1].first);
-            }
-            else if (is_ivector_node(binary_node<T>::branch_[1].first))
-            {
-               vector_interface<T>* vi = reinterpret_cast<vector_interface<T>*>(0);
-
-               if (0 != (vi = dynamic_cast<vector_interface<T>*>(binary_node<T>::branch_[1].first)))
-               {
-                  vec1_node_ptr_ = vi->vec();
-               }
-            }
-
-            if (vec0_node_ptr_ && vec1_node_ptr_)
-            {
-               vec_size_ = std::min(vec0_node_ptr_->ref().size(),
-                                    vec1_node_ptr_->ref().size());
-
-               initialised_ = true;
-            }
-         }
-
-         inline T value() const
-         {
-            if (initialised_)
-            {
-               binary_node<T>::branch_[0].first->value();
-               binary_node<T>::branch_[1].first->value();
-
-               T* vec0 = vec0_node_ptr_->ref().data();
-               T* vec1 = vec1_node_ptr_->ref().data();
-
-               for (std::size_t i = 0; i < vec_size_; ++i)
-               {
-                  if (std::equal_to<T>()(T(0),Operation::process(vec0[i],vec1[i])))
-                  {
-                     return T(0);
-                  }
-               }
-
-               return T(1);
-            }
-            else
-               return std::numeric_limits<T>::quiet_NaN();
-         }
-
-         vector_node_ptr vec() const
-         {
-            return vec0_node_ptr_;
-         }
-
-         vector_node_ptr vec()
-         {
-            return vec0_node_ptr_;
-         }
-
-         inline typename expression_node<T>::node_type type() const
-         {
-            return expression_node<T>::e_vecvecineq;
-         }
-
-         std::size_t size() const
-         {
-            return vec_size_;
-         }
-
-      private:
-
-         vector_node<T>* vec0_node_ptr_;
-         vector_node<T>* vec1_node_ptr_;
-         std::size_t     vec_size_;
-         bool            initialised_;
-      };
-
-      template <typename T, typename Operation>
-      class eqineq_vecval_node : public binary_node     <T>,
-                                 public vector_interface<T>
-      {
-      public:
-
-         typedef expression_node<T>*  expression_ptr;
-         typedef vector_node<T>*     vector_node_ptr;
-
-         eqineq_vecval_node(const operator_type& opr,
-                            expression_ptr branch0,
-                            expression_ptr branch1)
-         : binary_node<T>(opr,branch0,branch1),
-           vec_node_ptr_(0),
-           vec_size_    (0)
-         {
-            if (is_vector_node(binary_node<T>::branch_[0].first))
-            {
-               vec_node_ptr_ = static_cast<vector_node_ptr>(binary_node<T>::branch_[0].first);
-            }
-            else if (is_ivector_node(binary_node<T>::branch_[0].first))
-            {
-               vector_interface<T>* vi = reinterpret_cast<vector_interface<T>*>(0);
-
-               if (0 != (vi = dynamic_cast<vector_interface<T>*>(binary_node<T>::branch_[0].first)))
-               {
-                  vec_node_ptr_ = vi->vec();
-               }
-            }
-
-            if (vec_node_ptr_)
-            {
-               vec_size_ = vec_node_ptr_->ref().size();
-            }
-         }
-
-         inline T value() const
-         {
-            if (vec_node_ptr_)
-            {
-                     binary_node<T>::branch_[0].first->value();
-               T v = binary_node<T>::branch_[1].first->value();
-
-               T* vec = vec_node_ptr_->ref().data();
-
-               for (std::size_t i = 0; i < vec_size_; ++i)
-               {
-                  if (std::equal_to<T>()(T(0),Operation::process(vec[i],v)))
-                  {
-                     return T(0);
-                  }
-               }
-
-               return T(1);
-            }
-            else
-               return std::numeric_limits<T>::quiet_NaN();
-         }
-
-         vector_node_ptr vec() const
-         {
-            return vec_node_ptr_;
-         }
-
-         vector_node_ptr vec()
-         {
-            return vec_node_ptr_;
-         }
-
-         inline typename expression_node<T>::node_type type() const
-         {
-            return expression_node<T>::e_vecvalineq;
-         }
-
-         std::size_t size() const
-         {
-            return vec_size_;
-         }
-
-      private:
-
-         vector_node<T>* vec_node_ptr_;
-         std::size_t     vec_size_;
-      };
-
-      template <typename T, typename Operation>
-      class eqineq_valvec_node : public binary_node     <T>,
-                                 public vector_interface<T>
-      {
-      public:
-
-         typedef expression_node<T>*  expression_ptr;
-         typedef vector_node<T>*     vector_node_ptr;
-
-         eqineq_valvec_node(const operator_type& opr,
-                            expression_ptr branch0,
-                            expression_ptr branch1)
-         : binary_node<T>(opr,branch0,branch1),
-           vec_node_ptr_(0),
-           vec_size_    (0)
-         {
-            if (is_vector_node(binary_node<T>::branch_[1].first))
-            {
-               vec_node_ptr_ = static_cast<vector_node_ptr>(binary_node<T>::branch_[1].first);
-            }
-            else if (is_ivector_node(binary_node<T>::branch_[1].first))
-            {
-               vector_interface<T>* vi = reinterpret_cast<vector_interface<T>*>(0);
-
-               if (0 != (vi = dynamic_cast<vector_interface<T>*>(binary_node<T>::branch_[1].first)))
-               {
-                  vec_node_ptr_ = vi->vec();
-               }
-            }
-
-            if (vec_node_ptr_)
-            {
-               vec_size_ = vec_node_ptr_->ref().size();
-            }
-         }
-
-         inline T value() const
-         {
-            if (vec_node_ptr_)
-            {
-               T v = binary_node<T>::branch_[0].first->value();
-                     binary_node<T>::branch_[1].first->value();
-
-               T* vec = vec_node_ptr_->ref().data();
-
-               for (std::size_t i = 0; i < vec_size_; ++i)
-               {
-                  if (std::equal_to<T>()(T(0),Operation::process(v,vec[i])))
-                  {
-                     return T(0);
-                  }
-               }
-
-               return T(1);
-            }
-            else
-               return std::numeric_limits<T>::quiet_NaN();
-         }
-
-         vector_node_ptr vec() const
-         {
-            return vec_node_ptr_;
-         }
-
-         vector_node_ptr vec()
-         {
-            return vec_node_ptr_;
-         }
-
-         inline typename expression_node<T>::node_type type() const
-         {
-            return expression_node<T>::e_valvecineq;
-         }
-
-         std::size_t size() const
-         {
-            return vec_size_;
-         }
-
-      private:
-
-         vector_node<T>* vec_node_ptr_;
-         std::size_t     vec_size_;
-      };
-
-      template <typename T, typename Operation>
       class vecarith_vecvec_node : public binary_node     <T>,
                                    public vector_interface<T>
       {
@@ -9772,7 +9494,7 @@ namespace exprtk
                #undef exprtk_loop
                #undef case_stmt
 
-               return (vec0_node_ptr_->ref().data())[0];
+               return ((*temp_).data())[0];
             }
             else
                return std::numeric_limits<T>::quiet_NaN();
@@ -11208,6 +10930,16 @@ namespace exprtk
          static inline T process(const std::string& t1, const std::string& t2) { return ((t1 == t2) ? T(1) : T(0)); }
          static inline typename expression_node<T>::node_type type() { return expression_node<T>::e_eq; }
          static inline details::operator_type operation() { return details::e_eq; }
+      };
+
+      template <typename T>
+      struct equal_op : public opr_base<T>
+      {
+         typedef typename opr_base<T>::Type Type;
+         static inline T process(Type t1, Type t2) { return (numeric::equal<T>(t1,t2) ? T(1) : T(0)); }
+         static inline T process(const std::string& t1, const std::string& t2) { return ((t1 == t2) ? T(1) : T(0)); }
+         static inline typename expression_node<T>::node_type type() { return expression_node<T>::e_eq; }
+         static inline details::operator_type operation() { return details::e_equal; }
       };
 
       template <typename T>
@@ -22472,7 +22204,7 @@ namespace exprtk
 
                   if (scope_element::e_vector == se.type)
                   {
-                     if ((initialiser = parse_expression()))
+                     if (0 != (initialiser = parse_expression()))
                         vec_initilizer_list.push_back(initialiser);
                      else
                         return error_node();
@@ -22482,7 +22214,7 @@ namespace exprtk
                   {
                      lodge_symbol(current_token().value,e_st_vector);
 
-                     if ((initialiser = parse_expression()))
+                     if (0 != (initialiser = parse_expression()))
                         vec_initilizer_list.push_back(initialiser);
                      else
                         return error_node();
@@ -24556,12 +24288,13 @@ namespace exprtk
                return false;
             else
                return (
-                        (details::e_lt  == operation) ||
-                        (details::e_lte == operation) ||
-                        (details::e_gt  == operation) ||
-                        (details::e_gte == operation) ||
-                        (details::e_eq  == operation) ||
-                        (details::e_ne  == operation)
+                        (details::e_lt     == operation) ||
+                        (details::e_lte    == operation) ||
+                        (details::e_gt     == operation) ||
+                        (details::e_gte    == operation) ||
+                        (details::e_eq     == operation) ||
+                        (details::e_ne     == operation) ||
+                        (details::e_equal  == operation)
                       );
          }
 
@@ -26055,17 +25788,18 @@ namespace exprtk
             {
                switch (operation)
                {
-                  #define case_stmt(op0,op1)                                                                  \
-                  case op0 : return node_allocator_->                                                         \
-                                template allocate_rrr<typename details::eqineq_vecvec_node<Type,op1<Type> > > \
-                                   (operation,branch[0],branch[1]);                                           \
+                  #define case_stmt(op0,op1)                                                                    \
+                  case op0 : return node_allocator_->                                                           \
+                                template allocate_rrr<typename details::vecarith_vecvec_node<Type,op1<Type> > > \
+                                   (operation,branch[0],branch[1]);                                             \
 
-                  case_stmt(details::  e_lt,details::  lt_op)
-                  case_stmt(details:: e_lte,details:: lte_op)
-                  case_stmt(details::  e_gt,details::  gt_op)
-                  case_stmt(details:: e_gte,details:: gte_op)
-                  case_stmt(details::  e_eq,details::  eq_op)
-                  case_stmt(details::  e_ne,details::  ne_op)
+                  case_stmt(details::   e_lt,details::   lt_op)
+                  case_stmt(details::  e_lte,details::  lte_op)
+                  case_stmt(details::   e_gt,details::   gt_op)
+                  case_stmt(details::  e_gte,details::  gte_op)
+                  case_stmt(details::   e_eq,details::   eq_op)
+                  case_stmt(details::   e_ne,details::   ne_op)
+                  case_stmt(details::e_equal,details::equal_op)
                   #undef case_stmt
                   default : return error_node();
                }
@@ -26074,17 +25808,18 @@ namespace exprtk
             {
                switch (operation)
                {
-                  #define case_stmt(op0,op1)                                                                  \
-                  case op0 : return node_allocator_->                                                         \
-                                template allocate_rrr<typename details::eqineq_vecval_node<Type,op1<Type> > > \
-                                   (operation,branch[0],branch[1]);                                           \
+                  #define case_stmt(op0,op1)                                                                    \
+                  case op0 : return node_allocator_->                                                           \
+                                template allocate_rrr<typename details::vecarith_vecval_node<Type,op1<Type> > > \
+                                   (operation,branch[0],branch[1]);                                             \
 
-                  case_stmt(details::  e_lt,details::  lt_op)
-                  case_stmt(details:: e_lte,details:: lte_op)
-                  case_stmt(details::  e_gt,details::  gt_op)
-                  case_stmt(details:: e_gte,details:: gte_op)
-                  case_stmt(details::  e_eq,details::  eq_op)
-                  case_stmt(details::  e_ne,details::  ne_op)
+                  case_stmt(details::   e_lt,details::   lt_op)
+                  case_stmt(details::  e_lte,details::  lte_op)
+                  case_stmt(details::   e_gt,details::   gt_op)
+                  case_stmt(details::  e_gte,details::  gte_op)
+                  case_stmt(details::   e_eq,details::   eq_op)
+                  case_stmt(details::   e_ne,details::   ne_op)
+                  case_stmt(details::e_equal,details::equal_op)
                   #undef case_stmt
                   default : return error_node();
                }
@@ -26093,17 +25828,18 @@ namespace exprtk
             {
                switch (operation)
                {
-                  #define case_stmt(op0,op1)                                                                  \
-                  case op0 : return node_allocator_->                                                         \
-                                template allocate_rrr<typename details::eqineq_valvec_node<Type,op1<Type> > > \
-                                   (operation,branch[0],branch[1]);                                           \
+                  #define case_stmt(op0,op1)                                                                    \
+                  case op0 : return node_allocator_->                                                           \
+                                template allocate_rrr<typename details::vecarith_valvec_node<Type,op1<Type> > > \
+                                   (operation,branch[0],branch[1]);                                             \
 
-                  case_stmt(details::  e_lt,details::  lt_op)
-                  case_stmt(details:: e_lte,details:: lte_op)
-                  case_stmt(details::  e_gt,details::  gt_op)
-                  case_stmt(details:: e_gte,details:: gte_op)
-                  case_stmt(details::  e_eq,details::  eq_op)
-                  case_stmt(details::  e_ne,details::  ne_op)
+                  case_stmt(details::   e_lt,details::   lt_op)
+                  case_stmt(details::  e_lte,details::  lte_op)
+                  case_stmt(details::   e_gt,details::   gt_op)
+                  case_stmt(details::  e_gte,details::  gte_op)
+                  case_stmt(details::   e_eq,details::   eq_op)
+                  case_stmt(details::   e_ne,details::   ne_op)
+                  case_stmt(details::e_equal,details::equal_op)
                   #undef case_stmt
                   default : return error_node();
                }
@@ -34386,9 +34122,9 @@ namespace exprtk
    namespace information
    {
       static const char* library = "Mathematical Expression Toolkit";
-      static const char* version = "2.7182818284590452353602874713526624"
-                                   "977572470936999595749669676277240766";
-      static const char* date    = "20160606";
+      static const char* version = "2.718281828459045235360287471352662497"
+                                   "75724709369995957496696762772407663035";
+      static const char* date    = "20160909";
 
       static inline std::string data()
       {

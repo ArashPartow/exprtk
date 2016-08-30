@@ -1268,7 +1268,7 @@ with vectors:
    (a) Arithmetic:       +, -, *, /, %
    (b) Exponentiation:   vector ^ scalar
    (c) Assignment:       :=, +=, -=, *=, /=, %=, <=>
-   (d) Inequalities:     <, <=, >, >=, ==, =
+   (d) Inequalities:     <, <=, >, >=, ==, =, equal
    (e) Unary operations:
        abs, acos, acosh, asin, asinh, atan, atanh, ceil, cos,  cosh,
        cot, csc,  deg2grad, deg2rad,  erf, erfc,  exp, expm1, floor,
@@ -1302,17 +1302,6 @@ the previously mentioned dot-product computation expression:
    {
      v0dotv1 += (v0[i] * v1[i]);
    }
-
-
-Note: In the scenario of inequalities between two vectors, the  result
-is not  a vector  but rather  a singular  variable denoting  a boolean
-state  of either  'true' or  'false' depending  on the  nature of  the
-inequality.
-
-   var x[3] := { 1, 1, 1 };
-   var y[3] := { 3, 2, 1 };
-
-   y > x == false
 
 
 Note:  When  the  aggregate  operations  denoted  above  are  used  in
