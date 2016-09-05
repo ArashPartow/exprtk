@@ -1196,7 +1196,7 @@ namespace exprtk
             template <typename T> inline T  asin_impl(const T v, real_type_tag) { return std::asin (v); }
             template <typename T> inline T asinh_impl(const T v, real_type_tag) { return std::log(v + std::sqrt((v * v) + T(1))); }
             template <typename T> inline T  atan_impl(const T v, real_type_tag) { return std::atan (v); }
-            template <typename T> inline T atanh_impl(const T v, real_type_tag) { return (std::log(T(1) + v) - log(T(1) - v)) / T(2); }
+            template <typename T> inline T atanh_impl(const T v, real_type_tag) { return (std::log(T(1) + v) - std::log(T(1) - v)) / T(2); }
             template <typename T> inline T  ceil_impl(const T v, real_type_tag) { return std::ceil (v); }
             template <typename T> inline T   cos_impl(const T v, real_type_tag) { return std::cos  (v); }
             template <typename T> inline T  cosh_impl(const T v, real_type_tag) { return std::cosh (v); }
