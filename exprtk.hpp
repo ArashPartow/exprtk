@@ -1111,6 +1111,21 @@ namespace exprtk
                   return T(0);
             }
 
+            inline float erf_dispatch( const float v )
+            {
+               return ::erff( v );
+            }
+
+            inline double erf_dispatch( const double v )
+            {
+               return ::erf( v );
+            }
+            
+            inline long double erf_dispatch( const long double v )
+            {
+               return ::erfl( v );
+            }
+            
             template <typename T>
             inline T erf_impl(T v, real_type_tag)
             {
@@ -1135,7 +1150,7 @@ namespace exprtk
 
                return (v >= T(0)) ? result : -result;
                #else
-               return ::erf(v);
+               return erf_dispatch( v );
                #endif
             }
 
@@ -1144,6 +1159,21 @@ namespace exprtk
             {
                return erf_impl(static_cast<double>(v),real_type_tag());
             }
+            
+            inline float erfc_dispatch( const float v )
+            {
+               return ::erfcf( v );
+            }
+
+            inline double erfc_dispatch( const double v )
+            {
+               return ::erfc( v );
+            }
+            
+            inline long double erfc_dispatch( const long double v )
+            {
+               return ::erfcl( v );
+            }
 
             template <typename T>
             inline T erfc_impl(T v, real_type_tag)
@@ -1151,7 +1181,7 @@ namespace exprtk
                #if defined(_WIN32) || defined(__WIN32__) || defined(WIN32)
                return T(1) - erf_impl(v,real_type_tag());
                #else
-               return ::erfc(v);
+               return erfc_dispatch( v );
                #endif
             }
 
@@ -1196,7 +1226,7 @@ namespace exprtk
             template <typename T> inline T  asin_impl(const T v, real_type_tag) { return std::asin (v); }
             template <typename T> inline T asinh_impl(const T v, real_type_tag) { return std::log(v + std::sqrt((v * v) + T(1))); }
             template <typename T> inline T  atan_impl(const T v, real_type_tag) { return std::atan (v); }
-            template <typename T> inline T atanh_impl(const T v, real_type_tag) { return (std::log(T(1) + v) - log(T(1) - v)) / T(2); }
+            template <typename T> inline T atanh_impl(const T v, real_type_tag) { return (std::log(T(1) + v) - std::log(T(1) - v)) / T(2); }
             template <typename T> inline T  ceil_impl(const T v, real_type_tag) { return std::ceil (v); }
             template <typename T> inline T   cos_impl(const T v, real_type_tag) { return std::cos  (v); }
             template <typename T> inline T  cosh_impl(const T v, real_type_tag) { return std::cosh (v); }
