@@ -1,0 +1,12 @@
+language: cpp
+
+sudo: required
+
+dist: trusty
+
+compiler:
+  - gcc
+
+script:
+  - make clean all
+  - ./exprtk_test
