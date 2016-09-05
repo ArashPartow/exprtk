@@ -29,7 +29,12 @@
 #include "exprtk.hpp"
 
 
+#ifdef exprtk_test_float32_type
+typedef float numeric_type;
+#else
 typedef double numeric_type;
+#endif
+
 typedef std::pair<std::string,numeric_type> test_t;
 
 static const test_t global_test_list[] =
@@ -2750,7 +2755,7 @@ inline bool run_test04()
       }
    }
 
-   const T pi = T(3.14159265358979323846);
+   const T pi = T(3.141592653589793238462643383279502);
    const T increment = T(0.0001);
 
    while ((x <= T(+1000)) && (y <= T(+1000)))
@@ -2815,7 +2820,7 @@ inline bool run_test05()
       expression_list.push_back(e);
    }
 
-   const T pi = T(3.14159265358979323846);
+   const T pi = T(3.141592653589793238462643383279502);
    const T increment = T(0.001);
 
    while ((x <= T(+1000)) && (y <= T(+1000)))
@@ -2878,7 +2883,7 @@ inline bool run_test06()
 
    T total_area1 = exprtk::integrate(expression,x,T(-1),T(1));
    T total_area2 = exprtk::integrate(expression,"x",T(-1),T(1));
-   const T pi = T(3.14159265358979323846);
+   const T pi = T(3.141592653589793238462643383279502);
 
    if (not_equal(total_area1,total_area2,T(0.000001)))
    {
@@ -3196,12 +3201,16 @@ struct myfunc : public exprtk::ifunction<T>
    }
 };
 
-double foo1(double v0) { return v0; }
-double foo2(double v0, double v1) { return v0 + v1; }
-double foo3(double v0, double v1, double v2) { return v0 + v1 + v2; }
-double foo4(double v0, double v1, double v2, double v3) { return v0 + v1 + v2 + v3; }
-double foo5(double v0, double v1, double v2, double v3, double v4) { return v0 + v1 + v2 + v3 + v4; }
-double foo6(double v0, double v1, double v2, double v3, double v4, double v5) { return v0 + v1 + v2 + v3 + v4 + v5; }
+#define define_free_functions(Type)                                                                     \
+Type foo1(Type v0) { return v0; }                                                                       \
+Type foo2(Type v0, Type v1) { return v0 + v1; }                                                         \
+Type foo3(Type v0, Type v1, Type v2) { return v0 + v1 + v2; }                                           \
+Type foo4(Type v0, Type v1, Type v2, Type v3) { return v0 + v1 + v2 + v3; }                             \
+Type foo5(Type v0, Type v1, Type v2, Type v3, Type v4) { return v0 + v1 + v2 + v3 + v4; }               \
+Type foo6(Type v0, Type v1, Type v2, Type v3, Type v4, Type v5) { return v0 + v1 + v2 + v3 + v4 + v5; } \
+
+define_free_functions(numeric_type)
+#undef define_free_functions
 
 template <typename T>
 inline bool run_test09()
@@ -3267,7 +3276,7 @@ inline bool run_test09()
             }
          }
 
-         const T pi = T(3.141592653589793238462);
+         const T pi = T(3.141592653589793238462643383279502);
 
          T result = expression.value();
 

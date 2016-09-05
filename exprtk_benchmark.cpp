@@ -183,7 +183,7 @@ bool run_parse_benchmark(exprtk::symbol_table<T>& symbol_table)
    return true;
 }
 
-const double pi = 3.14159265358979323846;
+const double pi = 3.141592653589793238462643383279502;
 
 template <typename T>
 struct native

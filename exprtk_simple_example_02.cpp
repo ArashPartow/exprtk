@@ -37,7 +37,7 @@ void square_wave()
                              " (1/21)*sin(42*pi*f*t)+(1/23)*sin(46*pi*f*t)+"
                              " (1/25)*sin(50*pi*f*t)+(1/27)*sin(54*pi*f*t))";
 
-   static const T pi = T(3.14159265358979323846);
+   static const T pi = T(3.141592653589793238462643383279502);
 
    T f = pi / T(10);
    T t = T(0);
