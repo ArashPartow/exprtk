@@ -33,7 +33,8 @@ struct rnd_01 : public exprtk::ifunction<T>
    inline T operator()()
    {
       // Note: Do not use this in production
-      return T(::rand() / T(RAND_MAX + 1));
+      // Result is in the interval [0,1)
+      return T(::rand() / T(RAND_MAX + 1.0));
    }
 };
 
@@ -61,7 +62,7 @@ void monte_carlo_pi()
 
    const T approximate_pi = expression.value();
 
-   const T real_pi = T(3.141592653589793238462);
+   const T real_pi = T(3.141592653589793238462643383279502); // or close enough...
 
    printf("pi ~ %20.17f\terror: %20.17f\n",
           approximate_pi,

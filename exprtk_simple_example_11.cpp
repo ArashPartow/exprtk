@@ -36,7 +36,7 @@ void square_wave2()
                   " };                                                  "
                   " r *= a * (4 / pi);                                  ";
 
-   static const T pi = T(3.14159265358979323846);
+   static const T pi = T(3.141592653589793238462643383279502);
 
    T f = pi / T(10);
    T t = T(0);

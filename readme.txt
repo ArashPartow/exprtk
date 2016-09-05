@@ -1269,12 +1269,13 @@ with vectors:
    (b) Exponentiation:   vector ^ scalar
    (c) Assignment:       :=, +=, -=, *=, /=, %=, <=>
    (d) Inequalities:     <, <=, >, >=, ==, =, equal
-   (e) Unary operations:
+   (e) Boolean logic:    and, nand, nor, or, xnor, xor
+   (f) Unary operations:
        abs, acos, acosh, asin, asinh, atan, atanh, ceil, cos,  cosh,
        cot, csc,  deg2grad, deg2rad,  erf, erfc,  exp, expm1, floor,
        frac, grad2deg, log, log10, log1p, log2, rad2deg, round, sec,
        sgn, sin, sinc, sinh, sqrt, swap, tan, tanh, trunc
-   (f) Aggregate and Reduce operations:
+   (g) Aggregate and Reduce operations:
        avg, max, min, mul, sum
 
 Note: When one of  the above  described operations  is being performed
@@ -1315,6 +1316,7 @@ not a vector but rather a single value.
    avg(3x + 1) ==  7
    min(1 / x)  == (1 / 3)
    max(x / 2)  == (3 / 2)
+   sum(x > 0 and x < 5) == x[]
 
      ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
@@ -2487,6 +2489,16 @@ in the event of a failed compilation.
    }
 
 
+Assuming the  following expression '2 + (3 / log(1 + x))' which uses a
+variable named 'x'  that has not been registered  with the appropriate
+symbol_table  instance and  is not  a locally  defined variable,  once
+compiled the  above denoted post compilation error handling code shall
+produce the following output:
+
+  Error: ERR184 - Undefined symbol: 'x'
+  Err No.:00 Pos:17  Type:[Syntax] Msg: ERR184 - Undefined symbol: 'x'
+
+
 For  expressions  comprised  of  multiple  lines,  the  error position
 provided in the  parser_error object can  be converted into  a pair of
 line and column numbers by invoking the 'update_error' function as  is
@@ -2730,9 +2742,40 @@ into account when using ExprTk:
         (x + y) / (x - y);
       }
 
+ (30) For performance considerations,  one should assume  the actions
+      of expression, symbol  table and parser  instance instantiation
+      and destruction, and the expression compilation process  itself
+      to be of high latency. Hence none of them should be part of any
+      performance  critical  code  paths, and  should  instead  occur
+      entirely either before or after such code paths.
+
+ (31) Before jumping in and using ExprTk, do take the time to  peruse
+      the documentation and all of the examples, both in the main and
+      the extras  distributions. Having  an informed  general view of
+      what can and  can't be done,  and how something  should be done
+      with ExprTk, will  likely result in  a far more  productive and
+      enjoyable programming experience.
+
      ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
 [21 - SIMPLE EXPRTK EXAMPLE]
+The following is a  simple yet complete example  demonstrating typical
+usage of the ExprTk Library.  The example instantiates a symbol  table
+object, adding to it  three variables named x,  y and z, and  a custom
+user defined function, that accepts only two parameters, named myfunc.
+The  example then  proceeds to  instantiate an  expression object  and
+register to it the symbol table instance.
+
+A parser is  then instantiated, and  the string representation  of the
+expression  and  the  expression object  are  passed  to the  parser's
+compile  method   for  compilation.   If  an   error  occurred  during
+compilation, the compile method will return false, leading to a series
+of  error diagnostics  being printed  to stdout.  Otherwise the  newly
+compiled expression is evaluated  by invoking  the expression object's
+value method, and subsequently printing the result  of the computation
+to stdout.
+
+
 --- snip ---
 #include <cstdio>
 #include <string>

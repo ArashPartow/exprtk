@@ -1111,13 +1111,21 @@ namespace exprtk
                   return T(0);
             }
 
+            #if (defined(_MSC_VER) && (_MSC_VER >= 1900)) || !defined(_MSC_VER)
+            #define exprtk_define_erf(TT,impl)           \
+            inline TT erf_impl(TT v) { return impl(v); } \
+
+            exprtk_define_erf(      float,::erff)
+            exprtk_define_erf(     double,::erf )
+            exprtk_define_erf(long double,::erfl)
+            #undef exprtk_define_erf
+            #endif
+
             template <typename T>
             inline T erf_impl(T v, real_type_tag)
             {
-               #if defined(_WIN32) || defined(__WIN32__) || defined(WIN32)
+               #if defined(_MSC_VER) && (_MSC_VER < 1900)
                // Credits: Abramowitz & Stegun Equations 7.1.25-28
-               const T t = T(1) / (T(1) + T(0.5) * abs_impl(v,real_type_tag()));
-
                static const T c[] = {
                                       T( 1.26551223), T(1.00002368),
                                       T( 0.37409196), T(0.09678418),
@@ -1125,6 +1133,8 @@ namespace exprtk
                                       T(-1.13520398), T(1.48851587),
                                       T(-0.82215223), T(0.17087277)
                                     };
+
+               const T t = T(1) / (T(1) + T(0.5) * abs_impl(v,real_type_tag()));
 
                T result = T(1) - t * std::exp((-v * v) -
                                       c[0] + t * (c[1] + t *
@@ -1135,7 +1145,7 @@ namespace exprtk
 
                return (v >= T(0)) ? result : -result;
                #else
-               return ::erf(v);
+               return erf_impl(v);
                #endif
             }
 
@@ -1145,13 +1155,23 @@ namespace exprtk
                return erf_impl(static_cast<double>(v),real_type_tag());
             }
 
+            #if (defined(_MSC_VER) && (_MSC_VER >= 1900)) || !defined(_MSC_VER)
+            #define exprtk_define_erfc(TT,impl)           \
+            inline TT erfc_impl(TT v) { return impl(v); } \
+
+            exprtk_define_erfc(      float,::erfcf)
+            exprtk_define_erfc(     double,::erfc )
+            exprtk_define_erfc(long double,::erfcl)
+            #undef exprtk_define_erfc
+            #endif
+
             template <typename T>
             inline T erfc_impl(T v, real_type_tag)
             {
-               #if defined(_WIN32) || defined(__WIN32__) || defined(WIN32)
+               #if defined(_MSC_VER) && (_MSC_VER < 1900)
                return T(1) - erf_impl(v,real_type_tag());
                #else
-               return ::erfc(v);
+               return erfc_impl(v);
                #endif
             }
 
@@ -1196,7 +1216,7 @@ namespace exprtk
             template <typename T> inline T  asin_impl(const T v, real_type_tag) { return std::asin (v); }
             template <typename T> inline T asinh_impl(const T v, real_type_tag) { return std::log(v + std::sqrt((v * v) + T(1))); }
             template <typename T> inline T  atan_impl(const T v, real_type_tag) { return std::atan (v); }
-            template <typename T> inline T atanh_impl(const T v, real_type_tag) { return (std::log(T(1) + v) - log(T(1) - v)) / T(2); }
+            template <typename T> inline T atanh_impl(const T v, real_type_tag) { return (std::log(T(1) + v) - std::log(T(1) - v)) / T(2); }
             template <typename T> inline T  ceil_impl(const T v, real_type_tag) { return std::ceil (v); }
             template <typename T> inline T   cos_impl(const T v, real_type_tag) { return std::cos  (v); }
             template <typename T> inline T  cosh_impl(const T v, real_type_tag) { return std::cosh (v); }
@@ -1269,7 +1289,7 @@ namespace exprtk
          template <typename Type>
          struct numeric_info { enum { length = 0, size = 32, bound_length = 0, min_exp = 0, max_exp = 0 }; };
 
-         template<> struct numeric_info<int>         { enum { length = 10, size = 16, bound_length =  9}; };
+         template<> struct numeric_info<int>         { enum { length = 10, size = 16, bound_length = 9}; };
          template<> struct numeric_info<float>       { enum { min_exp =  -38, max_exp =  +38}; };
          template<> struct numeric_info<double>      { enum { min_exp = -308, max_exp = +308}; };
          template<> struct numeric_info<long double> { enum { min_exp = -308, max_exp = +308}; };
@@ -9223,8 +9243,8 @@ namespace exprtk
       };
 
       template <typename T, typename Operation>
-      class vecarith_vecvec_node : public binary_node     <T>,
-                                   public vector_interface<T>
+      class vec_binop_vecvec_node : public binary_node     <T>,
+                                    public vector_interface<T>
       {
       public:
 
@@ -9232,9 +9252,9 @@ namespace exprtk
          typedef vector_node<T>*       vector_node_ptr;
          typedef vector_holder<T>*   vector_holder_ptr;
 
-         vecarith_vecvec_node(const operator_type& opr,
-                              expression_ptr branch0,
-                              expression_ptr branch1)
+         vec_binop_vecvec_node(const operator_type& opr,
+                               expression_ptr branch0,
+                               expression_ptr branch1)
          : binary_node<T>(opr,branch0,branch1),
            vec0_node_ptr_(0),
            vec1_node_ptr_(0),
@@ -9286,7 +9306,7 @@ namespace exprtk
             }
          }
 
-        ~vecarith_vecvec_node()
+        ~vec_binop_vecvec_node()
          {
             delete[] data_;
             delete   temp_;
@@ -9388,8 +9408,8 @@ namespace exprtk
       };
 
       template <typename T, typename Operation>
-      class vecarith_vecval_node : public binary_node     <T>,
-                                   public vector_interface<T>
+      class vec_binop_vecval_node : public binary_node     <T>,
+                                    public vector_interface<T>
       {
       public:
 
@@ -9397,9 +9417,9 @@ namespace exprtk
          typedef vector_node<T>*       vector_node_ptr;
          typedef vector_holder<T>*   vector_holder_ptr;
 
-         vecarith_vecval_node(const operator_type& opr,
-                              expression_ptr branch0,
-                              expression_ptr branch1)
+         vec_binop_vecval_node(const operator_type& opr,
+                               expression_ptr branch0,
+                               expression_ptr branch1)
          : binary_node<T>(opr,branch0,branch1),
            vec0_node_ptr_(0),
            vec_size_     (0),
@@ -9432,7 +9452,7 @@ namespace exprtk
             }
          }
 
-        ~vecarith_vecval_node()
+        ~vec_binop_vecval_node()
          {
             delete[] data_;
             delete   temp_;
@@ -9530,8 +9550,8 @@ namespace exprtk
       };
 
       template <typename T, typename Operation>
-      class vecarith_valvec_node : public binary_node     <T>,
-                                   public vector_interface<T>
+      class vec_binop_valvec_node : public binary_node     <T>,
+                                    public vector_interface<T>
       {
       public:
 
@@ -9539,9 +9559,9 @@ namespace exprtk
          typedef vector_node<T>*       vector_node_ptr;
          typedef vector_holder<T>*   vector_holder_ptr;
 
-         vecarith_valvec_node(const operator_type& opr,
-                              expression_ptr branch0,
-                              expression_ptr branch1)
+         vec_binop_valvec_node(const operator_type& opr,
+                               expression_ptr branch0,
+                               expression_ptr branch1)
          : binary_node<T>(opr,branch0,branch1),
            vec1_node_ptr_(0),
            vec_size_     (0),
@@ -9574,7 +9594,7 @@ namespace exprtk
             }
          }
 
-        ~vecarith_valvec_node()
+        ~vec_binop_valvec_node()
          {
             delete[] data_;
             delete   temp_;
@@ -21646,7 +21666,7 @@ namespace exprtk
                {
                   invalid_state_ = false;
 
-                  const std::string err_param_seq =  s.substr(start,end - start);
+                  const std::string err_param_seq = s.substr(start,end - start);
 
                   parser_.
                      set_error(
@@ -21667,7 +21687,7 @@ namespace exprtk
                   param_seq_list_ = param_seq_list;
                else
                {
-                  const std::string err_param_seq =  s.substr(start,s.size() - start);
+                  const std::string err_param_seq = s.substr(start,s.size() - start);
 
                   parser_.
                      set_error(
@@ -24282,7 +24302,7 @@ namespace exprtk
                    );
          }
 
-         inline bool is_vector_eqineq_operation(const details::operator_type& operation, expression_node_ptr (&branch)[2])
+         inline bool is_vector_eqineq_logic_operation(const details::operator_type& operation, expression_node_ptr (&branch)[2])
          {
             if (!is_ivector_node(branch[0]) && !is_ivector_node(branch[1]))
                return false;
@@ -24294,7 +24314,13 @@ namespace exprtk
                         (details::e_gte    == operation) ||
                         (details::e_eq     == operation) ||
                         (details::e_ne     == operation) ||
-                        (details::e_equal  == operation)
+                        (details::e_equal  == operation) ||
+                        (details::e_and    == operation) ||
+                        (details::e_nand   == operation) ||
+                        (details::  e_or   == operation) ||
+                        (details:: e_nor   == operation) ||
+                        (details:: e_xor   == operation) ||
+                        (details::e_xnor   == operation)
                       );
          }
 
@@ -24328,8 +24354,8 @@ namespace exprtk
                return synthesize_swap_expression(branch);
             else if (is_assignment_operation(operation))
                return synthesize_assignment_operation_expression(operation,branch);
-            else if (is_vector_eqineq_operation(operation,branch))
-               return synthesize_veceqineq_operation_expression(operation,branch);
+            else if (is_vector_eqineq_logic_operation(operation,branch))
+               return synthesize_veceqineqlogic_operation_expression(operation,branch);
             else if (is_vector_arithmetic_operation(operation,branch))
                return synthesize_vecarithmetic_operation_expression(operation,branch);
             else if (is_shortcircuit_expression(operation))
@@ -25778,28 +25804,37 @@ namespace exprtk
             }
          }
 
-         inline expression_node_ptr synthesize_veceqineq_operation_expression(const details::operator_type& operation,
-                                                                              expression_node_ptr (&branch)[2])
+         inline expression_node_ptr synthesize_veceqineqlogic_operation_expression(const details::operator_type& operation,
+                                                                                   expression_node_ptr (&branch)[2])
          {
             const bool is_b0_ivec = details::is_ivector_node(branch[0]);
             const bool is_b1_ivec = details::is_ivector_node(branch[1]);
+
+            #define batch_eqineq_logic_case               \
+            case_stmt(details::   e_lt,details::   lt_op) \
+            case_stmt(details::  e_lte,details::  lte_op) \
+            case_stmt(details::   e_gt,details::   gt_op) \
+            case_stmt(details::  e_gte,details::  gte_op) \
+            case_stmt(details::   e_eq,details::   eq_op) \
+            case_stmt(details::   e_ne,details::   ne_op) \
+            case_stmt(details::e_equal,details::equal_op) \
+            case_stmt(details::  e_and,  details::and_op) \
+            case_stmt(details:: e_nand, details::nand_op) \
+            case_stmt(details::   e_or, details::  or_op) \
+            case_stmt(details::  e_nor, details:: nor_op) \
+            case_stmt(details::  e_xor, details:: xor_op) \
+            case_stmt(details:: e_xnor, details::xnor_op) \
 
             if (is_b0_ivec && is_b1_ivec)
             {
                switch (operation)
                {
-                  #define case_stmt(op0,op1)                                                                    \
-                  case op0 : return node_allocator_->                                                           \
-                                template allocate_rrr<typename details::vecarith_vecvec_node<Type,op1<Type> > > \
-                                   (operation,branch[0],branch[1]);                                             \
+                  #define case_stmt(op0,op1)                                                                     \
+                  case op0 : return node_allocator_->                                                            \
+                                template allocate_rrr<typename details::vec_binop_vecvec_node<Type,op1<Type> > > \
+                                   (operation,branch[0],branch[1]);                                              \
 
-                  case_stmt(details::   e_lt,details::   lt_op)
-                  case_stmt(details::  e_lte,details::  lte_op)
-                  case_stmt(details::   e_gt,details::   gt_op)
-                  case_stmt(details::  e_gte,details::  gte_op)
-                  case_stmt(details::   e_eq,details::   eq_op)
-                  case_stmt(details::   e_ne,details::   ne_op)
-                  case_stmt(details::e_equal,details::equal_op)
+                  batch_eqineq_logic_case
                   #undef case_stmt
                   default : return error_node();
                }
@@ -25808,18 +25843,12 @@ namespace exprtk
             {
                switch (operation)
                {
-                  #define case_stmt(op0,op1)                                                                    \
-                  case op0 : return node_allocator_->                                                           \
-                                template allocate_rrr<typename details::vecarith_vecval_node<Type,op1<Type> > > \
-                                   (operation,branch[0],branch[1]);                                             \
+                  #define case_stmt(op0,op1)                                                                     \
+                  case op0 : return node_allocator_->                                                            \
+                                template allocate_rrr<typename details::vec_binop_vecval_node<Type,op1<Type> > > \
+                                   (operation,branch[0],branch[1]);                                              \
 
-                  case_stmt(details::   e_lt,details::   lt_op)
-                  case_stmt(details::  e_lte,details::  lte_op)
-                  case_stmt(details::   e_gt,details::   gt_op)
-                  case_stmt(details::  e_gte,details::  gte_op)
-                  case_stmt(details::   e_eq,details::   eq_op)
-                  case_stmt(details::   e_ne,details::   ne_op)
-                  case_stmt(details::e_equal,details::equal_op)
+                  batch_eqineq_logic_case
                   #undef case_stmt
                   default : return error_node();
                }
@@ -25828,24 +25857,20 @@ namespace exprtk
             {
                switch (operation)
                {
-                  #define case_stmt(op0,op1)                                                                    \
-                  case op0 : return node_allocator_->                                                           \
-                                template allocate_rrr<typename details::vecarith_valvec_node<Type,op1<Type> > > \
-                                   (operation,branch[0],branch[1]);                                             \
+                  #define case_stmt(op0,op1)                                                                     \
+                  case op0 : return node_allocator_->                                                            \
+                                template allocate_rrr<typename details::vec_binop_valvec_node<Type,op1<Type> > > \
+                                   (operation,branch[0],branch[1]);                                              \
 
-                  case_stmt(details::   e_lt,details::   lt_op)
-                  case_stmt(details::  e_lte,details::  lte_op)
-                  case_stmt(details::   e_gt,details::   gt_op)
-                  case_stmt(details::  e_gte,details::  gte_op)
-                  case_stmt(details::   e_eq,details::   eq_op)
-                  case_stmt(details::   e_ne,details::   ne_op)
-                  case_stmt(details::e_equal,details::equal_op)
+                  batch_eqineq_logic_case
                   #undef case_stmt
                   default : return error_node();
                }
             }
             else
                return error_node();
+
+            #undef batch_eqineq_logic_case
          }
 
          inline expression_node_ptr synthesize_vecarithmetic_operation_expression(const details::operator_type& operation,
@@ -25865,10 +25890,10 @@ namespace exprtk
             {
                switch (operation)
                {
-                  #define case_stmt(op0,op1)                                                                    \
-                  case op0 : return node_allocator_->                                                           \
-                                template allocate_rrr<typename details::vecarith_vecvec_node<Type,op1<Type> > > \
-                                   (operation,branch[0],branch[1]);                                             \
+                  #define case_stmt(op0,op1)                                                                     \
+                  case op0 : return node_allocator_->                                                            \
+                                template allocate_rrr<typename details::vec_binop_vecvec_node<Type,op1<Type> > > \
+                                   (operation,branch[0],branch[1]);                                              \
 
                   vector_ops
                   case_stmt(details::e_pow,details:: pow_op)
@@ -25880,10 +25905,10 @@ namespace exprtk
             {
                switch (operation)
                {
-                  #define case_stmt(op0,op1)                                                                    \
-                  case op0 : return node_allocator_->                                                           \
-                                template allocate_rrr<typename details::vecarith_vecval_node<Type,op1<Type> > > \
-                                   (operation,branch[0],branch[1]);                                             \
+                  #define case_stmt(op0,op1)                                                                     \
+                  case op0 : return node_allocator_->                                                            \
+                                template allocate_rrr<typename details::vec_binop_vecval_node<Type,op1<Type> > > \
+                                   (operation,branch[0],branch[1]);                                              \
 
                   vector_ops
                   case_stmt(details::e_pow,details:: pow_op)
@@ -25895,10 +25920,10 @@ namespace exprtk
             {
                switch (operation)
                {
-                  #define case_stmt(op0,op1)                                                                    \
-                  case op0 : return node_allocator_->                                                           \
-                                template allocate_rrr<typename details::vecarith_valvec_node<Type,op1<Type> > > \
-                                   (operation,branch[0],branch[1]);                                             \
+                  #define case_stmt(op0,op1)                                                                     \
+                  case op0 : return node_allocator_->                                                            \
+                                template allocate_rrr<typename details::vec_binop_valvec_node<Type,op1<Type> > > \
+                                   (operation,branch[0],branch[1]);                                              \
 
                   vector_ops
                   #undef case_stmt
