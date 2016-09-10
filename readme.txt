@@ -1174,10 +1174,13 @@ zero. The following are examples of vector definitions:
        var x[3] := { 1, 2, 3 };
        var y[5] := x;   // 1, 2, 3, ??, ??
 
-   (h) Error as there are too many initialisers
+   (h) Non-initialised vector
+       var x[3] := null; // ?? ?? ??
+
+   (i) Error as there are too many initialisers
        var x[3] := { 1, 2, 3, 4 };
 
-   (i) Error as a vector of size zero is not allowed.
+   (j) Error as a vector of size zero is not allowed.
        var x[0];
 
 
@@ -2496,7 +2499,7 @@ compiled the  above denoted post compilation error handling code shall
 produce the following output:
 
   Error: ERR184 - Undefined symbol: 'x'
-  Err No.:00 Pos:17  Type:[Syntax] Msg: ERR184 - Undefined symbol: 'x'
+  Error[00] Pos:17 Type:[Syntax] Msg: ERR184 - Undefined symbol: 'x'
 
 
 For  expressions  comprised  of  multiple  lines,  the  error position
