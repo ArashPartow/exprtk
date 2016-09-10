@@ -2996,6 +2996,8 @@ namespace exprtk
          {
          public:
 
+            using lexer::token_inserter::insert;
+
             commutative_inserter()
             : lexer::token_inserter(2)
             {}
@@ -3228,6 +3230,8 @@ namespace exprtk
          {
          public:
 
+            using lexer::token_scanner::operator();
+
             bracket_checker()
             : token_scanner(1),
               state_(true)
@@ -3310,6 +3314,8 @@ namespace exprtk
          class numeric_checker : public lexer::token_scanner
          {
          public:
+
+            using lexer::token_scanner::operator();
 
             numeric_checker()
             : token_scanner (1),
@@ -3443,6 +3449,8 @@ namespace exprtk
             typedef std::set<token_pair_t> set_t;
 
          public:
+
+            using lexer::token_scanner::operator();
 
             sequence_validator()
             : lexer::token_scanner(2)
@@ -5338,12 +5346,18 @@ namespace exprtk
             switch (operation_)
             {
                case e_inrange : return (arg1 < arg0) ? T(0) : ((arg1 > arg2) ? T(0) : T(1));
+
                case e_clamp   : return (arg1 < arg0) ? arg0 : (arg1 > arg2 ? arg2 : arg1);
+
                case e_iclamp  : if ((arg1 <= arg0) || (arg1 >= arg2))
                                    return arg1;
                                 else
                                    return ((T(2) * arg1  <= (arg2 + arg0)) ? arg0 : arg2);
-               default        : return std::numeric_limits<T>::quiet_NaN();
+
+               default        : {
+                                   exprtk_debug(("trinary_node::value() - Error: Invalid operation\n"));
+                                   return std::numeric_limits<T>::quiet_NaN();
+                                }
             }
          }
 
@@ -14827,6 +14841,8 @@ namespace exprtk
 
       struct freefunc1 : public exprtk::ifunction<T>
       {
+         using exprtk::ifunction<T>::operator();
+
          freefunc1(ff1_functor ff) : exprtk::ifunction<T>(1), f(ff) {}
          inline T operator()(const T& v0)
          { return f(v0); }
@@ -14835,6 +14851,8 @@ namespace exprtk
 
       struct freefunc2 : public exprtk::ifunction<T>
       {
+         using exprtk::ifunction<T>::operator();
+
          freefunc2(ff2_functor ff) : exprtk::ifunction<T>(2), f(ff) {}
          inline T operator()(const T& v0, const T& v1)
          { return f(v0,v1); }
@@ -14843,6 +14861,8 @@ namespace exprtk
 
       struct freefunc3 : public exprtk::ifunction<T>
       {
+         using exprtk::ifunction<T>::operator();
+
          freefunc3(ff3_functor ff) : exprtk::ifunction<T>(3), f(ff) {}
          inline T operator()(const T& v0, const T& v1, const T& v2)
          { return f(v0,v1,v2); }
@@ -14851,6 +14871,8 @@ namespace exprtk
 
       struct freefunc4 : public exprtk::ifunction<T>
       {
+         using exprtk::ifunction<T>::operator();
+
          freefunc4(ff4_functor ff) : exprtk::ifunction<T>(4), f(ff) {}
          inline T operator()(const T& v0, const T& v1, const T& v2, const T& v3)
          { return f(v0,v1,v2,v3); }
@@ -14859,6 +14881,8 @@ namespace exprtk
 
       struct freefunc5 : public exprtk::ifunction<T>
       {
+         using exprtk::ifunction<T>::operator();
+
          freefunc5(ff5_functor ff) : exprtk::ifunction<T>(5), f(ff) {}
          inline T operator()(const T& v0, const T& v1, const T& v2, const T& v3, const T& v4)
          { return f(v0,v1,v2,v3,v4); }
@@ -14867,6 +14891,8 @@ namespace exprtk
 
       struct freefunc6 : public exprtk::ifunction<T>
       {
+         using exprtk::ifunction<T>::operator();
+
          freefunc6(ff6_functor ff) : exprtk::ifunction<T>(6), f(ff) {}
          inline T operator()(const T& v0, const T& v1, const T& v2, const T& v3, const T& v4, const T& v5)
          { return f(v0,v1,v2,v3,v4,v5); }
@@ -15258,7 +15284,7 @@ namespace exprtk
       static const std::size_t lut_size = 256;
 
       // Symbol Table Holder
-      struct st_holder
+      struct control_block
       {
          struct st_data
          {
@@ -15304,23 +15330,28 @@ namespace exprtk
             std::vector<ifunction<T>*> free_function_list_;
          };
 
-         st_holder()
+         control_block()
          : ref_count(1),
            data_(new st_data)
          {}
 
-         st_holder(st_data* data)
+         control_block(st_data* data)
          : ref_count(1),
            data_(data)
          {}
 
-        ~st_holder()
+        ~control_block()
          {
             if (data_ && (0 == ref_count))
             {
                delete data_;
                data_ = 0;
             }
+         }
+
+         static control_block* create()
+         {
+            return new control_block;
          }
 
          std::size_t ref_count;
@@ -15330,45 +15361,45 @@ namespace exprtk
    public:
 
       symbol_table()
-      : holder_(new st_holder)
+      : control_block_(control_block::create())
       {
          clear();
       }
 
      ~symbol_table()
       {
-         if (holder_)
+         if (control_block_)
          {
-            if (0 == --holder_->ref_count)
+            if (0 == --control_block_->ref_count)
             {
                clear();
-               delete holder_;
+               delete control_block_;
             }
          }
       }
 
       symbol_table(const symbol_table<T>& st)
       {
-         holder_ = st.holder_;
-         holder_->ref_count++;
+         control_block_ = st.control_block_;
+         control_block_->ref_count++;
       }
 
       inline symbol_table<T>& operator=(const symbol_table<T>& st)
       {
          if (this != &st)
          {
-            if (holder_)
+            if (control_block_)
             {
-               if (0 == --holder_->ref_count)
+               if (0 == --control_block_->ref_count)
                {
-                  delete holder_;
+                  delete control_block_;
                }
 
-               holder_ = 0;
+               control_block_ = 0;
             }
 
-            holder_ = st.holder_;
-            holder_->ref_count++;
+            control_block_ = st.control_block_;
+            control_block_->ref_count++;
          }
 
          return *this;
@@ -15376,7 +15407,7 @@ namespace exprtk
 
       inline bool operator==(const symbol_table<T>& st)
       {
-         return (this == &st) || (holder_ == st.holder_);
+         return (this == &st) || (control_block_ == st.control_block_);
       }
 
       inline void clear_variables(const bool delete_node = true)
@@ -16090,7 +16121,7 @@ namespace exprtk
       inline bool valid() const
       {
          // Symbol table sanity check.
-         return holder_ && holder_->data_;
+         return control_block_ && control_block_->data_;
       }
 
       inline void load_from(const symbol_table<T>& st)
@@ -16206,19 +16237,19 @@ namespace exprtk
          return true;
       }
 
-      typedef typename st_holder::st_data local_data_t;
+      typedef typename control_block::st_data local_data_t;
 
       inline local_data_t& local_data()
       {
-         return *(holder_->data_);
+         return *(control_block_->data_);
       }
 
       inline const local_data_t& local_data() const
       {
-         return *(holder_->data_);
+         return *(control_block_->data_);
       }
 
-      st_holder* holder_;
+      control_block* control_block_;
 
       friend class parser<T>;
    };
@@ -16235,7 +16266,7 @@ namespace exprtk
       typedef details::vector_holder<T>* vector_holder_ptr;
       typedef std::vector<symbol_table<T> >  symtab_list_t;
 
-      struct expression_holder
+      struct control_block
       {
          enum data_type
          {
@@ -16269,7 +16300,7 @@ namespace exprtk
          typedef std::vector<data_pack> local_data_list_t;
          typedef results_context<T>     results_context_t;
 
-         expression_holder()
+         control_block()
          : ref_count(0),
            expr     (0),
            results  (0),
@@ -16277,7 +16308,7 @@ namespace exprtk
            return_invoked(&retinv_null)
          {}
 
-         expression_holder(expression_ptr e)
+         control_block(expression_ptr e)
          : ref_count(1),
            expr     (e),
            results  (0),
@@ -16285,7 +16316,7 @@ namespace exprtk
            return_invoked(&retinv_null)
          {}
 
-        ~expression_holder()
+        ~control_block()
          {
             if (expr && details::branch_deletable(expr))
             {
@@ -16324,6 +16355,24 @@ namespace exprtk
             }
          }
 
+         static inline control_block* create(expression_ptr e)
+         {
+            return new control_block(e);
+         }
+
+         static inline void destroy(control_block*& cntrl_blck)
+         {
+            if (cntrl_blck)
+            {
+               if (0 == --cntrl_blck->ref_count)
+               {
+                  delete cntrl_blck;
+               }
+
+               cntrl_blck = 0;
+            }
+         }
+
          std::size_t ref_count;
          expression_ptr expr;
          local_data_list_t local_data_list;
@@ -16337,34 +16386,34 @@ namespace exprtk
    public:
 
       expression()
-      : expression_holder_(0)
+      : control_block_(0)
       {
          set_expression(new details::null_node<T>());
       }
 
       expression(const expression<T>& e)
-      : expression_holder_(e.expression_holder_),
+      : control_block_(e.control_block_),
         symbol_table_list_(e.symbol_table_list_)
       {
-         expression_holder_->ref_count++;
+         control_block_->ref_count++;
       }
 
       inline expression<T>& operator=(const expression<T>& e)
       {
          if (this != &e)
          {
-            if (expression_holder_)
+            if (control_block_)
             {
-               if (0 == --expression_holder_->ref_count)
+               if (0 == --control_block_->ref_count)
                {
-                  delete expression_holder_;
+                  delete control_block_;
                }
 
-               expression_holder_ = 0;
+               control_block_ = 0;
             }
 
-            expression_holder_ = e.expression_holder_;
-            expression_holder_->ref_count++;
+            control_block_ = e.control_block_;
+            control_block_->ref_count++;
             symbol_table_list_ = e.symbol_table_list_;
          }
 
@@ -16379,40 +16428,26 @@ namespace exprtk
       inline bool operator!() const
       {
          return (
-                  (0 == expression_holder_      ) ||
-                  (0 == expression_holder_->expr)
+                  (0 == control_block_      ) ||
+                  (0 == control_block_->expr)
                 );
       }
 
       inline expression<T>& release()
       {
-         if (expression_holder_)
-         {
-            if (0 == --expression_holder_->ref_count)
-            {
-               delete expression_holder_;
-            }
-
-            expression_holder_ = 0;
-         }
+         control_block::destroy(control_block_);
 
          return *this;
       }
 
      ~expression()
       {
-         if (expression_holder_)
-         {
-            if (0 == --expression_holder_->ref_count)
-            {
-               delete expression_holder_;
-            }
-         }
+         control_block::destroy(control_block_);
       }
 
       inline T value() const
       {
-         return expression_holder_->expr->value();
+         return control_block_->expr->value();
       }
 
       inline T operator()() const
@@ -16449,8 +16484,8 @@ namespace exprtk
 
       inline const results_context_t& results() const
       {
-         if (expression_holder_->results)
-            return (*expression_holder_->results);
+         if (control_block_->results)
+            return (*control_block_->results);
          else
          {
             static const results_context_t null_results;
@@ -16460,7 +16495,7 @@ namespace exprtk
 
       inline bool return_invoked() const
       {
-         return (*expression_holder_->return_invoked);
+         return (*control_block_->return_invoked);
       }
 
    private:
@@ -16474,15 +16509,15 @@ namespace exprtk
       {
          if (expr)
          {
-            if (expression_holder_)
+            if (control_block_)
             {
-               if (0 == --expression_holder_->ref_count)
+               if (0 == --control_block_->ref_count)
                {
-                  delete expression_holder_;
+                  delete control_block_;
                }
             }
 
-            expression_holder_ = new expression_holder(expr);
+            control_block_ = control_block::create(expr);
          }
       }
 
@@ -16490,13 +16525,13 @@ namespace exprtk
       {
          if (expr)
          {
-            if (expression_holder_)
+            if (control_block_)
             {
-               expression_holder_->
+               control_block_->
                   local_data_list.push_back(
-                     typename expression<T>::expression_holder::
+                     typename expression<T>::control_block::
                         data_pack(reinterpret_cast<void*>(expr),
-                                  expression_holder::e_expr));
+                                  control_block::e_expr));
             }
          }
       }
@@ -16505,13 +16540,13 @@ namespace exprtk
       {
          if (vec_holder)
          {
-            if (expression_holder_)
+            if (control_block_)
             {
-               expression_holder_->
+               control_block_->
                   local_data_list.push_back(
-                     typename expression<T>::expression_holder::
+                     typename expression<T>::control_block::
                         data_pack(reinterpret_cast<void*>(vec_holder),
-                                  expression_holder::e_vecholder));
+                                  control_block::e_vecholder));
             }
          }
       }
@@ -16520,55 +16555,55 @@ namespace exprtk
       {
          if (data)
          {
-            if (expression_holder_)
+            if (control_block_)
             {
-               typename expression_holder::data_type dt = expression_holder::e_data;
+               typename control_block::data_type dt = control_block::e_data;
 
                switch (data_mode)
                {
-                  case 0 : dt = expression_holder::e_data;    break;
-                  case 1 : dt = expression_holder::e_vecdata; break;
-                  case 2 : dt = expression_holder::e_string;  break;
+                  case 0 : dt = control_block::e_data;    break;
+                  case 1 : dt = control_block::e_vecdata; break;
+                  case 2 : dt = control_block::e_string;  break;
                }
 
-               expression_holder_->
+               control_block_->
                   local_data_list.push_back(
-                     typename expression<T>::expression_holder::
+                     typename expression<T>::control_block::
                         data_pack(reinterpret_cast<void*>(data),dt,size));
             }
          }
       }
 
-      inline const typename expression_holder::local_data_list_t& local_data_list()
+      inline const typename control_block::local_data_list_t& local_data_list()
       {
-         if (expression_holder_)
+         if (control_block_)
          {
-            return expression_holder_->local_data_list;
+            return control_block_->local_data_list;
          }
          else
          {
-            static typename expression_holder::local_data_list_t null_local_data_list;
+            static typename control_block::local_data_list_t null_local_data_list;
             return null_local_data_list;
          }
       }
 
       inline void register_return_results(results_context_t* rc)
       {
-         if (expression_holder_ && rc)
+         if (control_block_ && rc)
          {
-            expression_holder_->results = rc;
+            control_block_->results = rc;
          }
       }
 
       inline void set_retinvk(bool* retinvk_ptr)
       {
-         if (expression_holder_)
+         if (control_block_)
          {
-            expression_holder_->return_invoked = retinvk_ptr;
+            control_block_->return_invoked = retinvk_ptr;
          }
       }
 
-      expression_holder* expression_holder_;
+      control_block* control_block_;
       symtab_list_t      symbol_table_list_;
 
       friend class parser<T>;
@@ -16583,27 +16618,27 @@ namespace exprtk
 
       static inline bool is_constant(const expression<T>& expr)
       {
-         return details::is_constant_node(expr.expression_holder_->expr);
+         return details::is_constant_node(expr.control_block_->expr);
       }
 
       static inline bool is_variable(const expression<T>& expr)
       {
-         return details::is_variable_node(expr.expression_holder_->expr);
+         return details::is_variable_node(expr.control_block_->expr);
       }
 
       static inline bool is_unary(const expression<T>& expr)
       {
-         return details::is_unary_node(expr.expression_holder_->expr);
+         return details::is_unary_node(expr.control_block_->expr);
       }
 
       static inline bool is_binary(const expression<T>& expr)
       {
-         return details::is_binary_node(expr.expression_holder_->expr);
+         return details::is_binary_node(expr.control_block_->expr);
       }
 
       static inline bool is_function(const expression<T>& expr)
       {
-         return details::is_function(expr.expression_holder_->expr);
+         return details::is_function(expr.control_block_->expr);
       }
    };
 
@@ -22163,6 +22198,7 @@ namespace exprtk
 
          bool single_value_initialiser = false;
          bool vec_to_vec_initialiser   = false;
+         bool null_initialisation      = false;
 
          if (!token_is(token_t::e_rsqrbracket))
          {
@@ -22239,19 +22275,25 @@ namespace exprtk
                      else
                         return error_node();
                   }
+                  // Are we dealing with a null initialisation vector definition?
+                  else if (token_is(token_t::e_symbol,"null"))
+                     null_initialisation = true;
                }
 
-               if (0 == initialiser)
+               if (!null_initialisation)
                {
-                  set_error(
-                     make_error(parser_error::e_syntax,
-                                current_token(),
-                                "ERR140 - Expected '{' as part of vector initialiser list"));
+                  if (0 == initialiser)
+                  {
+                     set_error(
+                        make_error(parser_error::e_syntax,
+                                   current_token(),
+                                   "ERR140 - Expected '{' as part of vector initialiser list"));
 
-                  return error_node();
+                     return error_node();
+                  }
+                  else
+                     vec_to_vec_initialiser = true;
                }
-               else
-                  vec_to_vec_initialiser = true;
             }
             else if (!token_is(token_t::e_rcrlbracket))
             {
@@ -22385,7 +22427,9 @@ namespace exprtk
 
          expression_node_ptr result = error_node();
 
-         if (vec_to_vec_initialiser)
+         if (null_initialisation)
+            result = expression_generator_(T(0.0));
+         else if (vec_to_vec_initialiser)
             result = expression_generator_(
                         details::e_assign,
                         node_allocator_.allocate<vector_node_t>(vec_holder),
@@ -32912,6 +32956,8 @@ namespace exprtk
 
    public:
 
+      using ifunction<T>::operator();
+
       polynomial()
       : ifunction<T>((N+2 <= 20) ? (N + 2) : std::numeric_limits<std::size_t>::max())
       {
@@ -33114,6 +33160,8 @@ namespace exprtk
          typedef std::pair<T*,std::size_t> lvarref_t;
          typedef std::vector<lvarref_t>    lvr_vec_t;
 
+         using exprtk::ifunction<T>::operator();
+
          base_func(const std::size_t& pc = 0)
          : exprtk::ifunction<T>(pc),
            local_var_stack_size(0),
@@ -33165,7 +33213,8 @@ namespace exprtk
          {
             expression = expr;
 
-            typedef typename expression_t::expression_holder::local_data_list_t ldl_t;
+            typedef typename expression_t::control_block::local_data_list_t ldl_t;
+
             ldl_t ldl = expr.local_data_list();
 
             std::vector<std::size_t> index_list;
@@ -33318,6 +33367,8 @@ namespace exprtk
 
       struct func_0param : public base_func
       {
+         using exprtk::ifunction<T>::operator();
+
          func_0param() : base_func(0) {}
 
          inline T operator()()
@@ -33344,6 +33395,8 @@ namespace exprtk
 
       struct func_1param : public base_func
       {
+         using exprtk::ifunction<T>::operator();
+
          func_1param() : base_func(1) {}
 
          inline T operator()(type v0)
@@ -33358,6 +33411,8 @@ namespace exprtk
 
       struct func_2param : public base_func
       {
+         using exprtk::ifunction<T>::operator();
+
          func_2param() : base_func(2) {}
 
          inline T operator()(type v0, type v1)
@@ -33372,6 +33427,8 @@ namespace exprtk
 
       struct func_3param : public base_func
       {
+         using exprtk::ifunction<T>::operator();
+
          func_3param() : base_func(3) {}
 
          inline T operator()(type v0, type v1, type v2)
@@ -33386,6 +33443,8 @@ namespace exprtk
 
       struct func_4param : public base_func
       {
+         using exprtk::ifunction<T>::operator();
+
          func_4param() : base_func(4) {}
 
          inline T operator()(type v0, type v1, type v2, type v3)
@@ -33400,6 +33459,8 @@ namespace exprtk
 
       struct func_5param : public base_func
       {
+         using exprtk::ifunction<T>::operator();
+
          func_5param() : base_func(5) {}
 
          inline T operator()(type v0, type v1, type v2, type v3, type v4)
@@ -33414,6 +33475,8 @@ namespace exprtk
 
       struct func_6param : public base_func
       {
+         using exprtk::ifunction<T>::operator();
+
          func_6param() : base_func(6) {}
 
          inline T operator()(type v0, type v1, type v2, type v3, type v4, type v5)
