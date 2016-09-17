@@ -65,17 +65,17 @@ void newton_sqrt()
    std::string expression_str = "newton_sqrt(x)";
 
    expression_t expression;
-
    expression.register_symbol_table(symbol_table);
 
    parser_t parser;
-
    parser.compile(expression_str,expression);
 
    for (std::size_t i = 0; i < 100; ++i)
    {
       x = i;
+
       T result = expression.value();
+
       printf("sqrt(%03d) - Result: %12.10f\tReal: %12.10f\n",
              static_cast<unsigned int>(i),
              result,
