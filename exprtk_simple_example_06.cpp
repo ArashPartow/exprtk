@@ -47,7 +47,6 @@ void vector_function()
    expression.register_symbol_table(symbol_table);
 
    parser_t parser;
-
    parser.compile(expression_string,expression);
 
    expression.value();

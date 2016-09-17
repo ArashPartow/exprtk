@@ -52,7 +52,6 @@ void square_wave2()
    expression.register_symbol_table(symbol_table);
 
    parser_t parser;
-
    parser.compile(wave_program,expression);
 
    const T delta = (T(4) * pi) / T(1000);

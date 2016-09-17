@@ -56,7 +56,6 @@ void bubble_sort()
    expression.register_symbol_table(symbol_table);
 
    parser_t parser;
-
    parser.compile(bubblesort_program,expression);
 
    expression.value();

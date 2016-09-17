@@ -66,7 +66,6 @@ void linear_least_squares()
    expression.register_symbol_table(symbol_table);
 
    parser_t parser;
-
    parser.compile(linear_least_squares_program,expression);
 
    expression.value();
