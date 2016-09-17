@@ -82,7 +82,6 @@ void savitzky_golay_filter()
    expression.register_symbol_table(symbol_table);
 
    parser_t parser;
-
    parser.compile(sgfilter_program,expression);
 
    expression.value();
