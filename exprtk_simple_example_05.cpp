@@ -43,7 +43,7 @@ void custom_function()
    typedef exprtk::expression<T>     expression_t;
    typedef exprtk::parser<T>             parser_t;
 
-   std::string expression_string = "myfunc(sin(x * pi),y / 2)";
+   std::string expression_string = "myfunc(sin(x * pi), y / 2)";
 
    T x = T(1);
    T y = T(2);

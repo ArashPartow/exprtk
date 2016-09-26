@@ -55,7 +55,7 @@ void newton_sqrt()
            "      var y := x / 2;                 "
            "      repeat                          "
            "        y := (1 / 2) * (y + (x / y)); "
-           "        if (equal(y * y,x))           "
+           "        if (equal(y * y, x))          "
            "          break[y];                   "
            "      until ((z -= 1) <= 0);          "
            "    };                                "

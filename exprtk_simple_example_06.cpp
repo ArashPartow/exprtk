@@ -31,7 +31,7 @@ void vector_function()
    std::string expression_string =
                   " for (var i := 0; i < min(x[],y[],z[]); i += 1) "
                   " {                                              "
-                  "    z[i] := 3sin(x[i]) + 2log(y[i]);            "
+                  "   z[i] := 3sin(x[i]) + 2log(y[i]);             "
                   " }                                              ";
 
    T x[] = { T(1.1), T(2.2), T(3.3), T(4.4), T(5.5) };
