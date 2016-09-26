@@ -4270,12 +4270,19 @@ namespace exprtk
       }
 
       #ifdef exprtk_enable_debugging
-      inline void dump_ptr(const std::string& s, const void* ptr)
+      inline void dump_ptr(const std::string& s, const void* ptr, const std::size_t size = 0)
       {
-         exprtk_debug(("%s - addr: %p\n",s.c_str(),ptr));
+         if (size)
+            exprtk_debug(("%s - addr: %p\n",s.c_str(),ptr));
+         else
+            exprtk_debug(("%s - addr: %p size: %d\n",
+                          s.c_str(),
+                          ptr,
+                          static_cast<unsigned int>(size)));
       }
       #else
       inline void dump_ptr(const std::string&, const void*) {}
+      inline void dump_ptr(const std::string&, const void*, const std::size_t) {}
       #endif
 
       template <typename T>
@@ -4294,7 +4301,7 @@ namespace exprtk
             : ref_count(1),
               size     (0),
               data     (0),
-              destruct (false)
+              destruct (true)
             {}
 
             control_block(const std::size_t& dsize)
@@ -4365,7 +4372,7 @@ namespace exprtk
                destruct = true;
                data     = new T[size];
                std::fill_n(data,size,T(0));
-               dump_ptr("control_block::create_data() - data: ",data);
+               dump_ptr("control_block::create_data() - data",data,size);
             }
          };
 
@@ -4375,8 +4382,12 @@ namespace exprtk
          : control_block_(control_block::create(0))
          {}
 
-         vec_data_store(const std::size_t& size, data_t data = data_t(0), bool dstrct = false)
-         : control_block_(control_block::create(size,data,dstrct))
+         vec_data_store(const std::size_t& size)
+         : control_block_(control_block::create(size,(data_t)(0),true))
+         {}
+
+         vec_data_store(const std::size_t& size, data_t data, bool dstrct = false)
+         : control_block_(control_block::create(size, data, dstrct))
          {}
 
          vec_data_store(const type& vds)
@@ -4396,11 +4407,16 @@ namespace exprtk
             {
                std::size_t final_size = min_size(control_block_, vds.control_block_);
 
-               control_block::destroy(control_block_);
+               vds.control_block_->size = final_size;
+                   control_block_->size = final_size;
 
-               control_block_ = vds.control_block_;
-               control_block_->ref_count++;
-               control_block_->size = final_size;
+               if (control_block_->destruct || (0 == control_block_->data))
+               {
+                  control_block::destroy(control_block_);
+
+                  control_block_ = vds.control_block_;
+                  control_block_->ref_count++;
+               }
             }
 
             return *this;
@@ -6627,7 +6643,7 @@ namespace exprtk
 
          virtual vector_node_ptr vec() const = 0;
 
-         virtual vector_node_ptr vec() = 0;
+         virtual vector_node_ptr vec()       = 0;
 
          virtual       vds_t& vds   ()       = 0;
 
@@ -6649,10 +6665,10 @@ namespace exprtk
 
          vector_node(vector_holder_t* vh)
          : vector_holder_(vh),
-           vds_(ref().size(),ref()[0])
+           vds_((*vector_holder_).size(),(*vector_holder_)[0])
          {}
 
-         vector_node(vector_holder_t* vh, const vds_t& vds)
+         vector_node(const vds_t& vds, vector_holder_t* vh)
          : vector_holder_(vh),
            vds_(vds)
          {}
@@ -6660,16 +6676,6 @@ namespace exprtk
          inline T value() const
          {
             return vds().data()[0];
-         }
-
-         inline const vector_holder_t& ref() const
-         {
-            return (*vector_holder_);
-         }
-
-         inline vector_holder_t& ref()
-         {
-            return (*vector_holder_);
          }
 
          vector_node_ptr vec() const
@@ -6700,6 +6706,11 @@ namespace exprtk
          const vds_t& vds() const
          {
             return vds_;
+         }
+
+         inline vector_holder_t& vec_holder()
+         {
+            return (*vector_holder_);
          }
 
       private:
@@ -6941,8 +6952,8 @@ namespace exprtk
 
             if (vec0_node_ptr_ && vec1_node_ptr_)
             {
-               vec_size_ = std::min(vec0_node_ptr_->ref().size(),
-                                    vec1_node_ptr_->ref().size());
+               vec_size_ = std::min(vec0_node_ptr_->vds().size(),
+                                    vec1_node_ptr_->vds().size());
 
                initialised_ = true;
             }
@@ -6955,8 +6966,8 @@ namespace exprtk
                binary_node<T>::branch_[0].first->value();
                binary_node<T>::branch_[1].first->value();
 
-               T* vec0 = vec0_node_ptr_->ref().data();
-               T* vec1 = vec1_node_ptr_->ref().data();
+               T* vec0 = vec0_node_ptr_->vds().data();
+               T* vec1 = vec1_node_ptr_->vds().data();
 
                for (std::size_t i = 0; i < vec_size_; ++i)
                {
@@ -9462,8 +9473,8 @@ namespace exprtk
                binary_node<T>::branch_[0].first->value();
                binary_node<T>::branch_[1].first->value();
 
-               T* vec0 = vec0_node_ptr_->ref().data();
-               T* vec1 = vec1_node_ptr_->ref().data();
+               T* vec0 = vec0_node_ptr_->vds().data();
+               T* vec1 = vec1_node_ptr_->vds().data();
 
                loop_unroll::details lud(size());
                const T* upper_bound = vec0 + lud.upper_bound;
@@ -9615,8 +9626,8 @@ namespace exprtk
 
             if (vec0_node_ptr_ && vec1_node_ptr_)
             {
-               vector_holder<T>& vec0 = vec0_node_ptr_->ref();
-               vector_holder<T>& vec1 = vec1_node_ptr_->ref();
+               vector_holder<T>& vec0 = vec0_node_ptr_->vec_holder();
+               vector_holder<T>& vec1 = vec1_node_ptr_->vec_holder();
 
                if (v0_is_ivec && (vec0.size() <= vec1.size()))
                   vds_ = vds_t(vec0_node_ptr_->vds());
@@ -9626,7 +9637,7 @@ namespace exprtk
                   vds_ = vds_t(std::min(vec0.size(),vec1.size()));
 
                temp_          = new vector_holder<T>(vds().data(),vds().size());
-               temp_vec_node_ = new vector_node<T>  (temp_,vds());
+               temp_vec_node_ = new vector_node<T>  (vds(),temp_);
 
                initialised_ = true;
             }
@@ -9645,8 +9656,8 @@ namespace exprtk
                binary_node<T>::branch_[0].first->value();
                binary_node<T>::branch_[1].first->value();
 
-               T* vec0 = vec0_node_ptr_->ref().data();
-               T* vec1 = vec1_node_ptr_->ref().data();
+               T* vec0 = vec0_node_ptr_->vds().data();
+               T* vec1 = vec1_node_ptr_->vds().data();
                T* vec2 = vds().data();
 
                loop_unroll::details lud(size());
@@ -9780,12 +9791,12 @@ namespace exprtk
             if (vec0_node_ptr_)
             {
                if (v0_is_ivec)
-                  vds_        = vec0_node_ptr_->vds();
+                  vds() = vec0_node_ptr_->vds();
                else
-                  vds_        = vds_t(vec0_node_ptr_->size());
+                  vds() = vds_t(vec0_node_ptr_->size());
 
                temp_          = new vector_holder<T>(vds());
-               temp_vec_node_ = new vector_node<T>  (temp_);
+               temp_vec_node_ = new vector_node<T>  (vds(),temp_);
             }
          }
 
@@ -9802,7 +9813,7 @@ namespace exprtk
                            binary_node<T>::branch_[0].first->value();
                const T v = binary_node<T>::branch_[1].first->value();
 
-               T* vec0 = vec0_node_ptr_->ref().data();
+               T* vec0 = vec0_node_ptr_->vds().data();
                T* vec1 = vds().data();
 
                loop_unroll::details lud(size());
@@ -9933,12 +9944,12 @@ namespace exprtk
             if (vec1_node_ptr_)
             {
                if (v1_is_ivec)
-                  vds_ = vec1_node_ptr_->vds();
+                  vds() = vec1_node_ptr_->vds();
                else
-                  vds_ = vds_t(vec1_node_ptr_->size());
+                  vds() = vds_t(vec1_node_ptr_->size());
 
-               temp_          = new vector_holder<T>(      vds());
-               temp_vec_node_ = new vector_node<T>  (temp_,vds());
+               temp_          = new vector_holder<T>(vds());
+               temp_vec_node_ = new vector_node<T>  (vds(),temp_);
             }
          }
 
@@ -9956,7 +9967,7 @@ namespace exprtk
                            binary_node<T>::branch_[1].first->value();
 
                T* vec0 = vds().data();
-               T* vec1 = vec1_node_ptr_->ref().data();
+               T* vec1 = vec1_node_ptr_->vds().data();
 
                loop_unroll::details lud(size());
                const T* upper_bound = vec0 + lud.upper_bound;
@@ -10089,7 +10100,7 @@ namespace exprtk
                   vds_ = vds_t(vec0_node_ptr_->size());
 
                temp_          = new vector_holder<T>(vds());
-               temp_vec_node_ = new vector_node<T>  (temp_);
+               temp_vec_node_ = new vector_node<T>  (vds(),temp_);
             }
          }
 
@@ -10105,7 +10116,7 @@ namespace exprtk
 
             if (vec0_node_ptr_)
             {
-               T* vec0 = vec0_node_ptr_->ref().data();
+               T* vec0 = vec0_node_ptr_->vds().data();
                T* vec1 = vds().data();
 
                loop_unroll::details lud(size());
@@ -12058,8 +12069,8 @@ namespace exprtk
 
          static inline T process(const ivector_ptr v)
          {
-            const T* vec = v->vec()->ref().data();
-            const std::size_t vec_size = v->vec()->ref().size();
+            const T* vec = v->vec()->vds().data();
+            const std::size_t vec_size = v->vec()->vds().size();
 
             loop_unroll::details lud(vec_size);
 
@@ -12155,8 +12166,8 @@ namespace exprtk
 
          static inline T process(const ivector_ptr v)
          {
-            const T* vec = v->vec()->ref().data();
-            const std::size_t vec_size = v->vec()->ref().size();
+            const T* vec = v->vec()->vds().data();
+            const std::size_t vec_size = v->vec()->vds().size();
 
             loop_unroll::details lud(vec_size);
 
@@ -12252,7 +12263,7 @@ namespace exprtk
 
          static inline T process(const ivector_ptr v)
          {
-            const std::size_t vec_size = v->vec()->ref().size();
+            const std::size_t vec_size = v->vec()->vds().size();
 
             return vec_add_op<T>::process(v) / vec_size;
          }
@@ -12265,8 +12276,8 @@ namespace exprtk
 
          static inline T process(const ivector_ptr v)
          {
-            const T* vec = v->vec()->ref().data();
-            const std::size_t vec_size = v->vec()->ref().size();
+            const T* vec = v->vec()->vds().data();
+            const std::size_t vec_size = v->vec()->vds().size();
 
             T result = vec[0];
 
@@ -12289,8 +12300,8 @@ namespace exprtk
 
          static inline T process(const ivector_ptr v)
          {
-            const T* vec = v->vec()->ref().data();
-            const std::size_t vec_size = v->vec()->ref().size();
+            const T* vec = v->vec()->vds().data();
+            const std::size_t vec_size = v->vec()->vds().size();
 
             T result = vec[0];
 
@@ -26040,7 +26051,7 @@ namespace exprtk
                case e_st_vector   : {
                                        typedef details::vector_holder<T> vector_holder_t;
 
-                                       vector_holder_t& vh = static_cast<vector_node_t*>(node)->ref();
+                                       vector_holder_t& vh = static_cast<vector_node_t*>(node)->vec_holder();
 
                                        symbol_name = parser_->symtab_store_.get_vector_name(&vh);
                                     }
@@ -34580,9 +34591,9 @@ namespace exprtk
    namespace information
    {
       static const char* library = "Mathematical Expression Toolkit";
-      static const char* version = "2.718281828459045235360287471352662497"
-                                   "75724709369995957496696762772407663035";
-      static const char* date    = "20160909";
+      static const char* version = "2.71828182845904523536028747135266249775"
+                                   "7247093699959574966967627724076630353547";
+      static const char* date    = "20161010";
 
       static inline std::string data()
       {
