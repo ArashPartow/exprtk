@@ -49,7 +49,7 @@ void composite()
       .add(
       function_t("g","3*[f(x) + f(y)]","x","y"));  // g(x,y) = 3[f(x) + f(y)]
 
-   std::string expression_string = "g(1 + f(x),f(y) / 2)";
+   std::string expression_string = "g(1 + f(x), f(y) / 2)";
 
    expression_t expression;
    expression.register_symbol_table(symbol_table);

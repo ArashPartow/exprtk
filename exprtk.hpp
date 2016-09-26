@@ -793,7 +793,7 @@ namespace exprtk
             template <typename T>
             inline T abs_impl(const T v, real_type_tag)
             {
-               return ((v >= T(0)) ? v : -v);
+               return ((v < T(0)) ? -v : v);
             }
 
             template <typename T>
@@ -11123,27 +11123,28 @@ namespace exprtk
          bool               body_deletable_;
       };
 
-      #define exprtk_define_unary_op(OpName)                         \
-      template <typename T>                                          \
-      struct OpName##_op                                             \
-      {                                                              \
-         typedef typename functor_t<T>::Type Type;                   \
-                                                                     \
-         static inline T process(Type v)                             \
-         {                                                           \
-            return numeric:: OpName (v);                             \
-         }                                                           \
-                                                                     \
-         static inline typename expression_node<T>::node_type type() \
-         {                                                           \
-            return expression_node<T>::e_##OpName;                   \
-         }                                                           \
-                                                                     \
-         static inline details::operator_type operation()            \
-         {                                                           \
-            return details::e_##OpName;                              \
-         }                                                           \
-      };                                                             \
+      #define exprtk_define_unary_op(OpName)                    \
+      template <typename T>                                     \
+      struct OpName##_op                                        \
+      {                                                         \
+         typedef typename functor_t<T>::Type Type;              \
+         typedef typename expression_node<T>::node_type node_t; \
+                                                                \
+         static inline T process(Type v)                        \
+         {                                                      \
+            return numeric:: OpName (v);                        \
+         }                                                      \
+                                                                \
+         static inline node_t type()                            \
+         {                                                      \
+            return expression_node<T>::e_##OpName;              \
+         }                                                      \
+                                                                \
+         static inline details::operator_type operation()       \
+         {                                                      \
+            return details::e_##OpName;                         \
+         }                                                      \
+      };                                                        \
 
       exprtk_define_unary_op(abs  )
       exprtk_define_unary_op(acos )
