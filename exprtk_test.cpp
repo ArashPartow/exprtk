@@ -1796,6 +1796,7 @@ inline bool run_test01()
       for (std::size_t r = 0; r < rounds; ++r)
       {
          bool loop_result = true;
+
          for (std::size_t i = 0; i < expr_list_size; ++i)
          {
             T v[]     = { T(0.0), T(1.1), T(2.2), T(3.3), T(4.4), T(5.5) };
@@ -1804,6 +1805,66 @@ inline bool run_test01()
             T x = T(6.6);
             T y = T(7.7);
             T z = T(8.8);
+
+            exprtk::symbol_table<T> symbol_table;
+            symbol_table.add_variable("x",x);
+            symbol_table.add_variable("y",y);
+            symbol_table.add_variable("z",z);
+            symbol_table.add_vector  ("v",v);
+            symbol_table.add_vector  ("i",index);
+
+            exprtk::expression<T> expression;
+            expression.register_symbol_table(symbol_table);
+
+            {
+               exprtk::parser<T> parser;
+
+               if (!parser.compile(expr_list[i],expression))
+               {
+                  printf("run_test01() - Error: %s   Expression: %s\n",
+                         parser.error().c_str(),
+                         expr_list[i].c_str());
+
+                  loop_result = false;
+
+                  continue;
+               }
+            }
+
+            T result = expression.value();
+
+            if (not_equal(result,T(1)))
+            {
+               printf("run_test01() - Computation Error:  Expression: [%s]\tExpected: %19.15f\tResult: %19.15f\n",
+                      expr_list[i].c_str(),
+                      (double)1.0,
+                      (double)result);
+
+               loop_result = false;
+            }
+         }
+
+         if (!loop_result)
+         {
+            return false;
+         }
+      }
+
+      for (std::size_t r = 0; r < rounds; ++r)
+      {
+         bool loop_result = true;
+
+         for (std::size_t i = 0; i < expr_list_size; ++i)
+         {
+            T v_[]     = { T(0.0), T(1.1), T(2.2), T(3.3), T(4.4), T(5.5) };
+            T index_[] = { T(0)  , T(1)  , T(2)  , T(3)  , T(4)  , T(5)   };
+
+            T x = T(6.6);
+            T y = T(7.7);
+            T z = T(8.8);
+
+            exprtk::vector_view<T> v     = exprtk::make_vector_view(v_    ,6);
+            exprtk::vector_view<T> index = exprtk::make_vector_view(index_,6);
 
             exprtk::symbol_table<T> symbol_table;
             symbol_table.add_variable("x",x);
@@ -6119,6 +6180,84 @@ inline bool run_test18()
 
             failure = true;
          }
+      }
+
+      if (failure)
+         return false;
+   }
+
+   {
+      bool failure = false;
+
+      typedef exprtk::symbol_table<T> symbol_table_t;
+      typedef exprtk::expression<T>     expression_t;
+      typedef exprtk::parser<T>             parser_t;
+
+      std::vector<T> v0 { 0, 0, 0, 0, 0,  0,  0 };
+      std::vector<T> v1 { 0, 2, 4, 6, 8, 10, 12 };
+      std::vector<T> v2 { 1, 3, 5, 7, 9, 11, 13 };
+      std::vector<T> v3 { 0, 1, 2, 3, 4,  5,  6 };
+
+      const std::string expr_string = "sum(v + 1)";
+
+      exprtk::vector_view<T> v = exprtk::make_vector_view(v0,v0.size());
+
+      symbol_table_t symbol_table;
+      symbol_table.add_vector("v",v);
+
+      expression_t expression;
+      expression.register_symbol_table(symbol_table);
+
+      parser_t parser;
+
+      if (!parser.compile(expr_string,expression))
+      {
+         printf("run_test18() - Error: %s\tExpression: %s\n",
+                parser.error().c_str(),
+                expr_string.c_str());
+
+         failure = true;
+      }
+
+      T sum = { T(0) };
+
+      sum = expression.value();
+
+      if (not_equal(sum,T(7)))
+      {
+         printf("run_test18() - Error in evaluation! (6) Expression: %s\n",
+                expr_string.c_str());
+         failure = true;
+      }
+
+      v.rebase(v1.data());
+      sum = expression.value();
+
+      if (not_equal(sum,T(49)))
+      {
+         printf("run_test18() - Error in evaluation! (7) Expression: %s\n",
+                expr_string.c_str());
+         failure = true;
+      }
+
+      v.rebase(v2.data());
+      sum = expression.value();
+
+      if (not_equal(sum,T(56)))
+      {
+         printf("run_test18() - Error in evaluation! (8) Expression: %s\n",
+                expr_string.c_str());
+         failure = true;
+      }
+
+      v.rebase(v3.data());
+      sum = expression.value();
+
+      if (not_equal(sum,T(28)))
+      {
+         printf("run_test18() - Error in evaluation! (9) Expression: %s\n",
+                expr_string.c_str());
+         failure = true;
       }
 
       if (failure)
