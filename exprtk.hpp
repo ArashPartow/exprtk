@@ -3919,6 +3919,81 @@ namespace exprtk
       };
    }
 
+   template <typename T>
+   class vector_view
+   {
+   public:
+
+      typedef T* data_ptr_t;
+
+      vector_view(data_ptr_t data, const std::size_t& size)
+      : size_(size),
+        data_(data),
+        data_ref_(0)
+      {}
+
+      vector_view(const vector_view<T>& vv)
+      : size_(vv.size_),
+        data_(vv.data_),
+        data_ref_(0)
+      {}
+
+      inline void rebase(data_ptr_t data)
+      {
+         data_ = data;
+
+         if (data_ref_)
+         {
+            (*data_ref_) = data;
+         }
+      }
+
+      inline data_ptr_t data() const
+      {
+         return data_;
+      }
+
+      inline std::size_t size() const
+      {
+         return size_;
+      }
+
+      inline const T& operator[](const std::size_t index) const
+      {
+         return data_[index];
+      }
+
+      inline T& operator[](const std::size_t index)
+      {
+         return data_[index];
+      }
+
+      void set_ref(data_ptr_t* data_ref)
+      {
+         data_ref_ = data_ref;
+      }
+
+   private:
+
+      std::size_t size_;
+      data_ptr_t  data_;
+      data_ptr_t* data_ref_;
+   };
+
+   template <typename T>
+   inline vector_view<T> make_vector_view(T* data,
+                                          const std::size_t size, const std::size_t offset = 0)
+   {
+      return vector_view<T>(data + offset,size);
+   }
+
+   template <typename T>
+   inline vector_view<T> make_vector_view(std::vector<T>& v,
+                                          const std::size_t size, const std::size_t offset = 0)
+   {
+      return vector_view<T>(v.data() + offset,size);
+   }
+
    template <typename T> class results_context;
 
    template <typename T>
@@ -4440,6 +4515,11 @@ namespace exprtk
          inline std::size_t size() const
          {
             return control_block_->size;
+         }
+
+         inline data_t& ref()
+         {
+            return control_block_->data;
          }
 
          inline void dump() const
@@ -4983,6 +5063,8 @@ namespace exprtk
                return value_at(0);
             }
 
+            virtual void set_ref(value_ptr*) {}
+
          protected:
 
             virtual value_ptr value_at(const std::size_t&) const = 0;
@@ -5052,6 +5134,40 @@ namespace exprtk
             sequence_t& sequence_;
          };
 
+         class vector_view_impl : public vector_holder_base
+         {
+         public:
+
+            typedef exprtk::vector_view<Type> vector_view_t;
+
+            vector_view_impl(vector_view_t& vec_view)
+            : vec_view_(vec_view)
+            {}
+
+            void set_ref(value_ptr* ref)
+            {
+               vec_view_.set_ref(ref);
+            }
+
+         protected:
+
+            value_ptr value_at(const std::size_t& index) const
+            {
+               return (index < vec_view_.size()) ? (&vec_view_[index]) : const_value_ptr(0);
+            }
+
+            std::size_t vector_size() const
+            {
+               return vec_view_.size();
+            }
+
+         private:
+
+            vector_view_impl operator=(const vector_view_impl&);
+
+            vector_view_t& vec_view_;
+         };
+
       public:
 
          typedef typename details::vec_data_store<Type> vds_t;
@@ -5069,6 +5185,10 @@ namespace exprtk
          : vector_holder_base_(new(buffer)sequence_vector_impl<Allocator,std::vector>(vec))
          {}
 
+         vector_holder(exprtk::vector_view<Type>& vec)
+         : vector_holder_base_(new(buffer)vector_view_impl(vec))
+         {}
+
          inline value_ptr operator[](const std::size_t& index) const
          {
             return (*vector_holder_base_)[index];
@@ -5082,6 +5202,11 @@ namespace exprtk
          inline value_ptr data() const
          {
             return vector_holder_base_->data();
+         }
+
+         void set_ref(value_ptr* ref)
+         {
+            return vector_holder_base_->set_ref(ref);
          }
 
       private:
@@ -6666,7 +6791,9 @@ namespace exprtk
          vector_node(vector_holder_t* vh)
          : vector_holder_(vh),
            vds_((*vector_holder_).size(),(*vector_holder_)[0])
-         {}
+         {
+            vector_holder_->set_ref(&vds_.ref());
+         }
 
          vector_node(const vds_t& vds, vector_holder_t* vh)
          : vector_holder_(vh),
@@ -15382,6 +15509,14 @@ namespace exprtk
             }
          };
 
+         struct tie_vecview
+         {
+            static inline std::pair<bool,vector_t*> make(exprtk::vector_view<T>& v, const bool is_const = false)
+            {
+               return std::make_pair(is_const,new vector_t(v));
+            }
+         };
+
          struct tie_stddeq
          {
             template <typename Allocator>
@@ -15406,6 +15541,11 @@ namespace exprtk
          inline bool add(const std::string& symbol_name, std::vector<T,Allocator>& v, const bool is_const = false)
          {
             return add_impl<tie_stdvec,std::vector<T,Allocator>&>(symbol_name,v,is_const);
+         }
+
+         inline bool add(const std::string& symbol_name, exprtk::vector_view<T>& v, const bool is_const = false)
+         {
+            return add_impl<tie_vecview,exprtk::vector_view<T>&>(symbol_name,v,is_const);
          }
 
          template <typename Allocator>
@@ -16257,6 +16397,18 @@ namespace exprtk
 
       template <typename Allocator>
       inline bool add_vector(const std::string& vector_name, std::vector<T,Allocator>& v)
+      {
+         if (!valid())
+            return false;
+         else if (!valid_symbol(vector_name))
+            return false;
+         else if (symbol_exists(vector_name))
+            return false;
+         else
+            return local_data().vector_store.add(vector_name,v);
+      }
+
+      inline bool add_vector(const std::string& vector_name, exprtk::vector_view<T>& v)
       {
          if (!valid())
             return false;
