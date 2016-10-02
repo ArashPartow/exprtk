@@ -6193,10 +6193,19 @@ inline bool run_test18()
       typedef exprtk::expression<T>     expression_t;
       typedef exprtk::parser<T>             parser_t;
 
-      std::vector<T> v0 { 0, 0, 0, 0, 0,  0,  0 };
-      std::vector<T> v1 { 0, 2, 4, 6, 8, 10, 12 };
-      std::vector<T> v2 { 1, 3, 5, 7, 9, 11, 13 };
-      std::vector<T> v3 { 0, 1, 2, 3, 4,  5,  6 };
+      std::vector<T> v0;
+      std::vector<T> v1;
+      std::vector<T> v2;
+      std::vector<T> v3;
+
+      #define pb(v,N)    \
+      v.push_back(T(N)); \
+
+      pb(v0,0) pb(v0,0) pb(v0,0) pb(v0,0) pb(v0,0) pb(v0, 0) pb(v0, 0)
+      pb(v1,0) pb(v1,2) pb(v1,4) pb(v1,6) pb(v1,8) pb(v1,10) pb(v1,12)
+      pb(v2,1) pb(v2,3) pb(v2,5) pb(v2,7) pb(v2,9) pb(v2,11) pb(v2,13)
+      pb(v3,0) pb(v3,1) pb(v3,2) pb(v3,3) pb(v3,4) pb(v3, 5) pb(v3, 6)
+      #undef pb
 
       const std::string expr_string = "sum(v + 1)";
 
