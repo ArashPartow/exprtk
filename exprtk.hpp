@@ -1747,11 +1747,18 @@ namespace exprtk
 
          bool instate = false;
 
-         #define parse_digit_1(d) \
-         if ((digit = (*itr - '0')) < 10) { d = d * T(10) + digit; } else break; if (end == ++itr) break; \
+         #define parse_digit_1(d)         \
+         if ((digit = (*itr - '0')) < 10) \
+            { d = d * T(10) + digit; }    \
+         else                             \
+            { break; }                    \
+         if (end == ++itr) break;         \
 
-         #define parse_digit_2(d) \
-         if ((digit = (*itr - '0')) < 10) { d = d * T(10) + digit; } else break; ++itr; \
+         #define parse_digit_2(d)         \
+         if ((digit = (*itr - '0')) < 10) \
+            { d = d * T(10) + digit; }    \
+         else { break; }                  \
+            ++itr;                        \
 
          if ('.' != (*itr))
          {
@@ -25326,8 +25333,8 @@ namespace exprtk
          {
             typedef std::vector<expression_node_ptr> arg_list_t;
 
-            #define case_stmt(N) \
-            if (is_true(arg[(2 * N)])) return arg[(2 * N) + 1]->value();
+            #define case_stmt(N)                                             \
+            if (is_true(arg[(2 * N)])) { return arg[(2 * N) + 1]->value(); } \
 
             struct switch_1
             {
