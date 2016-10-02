@@ -1386,9 +1386,9 @@ inefficient.
    ...
    T sum = T(0);
 
-   for (auto& w : vv)
+   for (auto& new_vec : vv)
    {
-      v = w; // update vector
+      v = new_vec; // update vector
       sum += expression.value();
    }
 
@@ -1400,18 +1400,18 @@ needs  to  be  'updated' to  either another  vector or  sub-range, the
 vector_view instance  can be  efficiently rebased,  and the expression
 evaluated as normal.
 
-   exprtk::vector_view<T> vv = exprtk::make_vector_view(v, v.size());
+   exprtk::vector_view<T> view = exprtk::make_vector_view(v, v.size());
 
    symbol_table_t symbol_table;
-   symbol_table.add_vector("v",vv);
+   symbol_table.add_vector("v",view);
 
    ...
 
    T sum = T(0);
 
-   for (auto& w : vv)
+   for (auto& new_vec : vv)
    {
-      vv.rebase(new_vec.data()); // update vector
+      view.rebase(new_vec.data()); // update vector
       sum += expression.value();
    }
 
