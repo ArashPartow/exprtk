@@ -34874,11 +34874,11 @@ namespace exprtk
             switch (mode)
             {
                case e_write : reinterpret_cast<std::ofstream*>(stream_ptr)->
-                                 write(reinterpret_cast<const char*>(view.begin() + offset), amount * sizeof(View::value_t));
+                                 write(reinterpret_cast<const char*>(view.begin() + offset), amount * sizeof(typename View::value_t));
                               break;
 
                case e_rdwrt : reinterpret_cast<std::fstream*>(stream_ptr)->
-                                 write(reinterpret_cast<const char*>(view.begin() + offset) , amount * sizeof(View::value_t));
+                                 write(reinterpret_cast<const char*>(view.begin() + offset) , amount * sizeof(typename View::value_t));
                               break;
 
                default      : return false;
@@ -34893,11 +34893,11 @@ namespace exprtk
             switch (mode)
             {
                case e_read  : reinterpret_cast<std::ifstream*>(stream_ptr)->
-                                 read(reinterpret_cast<char*>(view.begin() + offset), amount * sizeof(View::value_t));
+                                 read(reinterpret_cast<char*>(view.begin() + offset), amount * sizeof(typename View::value_t));
                               break;
 
                case e_rdwrt : reinterpret_cast<std::fstream*>(stream_ptr)->
-                                 read(reinterpret_cast<char*>(view.begin() + offset) , amount * sizeof(View::value_t));
+                                 read(reinterpret_cast<char*>(view.begin() + offset) , amount * sizeof(typename View::value_t));
                               break;
 
                default      : return false;
