@@ -42,7 +42,7 @@ void primes()
    //Mode 1 - if statement based
    compositor
       .add(
-      function_t(
+      function_t( // define function: is_prime_impl1(x,y)
            "is_prime_impl1",
            " if (y == 1,true,                "
            "    if (0 == (x % y),false,      "
@@ -51,7 +51,7 @@ void primes()
 
    compositor
       .add(
-      function_t(
+      function_t( // define function: is_prime1(x)
            "is_prime1",
            " if (frac(x) != 0, false,                                "
            "    if (x <= 0, false,                                   "
@@ -61,7 +61,7 @@ void primes()
    //Mode 2 - switch statement based
    compositor
       .add(
-      function_t(
+      function_t( // define function: is_prime_impl2(x,y)
            "is_prime_impl2",
            " switch                                         "
            " {                                              "
@@ -73,7 +73,7 @@ void primes()
 
    compositor
       .add(
-      function_t(
+      function_t( // define function: is_prime2(x)
            "is_prime2",
            " switch                                                                 "
            " {                                                                      "
@@ -86,7 +86,7 @@ void primes()
    //Mode 3 - switch statement and while-loop based
    compositor
       .add(
-      function_t(
+      function_t( // define function: is_prime_impl3(x,y)
            "is_prime_impl3",
            " while (y > 0)                            "
            " {                                        "
@@ -101,7 +101,7 @@ void primes()
 
    compositor
       .add(
-      function_t(
+      function_t( // define function: is_prime3(x)
            "is_prime3",
            " switch                                                                 "
            " {                                                                      "

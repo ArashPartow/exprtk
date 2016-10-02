@@ -40,6 +40,7 @@
 #include <complex>
 #include <cstdio>
 #include <cstdlib>
+#include <cstring>
 #include <deque>
 #include <exception>
 #include <functional>
@@ -16487,6 +16488,12 @@ namespace exprtk
          return add_constant("inf",local_infinity);
       }
 
+      template <typename Package>
+      inline bool add_package(Package& package)
+      {
+         return package.register_package(*this);
+      }
+
       template <typename Allocator,
                 template <typename, typename> class Sequence>
       inline std::size_t get_variable_list(Sequence<std::pair<std::string,T>,Allocator>& vlist) const
@@ -32153,7 +32160,7 @@ namespace exprtk
 
             free_node(*node_allocator_,branch[1]);
 
-            return synthesize_str_xoxr_expression_impl<std::string&,const std::string>(opr,s0,s1,rp1);
+            return synthesize_str_xoxr_expression_impl<std::string&, const std::string>(opr,s0,s1,rp1);
          }
 
          inline expression_node_ptr synthesize_srosr_expression(const details::operator_type& opr, expression_node_ptr (&branch)[2])
@@ -32179,7 +32186,7 @@ namespace exprtk
 
             details::free_node(*node_allocator_,branch[1]);
 
-            return synthesize_sos_expression_impl<std::string&,const std::string>(opr,s0,s1);
+            return synthesize_sos_expression_impl<std::string&, const std::string>(opr,s0,s1);
          }
 
          inline expression_node_ptr synthesize_csos_expression(const details::operator_type& opr, expression_node_ptr (&branch)[2])
@@ -32217,7 +32224,7 @@ namespace exprtk
             details::free_node(*node_allocator_,branch[0]);
             details::free_node(*node_allocator_,branch[1]);
 
-            return synthesize_str_xrox_expression_impl<std::string&,const std::string>(opr,s0,s1,rp0);
+            return synthesize_str_xrox_expression_impl<std::string&, const std::string>(opr,s0,s1,rp0);
          }
 
          inline expression_node_ptr synthesize_srocsr_expression(const details::operator_type& opr, expression_node_ptr (&branch)[2])
@@ -32233,7 +32240,7 @@ namespace exprtk
             details::free_node(*node_allocator_,branch[0]);
             details::free_node(*node_allocator_,branch[1]);
 
-            return synthesize_str_xroxr_expression_impl<std::string&,const std::string>(opr,s0,s1,rp0,rp1);
+            return synthesize_str_xroxr_expression_impl<std::string&, const std::string>(opr,s0,s1,rp0,rp1);
          }
 
          inline expression_node_ptr synthesize_csocs_expression(const details::operator_type& opr, expression_node_ptr (&branch)[2])
@@ -32253,7 +32260,7 @@ namespace exprtk
                result = node_allocator_->allocate_c<details::literal_node<Type> >(details::ilike_op<Type>::process(s0,s1));
             else
             {
-               expression_node_ptr temp = synthesize_sos_expression_impl<const std::string,const std::string>(opr,s0,s1);
+               expression_node_ptr temp = synthesize_sos_expression_impl<const std::string, const std::string>(opr,s0,s1);
                Type v = temp->value();
                details::free_node(*node_allocator_,temp);
                result = node_allocator_->allocate<literal_node_t>(v);
@@ -32275,7 +32282,7 @@ namespace exprtk
             free_node(*node_allocator_,branch[0]);
             free_node(*node_allocator_,branch[1]);
 
-            return synthesize_str_xoxr_expression_impl<const std::string,const std::string>(opr,s0,s1,rp1);
+            return synthesize_str_xoxr_expression_impl<const std::string, const std::string>(opr,s0,s1,rp1);
          }
 
          inline expression_node_ptr synthesize_csros_expression(const details::operator_type& opr, expression_node_ptr (&branch)[2])
@@ -32332,7 +32339,7 @@ namespace exprtk
 
             details::free_all_nodes(*node_allocator_,branch);
 
-            return synthesize_str_xroxr_expression_impl<const std::string,const std::string>(opr,s0,s1,rp0,rp1);
+            return synthesize_str_xroxr_expression_impl<const std::string, const std::string>(opr,s0,s1,rp0,rp1);
          }
 
          inline expression_node_ptr synthesize_strogen_expression(const details::operator_type& opr, expression_node_ptr (&branch)[2])
@@ -34525,107 +34532,114 @@ namespace exprtk
       return true;
    }
 
-   namespace helper
+   namespace rtl
    {
-      namespace details
+      namespace io
       {
-         template <typename T>
-         inline void print_type(const std::string& fmt,
-                                const T v,
-                                exprtk::details::numeric::details::real_type_tag)
+         namespace details
          {
-            printf(fmt.c_str(),v);
-         }
-
-         template <typename T>
-         struct print_impl
-         {
-            typedef typename igeneric_function<T>::generic_type generic_type;
-            typedef typename igeneric_function<T>::parameter_list_t parameter_list_t;
-            typedef typename generic_type::scalar_view scalar_t;
-            typedef typename generic_type::vector_view vector_t;
-            typedef typename generic_type::string_view string_t;
-
-            static void process(const std::string& scalar_format, parameter_list_t parameters)
+            template <typename T>
+            inline void print_type(const std::string& fmt,
+                                   const T v,
+                                   exprtk::details::numeric::details::real_type_tag)
             {
-               for (std::size_t i = 0; i < parameters.size(); ++i)
+               printf(fmt.c_str(),v);
+            }
+
+            template <typename T>
+            struct print_impl
+            {
+               typedef typename igeneric_function<T>::generic_type generic_type;
+               typedef typename igeneric_function<T>::parameter_list_t parameter_list_t;
+               typedef typename generic_type::scalar_view scalar_t;
+               typedef typename generic_type::vector_view vector_t;
+               typedef typename generic_type::string_view string_t;
+
+               static void process(const std::string& scalar_format, parameter_list_t parameters)
                {
-                  generic_type& gt = parameters[i];
-
-                  typename exprtk::details::numeric::details::number_type<T>::type num_type;
-
-                  switch (gt.type)
+                  for (std::size_t i = 0; i < parameters.size(); ++i)
                   {
-                     case generic_type::e_scalar : print_type(scalar_format,scalar_t(gt)(),num_type);
-                                                   break;
+                     generic_type& gt = parameters[i];
 
-                     case generic_type::e_vector : {
-                                                      vector_t vector(gt);
+                     typename exprtk::details::numeric::details::number_type<T>::type num_type;
 
-                                                      for (std::size_t x = 0; x < vector.size(); ++x)
-                                                      {
-                                                         print_type(scalar_format,vector[x],num_type);
+                     switch (gt.type)
+                     {
+                        case generic_type::e_scalar : print_type(scalar_format,scalar_t(gt)(),num_type);
+                                                      break;
 
-                                                         if ((x + 1) < vector.size())
-                                                            printf(" ");
+                        case generic_type::e_vector : {
+                                                         vector_t vector(gt);
+
+                                                         for (std::size_t x = 0; x < vector.size(); ++x)
+                                                         {
+                                                            print_type(scalar_format,vector[x],num_type);
+
+                                                            if ((x + 1) < vector.size())
+                                                               printf(" ");
+                                                         }
                                                       }
-                                                   }
-                                                   break;
+                                                      break;
 
-                     case generic_type::e_string : printf("%s",to_str(string_t(gt)).c_str());
-                                                   break;
+                        case generic_type::e_string : printf("%s",to_str(string_t(gt)).c_str());
+                                                      break;
 
-                     default                     : continue;
+                        default                     : continue;
+                     }
                   }
                }
+            };
+
+         } // namespace exprtk::rtl::io::details
+
+         template <typename T>
+         struct print : public exprtk::igeneric_function<T>
+         {
+            typedef typename igeneric_function<T>::parameter_list_t parameter_list_t;
+
+            using exprtk::igeneric_function<T>::operator();
+
+            print(const std::string& scalar_format = "%10.5f")
+            : scalar_format_(scalar_format)
+            {
+               exprtk::enable_zero_parameters(*this);
             }
+
+            inline T operator()(parameter_list_t parameters)
+            {
+               details::print_impl<T>::process(scalar_format_,parameters);
+               return T(0);
+            }
+
+            std::string scalar_format_;
          };
-      }
 
-      template <typename T>
-      struct print : public exprtk::igeneric_function<T>
-      {
-         typedef typename igeneric_function<T>::parameter_list_t parameter_list_t;
-
-         using exprtk::igeneric_function<T>::operator();
-
-         print(const std::string& scalar_format = "%10.5f")
-         : scalar_format_(scalar_format)
+         template <typename T>
+         struct println : public exprtk::igeneric_function<T>
          {
-            exprtk::enable_zero_parameters(*this);
-         }
+            typedef typename igeneric_function<T>::parameter_list_t parameter_list_t;
 
-         inline T operator()(parameter_list_t parameters)
-         {
-            details::print_impl<T>::process(scalar_format_,parameters);
-            return T(0);
-         }
+            using exprtk::igeneric_function<T>::operator();
 
-         std::string scalar_format_;
-      };
+            println(const std::string& scalar_format = "%10.5f")
+            : scalar_format_(scalar_format)
+            {
+               exprtk::enable_zero_parameters(*this);
+            }
 
-      template <typename T>
-      struct println : public exprtk::igeneric_function<T>
-      {
-         typedef typename igeneric_function<T>::parameter_list_t parameter_list_t;
+            inline T operator()(parameter_list_t parameters)
+            {
+               details::print_impl<T>::process(scalar_format_,parameters);
+               printf("\n");
+               return T(0);
+            }
 
-         using exprtk::igeneric_function<T>::operator();
+            std::string scalar_format_;
+         };
 
-         println(const std::string& scalar_format = "%10.5f")
-         : scalar_format_(scalar_format)
-         {
-            exprtk::enable_zero_parameters(*this);
-         }
 
-         inline T operator()(parameter_list_t parameters)
-         {
-            details::print_impl<T>::process(scalar_format_,parameters);
-            printf("\n");
-            return T(0);
-         }
 
-         std::string scalar_format_;
-      };
+      }  // namespace exprtk::rtl::io
    }
 }
 
@@ -34740,6 +34754,496 @@ namespace exprtk
       #endif
    };
 
+} // namespace exprtk
+
+#ifndef exprtk_disable_rtl_io_file
+#include <fstream>
+namespace exprtk
+{
+   namespace rtl { namespace io { namespace file { namespace details
+   {
+      enum file_mode
+      {
+         e_error = 0,
+         e_read  = 1,
+         e_write = 2,
+         e_rdwrt = 4
+      };
+
+      struct file_descriptor
+      {
+         file_descriptor(const std::string& fname, const std::string& access)
+         : stream_ptr(0),
+           mode(get_file_mode(access)),
+           file_name(fname)
+         {}
+
+         void*       stream_ptr;
+         file_mode   mode;
+         std::string file_name;
+
+         bool open()
+         {
+            if (e_read == mode)
+            {
+               std::ifstream* stream = new std::ifstream(file_name.c_str(),std::ios::binary);
+
+               if (!(*stream))
+               {
+                  file_name.clear();
+                  delete stream;
+                  return false;
+               }
+               else
+                  stream_ptr = stream;
+
+               return true;
+            }
+            else if (e_write == mode)
+            {
+               std::ofstream* stream = new std::ofstream(file_name.c_str(),std::ios::binary);
+
+               if (!(*stream))
+               {
+                  file_name.clear();
+                  delete stream;
+                  return false;
+               }
+               else
+                  stream_ptr = stream;
+
+               return true;
+            }
+            else if (e_rdwrt == mode)
+            {
+               std::fstream* stream = new std::fstream(file_name.c_str(),std::ios::binary);
+
+               if (!(*stream))
+               {
+                  file_name.clear();
+                  delete stream;
+                  return false;
+               }
+               else
+                  stream_ptr = stream;
+
+               return true;
+            }
+            else
+               return false;
+         }
+
+         template <typename Stream, typename Ptr>
+         void close(Ptr& p)
+         {
+            Stream* stream = reinterpret_cast<Stream*>(p);
+            stream->close();
+            delete stream;
+            p = reinterpret_cast<Ptr>(0);
+         }
+
+         bool close()
+         {
+            switch (mode)
+            {
+               case e_read  : close<std::ifstream>(stream_ptr);
+                              break;
+
+               case e_write : close<std::ofstream>(stream_ptr);
+                              break;
+
+               case e_rdwrt : close<std::fstream> (stream_ptr);
+                              break;
+
+               default      : return false;
+            }
+
+            return true;
+         }
+
+         template <typename View>
+         bool write(const View& view, const std::size_t amount, const std::size_t offset = 0)
+         {
+            switch (mode)
+            {
+               case e_write : reinterpret_cast<std::ofstream*>(stream_ptr)->
+                                 write(reinterpret_cast<const char*>(view.begin() + offset), amount * sizeof(View::value_t));
+                              break;
+
+               case e_rdwrt : reinterpret_cast<std::fstream*>(stream_ptr)->
+                                 write(reinterpret_cast<const char*>(view.begin() + offset) , amount * sizeof(View::value_t));
+                              break;
+
+               default      : return false;
+            }
+
+            return true;
+         }
+
+         template <typename View>
+         bool read(View& view, const std::size_t amount, const std::size_t offset = 0)
+         {
+            switch (mode)
+            {
+               case e_read  : reinterpret_cast<std::ifstream*>(stream_ptr)->
+                                 read(reinterpret_cast<char*>(view.begin() + offset), amount * sizeof(View::value_t));
+                              break;
+
+               case e_rdwrt : reinterpret_cast<std::fstream*>(stream_ptr)->
+                                 read(reinterpret_cast<char*>(view.begin() + offset) , amount * sizeof(View::value_t));
+                              break;
+
+               default      : return false;
+            }
+
+            return true;
+         }
+
+         bool getline(std::string& s)
+         {
+            switch (mode)
+            {
+               case e_read  : return (!!std::getline(*reinterpret_cast<std::ifstream*>(stream_ptr),s));
+               case e_rdwrt : return (!!std::getline(*reinterpret_cast<std::fstream* >(stream_ptr),s));
+               default      : return false;
+            }
+
+            return true;
+         }
+
+         bool eof()
+         {
+            switch (mode)
+            {
+               case e_read  : return reinterpret_cast<std::ifstream*>(stream_ptr)->eof();
+               case e_write : return reinterpret_cast<std::ofstream*>(stream_ptr)->eof();
+               case e_rdwrt : return reinterpret_cast<std::fstream* >(stream_ptr)->eof();
+               default      : return true;
+            }
+         }
+
+         file_mode get_file_mode(const std::string& access)
+         {
+            std::size_t w_cnt = 0;
+            std::size_t r_cnt = 0;
+
+            for (std::size_t i = 0; i < access.size(); ++i)
+            {
+               switch (std::tolower(access[i]))
+               {
+                  case 'r' : r_cnt++; break;
+                  case 'w' : w_cnt++; break;
+               }
+            }
+
+            if ((0 == r_cnt) && (0 == w_cnt))
+               return e_error;
+            else if ((r_cnt > 1) || (w_cnt > 1))
+               return e_error;
+            else if ((1 == r_cnt) && (1 == w_cnt))
+               return e_rdwrt;
+            else if (1 == r_cnt)
+               return e_read;
+            else
+               return e_write;
+         }
+      };
+
+      template <typename T>
+      file_descriptor* make_handle(T v)
+      {
+         file_descriptor* fd = reinterpret_cast<file_descriptor*>(0);
+
+         std::memcpy(reinterpret_cast<char*>(&fd),
+                     reinterpret_cast<const char*>(&v),
+                     sizeof(fd));
+         return fd;
+      }
+
+      template <typename T>
+      void perform_check()
+      {
+         #ifdef _MSC_VER
+         #pragma warning(push)
+         #pragma warning(disable: 4127)
+         #endif
+         if (sizeof(T) < sizeof(void*))
+         {
+            throw std::runtime_error("exprtk::rtl::io::file - Error - pointer size larger than holder.");
+         }
+         #ifdef _MSC_VER
+         #pragma warning(pop)
+         #endif
+      }
+   } // namespace exprtk::rtl::io::file::details
+
+   template <typename T>
+   class open : public exprtk::igeneric_function<T>
+   {
+   public:
+
+      typedef typename exprtk::igeneric_function<T> igfun_t;
+      typedef typename igfun_t::parameter_list_t    parameter_list_t;
+      typedef typename igfun_t::generic_type        generic_type;
+      typedef typename generic_type::string_view    string_t;
+
+      using exprtk::igeneric_function<T>::operator();
+
+      open()
+      : exprtk::igeneric_function<T>("S|SS")
+      { details::perform_check<T>(); }
+
+      inline T operator()(const std::size_t& ps_index, parameter_list_t parameters)
+      {
+         std::string file_name;
+         std::string access;
+
+         file_name = to_str(string_t(parameters[0]));
+
+         if (file_name.empty())
+            return T(0);
+
+         if (0 == ps_index)
+            access = "r";
+         else if (0 == string_t(parameters[1]).size())
+            return T(0);
+         else
+            access = to_str(string_t(parameters[1]));
+
+         details::file_descriptor* fd = new details::file_descriptor(file_name,access);
+
+         if (fd->open())
+         {
+            T t = T(0);
+
+            std::memcpy(reinterpret_cast<char*>(&t),
+                        reinterpret_cast<char*>(&fd),
+                        sizeof(fd));
+            return t;
+         }
+         else
+         {
+            delete fd;
+            return T(0);
+         }
+      }
+   };
+
+   template <typename T>
+   struct close : public exprtk::ifunction<T>
+   {
+      using exprtk::ifunction<T>::operator();
+
+      close()
+      : exprtk::ifunction<T>(1)
+      { details::perform_check<T>(); }
+
+      inline T operator()(const T& v)
+      {
+         details::file_descriptor* fd = details::make_handle(v);
+
+         if (!fd->close())
+            return T(0);
+
+         delete fd;
+
+         return T(1);
+      }
+   };
+
+   template <typename T>
+   class write : public exprtk::igeneric_function<T>
+   {
+   public:
+
+      typedef typename exprtk::igeneric_function<T> igfun_t;
+      typedef typename igfun_t::parameter_list_t    parameter_list_t;
+      typedef typename igfun_t::generic_type        generic_type;
+      typedef typename generic_type::string_view    string_t;
+      typedef typename generic_type::scalar_view    scalar_t;
+      typedef typename generic_type::vector_view    vector_t;
+
+      using exprtk::igeneric_function<T>::operator();
+
+      write()
+      : igfun_t("TS|TST|TV|TVT")
+      { details::perform_check<T>(); }
+
+      inline T operator()(const std::size_t& ps_index, parameter_list_t parameters)
+      {
+         details::file_descriptor* fd = details::make_handle(scalar_t(parameters[0])());
+
+         std::size_t amount = 0;
+
+         switch (ps_index)
+         {
+            case 0  : {
+                         string_t buffer(parameters[1]);
+                         amount = buffer.size();
+                         return T(fd->write(buffer,amount) ? 1 : 0);
+                      }
+
+            case 1  : {
+                         string_t buffer(parameters[1]);
+                         amount = std::min(buffer.size(),
+                                           static_cast<std::size_t>(scalar_t(parameters[2])()));
+                         return T(fd->write(buffer,amount) ? 1 : 0);
+                      }
+
+            case 2  : {
+                         vector_t vec(parameters[1]);
+                         amount = vec.size();
+                         return T(fd->write(vec,amount) ? 1 : 0);
+                      }
+
+            case 3  : {
+                         vector_t vec(parameters[1]);
+                         amount = std::min(vec.size(),
+                                           static_cast<std::size_t>(scalar_t(parameters[2])()));
+                         return T(fd->write(vec,amount) ? 1 : 0);
+                      }
+         }
+
+         return T(0);
+      }
+   };
+
+   template <typename T>
+   class read : public exprtk::igeneric_function<T>
+   {
+   public:
+
+      typedef typename exprtk::igeneric_function<T> igfun_t;
+      typedef typename igfun_t::parameter_list_t    parameter_list_t;
+      typedef typename igfun_t::generic_type        generic_type;
+      typedef typename generic_type::string_view    string_t;
+      typedef typename generic_type::scalar_view    scalar_t;
+      typedef typename generic_type::vector_view    vector_t;
+
+      using exprtk::igeneric_function<T>::operator();
+
+      read()
+      : igfun_t("TS|TST|TV|TVT")
+      { details::perform_check<T>(); }
+
+      inline T operator()(const std::size_t& ps_index, parameter_list_t parameters)
+      {
+         details::file_descriptor* fd = details::make_handle(scalar_t(parameters[0])());
+
+         std::size_t amount = 0;
+
+         switch (ps_index)
+         {
+            case 0  : {
+                         string_t buffer(parameters[1]);
+                         amount = buffer.size();
+                         return T(fd->read(buffer,amount) ? 1 : 0);
+                      }
+
+            case 1  : {
+                         string_t buffer(parameters[1]);
+                         amount = std::min(buffer.size(),
+                                           static_cast<std::size_t>(scalar_t(parameters[2])()));
+                         return T(fd->read(buffer,amount) ? 1 : 0);
+                      }
+
+            case 2  : {
+                         vector_t vec(parameters[1]);
+                         amount = vec.size();
+                         return T(fd->read(vec,amount) ? 1 : 0);
+                      }
+
+            case 3  : {
+                         vector_t vec(parameters[1]);
+                         amount = std::min(vec.size(),
+                                           static_cast<std::size_t>(scalar_t(parameters[2])()));
+                         return T(fd->read(vec,amount) ? 1 : 0);
+                      }
+         }
+
+         return T(0);
+      }
+   };
+
+   template <typename T>
+   class getline : public exprtk::igeneric_function<T>
+   {
+   public:
+
+      typedef typename exprtk::igeneric_function<T> igfun_t;
+      typedef typename igfun_t::parameter_list_t    parameter_list_t;
+      typedef typename igfun_t::generic_type        generic_type;
+      typedef typename generic_type::string_view    string_t;
+      typedef typename generic_type::scalar_view    scalar_t;
+
+      using exprtk::igeneric_function<T>::operator();
+
+      getline()
+      : igfun_t("T",igfun_t::e_rtrn_string)
+      { details::perform_check<T>(); }
+
+      inline T operator()(std::string& result,
+                          parameter_list_t parameters)
+      {
+         details::file_descriptor* fd = details::make_handle(scalar_t(parameters[0])());
+         return T(fd->getline(result) ? 1 : 0);
+      }
+   };
+
+   template <typename T>
+   struct eof : public exprtk::ifunction<T>
+   {
+      using exprtk::ifunction<T>::operator();
+
+      eof()
+      : exprtk::ifunction<T>(1)
+      { details::perform_check<T>(); }
+
+      inline T operator()(const T& v)
+      {
+         details::file_descriptor* fd = details::make_handle(v);
+
+         return (fd->eof() ? T(1) : T(0));
+      }
+   };
+
+   template <typename T>
+   struct package
+   {
+      open   <T> o;
+      close  <T> c;
+      write  <T> w;
+      read   <T> r;
+      getline<T> g;
+      eof    <T> e;
+
+      bool register_package(exprtk::symbol_table<T>& symtab)
+      {
+              if (!symtab.add_function("open"   ,o))
+            return false;
+         else if (!symtab.add_function("close"  ,c))
+            return false;
+         else if (!symtab.add_function("write"  ,w))
+            return false;
+         else if (!symtab.add_function("read"   ,r))
+            return false;
+         else if (!symtab.add_function("getline",g))
+            return false;
+         else if (!symtab.add_function("eof"    ,e))
+            return false;
+         else
+            return true;
+      }
+   };
+
+   } // namespace exprtk::rtl::io::file
+   } // namespace exprtk::rtl::io
+   } // namespace exprtk::rtl
+}    // namespace exprtk
+#endif
+
+namespace exprtk
+{
    namespace information
    {
       static const char* library = "Mathematical Expression Toolkit";

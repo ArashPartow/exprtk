@@ -627,7 +627,7 @@ A  vector  can be  indexed  resulting in  a  scalar value.  Operations
 between a vector and scalar will result in a vector with a size  equal
 to that  of the  original vector,  whereas operations  between vectors
 will result in a  vector of size equal  to that of the  smaller of the
-two.
+two. In both mentioned cases, the operations will occur element-wise.
 
 
 (3) String Type
@@ -743,6 +743,25 @@ registration of the symbol_tables to the expression.
    parser.compile(expression_string,expression);
 
    expression.value(); // 123 + 1
+
+
+The symbol table supports  adding references to external  instances of
+types  that  can  be accessed  within  expressions  via the  following
+methods:
+
+   1. bool add_variable (const std::string& name,      scalar_t)
+   2. bool add_constant (const std::string& name,const scalar_t)
+   3. bool add_stringvar(const std::string& name,   std::string)
+   4. bool add_vector   (const std::string& name,   vector_type)
+
+
+The 'vector' type must consist of a contiguous array of scalars  which
+can be one of the following:
+
+   1. std::vector<scalar_t>
+   2. scalar_t(&v)[N]
+   3. scalar_t* and array size
+   4. exprtk::vector_view<scalar_t>
 
 
 (2) Expression
@@ -1284,7 +1303,8 @@ with vectors:
 Note: When one of  the above  described operations  is being performed
 between two  vectors, the  operation will  only span  the size  of the
 smallest vector.  The elements  of the  larger vector  outside of  the
-range will not be included.
+range will  not be included. The  operation  itself will  be processed
+element-wise over values the smaller of the two ranges.
 
 The  following  simple  example  demonstrates  the  vector  processing
 capabilities by computing the dot-product of the vectors v0 and v1 and
@@ -1308,9 +1328,9 @@ the previously mentioned dot-product computation expression:
    }
 
 
-Note:  When  the  aggregate  operations  denoted  above  are  used  in
-conjunction with a  vector or vector  expression, the return  value is
-not a vector but rather a single value.
+Note: When  the aggregate or reduction  operations denoted  above  are
+used  in conjunction with a  vector or  vector  expression, the return
+value is not a vector but rather a single value.
 
    var x[3] := { 1, 2, 3 };
 
@@ -1320,6 +1340,80 @@ not a vector but rather a single value.
    min(1 / x)  == (1 / 3)
    max(x / 2)  == (3 / 2)
    sum(x > 0 and x < 5) == x[]
+
+
+When utilizing external user defined  vectors via the symbol table  as
+opposed to expression local defined vectors, the typical  'add_vector'
+method from the symbol table will register the entirety of the  vector
+that is passed. The following example attempts to evaluate the sum  of
+elements of  the external  user defined  vector within  a typical  yet
+trivial expression:
+
+   std::string reduce_program = " sum(2 * v + 1) ";
+
+   std::vector<T> v0 { T(1.1), T(2.2), ..... , T(99.99) };
+
+   symbol_table_t symbol_table;
+   symbol_table.add_vector("v",v);
+
+   expression_t expression;
+   expression.register_symbol_table(symbol_table);
+
+   parser_t parser;
+   parser.compile(reduce_program,expression);
+
+   T sum = expression.value();
+
+
+For the most part, this is  a very common use-case. However there  may
+be situations where one may want to evaluate the same vector  oriented
+expression many times over, but using different vectors or sub  ranges
+of the same vector of the same size to that of the original upon every
+evaluation.
+
+The usual solution is to  either recompile the expression for  the new
+vector instance, or to  copy the contents from  the new vector to  the
+symbol table registered vector  and then perform the  evaluation. When
+the  vectors are  large or  the re-evaluation  attempts are  numerous,
+these  solutions  can  become  rather  time  consuming  and  generally
+inefficient.
+
+   std::vector<T> v1 { T(2.2), T(2.2), ..... , T(2.2) };
+   std::vector<T> v2 { T(3.3), T(3.3), ..... , T(3.3) };
+   std::vector<T> v3 { T(4.4), T(4.4), ..... , T(4.4) };
+
+   std::vector<std::vector<T>> vv { v1, v2, v3 };
+   ...
+   T sum = T(0);
+
+   for (auto& w : vv)
+   {
+      v = w; // update vector
+      sum += expression.value();
+   }
+
+
+A  solution  to  the  above  'efficiency'  problem,  is  to  use   the
+exprtk::vector_view  object. The  vector_view is  instantiated with  a
+size and backing based upon a vector. Upon evaluations if the  backing
+needs  to  be  'updated' to  either another  vector or  sub-range, the
+vector_view instance  can be  efficiently rebased,  and the expression
+evaluated as normal.
+
+   exprtk::vector_view<T> vv = exprtk::make_vector_view(v, v.size());
+
+   symbol_table_t symbol_table;
+   symbol_table.add_vector("v",vv);
+
+   ...
+
+   T sum = T(0);
+
+   for (auto& w : vv)
+   {
+      vv.rebase(new_vec.data()); // update vector
+      sum += expression.value();
+   }
 
      ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
@@ -2745,14 +2839,23 @@ into account when using ExprTk:
         (x + y) / (x - y);
       }
 
- (30) For performance considerations,  one should assume  the actions
+ (30) It is recommended when prototyping expressions that the  ExprTk
+      REPL be utilised, as it supports all the features available  in
+      the library,  including complete  error analysis,  benchmarking
+      and   dependency   dumps    etc   which   allows    for   rapid
+      coding/prototyping  and  debug  cycles  without  the  hassle of
+      having to  recompile test  programs with  expressions that have
+      been hard-coded. It's also a  good source of truth for  how the
+      library's various features can be applied.
+
+ (31) For performance considerations,  one should assume  the actions
       of expression, symbol  table and parser  instance instantiation
       and destruction, and the expression compilation process  itself
       to be of high latency. Hence none of them should be part of any
       performance  critical  code  paths, and  should  instead  occur
       entirely either before or after such code paths.
 
- (31) Before jumping in and using ExprTk, do take the time to  peruse
+ (32) Before jumping in and using ExprTk, do take the time to  peruse
       the documentation and all of the examples, both in the main and
       the extras  distributions. Having  an informed  general view of
       what can and  can't be done,  and how something  should be done
@@ -2879,6 +2982,7 @@ the ExprTk header. The defines are as follows:
    (5) exprtk_disable_enhanced_features
    (6) exprtk_disable_string_capabilities
    (7) exprtk_disable_superscalar_unroll
+   (8) exprtk_disable_rtl_io_file
 
 
 (1) exprtk_enable_debugging
@@ -2919,6 +3023,11 @@ targeting  non-superscalar  architectures, it  may  be recommended  to
 build using this particular option if efficiency of evaluations is  of
 concern.
 
+(8) exprtk_disable_rtl_io_file
+This  define will  disable  the  file I/O  RTL package  features. When
+present, any  attempts to register  the file I/O package with  a given
+symbol table will fail causing a compilation error.
+
      ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
 [23 - FILES]
@@ -2947,6 +3056,7 @@ files:
    (19) exprtk_simple_example_15.cpp
    (20) exprtk_simple_example_16.cpp
    (21) exprtk_simple_example_17.cpp
+   (22) exprtk_simple_example_18.cpp
 
      ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
