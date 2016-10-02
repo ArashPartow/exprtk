@@ -42,7 +42,7 @@ void newton_sqrt()
 
    compositor
       .add(
-      function_t(
+      function_t( // define function: newton_sqrt(x)
            "newton_sqrt",
            " switch                               "
            " {                                    "

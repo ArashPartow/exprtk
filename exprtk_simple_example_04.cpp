@@ -34,7 +34,7 @@ void fibonacci()
 
    compositor
       .add(
-      function_t(
+      function_t( // define function: fibonacci(x)
            "fibonacci",
            " var w := 0;             "
            " var y := 0;             "
