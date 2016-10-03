@@ -877,8 +877,8 @@ behaviours  when  using the  expressions in  various contexts such  as
 muli-threading et al.
 
 The prescribed method for cloning an expression is to compile it  from
-its string form. Doing so will allow the one to properly consider  the
-exact source of user defined variables and functions.
+its string  form. Doing so will allow the 'user' to  properly consider
+the exact source of user defined variables and functions.
 
 Note:  The  exprtk::parser  is  a  non-copyable  and  non-thread  safe
 component, and should only be shared via either a reference, a  shared
@@ -893,19 +893,19 @@ operations  for  compiling  multiple expressions  via  the  parser and
 inserting  the  newly  minted  exprtk::expression  instances  into   a
 std::vector.
 
-
-                        +--[exprtk::parser]--+
-                        | expression factory |
-                     +---->- compile(....) ->---+
-                     |  +--------------------+  |
-  Expressions        |                          |   Expressions as
-  in string form     A                          V   exprtk::expression
-                     |                          |   instances
-  [s0:'x+1']------+  |                          |   +-[e0: x+1]
-                  |  |                          |   |
-  [s1:'2z+y']-----+--+                          +-->+-[e1: 2z+y]
-                  |                                 |
-  [s2:'sin(k+w)']-+                                 +-[e2: sin(k+w)]
+                      +----[exprtk::parser]---+
+                      |   Expression Factory  |
+                      | parser_t::compile(...)|
+                    +--> ~.~.~.~.~.~.~.~.~.~ ->--+
+                    | +-----------------------+  |
+ Expressions in     |                            |  Expressions as
+ string form        A                            V  exprtk::expression
+                    |                            |  instances
+ [s0:'x+1']--->--+  |                            |  +-[e0: x+1]
+                 |  |                            |  |
+ [s1:'2z+y']-->--+--+                            +->+-[e1: 2z+y]
+                 |                                  |
+ [s2:'sin(k+w)']-+                                  +-[e2: sin(k+w)]
 
 
    const std::string expression_str[3]
