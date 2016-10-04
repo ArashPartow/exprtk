@@ -33,7 +33,7 @@ void file_io()
                 " var file_name := 'file.txt';                         "
                 " var stream    := null;                               "
                 "                                                      "
-                " if (stream := open('file.txt','w'))                  "
+                " if (stream := open(file_name,'w'))                   "
                 "   println('Successfully opened file: ' + file_name); "
                 " else                                                 "
                 " {                                                    "
