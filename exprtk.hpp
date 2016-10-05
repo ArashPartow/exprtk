@@ -3950,9 +3950,12 @@ namespace exprtk
       {
          data_ = data;
 
-         if (data_ref_)
+         if (!data_ref_.empty())
          {
-            (*data_ref_) = data;
+            for (std::size_t i = 0; i < data_ref_.size(); ++i)
+            {
+               (*data_ref_[i]) = data;
+            }
          }
       }
 
@@ -3978,14 +3981,14 @@ namespace exprtk
 
       void set_ref(data_ptr_t* data_ref)
       {
-         data_ref_ = data_ref;
+         data_ref_.push_back(data_ref);
       }
 
    private:
 
       std::size_t size_;
       data_ptr_t  data_;
-      data_ptr_t* data_ref_;
+      std::vector<data_ptr_t*> data_ref_;
    };
 
    template <typename T>
@@ -4751,11 +4754,11 @@ namespace exprtk
             e_vovocov      , e_vocovov      , e_covovov      , e_covocov      ,
             e_vocovoc      , e_covovoc      , e_vococov      , e_sf3ext       ,
             e_sf4ext       , e_nulleq       , e_strass       , e_vector       ,
-            e_vecelem      , e_vecdefass    , e_vecvalass    , e_vecvecass    ,
-            e_vecopvalass  , e_vecopvecass  , e_vecfunc      , e_vecvecswap   ,
-            e_vecvecineq   , e_vecvalineq   , e_valvecineq   , e_vecvecarith  ,
-            e_vecvalarith  , e_valvecarith  , e_vecunaryop   , e_break        ,
-            e_continue     , e_swap
+            e_vecelem      , e_rbvecelem    , e_rbveccelem   , e_vecdefass    ,
+            e_vecvalass    , e_vecvecass    , e_vecopvalass  , e_vecopvecass  ,
+            e_vecfunc      , e_vecvecswap   , e_vecvecineq   , e_vecvalineq   ,
+            e_valvecineq   , e_vecvecarith  , e_vecvalarith  , e_valvecarith  ,
+            e_vecunaryop   , e_break        , e_continue     , e_swap
          };
 
          typedef T value_type;
@@ -4845,8 +4848,10 @@ namespace exprtk
       {
          return node &&
                 (
-                  details::expression_node<T>::e_variable == node->type() ||
-                  details::expression_node<T>::e_vecelem  == node->type()
+                  details::expression_node<T>::e_variable   == node->type() ||
+                  details::expression_node<T>::e_vecelem    == node->type() ||
+                  details::expression_node<T>::e_rbvecelem  == node->type() ||
+                  details::expression_node<T>::e_rbveccelem == node->type()
                 );
       }
 
@@ -4854,6 +4859,18 @@ namespace exprtk
       inline bool is_vector_elem_node(const expression_node<T>* node)
       {
          return node && (details::expression_node<T>::e_vecelem == node->type());
+      }
+
+      template <typename T>
+      inline bool is_rebasevector_elem_node(const expression_node<T>* node)
+      {
+         return node && (details::expression_node<T>::e_rbvecelem == node->type());
+      }
+
+      template <typename T>
+      inline bool is_rebasevector_celem_node(const expression_node<T>* node)
+      {
+         return node && (details::expression_node<T>::e_rbveccelem == node->type());
       }
 
       template <typename T>
@@ -5071,6 +5088,11 @@ namespace exprtk
                return value_at(0);
             }
 
+            virtual inline bool rebaseable() const
+            {
+               return false;
+            }
+
             virtual void set_ref(value_ptr*) {}
 
          protected:
@@ -5157,6 +5179,11 @@ namespace exprtk
                vec_view_.set_ref(ref);
             }
 
+            virtual inline bool rebaseable() const
+            {
+               return true;
+            }
+
          protected:
 
             value_ptr value_at(const std::size_t& index) const
@@ -5215,6 +5242,11 @@ namespace exprtk
          void set_ref(value_ptr* ref)
          {
             return vector_holder_base_->set_ref(ref);
+         }
+
+         bool rebaseable() const
+         {
+            return vector_holder_base_->rebaseable();
          }
 
       private:
@@ -6910,6 +6942,118 @@ namespace exprtk
          vector_holder_ptr vec_holder_;
          T* vector_base_;
          bool index_deletable_;
+      };
+
+      template <typename T>
+      class rebasevector_elem_node : public expression_node<T>,
+                                     public ivariable      <T>
+      {
+      public:
+
+         typedef expression_node<T>* expression_ptr;
+         typedef vector_holder<T>    vector_holder_t;
+         typedef vector_holder_t*    vector_holder_ptr;
+         typedef vec_data_store<T>   vds_t;
+
+         rebasevector_elem_node(expression_ptr index, vector_holder_ptr vec_holder)
+         : index_(index),
+           index_deletable_(branch_deletable(index_)),
+           vector_holder_(vec_holder),
+           vds_((*vector_holder_).size(),(*vector_holder_)[0])
+         {
+            vector_holder_->set_ref(&vds_.ref());
+         }
+
+        ~rebasevector_elem_node()
+         {
+            if (index_ && index_deletable_)
+            {
+               delete index_;
+            }
+         }
+
+         inline T value() const
+         {
+            return *(vds_.data() + static_cast<std::size_t>(details::numeric::to_int64(index_->value())));
+         }
+
+         inline T& ref()
+         {
+            return *(vds_.data() + static_cast<std::size_t>(details::numeric::to_int64(index_->value())));
+         }
+
+         inline const T& ref() const
+         {
+            return *(vds_.data() + static_cast<std::size_t>(details::numeric::to_int64(index_->value())));
+         }
+
+         inline typename expression_node<T>::node_type type() const
+         {
+            return expression_node<T>::e_rbvecelem;
+         }
+
+         inline vector_holder_t& vec_holder()
+         {
+            return (*vector_holder_);
+         }
+
+      private:
+
+         expression_ptr index_;
+         bool index_deletable_;
+         vector_holder_ptr vector_holder_;
+         vds_t             vds_;
+      };
+
+      template <typename T>
+      class rebasevector_celem_node : public expression_node<T>,
+                                      public ivariable      <T>
+      {
+      public:
+
+         typedef expression_node<T>* expression_ptr;
+         typedef vector_holder<T>    vector_holder_t;
+         typedef vector_holder_t*    vector_holder_ptr;
+         typedef vec_data_store<T>   vds_t;
+
+         rebasevector_celem_node(const std::size_t index, vector_holder_ptr vec_holder)
+         : index_(index),
+           vector_holder_(vec_holder),
+           vds_((*vector_holder_).size(),(*vector_holder_)[0])
+         {
+            vector_holder_->set_ref(&vds_.ref());
+         }
+
+         inline T value() const
+         {
+            return *(vds_.data() + index_);
+         }
+
+         inline T& ref()
+         {
+            return *(vds_.data() + index_);
+         }
+
+         inline const T& ref() const
+         {
+            return *(vds_.data() + index_);
+         }
+
+         inline typename expression_node<T>::node_type type() const
+         {
+            return expression_node<T>::e_rbveccelem;
+         }
+
+         inline vector_holder_t& vec_holder()
+         {
+            return (*vector_holder_);
+         }
+
+      private:
+
+         std::size_t index_;
+         vector_holder_ptr vector_holder_;
+         vds_t vds_;
       };
 
       template <typename T>
@@ -9097,6 +9241,82 @@ namespace exprtk
       };
 
       template <typename T>
+      class assignment_rebasevec_elem_node : public binary_node<T>
+      {
+      public:
+
+         typedef expression_node<T>* expression_ptr;
+
+         assignment_rebasevec_elem_node(const operator_type& opr,
+                                        expression_ptr branch0,
+                                        expression_ptr branch1)
+         : binary_node<T>(opr,branch0,branch1),
+           rbvec_node_ptr_(0)
+         {
+            if (is_rebasevector_elem_node(binary_node<T>::branch_[0].first))
+            {
+               rbvec_node_ptr_ = static_cast<rebasevector_elem_node<T>*>(binary_node<T>::branch_[0].first);
+            }
+         }
+
+         inline T value() const
+         {
+            if (rbvec_node_ptr_)
+            {
+               T& result = rbvec_node_ptr_->ref();
+
+               result = binary_node<T>::branch_[1].first->value();
+
+               return result;
+            }
+            else
+               return std::numeric_limits<T>::quiet_NaN();
+         }
+
+      private:
+
+         rebasevector_elem_node<T>* rbvec_node_ptr_;
+      };
+
+      template <typename T>
+      class assignment_rebasevec_celem_node : public binary_node<T>
+      {
+      public:
+
+         typedef expression_node<T>* expression_ptr;
+
+         assignment_rebasevec_celem_node(const operator_type& opr,
+                                         expression_ptr branch0,
+                                         expression_ptr branch1)
+         : binary_node<T>(opr,branch0,branch1),
+           rbvec_node_ptr_(0)
+         {
+            if (is_rebasevector_celem_node(binary_node<T>::branch_[0].first))
+            {
+               rbvec_node_ptr_ = static_cast<rebasevector_celem_node<T>*>(binary_node<T>::branch_[0].first);
+            }
+         }
+
+         inline T value() const
+         {
+            if (rbvec_node_ptr_)
+            {
+               T& result = rbvec_node_ptr_->ref();
+
+               result = binary_node<T>::branch_[1].first->value();
+
+               return result;
+            }
+            else
+               return std::numeric_limits<T>::quiet_NaN();
+         }
+
+      private:
+
+         rebasevector_celem_node<T>* rbvec_node_ptr_;
+      };
+
+      template <typename T>
       class assignment_vec_node : public binary_node     <T>,
                                   public vector_interface<T>
       {
@@ -9434,6 +9654,80 @@ namespace exprtk
       private:
 
          vector_elem_node<T>* vec_node_ptr_;
+      };
+
+      template <typename T, typename Operation>
+      class assignment_rebasevec_elem_op_node : public binary_node<T>
+      {
+      public:
+
+         typedef expression_node<T>* expression_ptr;
+
+         assignment_rebasevec_elem_op_node(const operator_type& opr,
+                                           expression_ptr branch0,
+                                           expression_ptr branch1)
+         : binary_node<T>(opr,branch0,branch1),
+           rbvec_node_ptr_(0)
+         {
+            if (is_rebasevector_elem_node(binary_node<T>::branch_[0].first))
+            {
+               rbvec_node_ptr_ = static_cast<rebasevector_elem_node<T>*>(binary_node<T>::branch_[0].first);
+            }
+         }
+
+         inline T value() const
+         {
+            if (rbvec_node_ptr_)
+            {
+               T& v = rbvec_node_ptr_->ref();
+                  v = Operation::process(v,binary_node<T>::branch_[1].first->value());
+
+               return v;
+            }
+            else
+               return std::numeric_limits<T>::quiet_NaN();
+         }
+
+      private:
+
+         rebasevector_elem_node<T>* rbvec_node_ptr_;
+      };
+
+      template <typename T, typename Operation>
+      class assignment_rebasevec_celem_op_node : public binary_node<T>
+      {
+      public:
+
+         typedef expression_node<T>* expression_ptr;
+
+         assignment_rebasevec_celem_op_node(const operator_type& opr,
+                                            expression_ptr branch0,
+                                            expression_ptr branch1)
+         : binary_node<T>(opr,branch0,branch1),
+           rbvec_node_ptr_(0)
+         {
+            if (is_rebasevector_celem_node(binary_node<T>::branch_[0].first))
+            {
+               rbvec_node_ptr_ = static_cast<rebasevector_celem_node<T>*>(binary_node<T>::branch_[0].first);
+            }
+         }
+
+         inline T value() const
+         {
+            if (rbvec_node_ptr_)
+            {
+               T& v = rbvec_node_ptr_->ref();
+                  v = Operation::process(v,binary_node<T>::branch_[1].first->value());
+
+               return v;
+            }
+            else
+               return std::numeric_limits<T>::quiet_NaN();
+         }
+
+      private:
+
+         rebasevector_celem_node<T>* rbvec_node_ptr_;
       };
 
       template <typename T, typename Operation>
@@ -10787,22 +11081,20 @@ namespace exprtk
       {
       public:
 
-         typedef type_store<T>                      type_store_t;
-         typedef expression_node<T>*              expression_ptr;
-         typedef variable_node<T>                variable_node_t;
-         typedef vector_elem_node<T>          vector_elem_node_t;
-         typedef vector_node<T>                    vector_node_t;
-         typedef variable_node_t*            variable_node_ptr_t;
-         typedef vector_elem_node_t*      vector_elem_node_ptr_t;
-         typedef vector_node_t*                vector_node_ptr_t;
-         typedef range_interface<T>            range_interface_t;
-         typedef range_data_type<T>            range_data_type_t;
-         typedef range_pack<T>                           range_t;
-         typedef std::pair<expression_ptr,bool>         branch_t;
-         typedef std::pair<void*,std::size_t>             void_t;
-         typedef std::vector<T>                         tmp_vs_t;
-         typedef std::vector<type_store_t>      typestore_list_t;
-         typedef std::vector<range_data_type_t>     range_list_t;
+         typedef type_store<T>                         type_store_t;
+         typedef expression_node<T>*                 expression_ptr;
+         typedef variable_node<T>                   variable_node_t;
+         typedef vector_node<T>                       vector_node_t;
+         typedef variable_node_t*               variable_node_ptr_t;
+         typedef vector_node_t*                   vector_node_ptr_t;
+         typedef range_interface<T>               range_interface_t;
+         typedef range_data_type<T>               range_data_type_t;
+         typedef range_pack<T>                              range_t;
+         typedef std::pair<expression_ptr,bool>            branch_t;
+         typedef std::pair<void*,std::size_t>                void_t;
+         typedef std::vector<T>                            tmp_vs_t;
+         typedef std::vector<type_store_t>         typestore_list_t;
+         typedef std::vector<range_data_type_t>        range_list_t;
 
          generic_function_node(const std::vector<expression_ptr>& arg_list,
                                GenericFunction* func = (GenericFunction*)(0))
@@ -16858,6 +17150,7 @@ namespace exprtk
             if (expr && details::branch_deletable(expr))
             {
                delete expr;
+               expr = reinterpret_cast<expression_ptr>(0);
             }
 
             if (!local_data_list.empty())
@@ -17351,6 +17644,8 @@ namespace exprtk
       typedef details::switch_node     <T>                    switch_node_t;
       typedef details::variable_node   <T>                  variable_node_t;
       typedef details::vector_elem_node<T>               vector_elem_node_t;
+      typedef details::rebasevector_elem_node<T>   rebasevector_elem_node_t;
+      typedef details::rebasevector_celem_node<T> rebasevector_celem_node_t;
       typedef details::vector_node     <T>                    vector_node_t;
       typedef details::range_pack      <T>                          range_t;
       #ifndef exprtk_disable_string_capabilities
@@ -17366,7 +17661,9 @@ namespace exprtk
       typedef details::cons_conditional_str_node<T> cons_conditional_str_node_t;
       #endif
       typedef details::assignment_node<T>                 assignment_node_t;
-      typedef details::assignment_vec_elem_node<T> assignment_vec_elem_node_t;
+      typedef details::assignment_vec_elem_node       <T> assignment_vec_elem_node_t;
+      typedef details::assignment_rebasevec_elem_node <T> assignment_rebasevec_elem_node_t;
+      typedef details::assignment_rebasevec_celem_node<T> assignment_rebasevec_celem_node_t;
       typedef details::assignment_vec_node     <T>    assignment_vec_node_t;
       typedef details::assignment_vecvec_node  <T> assignment_vecvec_node_t;
       typedef details::scand_node<T>                           scand_node_t;
@@ -17435,10 +17732,11 @@ namespace exprtk
          };
 
          typedef details::vector_holder<T> vector_holder_t;
-         typedef variable_node_t*   variable_node_ptr;
-         typedef vector_holder_t*   vector_holder_ptr;
+         typedef variable_node_t*        variable_node_ptr;
+         typedef vector_holder_t*        vector_holder_ptr;
+         typedef expression_node_t*    expression_node_ptr;
          #ifndef exprtk_disable_string_capabilities
-         typedef stringvar_node_t* stringvar_node_ptr;
+         typedef stringvar_node_t*      stringvar_node_ptr;
          #endif
 
          scope_element()
@@ -17503,8 +17801,8 @@ namespace exprtk
          element_type type;
          bool         active;
          void*        data;
-         variable_node_ptr  var_node;
-         vector_holder_ptr  vec_node;
+         expression_node_ptr var_node;
+         vector_holder_ptr   vec_node;
          #ifndef exprtk_disable_string_capabilities
          stringvar_node_ptr str_node;
          #endif
@@ -17514,8 +17812,9 @@ namespace exprtk
       {
       public:
 
-         typedef variable_node_t* variable_node_ptr;
-         typedef parser<T> parser_t;
+         typedef expression_node_t* expression_node_ptr;
+         typedef variable_node_t*     variable_node_ptr;
+         typedef parser<T>                     parser_t;
 
          scope_element_manager(parser<T>& p)
          : parser_(p),
@@ -17630,24 +17929,24 @@ namespace exprtk
          {
             switch (se.type)
             {
-               case scope_element::e_variable: if (se.data    ) delete (T*) se.data;
-                                               if (se.var_node) delete se.var_node;
-                                               break;
+               case scope_element::e_variable   : if (se.data    ) delete (T*) se.data;
+                                                  if (se.var_node) delete se.var_node;
+                                                  break;
 
-               case scope_element::e_vector  : if (se.data    ) delete[] (T*) se.data;
-                                               if (se.vec_node) delete se.vec_node;
-                                               break;
+               case scope_element::e_vector     : if (se.data    ) delete[] (T*) se.data;
+                                                  if (se.vec_node) delete se.vec_node;
+                                                  break;
 
-               case scope_element::e_vecelem : if (se.var_node) delete se.var_node;
-                                               break;
+               case scope_element::e_vecelem    : if (se.var_node) delete se.var_node;
+                                                  break;
 
                #ifndef exprtk_disable_string_capabilities
-               case scope_element::e_string  : if (se.data    ) delete (std::string*) se.data;
-                                               if (se.str_node) delete se.str_node;
-                                               break;
+               case scope_element::e_string     : if (se.data    ) delete (std::string*) se.data;
+                                                  if (se.str_node) delete se.str_node;
+                                                  break;
                #endif
 
-               default                       : return;
+               default                          : return;
             }
 
             se.clear();
@@ -17670,22 +17969,28 @@ namespace exprtk
             return ++input_param_cnt_;
          }
 
-         inline variable_node_ptr get_variable(const T& v)
+         inline expression_node_ptr get_variable(const T& v)
          {
             for (std::size_t i = 0; i < element_.size(); ++i)
             {
                scope_element& se = element_[i];
 
-               if (se.active && se.var_node)
+               if (
+                    se.active   &&
+                    se.var_node &&
+                    details::is_variable_node(se.var_node)
+                 )
                {
-                  if (&se.var_node->ref() == (&v))
+                  variable_node_ptr vn = reinterpret_cast<variable_node_ptr>(se.var_node);
+
+                  if (&(vn->ref()) == (&v))
                   {
                      return se.var_node;
                   }
                }
             }
 
-            return variable_node_ptr(0);
+            return expression_node_ptr(0);
          }
 
       private:
@@ -23179,7 +23484,7 @@ namespace exprtk
             return parse_define_string_statement(var_name,initialisation_expression);
          }
 
-         variable_node_t* var_node = reinterpret_cast<variable_node_t*>(0);
+         expression_node_ptr var_node = reinterpret_cast<expression_node_ptr>(0);
 
          scope_element& se = sem_.get_element(var_name);
 
@@ -23271,7 +23576,7 @@ namespace exprtk
             return error_node();
          }
 
-         variable_node_t* var_node = reinterpret_cast<variable_node_t*>(0);
+         expression_node_ptr var_node = reinterpret_cast<expression_node_ptr>(0);
 
          scope_element& se = sem_.get_element(var_name);
 
@@ -24772,9 +25077,11 @@ namespace exprtk
                   return !b1_is_genstring;
                else
                   return (
-                           !details::is_variable_node   (branch[0]) &&
-                           !details::is_vector_elem_node(branch[0]) &&
-                           !details::is_vector_node     (branch[0])
+                           !details::is_variable_node          (branch[0]) &&
+                           !details::is_vector_elem_node       (branch[0]) &&
+                           !details::is_rebasevector_elem_node (branch[0]) &&
+                           !details::is_rebasevector_celem_node(branch[0]) &&
+                           !details::is_vector_node            (branch[0])
                          )
                          || b1_is_genstring;
             }
@@ -26119,7 +26426,10 @@ namespace exprtk
 
                details::free_node(*node_allocator_,index);
 
-               Type* v = (*vector_base)[i];
+               if (vector_base->rebaseable())
+               {
+                  return node_allocator_->allocate<rebasevector_celem_node_t>(i,vector_base);
+               }
 
                scope_element& se = parser_->sem_.get_element(symbol,i);
 
@@ -26137,7 +26447,7 @@ namespace exprtk
                   nse.index     = i;
                   nse.depth     = parser_->state_.scope_depth;
                   nse.data      = 0;
-                  nse.var_node  = new variable_node_t((*v));
+                  nse.var_node  = node_allocator_->allocate<variable_node_t>((*(*vector_base)[i]));
 
                   if (!parser_->sem_.add_element(nse))
                   {
@@ -26155,8 +26465,10 @@ namespace exprtk
                   result = nse.var_node;
                }
             }
+            else if (vector_base->rebaseable())
+               result = node_allocator_->allocate<rebasevector_elem_node_t>(index,vector_base);
             else
-               result = node_allocator_->allocate<details::vector_elem_node<Type> >(index,vector_base);
+               result = node_allocator_->allocate<vector_elem_node_t>(index,vector_base);
 
             return result;
          }
@@ -26257,6 +26569,18 @@ namespace exprtk
 
                return synthesize_expression<assignment_vec_elem_node_t, 2>(operation, branch);
             }
+            else if (details::is_rebasevector_elem_node(branch[0]))
+            {
+               lodge_assignment(e_st_vecelem,branch[0]);
+
+               return synthesize_expression<assignment_rebasevec_elem_node_t, 2>(operation, branch);
+            }
+            else if (details::is_rebasevector_celem_node(branch[0]))
+            {
+               lodge_assignment(e_st_vecelem,branch[0]);
+
+               return synthesize_expression<assignment_rebasevec_celem_node_t, 2>(operation, branch);
+            }
             #ifndef exprtk_disable_string_capabilities
             else if (details::is_string_node(branch[0]))
             {
@@ -26319,6 +26643,42 @@ namespace exprtk
                   case op0 : return node_allocator_->                                                                   \
                                  template allocate_rrr<typename details::assignment_vec_elem_op_node<Type,op1<Type> > > \
                                     (operation,branch[0],branch[1]);                                                    \
+
+                  case_stmt(details::e_addass,details::add_op)
+                  case_stmt(details::e_subass,details::sub_op)
+                  case_stmt(details::e_mulass,details::mul_op)
+                  case_stmt(details::e_divass,details::div_op)
+                  case_stmt(details::e_modass,details::mod_op)
+                  #undef case_stmt
+                  default : return error_node();
+               }
+            }
+            else if (details::is_rebasevector_elem_node(branch[0]))
+            {
+               switch (operation)
+               {
+                  #define case_stmt(op0,op1)                                                                                  \
+                  case op0 : return node_allocator_->                                                                         \
+                                 template allocate_rrr<typename details::assignment_rebasevec_elem_op_node<Type,op1<Type> > > \
+                                    (operation,branch[0],branch[1]);                                                          \
+
+                  case_stmt(details::e_addass,details::add_op)
+                  case_stmt(details::e_subass,details::sub_op)
+                  case_stmt(details::e_mulass,details::mul_op)
+                  case_stmt(details::e_divass,details::div_op)
+                  case_stmt(details::e_modass,details::mod_op)
+                  #undef case_stmt
+                  default : return error_node();
+               }
+            }
+            else if (details::is_rebasevector_celem_node(branch[0]))
+            {
+               switch (operation)
+               {
+                  #define case_stmt(op0,op1)                                                                                   \
+                  case op0 : return node_allocator_->                                                                          \
+                                 template allocate_rrr<typename details::assignment_rebasevec_celem_op_node<Type,op1<Type> > > \
+                                    (operation,branch[0],branch[1]);                                                           \
 
                   case_stmt(details::e_addass,details::add_op)
                   case_stmt(details::e_subass,details::sub_op)
