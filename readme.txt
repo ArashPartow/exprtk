@@ -749,10 +749,10 @@ The symbol table supports  adding references to external  instances of
 types  that  can  be accessed  within  expressions  via the  following
 methods:
 
-   1. bool add_variable (const std::string& name,      scalar_t)
-   2. bool add_constant (const std::string& name,const scalar_t)
-   3. bool add_stringvar(const std::string& name,   std::string)
-   4. bool add_vector   (const std::string& name,   vector_type)
+   1. bool add_variable (const std::string& name,       scalar_t&)
+   2. bool add_constant (const std::string& name, const scalar_t&)
+   3. bool add_stringvar(const std::string& name,    std::string&)
+   4. bool add_vector   (const std::string& name,    vector_type&)
 
 
 The 'vector' type must consist of a contiguous array of scalars  which

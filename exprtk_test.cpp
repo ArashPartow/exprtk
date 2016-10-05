@@ -6273,6 +6273,69 @@ inline bool run_test18()
          return false;
    }
 
+   {
+      bool failure = false;
+
+      typedef exprtk::symbol_table<T> symbol_table_t;
+      typedef exprtk::expression<T>     expression_t;
+      typedef exprtk::parser<T>             parser_t;
+
+      std::vector<T> v0;
+      std::vector<T> s;
+
+      #define pb(v,N)    \
+      v.push_back(T(N)); \
+
+      pb(v0,0) pb(v0,1) pb(v0,2) pb(v0,3) pb(v0,4)
+      pb(v0,5) pb(v0,6) pb(v0,7) pb(v0,8) pb(v0,9)
+
+      pb(s, 3) pb(s, 6) pb(s, 9) pb(s,12)
+      pb(s,15) pb(s,18) pb(s,21)
+      #undef pb
+
+      const std::string expr_string = "v[0] + v[1] + v[2]";
+
+      exprtk::vector_view<T> v = exprtk::make_vector_view(v0,4);
+
+      symbol_table_t symbol_table;
+      symbol_table.add_vector("v",v);
+
+      expression_t expression;
+      expression.register_symbol_table(symbol_table);
+
+      parser_t parser;
+
+      if (!parser.compile(expr_string,expression))
+      {
+         printf("run_test18() - Error: %s\tExpression: %s\n",
+                parser.error().c_str(),
+                expr_string.c_str());
+
+         failure = true;
+      }
+
+      for (std::size_t i = 0; i < v0.size() - 4; ++i)
+      {
+         v.rebase(v0.data() + i);
+
+         T sum = expression.value();
+
+         if (not_equal(sum,s[i]))
+         {
+            printf("run_test18() - Error in evaluation! (7) Expression: %s  Expected: %5.3f  Computed: %5.3f\n",
+                   expr_string.c_str(),
+                   s[i],
+                   sum);
+
+            failure = true;
+         }
+
+      }
+
+      if (failure)
+         return false;
+   }
+
    return true;
 }
 
