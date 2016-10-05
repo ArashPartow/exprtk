@@ -28,7 +28,7 @@ struct myfunc : public exprtk::ifunction<T>
 
    myfunc()
    : exprtk::ifunction<T>(2)
-   {}
+   { exprtk::disable_has_side_effects(*this); }
 
    inline T operator()(const T& v1, const T& v2)
    {
