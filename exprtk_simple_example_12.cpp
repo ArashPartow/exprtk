@@ -47,7 +47,7 @@ void bubble_sort()
                   "   upper_bound -= 1;                               "
                   " until (not(swapped) or (upper_bound == 0));       ";
 
-   T v[] = { T(2.2), T(1.1), T(5.5), T(4.4), T(3.3) };
+   T v[] = { T(9.9), T(2.2), T(1.1), T(5.5), T(7.7), T(4.4), T(3.3) };
 
    symbol_table_t symbol_table;
    symbol_table.add_vector("v",v);

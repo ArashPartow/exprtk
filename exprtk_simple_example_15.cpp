@@ -61,7 +61,6 @@ void black_scholes_merton_model()
    expression.register_symbol_table(symbol_table);
 
    parser_t parser;
-
    parser.compile(bsm_model_program,expression);
 
    {
