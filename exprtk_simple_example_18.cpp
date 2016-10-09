@@ -56,12 +56,12 @@ void file_io()
                 "   return [false];                                    "
                 " }                                                    ";
 
+   exprtk::rtl::io::file::package<T> fileio_package;
    exprtk::rtl::io::println<T>       println;
-   exprtk::rtl::io::file::package<T> package;
 
    symbol_table_t symbol_table;
    symbol_table.add_function("println",println);
-   symbol_table.add_package (package);
+   symbol_table.add_package (fileio_package   );
 
    expression_t expression;
    expression.register_symbol_table(symbol_table);
