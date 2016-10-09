@@ -66,7 +66,10 @@ namespace exprtk
 
    namespace details
    {
-      inline bool is_whitespace(const char c)
+      typedef unsigned char uchar_t;
+      typedef char           char_t;
+
+      inline bool is_whitespace(const char_t c)
       {
          return (' '  == c) || ('\n' == c) ||
                 ('\r' == c) || ('\t' == c) ||
@@ -74,7 +77,7 @@ namespace exprtk
                 ('\f' == c) ;
       }
 
-      inline bool is_operator_char(const char c)
+      inline bool is_operator_char(const char_t c)
       {
          return ('+' == c) || ('-' == c) ||
                 ('*' == c) || ('/' == c) ||
@@ -89,43 +92,43 @@ namespace exprtk
                 ('|' == c) || (';' == c) ;
       }
 
-      inline bool is_letter(const char c)
+      inline bool is_letter(const char_t c)
       {
          return (('a' <= c) && (c <= 'z')) ||
                 (('A' <= c) && (c <= 'Z')) ;
       }
 
-      inline bool is_digit(const char c)
+      inline bool is_digit(const char_t c)
       {
          return ('0' <= c) && (c <= '9');
       }
 
-      inline bool is_letter_or_digit(const char c)
+      inline bool is_letter_or_digit(const char_t c)
       {
          return is_letter(c) || is_digit(c);
       }
 
-      inline bool is_left_bracket(const char c)
+      inline bool is_left_bracket(const char_t c)
       {
          return ('(' == c) || ('[' == c) || ('{' == c);
       }
 
-      inline bool is_right_bracket(const char c)
+      inline bool is_right_bracket(const char_t c)
       {
          return (')' == c) || (']' == c) || ('}' == c);
       }
 
-      inline bool is_bracket(const char c)
+      inline bool is_bracket(const char_t c)
       {
          return is_left_bracket(c) || is_right_bracket(c);
       }
 
-      inline bool is_sign(const char c)
+      inline bool is_sign(const char_t c)
       {
          return ('+' == c) || ('-' == c);
       }
 
-      inline bool is_invalid(const char c)
+      inline bool is_invalid(const char_t c)
       {
          return !is_whitespace   (c) &&
                 !is_operator_char(c) &&
@@ -138,7 +141,7 @@ namespace exprtk
                 ('\'' != c);
       }
 
-      inline bool imatch(const char c1, const char c2)
+      inline bool imatch(const char_t c1, const char_t c2)
       {
          return std::tolower(c1) == std::tolower(c2);
       }
@@ -217,7 +220,7 @@ namespace exprtk
                 (('a' <= digit) && (digit <= 'f')) ;
       }
 
-      inline unsigned char hex_to_bin(unsigned char h)
+      inline uchar_t hex_to_bin(uchar_t h)
       {
          if (('0' <= h) && (h <= '9'))
             return (h - '0');
@@ -339,8 +342,8 @@ namespace exprtk
 
             for (std::size_t i = 0; i < length;  ++i)
             {
-               const char c1 = static_cast<char>(std::tolower(s1[i]));
-               const char c2 = static_cast<char>(std::tolower(s2[i]));
+               const char_t c1 = static_cast<char>(std::tolower(s1[i]));
+               const char_t c2 = static_cast<char>(std::tolower(s2[i]));
 
                if (c1 > c2)
                   return false;
@@ -502,7 +505,7 @@ namespace exprtk
 
       struct cs_match
       {
-         static inline bool cmp(const char c0, const char c1)
+         static inline bool cmp(const char_t c0, const char_t c1)
          {
             return (c0 == c1);
          }
@@ -510,7 +513,7 @@ namespace exprtk
 
       struct cis_match
       {
-         static inline bool cmp(const char c0, const char c1)
+         static inline bool cmp(const char_t c0, const char_t c1)
          {
             return (std::tolower(c0) == std::tolower(c1));
          }
@@ -621,7 +624,7 @@ namespace exprtk
          {
             if ('*' == (*p_itr))
             {
-               const char target = static_cast<char>(std::toupper(*(p_itr - 1)));
+               const char_t target = static_cast<char>(std::toupper(*(p_itr - 1)));
 
                if ('*' == target)
                {
@@ -1697,8 +1700,8 @@ namespace exprtk
       template <typename Iterator, typename T>
       static inline bool parse_inf(Iterator& itr, const Iterator end, T& t, bool negative)
       {
-         static const char inf_uc[] = "INFINITY";
-         static const char inf_lc[] = "infinity";
+         static const char_t inf_uc[] = "INFINITY";
+         static const char_t inf_lc[] = "infinity";
          static const std::size_t inf_length = 8;
 
          const std::size_t length = std::distance(itr,end);
@@ -2091,6 +2094,7 @@ namespace exprtk
          typedef token token_t;
          typedef std::vector<token_t> token_list_t;
          typedef std::vector<token_t>::iterator token_list_itr_t;
+         typedef details::char_t char_t;
 
          generator()
          : base_itr_(0),
@@ -2255,7 +2259,7 @@ namespace exprtk
             // 3. /* .... */
             struct test
             {
-               static inline bool comment_start(const char c0, const char c1, int& mode, int& incr)
+               static inline bool comment_start(const char_t c0, const char_t c1, int& mode, int& incr)
                {
                   mode = 0;
                        if ('#' == c0)    { mode = 1; incr = 1; }
@@ -2267,7 +2271,7 @@ namespace exprtk
                   return (0 != mode);
                }
 
-               static inline bool comment_end(const char c0, const char c1, const int mode)
+               static inline bool comment_end(const char_t c0, const char_t c1, const int mode)
                {
                   return (
                            ((1 == mode) && ('\n' == c0)) ||
@@ -2358,15 +2362,15 @@ namespace exprtk
          {
             token_t t;
 
-            const char c0 = s_itr_[0];
+            const char_t c0 = s_itr_[0];
 
             if (!is_end(s_itr_ + 1))
             {
-               const char c1 = s_itr_[1];
+               const char_t c1 = s_itr_[1];
 
                if (!is_end(s_itr_ + 2))
                {
-                  const char c2 = s_itr_[2];
+                  const char_t c2 = s_itr_[2];
 
                   if ((c0 == '<') && (c1 == '=') && (c2 == '>'))
                   {
@@ -3283,7 +3287,7 @@ namespace exprtk
                     exprtk::details::is_bracket(t.value[0])
                   )
                {
-                  char c = t.value[0];
+                  details::char_t c = t.value[0];
 
                        if (t.type == lexer::token::e_lbracket)    stack_.push(std::make_pair(')',t.position));
                   else if (t.type == lexer::token::e_lcrlbracket) stack_.push(std::make_pair('}',t.position));
@@ -4142,14 +4146,38 @@ namespace exprtk
          : v_(*reinterpret_cast<value_t*>(const_cast<type_store_t&>(ts).data))
          {}
 
-         value_t& operator()()
+         inline value_t& operator()()
          {
             return v_;
          }
 
-         const value_t& operator()() const
+         inline const value_t& operator()() const
          {
             return v_;
+         }
+
+         template <typename IntType>
+         inline bool to_int(IntType& i) const
+         {
+            if (!exprtk::details::numeric::is_integer(v_))
+               return false;
+
+            i = static_cast<IntType>(v_);
+
+            return true;
+         }
+
+         template <typename UIntType>
+         inline bool to_uint(UIntType& u) const
+         {
+            if (v_ < T(0))
+               return false;
+            else if (!exprtk::details::numeric::is_integer(v_))
+               return false;
+
+            u = static_cast<UIntType>(v_);
+
+            return true;
          }
 
          T& v_;
@@ -5252,7 +5280,7 @@ namespace exprtk
       private:
 
          mutable vector_holder_base* vector_holder_base_;
-         unsigned char buffer[64];
+         uchar_t buffer[64];
       };
 
       template <typename T>
@@ -17557,7 +17585,7 @@ namespace exprtk
 
          for (std::size_t i = error.token.position; i > 0; --i)
          {
-            const char c = expression[i];
+            const details::char_t c = expression[i];
 
             if (('\n' == c) || ('\r' == c))
             {
@@ -18455,12 +18483,9 @@ namespace exprtk
       struct parser_state
       {
          parser_state()
-         : parsing_return_stmt(false),
-           parsing_break_stmt (false),
-           return_stmt_present(false),
-           side_effect_present(false),
-           scope_depth(0)
-         {}
+         {
+            reset();
+         }
 
          void reset()
          {
@@ -21225,7 +21250,7 @@ namespace exprtk
                      nse.type      = scope_element::e_variable;
                      nse.depth     = state_.scope_depth;
                      nse.data      = new T(T(0));
-                     nse.var_node  = new variable_node_t(*(T*)(nse.data));
+                     nse.var_node  = node_allocator_.allocate<variable_node_t>(*(T*)(nse.data));
 
                      if (!sem_.add_element(nse))
                      {
@@ -22429,8 +22454,8 @@ namespace exprtk
 
             for (std::size_t i = 0; i < param_seq_list_.size(); ++i)
             {
-               std::size_t diff_index = 0;
-               char        diff_value = 0;
+               details::char_t diff_value = 0;
+               std::size_t     diff_index = 0;
 
                bool result = details::sequence_match(param_seq_list_[i],
                                                      param_seq,
@@ -23519,7 +23544,7 @@ namespace exprtk
             nse.type      = scope_element::e_variable;
             nse.depth     = state_.scope_depth;
             nse.data      = new T(T(0));
-            nse.var_node  = new variable_node_t(*(T*)(nse.data));
+            nse.var_node  = node_allocator_.allocate<variable_node_t>(*(T*)(nse.data));
 
             if (!sem_.add_element(nse))
             {
@@ -23609,7 +23634,7 @@ namespace exprtk
             nse.depth     = state_.scope_depth;
             nse.ip_index  = sem_.next_ip_index();
             nse.data      = new T(T(0));
-            nse.var_node  = new variable_node_t(*(T*)(nse.data));
+            nse.var_node  = node_allocator_.allocate<variable_node_t>(*(T*)(nse.data));
 
             if (!sem_.add_element(nse))
             {
@@ -26535,7 +26560,7 @@ namespace exprtk
                                     }
                                     break;
 
-               case e_st_vecelem   : {
+               case e_st_vecelem  : {
                                        typedef details::vector_holder<T> vector_holder_t;
 
                                        vector_holder_t& vh = static_cast<vector_elem_node_t*>(node)->vec_holder();
