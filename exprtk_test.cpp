@@ -6462,6 +6462,133 @@ inline bool run_test18()
          return false;
    }
 
+   {
+      bool failure = false;
+
+      typedef exprtk::symbol_table<T> symbol_table_t;
+      typedef exprtk::expression<T>     expression_t;
+      typedef exprtk::parser<T>             parser_t;
+
+      exprtk::rtl::vecops::package<T> vecops_pkg;
+
+      symbol_table_t symbol_table;
+      symbol_table.add_package(vecops_pkg);
+
+      std::string expr_str_list[] =
+                  {
+                     "var v[9] := {1,2,3,4,5,6,7,8,9};  all_true(v) == true" ,
+                     "var v[6] := {-1,-2,-3,-4,-5,-6};  all_true(v) == true" ,
+                     "var v[8] := {1,2,3,0,0,0,0,0};    all_true(v) == false",
+                     "var v[8] := {-1,-2,-3,0,0,0,0,0}; all_true(v) == false",
+                     "var v[9] := {0,0,0,0,0,0,0,0,0};  all_true(v + 1) == true",
+
+                     "var v[9] := {0,0,0,0,0,0,0,0,0};  all_false(v) == true"  ,
+                     "var v[9] := {0,0,0,0,0,1,2,3,4};  all_false(v) == false" ,
+                     "var v[8] := {0,0,0,0,0,-1,-2,-3}; all_false(v) == false" ,
+                     "var v[9] := {1,1,1,1,1,1,1,1,1};  any_false(v - 1) == true",
+
+                     "var v[9] := {0,0,0,0,0,0,0,0,1};  any_true(v) == true"  ,
+                     "var v[9] := {0,0,0,0,1,0,0,0,0};  any_true(v) == true"  ,
+                     "var v[9] := {0,0,0,0,0,0,0,0,0};  any_true(v) == false" ,
+                     "var v[9] := {0,0,0,0,0,0,0,0,0};  any_true(v + 1) == true",
+
+                     "var v[9] := {1,1,1,1,1,1,1,1,0};  any_false(v) == true"  ,
+                     "var v[9] := {1,1,1,1,0,1,1,1,1};  any_false(v) == true"  ,
+                     "var v[9] := {1,1,1,1,1,1,1,1,1};  any_false(v) == false" ,
+                     "var v[9] := {1,1,1,1,1,1,1,1,1};  any_false(v - 1) == true",
+
+                     "var v[9] := {0,0,0,0,0,0,0,0,0};  count(v) == 0"  ,
+                     "var v[9] := {0,0,0,0,0,0,0,0,1};  count(v) == 1"  ,
+                     "var v[9] := {0,0,0,0,0,0,0,2,1};  count(v) == 2"  ,
+                     "var v[9] := {0,0,0,0,0,0,3,2,1};  count(v) == 3"  ,
+                     "var v[9] := {0,0,0,0,0,0,0,0,0};  count(v + 1) == v[]",
+                     "var v[9] := {1,1,1,1,1,1,1,1,1};  count(v - 1) == 0",
+
+                     "var v[9] := {1,2,3,4,5,6,7,8,9};  var r[9] := [0]; copy(v,r); sum(v == r) == v[]",
+                     "var v[9] := {1,2,3,4,5,6,7,8,9};  var r[9] := [0]; copy(v,0,8,r,0,8); sum(r) == 45",
+                     "var v[9] := {1,2,3,4,5,6,7,8,9};  var r[9] := [0]; copy(v,1,7,r,1,7); sum(r) == 35",
+                     "var v[9] := {1,2,3,4,5,6,7,8,9};  var r[5] := [0]; copy(v,0,4,r,0,4); sum(r) == 15",
+
+                     "var v[5] := {1,2,3,4,5}; var r[5] := {4,5,1,2,3}; rol(v,3); sum(v == r) == v[]",
+                     "var v[5] := {1,2,3,4,5}; var r[5] := {3,4,5,1,2}; ror(v,3); sum(v == r) == v[]",
+
+                     "var v[5] := {1,2,3,4,5}; var r[5] := {3,4,5,1,2}; rol(v,2); sum(v == r) == v[]",
+                     "var v[5] := {1,2,3,4,5}; var r[5] := {4,5,1,2,3}; ror(v,2); sum(v == r) == v[]",
+
+                     "var v[5] := {1,2,3,4,5}; var r[5] := {1,3,4,2,5}; rol(v,1,1,3); sum(v == r) == v[]",
+                     "var v[5] := {1,2,3,4,5}; var r[5] := {1,4,2,3,5}; ror(v,1,1,3); sum(v == r) == v[]",
+
+                     "var v[5] := {1,2,3,4,5}; var r[5] := {3,4,5,0,0}; shftl(v,2); sum(v == r) == v[]",
+                     "var v[5] := {1,2,3,4,5}; var r[5] := {5,0,0,0,0}; shftl(v,4); sum(v == r) == v[]",
+                     "var v[5] := {1,2,3,4,5}; var r[5] := {0,0,0,0,0}; shftl(v,5); sum(v == r) == v[]",
+
+                     "var v[5] := {1,2,3,4,5}; var r[5] := {0,0,1,2,3}; shftr(v,2); sum(v == r) == v[]",
+                     "var v[5] := {1,2,3,4,5}; var r[5] := {0,0,0,0,1}; shftr(v,4); sum(v == r) == v[]",
+                     "var v[5] := {1,2,3,4,5}; var r[5] := {0,0,0,0,0}; shftr(v,5); sum(v == r) == v[]",
+
+                     "var v[5] := {1,2,3,4,5}; var r[5] := {1,3,4,0,5}; shftl(v,1,1,3); sum(v == r) == v[]",
+                     "var v[5] := {1,2,3,4,5}; var r[5] := {1,0,2,3,5}; shftr(v,1,1,3); sum(v == r) == v[]",
+
+                     "var v[5] := {1,3,5,2,4}; var r[5] := {1,2,3,4,5}; sort(v); sum(v == r) == v[]",
+                     "var v[5] := {5,4,3,2,1}; var r[5] := {1,2,3,4,5}; sort(v); sum(v == r) == v[]",
+                     "var v[5] := {1,4,2,3,5}; var r[5] := {1,2,3,4,5}; sort(v,1,3); sum(v == r) == v[]",
+                     "var v[5] := {3,1,2,4,5}; var r[5] := {1,2,3,4,5}; sort(v,0,2); sum(v == r) == v[]",
+                     "var v[5] := {1,2,5,3,4}; var r[5] := {1,2,3,4,5}; sort(v,2,4); sum(v == r) == v[]",
+
+                     "var v[5] := {1,3,5,2,4}; var r[5] := {1,2,3,4,5}; sort(v,'ascending'); sum(v == r) == v[]",
+                     "var v[5] := {5,4,3,2,1}; var r[5] := {1,2,3,4,5}; sort(v,'ascending'); sum(v == r) == v[]",
+                     "var v[5] := {1,4,2,3,5}; var r[5] := {1,2,3,4,5}; sort(v,'ascending',1,3); sum(v == r) == v[]",
+                     "var v[5] := {3,1,2,4,5}; var r[5] := {1,2,3,4,5}; sort(v,'ascending',0,2); sum(v == r) == v[]",
+                     "var v[5] := {1,2,5,3,4}; var r[5] := {1,2,3,4,5}; sort(v,'ascending',2,4); sum(v == r) == v[]",
+
+                     "var v[5] := {1,3,5,2,4}; var r[5] := {5,4,3,2,1}; sort(v,'descending'); sum(v == r) == v[]",
+                     "var v[5] := {5,4,3,2,1}; var r[5] := {5,4,3,2,1}; sort(v,'descending'); sum(v == r) == v[]",
+                     "var v[5] := {1,4,2,3,5}; var r[5] := {1,4,3,2,5}; sort(v,'descending',1,3); sum(v == r) == v[]",
+                     "var v[5] := {3,1,2,4,5}; var r[5] := {3,2,1,4,5}; sort(v,'descending',0,2); sum(v == r) == v[]",
+                     "var v[5] := {1,2,5,3,4}; var r[5] := {1,2,5,4,3}; sort(v,'descending',2,4); sum(v == r) == v[]",
+
+                     " var a := 2; var x[3] := {1,2,3}; var y[3] := {1,2,3}; var r[3] := [0]; r := a*x+y; axpy(a,x,y); sum(y == r) == y[]",
+                     " var a := 2; var b := 3; var x[3] := {1,2,3}; var y[3] := {1,2,3}; var r[3] := [0]; r := a*x+b*y; axpby(a,x,b,y); sum(y == r) == y[]",
+
+                     " var a := 2; var x[3] := {1,2,3}; var y[3] := {1,2,3}; var z[3] := [0]; var r[3] := [0]; r := a*x+y; axpyz(a,x,y,z); sum(z == r) == z[]",
+                     " var a := 2; var b := 3; var x[3] := {1,2,3}; var y[3] := {1,2,3}; var z[3] := [0]; var r[3] := [0]; r := a*x+b*y; axpbyz(a,x,b,y,z); sum(z == r) == z[]",
+                  };
+
+      const std::size_t expr_str_list_size = sizeof(expr_str_list) / sizeof(std::string);
+
+      parser_t parser;
+
+      for (std::size_t i = 0; i < expr_str_list_size; ++i)
+      {
+         expression_t expression;
+         expression.register_symbol_table(symbol_table);
+
+         if (!parser.compile(expr_str_list[i], expression))
+         {
+            printf("run_test18() - Error: %s   Expression: %s\n",
+                   parser.error().c_str(),
+                   expr_str_list[i].c_str());
+
+            failure = true;
+
+            continue;
+         }
+
+         T result = expression.value();
+
+         if (result != T(1))
+         {
+            printf("run_test18() - Error in evaluation! (10) Expression: %s\n",
+                   expr_str_list[i].c_str());
+
+            failure = true;
+         }
+      }
+
+      if (failure)
+         return false;
+   }
+
    return true;
 }
 
