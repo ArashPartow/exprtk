@@ -35634,6 +35634,1022 @@ namespace exprtk
 }    // namespace exprtk
 #endif
 
+#ifndef exprtk_disable_rtl_vecops
+namespace exprtk
+{
+   namespace rtl { namespace vecops {
+   namespace details
+   {
+      template <typename T>
+      struct load_vector_range
+      {
+         typedef typename exprtk::igeneric_function<T> igfun_t;
+         typedef typename igfun_t::parameter_list_t    parameter_list_t;
+         typedef typename igfun_t::generic_type        generic_type;
+         typedef typename generic_type::scalar_view    scalar_t;
+
+         static inline bool process(parameter_list_t& parameters,
+                                    std::size_t& r0, std::size_t& r1,
+                                    const std::size_t& r0_prmidx,
+                                    const std::size_t& r1_prmidx)
+         {
+            if (r0_prmidx >= parameters.size())
+               return false;
+
+            if (r1_prmidx >= parameters.size())
+               return false;
+
+            if (!scalar_t(parameters[r0_prmidx]).to_uint(r0))
+               return false;
+
+            if (!scalar_t(parameters[r1_prmidx]).to_uint(r1))
+               return false;
+
+            return true;
+         }
+      };
+
+      template <typename Vector>
+      inline bool invalid_range(const Vector& v, const std::size_t r0, const std::size_t r1)
+      {
+         if (r0 > (v.size() - 1))
+            return true;
+         else if (r1 > (v.size() - 1))
+            return true;
+         else if (r1 < r0)
+            return true;
+         else
+            return false;
+      }
+
+      template <typename T>
+      inline void kahan_sum(T& sum, T& error, T v)
+      {
+         T x = v - error;
+         T y = sum + x;
+         error = (y - sum) - x;
+         sum = y;
+      }
+
+   } // namespace exprtk::rtl::details
+
+   template <typename T>
+   class all_true : public exprtk::igeneric_function<T>
+   {
+   public:
+
+      typedef typename exprtk::igeneric_function<T> igfun_t;
+      typedef typename igfun_t::parameter_list_t    parameter_list_t;
+      typedef typename igfun_t::generic_type        generic_type;
+      typedef typename generic_type::vector_view    vector_t;
+
+      using exprtk::igeneric_function<T>::operator();
+
+      all_true()
+      : exprtk::igeneric_function<T>("V|VTT")
+        /*
+           Overloads:
+           0. V   - vector
+           1. VTT - vector, r0, r1
+        */
+      {}
+
+      inline T operator()(const std::size_t& ps_index, parameter_list_t parameters)
+      {
+         const vector_t& vec(parameters[0]);
+
+         std::size_t r0 = 0;
+         std::size_t r1 = vec.size() - 1;
+
+         if ((1 == ps_index) && !details::load_vector_range<T>::process(parameters,r0,r1,1,2))
+            return std::numeric_limits<T>::quiet_NaN();
+         else if (details::invalid_range(vec,r0,r1))
+            return std::numeric_limits<T>::quiet_NaN();
+
+         for (std::size_t i = r0; i <= r1; ++i)
+         {
+            if (vec[i] == T(0))
+            {
+               return T(0);
+            }
+         }
+
+         return T(1);
+      }
+   };
+
+   template <typename T>
+   class all_false : public exprtk::igeneric_function<T>
+   {
+   public:
+
+      typedef typename exprtk::igeneric_function<T> igfun_t;
+      typedef typename igfun_t::parameter_list_t    parameter_list_t;
+      typedef typename igfun_t::generic_type        generic_type;
+      typedef typename generic_type::vector_view    vector_t;
+
+      using exprtk::igeneric_function<T>::operator();
+
+      all_false()
+      : exprtk::igeneric_function<T>("V|VTT")
+        /*
+           Overloads:
+           0. V   - vector
+           1. VTT - vector, r0, r1
+        */
+      {}
+
+      inline T operator()(const std::size_t& ps_index, parameter_list_t parameters)
+      {
+         const vector_t& vec(parameters[0]);
+
+         std::size_t r0 = 0;
+         std::size_t r1 = vec.size() - 1;
+
+         if ((1 == ps_index) && !details::load_vector_range<T>::process(parameters,r0,r1,1,2))
+            return std::numeric_limits<T>::quiet_NaN();
+         else if (details::invalid_range(vec,r0,r1))
+            return std::numeric_limits<T>::quiet_NaN();
+
+         for (std::size_t i = r0; i <= r1; ++i)
+         {
+            if (vec[i] != T(0))
+            {
+               return T(0);
+            }
+         }
+
+         return T(1);
+      }
+   };
+
+   template <typename T>
+   class any_true : public exprtk::igeneric_function<T>
+   {
+   public:
+
+      typedef typename exprtk::igeneric_function<T> igfun_t;
+      typedef typename igfun_t::parameter_list_t    parameter_list_t;
+      typedef typename igfun_t::generic_type        generic_type;
+      typedef typename generic_type::vector_view    vector_t;
+
+      using exprtk::igeneric_function<T>::operator();
+
+      any_true()
+      : exprtk::igeneric_function<T>("V|VTT")
+        /*
+           Overloads:
+           0. V   - vector
+           1. VTT - vector, r0, r1
+        */
+      {}
+
+      inline T operator()(const std::size_t& ps_index, parameter_list_t parameters)
+      {
+         const vector_t& vec(parameters[0]);
+
+         std::size_t r0 = 0;
+         std::size_t r1 = vec.size() - 1;
+
+         if ((1 == ps_index) && !details::load_vector_range<T>::process(parameters,r0,r1,1,2))
+            return std::numeric_limits<T>::quiet_NaN();
+         else if (details::invalid_range(vec,r0,r1))
+            return std::numeric_limits<T>::quiet_NaN();
+
+         for (std::size_t i = r0; i <= r1; ++i)
+         {
+            if (vec[i] != T(0))
+            {
+               return T(1);
+            }
+         }
+
+         return T(0);
+      }
+   };
+
+   template <typename T>
+   class any_false : public exprtk::igeneric_function<T>
+   {
+   public:
+
+      typedef typename exprtk::igeneric_function<T> igfun_t;
+      typedef typename igfun_t::parameter_list_t    parameter_list_t;
+      typedef typename igfun_t::generic_type        generic_type;
+      typedef typename generic_type::vector_view    vector_t;
+
+      using exprtk::igeneric_function<T>::operator();
+
+      any_false()
+      : exprtk::igeneric_function<T>("V|VTT")
+        /*
+           Overloads:
+           0. V   - vector
+           1. VTT - vector, r0, r1
+        */
+      {}
+
+      inline T operator()(const std::size_t& ps_index, parameter_list_t parameters)
+      {
+         const vector_t& vec(parameters[0]);
+
+         std::size_t r0 = 0;
+         std::size_t r1 = vec.size() - 1;
+
+         if ((1 == ps_index) && !details::load_vector_range<T>::process(parameters,r0,r1,1,2))
+            return std::numeric_limits<T>::quiet_NaN();
+         else if (details::invalid_range(vec,r0,r1))
+            return std::numeric_limits<T>::quiet_NaN();
+
+         for (std::size_t i = r0; i <= r1; ++i)
+         {
+            if (vec[i] == T(0))
+            {
+               return T(1);
+            }
+         }
+
+         return T(0);
+      }
+   };
+
+   template <typename T>
+   class count : public exprtk::igeneric_function<T>
+   {
+   public:
+
+      typedef typename exprtk::igeneric_function<T> igfun_t;
+      typedef typename igfun_t::parameter_list_t    parameter_list_t;
+      typedef typename igfun_t::generic_type        generic_type;
+      typedef typename generic_type::vector_view    vector_t;
+
+      using exprtk::igeneric_function<T>::operator();
+
+      count()
+      : exprtk::igeneric_function<T>("V|VTT")
+        /*
+           Overloads:
+           0. V   - vector
+           1. VTT - vector, r0, r1
+        */
+      {}
+
+      inline T operator()(const std::size_t& ps_index, parameter_list_t parameters)
+      {
+         const vector_t& vec(parameters[0]);
+
+         std::size_t r0 = 0;
+         std::size_t r1 = vec.size() - 1;
+
+         if ((1 == ps_index) && !details::load_vector_range<T>::process(parameters,r0,r1,1,2))
+            return std::numeric_limits<T>::quiet_NaN();
+         else if (details::invalid_range(vec,r0,r1))
+            return std::numeric_limits<T>::quiet_NaN();
+
+         std::size_t cnt = 0;
+
+         for (std::size_t i = r0; i <= r1; ++i)
+         {
+            if (vec[i] != T(0)) ++cnt;
+         }
+
+         return T(cnt);
+      }
+   };
+
+   template <typename T>
+   class copy : public exprtk::igeneric_function<T>
+   {
+   public:
+
+      typedef typename exprtk::igeneric_function<T> igfun_t;
+      typedef typename igfun_t::parameter_list_t    parameter_list_t;
+      typedef typename igfun_t::generic_type        generic_type;
+      typedef typename generic_type::scalar_view    scalar_t;
+      typedef typename generic_type::vector_view    vector_t;
+
+      using exprtk::igeneric_function<T>::operator();
+
+      copy()
+      : exprtk::igeneric_function<T>("VV|VTTVTT")
+        /*
+           Overloads:
+           0. VV     - x(vector), y(vector)
+           1. VTTVTT - x(vector), xr0, xr1, y(vector), yr0, yr1,
+        */
+      {}
+
+      inline T operator()(const std::size_t& ps_index, parameter_list_t parameters)
+      {
+         vector_t x(parameters[0]);
+         vector_t y(parameters[(0 == ps_index) ? 1 : 3]);
+
+         std::size_t xr0 = 0;
+         std::size_t xr1 = x.size() - 1;
+
+         std::size_t yr0 = 0;
+         std::size_t yr1 = y.size() - 1;
+
+         if ((1 == ps_index) && !details::load_vector_range<T>::process(parameters,xr0,xr1,1,2))
+            return T(0);
+         if ((1 == ps_index) && !details::load_vector_range<T>::process(parameters,yr0,yr1,4,5))
+            return T(0);
+         else if (details::invalid_range(x,xr0,xr1))
+            return T(0);
+         else if (details::invalid_range(y,yr0,yr1))
+            return T(0);
+
+         const std::size_t n = std::min(xr1 - xr0 + 1, yr1 - yr0 + 1);
+
+         std::copy(x.begin() + xr0, x.begin() + xr0 + n, y.begin() + yr0);
+
+         return T(n);
+      }
+   };
+
+   template <typename T>
+   class rol : public exprtk::igeneric_function<T>
+   {
+   public:
+
+      typedef typename exprtk::igeneric_function<T> igfun_t;
+      typedef typename igfun_t::parameter_list_t    parameter_list_t;
+      typedef typename igfun_t::generic_type        generic_type;
+      typedef typename generic_type::scalar_view    scalar_t;
+      typedef typename generic_type::vector_view    vector_t;
+
+      using exprtk::igeneric_function<T>::operator();
+
+      rol()
+      : exprtk::igeneric_function<T>("VT|VTTT")
+        /*
+           Overloads:
+           0. VT   - vector, N
+           1. VTTT - vector, N, r0, r1
+        */
+      {}
+
+      inline T operator()(const std::size_t& ps_index, parameter_list_t parameters)
+      {
+         vector_t vec(parameters[0]);
+
+         std::size_t n  = 0;
+         std::size_t r0 = 0;
+         std::size_t r1 = vec.size() - 1;
+
+         if (!scalar_t(parameters[1]).to_uint(n))
+            return T(0);
+
+         if ((1 == ps_index) && !details::load_vector_range<T>::process(parameters,r0,r1,2,3))
+            return T(0);
+         else if (details::invalid_range(vec,r0,r1))
+            return T(0);
+
+         std::size_t dist  = r1 - r0 + 1;
+         std::size_t shift = n % dist;
+
+         std::rotate(vec.begin() + r0, vec.begin() + r0 + shift, vec.begin() + r1 + 1);
+
+         return T(1);
+      }
+   };
+
+   template <typename T>
+   class ror : public exprtk::igeneric_function<T>
+   {
+   public:
+
+      typedef typename exprtk::igeneric_function<T> igfun_t;
+      typedef typename igfun_t::parameter_list_t    parameter_list_t;
+      typedef typename igfun_t::generic_type        generic_type;
+      typedef typename generic_type::scalar_view    scalar_t;
+      typedef typename generic_type::vector_view    vector_t;
+
+      using exprtk::igeneric_function<T>::operator();
+
+      ror()
+      : exprtk::igeneric_function<T>("VT|VTTT")
+        /*
+           Overloads:
+           0. VT   - vector, N
+           1. VTTT - vector, N, r0, r1
+        */
+      {}
+
+      inline T operator()(const std::size_t& ps_index, parameter_list_t parameters)
+      {
+         vector_t vec(parameters[0]);
+
+         std::size_t n  = 0;
+         std::size_t r0 = 0;
+         std::size_t r1 = vec.size() - 1;
+
+         if (!scalar_t(parameters[1]).to_uint(n))
+            return T(0);
+
+         if ((1 == ps_index) && !details::load_vector_range<T>::process(parameters,r0,r1,2,3))
+            return T(0);
+         else if (details::invalid_range(vec,r0,r1))
+            return T(0);
+
+         std::size_t dist  = r1 - r0 + 1;
+         std::size_t shift = (dist - (n % dist)) % dist;
+
+         std::rotate(vec.begin() + r0, vec.begin() + r0 + shift, vec.begin() + r1 + 1);
+
+         return T(1);
+      }
+   };
+
+   template <typename T>
+   class shift_left : public exprtk::igeneric_function<T>
+   {
+   public:
+
+      typedef typename exprtk::igeneric_function<T> igfun_t;
+      typedef typename igfun_t::parameter_list_t    parameter_list_t;
+      typedef typename igfun_t::generic_type        generic_type;
+      typedef typename generic_type::scalar_view    scalar_t;
+      typedef typename generic_type::vector_view    vector_t;
+
+      using exprtk::igeneric_function<T>::operator();
+
+      shift_left()
+      : exprtk::igeneric_function<T>("VT|VTTT")
+        /*
+           Overloads:
+           0. VT   - vector, N
+           1. VTTT - vector, N, r0, r1
+        */
+      {}
+
+      inline T operator()(const std::size_t& ps_index, parameter_list_t parameters)
+      {
+         vector_t vec(parameters[0]);
+
+         std::size_t n  = 0;
+         std::size_t r0 = 0;
+         std::size_t r1 = vec.size() - 1;
+
+         if (!scalar_t(parameters[1]).to_uint(n))
+            return T(0);
+
+         if ((1 == ps_index) && !details::load_vector_range<T>::process(parameters,r0,r1,2,3))
+            return T(0);
+         else if (details::invalid_range(vec,r0,r1))
+            return T(0);
+
+         std::size_t dist  = r1 - r0 + 1;
+
+         if (n > dist)
+            return T(0);
+
+         std::rotate(vec.begin() + r0, vec.begin() + r0 + n, vec.begin() + r1 + 1);
+
+         for (std::size_t i = r1 - n + 1; i <= r1; ++i)
+         {
+            vec[i] = T(0);
+         }
+
+         return T(1);
+      }
+   };
+
+   template <typename T>
+   class shift_right : public exprtk::igeneric_function<T>
+   {
+   public:
+
+      typedef typename exprtk::igeneric_function<T> igfun_t;
+      typedef typename igfun_t::parameter_list_t    parameter_list_t;
+      typedef typename igfun_t::generic_type        generic_type;
+      typedef typename generic_type::scalar_view    scalar_t;
+      typedef typename generic_type::vector_view    vector_t;
+
+      using exprtk::igeneric_function<T>::operator();
+
+      shift_right()
+      : exprtk::igeneric_function<T>("VT|VTTT")
+        /*
+           Overloads:
+           0. VT   - vector, N
+           1. VTTT - vector, N, r0, r1
+        */
+      {}
+
+      inline T operator()(const std::size_t& ps_index, parameter_list_t parameters)
+      {
+         vector_t vec(parameters[0]);
+
+         std::size_t n  = 0;
+         std::size_t r0 = 0;
+         std::size_t r1 = vec.size() - 1;
+
+         if (!scalar_t(parameters[1]).to_uint(n))
+            return T(0);
+
+         if ((1 == ps_index) && !details::load_vector_range<T>::process(parameters,r0,r1,2,3))
+            return T(0);
+         else if (details::invalid_range(vec,r0,r1))
+            return T(0);
+
+         std::size_t dist  = r1 - r0 + 1;
+
+         if (n > dist)
+            return T(0);
+
+         std::size_t shift = (dist - (n % dist)) % dist;
+
+         std::rotate(vec.begin() + r0, vec.begin() + r0 + shift, vec.begin() + r1 + 1);
+
+         for (std::size_t i = r0; i < r0 + n; ++i)
+         {
+            vec[i] = T(0);
+         }
+
+         return T(1);
+      }
+   };
+
+   template <typename T>
+   class sort : public exprtk::igeneric_function<T>
+   {
+   public:
+
+      typedef typename exprtk::igeneric_function<T> igfun_t;
+      typedef typename igfun_t::parameter_list_t    parameter_list_t;
+      typedef typename igfun_t::generic_type        generic_type;
+      typedef typename generic_type::string_view    string_t;
+      typedef typename generic_type::vector_view    vector_t;
+
+      using exprtk::igeneric_function<T>::operator();
+
+      sort()
+      : exprtk::igeneric_function<T>("V|VTT|VS|VSTT")
+        /*
+           Overloads:
+           0. V    - vector
+           1. VTT  - vector, r0, r1
+           2. VS   - vector, string
+           3. VSTT - vector, string, r0, r1
+        */
+      {}
+
+      inline T operator()(const std::size_t& ps_index, parameter_list_t parameters)
+      {
+         vector_t vec(parameters[0]);
+
+         std::size_t r0 = 0;
+         std::size_t r1 = vec.size() - 1;
+
+         if ((1 == ps_index) && !details::load_vector_range<T>::process(parameters,r0,r1,1,2))
+            return T(0);
+         if ((3 == ps_index) && !details::load_vector_range<T>::process(parameters,r0,r1,2,3))
+            return T(0);
+         if (details::invalid_range(vec,r0,r1))
+            return T(0);
+
+         bool ascending = true;
+
+         if ((2 == ps_index) || (3 == ps_index))
+         {
+            if (exprtk::details::imatch(to_str(string_t(parameters[1])),"ascending"))
+               ascending = true;
+            else if (exprtk::details::imatch(to_str(string_t(parameters[1])),"descending"))
+               ascending = false;
+            else
+               return T(0);
+         }
+
+         if (ascending)
+            std::sort(vec.begin() + r0, vec.begin() + r1 + 1, std::less<T>   ());
+         else
+            std::sort(vec.begin() + r0, vec.begin() + r1 + 1, std::greater<T>());
+
+         return T(1);
+      }
+   };
+
+   template <typename T>
+   class sumk : public exprtk::igeneric_function<T>
+   {
+   public:
+
+      typedef typename exprtk::igeneric_function<T> igfun_t;
+      typedef typename igfun_t::parameter_list_t    parameter_list_t;
+      typedef typename igfun_t::generic_type        generic_type;
+      typedef typename generic_type::vector_view    vector_t;
+
+      using exprtk::igeneric_function<T>::operator();
+
+      sumk()
+      : exprtk::igeneric_function<T>("V|VTT")
+        /*
+           Overloads:
+           0. V   - vector
+           1. VTT - vector, r0, r1
+        */
+      {}
+
+      inline T operator()(const std::size_t& ps_index, parameter_list_t parameters)
+      {
+         vector_t vec(parameters[0]);
+
+         std::size_t r0 = 0;
+         std::size_t r1 = vec.size() - 1;
+
+         if ((1 == ps_index) && !details::load_vector_range<T>::process(parameters,r0,r1,1,2))
+            return std::numeric_limits<T>::quiet_NaN();
+         else if (details::invalid_range(vec,r0,r1))
+            return std::numeric_limits<T>::quiet_NaN();
+
+         T result = T(0);
+         T error  = T(0);
+
+         for (std::size_t i = r0; i <= r1; ++i)
+         {
+            details::kahan_sum(result,error,vec[i]);
+         }
+
+         return result;
+      }
+   };
+
+   template <typename T>
+   class axpy : public exprtk::igeneric_function<T>
+   {
+   public:
+
+      typedef typename exprtk::igeneric_function<T> igfun_t;
+      typedef typename igfun_t::parameter_list_t    parameter_list_t;
+      typedef typename igfun_t::generic_type        generic_type;
+      typedef typename generic_type::scalar_view    scalar_t;
+      typedef typename generic_type::vector_view    vector_t;
+
+      using exprtk::igeneric_function<T>::operator();
+
+      axpy()
+      : exprtk::igeneric_function<T>("TVV|TVVTT")
+        /*
+           y <- ax + y
+           Overloads:
+           0. TVV   - a, x(vector), y(vector)
+           1. TVVTT - a, x(vector), y(vector), r0, r1
+        */
+      {}
+
+      inline T operator()(const std::size_t& ps_index, parameter_list_t parameters)
+      {
+         vector_t x(parameters[1]);
+         vector_t y(parameters[2]);
+
+         std::size_t r0 = 0;
+         std::size_t r1 = std::min(x.size(),y.size()) - 1;
+
+         if ((1 == ps_index) && !details::load_vector_range<T>::process(parameters,r0,r1,3,4))
+            return std::numeric_limits<T>::quiet_NaN();
+         else if (details::invalid_range(x,r0,r1))
+            return std::numeric_limits<T>::quiet_NaN();
+         else if (details::invalid_range(y,r0,r1))
+            return std::numeric_limits<T>::quiet_NaN();
+
+         T a = scalar_t(parameters[0])();
+
+         for (std::size_t i = r0; i <= r1; ++i)
+         {
+            y[i] = a * x[i] + y[i];
+         }
+
+         return T(1);
+      }
+   };
+
+   template <typename T>
+   class axpby : public exprtk::igeneric_function<T>
+   {
+   public:
+
+      typedef typename exprtk::igeneric_function<T> igfun_t;
+      typedef typename igfun_t::parameter_list_t    parameter_list_t;
+      typedef typename igfun_t::generic_type        generic_type;
+      typedef typename generic_type::scalar_view    scalar_t;
+      typedef typename generic_type::vector_view    vector_t;
+
+      using exprtk::igeneric_function<T>::operator();
+
+      axpby()
+      : exprtk::igeneric_function<T>("TVTV|TVTVTT")
+        /*
+           y <- ax + by
+           Overloads:
+           0. TVTV   - a, x(vector), b, y(vector)
+           1. TVTVTT - a, x(vector), b, y(vector), r0, r1
+        */
+      {}
+
+      inline T operator()(const std::size_t& ps_index, parameter_list_t parameters)
+      {
+         vector_t x(parameters[1]);
+         vector_t y(parameters[3]);
+
+         std::size_t r0 = 0;
+         std::size_t r1 = std::min(x.size(),y.size()) - 1;
+
+         if ((1 == ps_index) && !details::load_vector_range<T>::process(parameters,r0,r1,4,5))
+            return std::numeric_limits<T>::quiet_NaN();
+         else if (details::invalid_range(x,r0,r1))
+            return std::numeric_limits<T>::quiet_NaN();
+         else if (details::invalid_range(y,r0,r1))
+            return std::numeric_limits<T>::quiet_NaN();
+
+         const T a = scalar_t(parameters[0])();
+         const T b = scalar_t(parameters[2])();
+
+         for (std::size_t i = r0; i <= r1; ++i)
+         {
+            y[i] = (a * x[i]) + (b * y[i]);
+         }
+
+         return T(1);
+      }
+   };
+
+   template <typename T>
+   class axpyz : public exprtk::igeneric_function<T>
+   {
+   public:
+
+      typedef typename exprtk::igeneric_function<T> igfun_t;
+      typedef typename igfun_t::parameter_list_t    parameter_list_t;
+      typedef typename igfun_t::generic_type        generic_type;
+      typedef typename generic_type::scalar_view    scalar_t;
+      typedef typename generic_type::vector_view    vector_t;
+
+      using exprtk::igeneric_function<T>::operator();
+
+      axpyz()
+      : exprtk::igeneric_function<T>("TVVV|TVVVTT")
+        /*
+           z <- ax + y
+           Overloads:
+           0. TVVV   - a, x(vector), y(vector), z(vector)
+           1. TVVVTT - a, x(vector), y(vector), z(vector), r0, r1
+        */
+      {}
+
+      inline T operator()(const std::size_t& ps_index, parameter_list_t parameters)
+      {
+         vector_t x(parameters[1]);
+         vector_t y(parameters[2]);
+         vector_t z(parameters[3]);
+
+         std::size_t r0 = 0;
+         std::size_t r1 = std::min(x.size(),y.size()) - 1;
+
+         if ((1 == ps_index) && !details::load_vector_range<T>::process(parameters,r0,r1,3,4))
+            return std::numeric_limits<T>::quiet_NaN();
+         else if (details::invalid_range(x,r0,r1))
+            return std::numeric_limits<T>::quiet_NaN();
+         else if (details::invalid_range(y,r0,r1))
+            return std::numeric_limits<T>::quiet_NaN();
+         else if (details::invalid_range(z,r0,r1))
+            return std::numeric_limits<T>::quiet_NaN();
+
+         T a = scalar_t(parameters[0])();
+
+         for (std::size_t i = r0; i <= r1; ++i)
+         {
+            z[i] = a * x[i] + y[i];
+         }
+
+         return T(1);
+      }
+   };
+
+   template <typename T>
+   class axpbyz : public exprtk::igeneric_function<T>
+   {
+   public:
+
+      typedef typename exprtk::igeneric_function<T> igfun_t;
+      typedef typename igfun_t::parameter_list_t    parameter_list_t;
+      typedef typename igfun_t::generic_type        generic_type;
+      typedef typename generic_type::scalar_view    scalar_t;
+      typedef typename generic_type::vector_view    vector_t;
+
+      using exprtk::igeneric_function<T>::operator();
+
+      axpbyz()
+      : exprtk::igeneric_function<T>("TVTVV|TVTVVTT")
+        /*
+           z <- ax + by
+           Overloads:
+           0. TVTVV   - a, x(vector), b, y(vector), z(vector)
+           1. TVTVVTT - a, x(vector), b, y(vector), z(vector), r0, r1
+        */
+      {}
+
+      inline T operator()(const std::size_t& ps_index, parameter_list_t parameters)
+      {
+         vector_t x(parameters[1]);
+         vector_t y(parameters[3]);
+         vector_t z(parameters[4]);
+
+         std::size_t r0 = 0;
+         std::size_t r1 = std::min(x.size(),y.size()) - 1;
+
+         if ((1 == ps_index) && !details::load_vector_range<T>::process(parameters,r0,r1,4,5))
+            return std::numeric_limits<T>::quiet_NaN();
+         else if (details::invalid_range(x,r0,r1))
+            return std::numeric_limits<T>::quiet_NaN();
+         else if (details::invalid_range(y,r0,r1))
+            return std::numeric_limits<T>::quiet_NaN();
+         else if (details::invalid_range(z,r0,r1))
+            return std::numeric_limits<T>::quiet_NaN();
+
+         const T a = scalar_t(parameters[0])();
+         const T b = scalar_t(parameters[2])();
+
+         for (std::size_t i = r0; i <= r1; ++i)
+         {
+            z[i] = (a * x[i]) + (b * y[i]);
+         }
+
+         return T(1);
+      }
+   };
+
+   template <typename T>
+   class dot : public exprtk::igeneric_function<T>
+   {
+   public:
+
+      typedef typename exprtk::igeneric_function<T> igfun_t;
+      typedef typename igfun_t::parameter_list_t    parameter_list_t;
+      typedef typename igfun_t::generic_type        generic_type;
+      typedef typename generic_type::scalar_view    scalar_t;
+      typedef typename generic_type::vector_view    vector_t;
+
+      using exprtk::igeneric_function<T>::operator();
+
+      dot()
+      : exprtk::igeneric_function<T>("VV|VVTT")
+        /*
+           Overloads:
+           0. VV   - x(vector), y(vector)
+           1. VVTT - x(vector), y(vector), r0, r1
+        */
+      {}
+
+      inline T operator()(const std::size_t& ps_index, parameter_list_t parameters)
+      {
+         vector_t x(parameters[0]);
+         vector_t y(parameters[1]);
+
+         std::size_t r0 = 0;
+         std::size_t r1 = std::min(x.size(),y.size()) - 1;
+
+         if ((1 == ps_index) && !details::load_vector_range<T>::process(parameters,r0,r1,2,3))
+            return std::numeric_limits<T>::quiet_NaN();
+         else if (details::invalid_range(x,r0,r1))
+            return std::numeric_limits<T>::quiet_NaN();
+         else if (details::invalid_range(y,r0,r1))
+            return std::numeric_limits<T>::quiet_NaN();
+
+         T result = T(0);
+
+         for (std::size_t i = r0; i <= r1; ++i)
+         {
+            result += (x[i] * y[i]);
+         }
+
+         return result;
+      }
+   };
+
+   template <typename T>
+   class dotk : public exprtk::igeneric_function<T>
+   {
+   public:
+
+      typedef typename exprtk::igeneric_function<T> igfun_t;
+      typedef typename igfun_t::parameter_list_t    parameter_list_t;
+      typedef typename igfun_t::generic_type        generic_type;
+      typedef typename generic_type::scalar_view    scalar_t;
+      typedef typename generic_type::vector_view    vector_t;
+
+      using exprtk::igeneric_function<T>::operator();
+
+      dotk()
+      : exprtk::igeneric_function<T>("VV|VVTT")
+        /*
+           Overloads:
+           0. VV   - x(vector), y(vector)
+           1. VVTT - x(vector), y(vector), r0, r1
+        */
+      {}
+
+      inline T operator()(const std::size_t& ps_index, parameter_list_t parameters)
+      {
+         vector_t x(parameters[0]);
+         vector_t y(parameters[1]);
+
+         std::size_t r0 = 0;
+         std::size_t r1 = std::min(x.size(),y.size()) - 1;
+
+         if ((1 == ps_index) && !details::load_vector_range<T>::process(parameters,r0,r1,2,3))
+            return std::numeric_limits<T>::quiet_NaN();
+         else if (details::invalid_range(x,r0,r1))
+            return std::numeric_limits<T>::quiet_NaN();
+         else if (details::invalid_range(y,r0,r1))
+            return std::numeric_limits<T>::quiet_NaN();
+
+         T result = T(0);
+         T error  = T(0);
+
+         for (std::size_t i = r0; i <= r1; ++i)
+         {
+            details::kahan_sum(result,error,(x[i] * y[i]));
+         }
+
+         return result;
+      }
+   };
+
+   template <typename T>
+   struct package
+   {
+      all_true   <T> at;
+      all_false  <T> af;
+      any_true   <T> nt;
+      any_false  <T> nf;
+      count      <T>  c;
+      copy       <T> cp;
+      rol        <T> rl;
+      ror        <T> rr;
+      shift_left <T> sl;
+      shift_right<T> sr;
+      sort       <T> st;
+      sumk       <T> sk;
+      axpy       <T> b1_axpy;
+      axpby      <T> b1_axpby;
+      axpyz      <T> b1_axpyz;
+      axpbyz     <T> b1_axpbyz;
+      dot        <T> dt;
+      dotk       <T> dtk;
+
+      bool register_package(exprtk::symbol_table<T>& symtab)
+      {
+              if (!symtab.add_function("all_true"     ,at))
+            return false;
+         else if (!symtab.add_function("all_false"    ,af))
+            return false;
+         else if (!symtab.add_function("any_true"     ,nt))
+            return false;
+         else if (!symtab.add_function("any_false"    ,nf))
+            return false;
+         else if (!symtab.add_function("count"        , c))
+            return false;
+         else if (!symtab.add_function("copy"        , cp))
+            return false;
+         else if (!symtab.add_function("rotate_left"  ,rl))
+            return false;
+         else if (!symtab.add_function("rol"          ,rl))
+            return false;
+         else if (!symtab.add_function("rotate_right" ,rr))
+            return false;
+         else if (!symtab.add_function("ror"          ,rr))
+            return false;
+         else if (!symtab.add_function("shftl"        ,sl))
+            return false;
+         else if (!symtab.add_function("shftr"        ,sr))
+            return false;
+         else if (!symtab.add_function("sort"         ,st))
+            return false;
+         else if (!symtab.add_function("sumk"         ,sk))
+            return false;
+         else if (!symtab.add_function("axpy"    ,b1_axpy))
+            return false;
+         else if (!symtab.add_function("axpby"  ,b1_axpby))
+            return false;
+         else if (!symtab.add_function("axpyz"  ,b1_axpyz))
+            return false;
+         else if (!symtab.add_function("axpbyz",b1_axpbyz))
+            return false;
+         else if (!symtab.add_function("dot"          ,dt))
+            return false;
+         else if (!symtab.add_function("dotk"        ,dtk))
+            return false;
+         else
+            return true;
+      }
+   };
+
+   } // namespace exprtk::rtl::vecops
+   } // namespace exprtk::rtl
+}    // namespace exprtk
+#endif
+
 namespace exprtk
 {
    namespace information

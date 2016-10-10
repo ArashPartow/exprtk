@@ -3028,6 +3028,12 @@ This  define will  disable  the  file I/O  RTL package  features. When
 present, any  attempts to register  the file I/O package with  a given
 symbol table will fail causing a compilation error.
 
+(9) exprtk_disable_rtl_vecops
+This define will  disable the extended  vector operations RTL  package
+features. When present, any attempts to register the vector operations
+package with  a given  symbol table  will fail  causing a  compilation
+error.
+
      ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
 [23 - FILES]
