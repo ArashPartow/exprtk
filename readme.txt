@@ -1298,7 +1298,12 @@ with vectors:
        frac, grad2deg, log, log10, log1p, log2, rad2deg, round, sec,
        sgn, sin, sinc, sinh, sqrt, swap, tan, tanh, trunc
    (g) Aggregate and Reduce operations:
-       avg, max, min, mul, sum
+       avg, max, min, mul,  dot, dotk, sum, sumk,  count, all_true,
+       all_false, any_true, any_false
+   (h) Transformation operations:
+       copy, rotate-left/right, shift-left/right, sort
+   (i) BLAS-L1:
+       axpy, axpby, axpyz, axpbyz, axpbz
 
 Note: When one of  the above  described operations  is being performed
 between two  vectors, the  operation will  only span  the size  of the
