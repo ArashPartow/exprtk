@@ -454,10 +454,10 @@ of C++ compilers:
 +----------+---------------------------------------------------------+
 | if       | If x is true then return y else return z.               |
 |          | eg:                                                     |
-|          | 1. if(x, y, z)                                          |
-|          | 2. if((x + 1) > 2y, z + 1, w / v)                       |
-|          | 3. if(x > y) z;                                         |
-|          | 4. if(x <= 2*y) { z + w };                              |
+|          | 1. if (x, y, z)                                         |
+|          | 2. if ((x + 1) > 2y, z + 1, w / v)                      |
+|          | 3. if (x > y) z;                                        |
+|          | 4. if (x <= 2*y) { z + w };                             |
 +----------+---------------------------------------------------------+
 | if-else  | The if-else/else-if statement. Subject to the condition |
 |          | branch the statement will return either the value of the|
@@ -1162,7 +1162,7 @@ zero. The following are examples of variable definitions:
        var y := 3;
 
    (c) Initialise z to the expression
-       var z := if(max(1,x + y) > 2,w,v);
+       var z := if (max(1,x + y) > 2,w,v);
 
 
 (2) Vector Definition
@@ -2834,7 +2834,7 @@ into account when using ExprTk:
                     };
            x != while (y > 0) { y -= 1; };
            x -= {
-                  if(min(x,y) < 2 * max(x,y))
+                  if (min(x,y) < 2 * max(x,y))
                     x + 2;
                   else
                     x + y - 3;
