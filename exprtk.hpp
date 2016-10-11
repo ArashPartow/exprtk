@@ -34923,116 +34923,6 @@ namespace exprtk
 
       return true;
    }
-
-   namespace rtl
-   {
-      namespace io
-      {
-         namespace details
-         {
-            template <typename T>
-            inline void print_type(const std::string& fmt,
-                                   const T v,
-                                   exprtk::details::numeric::details::real_type_tag)
-            {
-               printf(fmt.c_str(),v);
-            }
-
-            template <typename T>
-            struct print_impl
-            {
-               typedef typename igeneric_function<T>::generic_type generic_type;
-               typedef typename igeneric_function<T>::parameter_list_t parameter_list_t;
-               typedef typename generic_type::scalar_view scalar_t;
-               typedef typename generic_type::vector_view vector_t;
-               typedef typename generic_type::string_view string_t;
-
-               static void process(const std::string& scalar_format, parameter_list_t parameters)
-               {
-                  for (std::size_t i = 0; i < parameters.size(); ++i)
-                  {
-                     generic_type& gt = parameters[i];
-
-                     typename exprtk::details::numeric::details::number_type<T>::type num_type;
-
-                     switch (gt.type)
-                     {
-                        case generic_type::e_scalar : print_type(scalar_format,scalar_t(gt)(),num_type);
-                                                      break;
-
-                        case generic_type::e_vector : {
-                                                         vector_t vector(gt);
-
-                                                         for (std::size_t x = 0; x < vector.size(); ++x)
-                                                         {
-                                                            print_type(scalar_format,vector[x],num_type);
-
-                                                            if ((x + 1) < vector.size())
-                                                               printf(" ");
-                                                         }
-                                                      }
-                                                      break;
-
-                        case generic_type::e_string : printf("%s",to_str(string_t(gt)).c_str());
-                                                      break;
-
-                        default                     : continue;
-                     }
-                  }
-               }
-            };
-
-         } // namespace exprtk::rtl::io::details
-
-         template <typename T>
-         struct print : public exprtk::igeneric_function<T>
-         {
-            typedef typename igeneric_function<T>::parameter_list_t parameter_list_t;
-
-            using exprtk::igeneric_function<T>::operator();
-
-            print(const std::string& scalar_format = "%10.5f")
-            : scalar_format_(scalar_format)
-            {
-               exprtk::enable_zero_parameters(*this);
-            }
-
-            inline T operator()(parameter_list_t parameters)
-            {
-               details::print_impl<T>::process(scalar_format_,parameters);
-               return T(0);
-            }
-
-            std::string scalar_format_;
-         };
-
-         template <typename T>
-         struct println : public exprtk::igeneric_function<T>
-         {
-            typedef typename igeneric_function<T>::parameter_list_t parameter_list_t;
-
-            using exprtk::igeneric_function<T>::operator();
-
-            println(const std::string& scalar_format = "%10.5f")
-            : scalar_format_(scalar_format)
-            {
-               exprtk::enable_zero_parameters(*this);
-            }
-
-            inline T operator()(parameter_list_t parameters)
-            {
-               details::print_impl<T>::process(scalar_format_,parameters);
-               printf("\n");
-               return T(0);
-            }
-
-            std::string scalar_format_;
-         };
-
-
-
-      }  // namespace exprtk::rtl::io
-   }
 }
 
 #if defined(_WIN32) || defined(__WIN32__) || defined(WIN32)
@@ -35052,7 +34942,6 @@ namespace exprtk
 
 namespace exprtk
 {
-
    class timer
    {
    public:
@@ -35148,6 +35037,142 @@ namespace exprtk
 
 } // namespace exprtk
 
+#ifndef exprtk_disable_rtl_io
+namespace exprtk
+{
+   namespace rtl { namespace io { namespace details
+   {
+      template <typename T>
+      inline void print_type(const std::string& fmt,
+                             const T v,
+                             exprtk::details::numeric::details::real_type_tag)
+      {
+         printf(fmt.c_str(),v);
+      }
+
+      template <typename T>
+      struct print_impl
+      {
+         typedef typename igeneric_function<T>::generic_type generic_type;
+         typedef typename igeneric_function<T>::parameter_list_t parameter_list_t;
+         typedef typename generic_type::scalar_view scalar_t;
+         typedef typename generic_type::vector_view vector_t;
+         typedef typename generic_type::string_view string_t;
+         typedef typename exprtk::details::numeric::details::number_type<T>::type num_type;
+
+         static void process(const std::string& scalar_format, parameter_list_t parameters)
+         {
+            for (std::size_t i = 0; i < parameters.size(); ++i)
+            {
+               generic_type& gt = parameters[i];
+
+               switch (gt.type)
+               {
+                  case generic_type::e_scalar : print(scalar_format,scalar_t(gt));
+                                                break;
+
+                  case generic_type::e_vector : print(scalar_format,vector_t(gt));
+                                                break;
+
+                  case generic_type::e_string : print(string_t(gt));
+                                                break;
+
+                  default                     : continue;
+               }
+            }
+         }
+
+         static inline void print(const std::string& scalar_format, const scalar_t& s)
+         {
+            print_type(scalar_format,s(),num_type());
+         }
+
+         static inline void print(const std::string& scalar_format, const vector_t& v)
+         {
+            for (std::size_t i = 0; i < v.size(); ++i)
+            {
+               print_type(scalar_format,v[i],num_type());
+
+               if ((i + 1) < v.size())
+                  printf(" ");
+            }
+         }
+
+         static inline void print(const string_t& s)
+         {
+            printf("%s",to_str(s).c_str());
+         }
+      };
+
+   } // namespace exprtk::rtl::io::details
+
+   template <typename T>
+   struct print : public exprtk::igeneric_function<T>
+   {
+      typedef typename igeneric_function<T>::parameter_list_t parameter_list_t;
+
+      using exprtk::igeneric_function<T>::operator();
+
+      print(const std::string& scalar_format = "%10.5f")
+      : scalar_format_(scalar_format)
+      {
+         exprtk::enable_zero_parameters(*this);
+      }
+
+      inline T operator()(parameter_list_t parameters)
+      {
+         details::print_impl<T>::process(scalar_format_,parameters);
+         return T(0);
+      }
+
+      std::string scalar_format_;
+   };
+
+   template <typename T>
+   struct println : public exprtk::igeneric_function<T>
+   {
+      typedef typename igeneric_function<T>::parameter_list_t parameter_list_t;
+
+      using exprtk::igeneric_function<T>::operator();
+
+      println(const std::string& scalar_format = "%10.5f")
+      : scalar_format_(scalar_format)
+      {
+         exprtk::enable_zero_parameters(*this);
+      }
+
+      inline T operator()(parameter_list_t parameters)
+      {
+         details::print_impl<T>::process(scalar_format_,parameters);
+         printf("\n");
+         return T(0);
+      }
+
+      std::string scalar_format_;
+   };
+
+   template <typename T>
+   struct package
+   {
+      print  <T> p;
+      println<T> pl;
+
+      bool register_package(exprtk::symbol_table<T>& symtab)
+      {
+              if (!symtab.add_function("print"   ,p))
+            return false;
+         else if (!symtab.add_function("println" ,pl))
+            return false;
+         else
+            return true;
+      }
+   };
+
+   } // namespace exprtk::rtl::io
+   } // namespace exprtk::rtl
+}    // namespace exprtk
+#endif
+
 #ifndef exprtk_disable_rtl_io_file
 #include <fstream>
 namespace exprtk
@@ -35184,6 +35209,7 @@ namespace exprtk
                {
                   file_name.clear();
                   delete stream;
+
                   return false;
                }
                else
@@ -35199,6 +35225,7 @@ namespace exprtk
                {
                   file_name.clear();
                   delete stream;
+
                   return false;
                }
                else
@@ -35214,6 +35241,7 @@ namespace exprtk
                {
                   file_name.clear();
                   delete stream;
+
                   return false;
                }
                else
@@ -35299,8 +35327,6 @@ namespace exprtk
                case e_rdwrt : return (!!std::getline(*reinterpret_cast<std::fstream* >(stream_ptr),s));
                default      : return false;
             }
-
-            return true;
          }
 
          bool eof()

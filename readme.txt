@@ -2668,7 +2668,81 @@ via the 'unknown symbol resolver' mechanism.
 
      ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
-[20 - EXPRTK NOTES]
+[20 - RUNTIME LIBRARY PACKAGES]
+ExprTk   contains   a   set  of   simple   extensions,   that  provide
+functionalities  beyond  basic numerical  calculations.  Currently the
+available packages are:
+
+  +---+--------------------+-----------------------------------+
+  | # |    Package Name    |          Namespace/Type           |
+  +---+--------------------+-----------------------------------+
+  | 1 | Basic I/O          | exprtk::rtl::io::package<T>       |
+  | 2 | File I/O           | exprtk::rtl::io::file::package<T> |
+  | 3 | Vector Operations  | exprtk::rtl::vecops::package<T>   |
+  +---+--------------------+-----------------------------------+
+
+
+In order to make the  features of a specific package  available within
+an  expression,  an instance  of  the package  must  be added  to  the
+expression's associated  symbol table.  In the  following example, the
+file I/O package is made available for the given expression:
+
+   typedef exprtk::symbol_table<T> symbol_table_t;
+   typedef exprtk::expression<T>     expression_t;
+   typedef exprtk::parser<T>             parser_t;
+
+   exprtk::rtl::io::file::package<T> fileio_package;
+
+   std::string expression_string =
+      " var file_name := 'file.txt';        "
+      " var stream    := null;              "
+      "                                     "
+      " stream := open(file_name,'w');      "
+      "                                     "
+      " write(stream,'Hello world....\n');  "
+      "                                     "
+      " close(stream);                      "
+      "                                     ";
+
+   symbol_table_t symbol_table;
+   symbol_table.add_package(fileio_package);
+
+   expression_t expression;
+   expression.register_symbol_table(symbol_table);
+
+   parser_t parser;
+   parser.compile(expression_string,expression);
+
+   expression.value();
+
+
+(1) Basic I/O functions:
+
+   (a) print
+   (b) println
+
+(2) File I/O functions:
+
+   (a) open    (b) close
+   (c) write   (d) read
+   (e) getline (f) eof
+
+(3) Vector Operations functions:
+
+   (a) all_true    (b) all_false
+   (c) any_true    (d) any_false
+   (e) count       (f) copy
+   (g) rotate-left (h) rotate-right
+   (i) shift-left  (j) shift-right
+   (k) sort        (l) sumk
+   (m) axpy        (n) axpby
+   (o) axpyz       (p) axpbyz
+   (q) axpbz       (r) dot
+   (s) dotk
+
+     ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+[21 - EXPRTK NOTES]
 The following is a list of facts and suggestions one may want to take
 into account when using ExprTk:
 
@@ -2869,7 +2943,7 @@ into account when using ExprTk:
 
      ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
-[21 - SIMPLE EXPRTK EXAMPLE]
+[22 - SIMPLE EXPRTK EXAMPLE]
 The following is a  simple yet complete example  demonstrating typical
 usage of the ExprTk Library.  The example instantiates a symbol  table
 object, adding to it  three variables named x,  y and z, and  a custom
@@ -2974,7 +3048,7 @@ int main()
 
      ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
-[22 - BUILD OPTIONS]
+[23 - BUILD OPTIONS]
 When building ExprTk there are a number of defines that will enable or
 disable certain features and  capabilities. The defines can  either be
 part of a compiler command line switch or scoped around the include to
@@ -3041,7 +3115,7 @@ error.
 
      ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
-[23 - FILES]
+[24 - FILES]
 The source distribution of ExprTk is comprised of the following set of
 files:
 
@@ -3071,7 +3145,7 @@ files:
 
      ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
-[24 - LANGUAGE STRUCTURE]
+[25 - LANGUAGE STRUCTURE]
 +-------------------------------------------------------------+
 |00 - If Statement                                            |
 |                                                             |
