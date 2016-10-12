@@ -21334,6 +21334,7 @@ namespace exprtk
          if (result)
          {
             brkcnt_list_.push_front(false);
+
             if (0 == (loop_body = parse_multi_sequence("for-loop")))
             {
                set_error(
@@ -36257,6 +36258,45 @@ namespace exprtk
    };
 
    template <typename T>
+   class nthelement : public exprtk::igeneric_function<T>
+   {
+   public:
+
+      typedef typename exprtk::igeneric_function<T> igfun_t;
+      typedef typename igfun_t::parameter_list_t    parameter_list_t;
+      typedef typename igfun_t::generic_type        generic_type;
+      typedef typename generic_type::scalar_view    scalar_t;
+      typedef typename generic_type::vector_view    vector_t;
+
+      using exprtk::igeneric_function<T>::operator();
+
+      nthelement()
+      : exprtk::igeneric_function<T>("VT|VTTT")
+      {}
+
+      inline T operator()(const std::size_t& ps_index, parameter_list_t parameters)
+      {
+         vector_t vec(parameters[0]);
+
+         std::size_t n  = 0;
+         std::size_t r0 = 0;
+         std::size_t r1 = vec.size() - 1;
+
+         if (!scalar_t(parameters[1]).to_uint(n))
+            return T(0);
+
+         if ((1 == ps_index) && !details::load_vector_range<T>::process(parameters,r0,r1,2,3))
+            return std::numeric_limits<T>::quiet_NaN();
+         else if (details::invalid_range(vec,r0,r1))
+            return std::numeric_limits<T>::quiet_NaN();
+
+         std::nth_element(vec.begin() + r0, vec.begin() + r0 + n , vec.begin() + r1 + 1);
+
+         return T(1);
+      }
+   };
+
+   template <typename T>
    class sumk : public exprtk::igeneric_function<T>
    {
    public:
@@ -36666,6 +36706,7 @@ namespace exprtk
       shift_left <T> sl;
       shift_right<T> sr;
       sort       <T> st;
+      nthelement <T> ne;
       sumk       <T> sk;
       axpy       <T> b1_axpy;
       axpby      <T> b1_axpby;
@@ -36702,6 +36743,8 @@ namespace exprtk
          else if (!symtab.add_function("shftr"        ,sr))
             return false;
          else if (!symtab.add_function("sort"         ,st))
+            return false;
+         else if (!symtab.add_function("nth_element"  ,ne))
             return false;
          else if (!symtab.add_function("sumk"         ,sk))
             return false;

@@ -41,7 +41,6 @@ void stddev_example()
    expression_t expression;
 
    parser_t parser;
-
    parser.compile(stddev_program,expression);
 
    T stddev = expression.value();

@@ -1301,7 +1301,7 @@ with vectors:
        avg, max, min, mul,  dot, dotk, sum, sumk,  count, all_true,
        all_false, any_true, any_false
    (h) Transformation operations:
-       copy, rotate-left/right, shift-left/right, sort
+       copy, rotate-left/right, shift-left/right, sort, nth_element
    (i) BLAS-L1:
        axpy, axpby, axpyz, axpbyz, axpbz
 
@@ -2734,11 +2734,11 @@ file I/O package is made available for the given expression:
    (e) count       (f) copy
    (g) rotate-left (h) rotate-right
    (i) shift-left  (j) shift-right
-   (k) sort        (l) sumk
-   (m) axpy        (n) axpby
-   (o) axpyz       (p) axpbyz
-   (q) axpbz       (r) dot
-   (s) dotk
+   (k) sort        (l) nth_element
+   (m) sumk        (n) axpy
+   (o) axpby       (p) axpyz
+   (q) axpbyz      (r) axpbz
+   (s) dot         (t) dotk
 
      ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
