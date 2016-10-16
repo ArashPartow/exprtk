@@ -2436,7 +2436,7 @@ namespace exprtk
                   /*
                      Permit symbols that contain a 'dot'
                      Allowed   : abc.xyz, a123.xyz, abc.123, abc_.xyz a123_.xyz abc._123
-                     Disallowed: abc.<white-space>, abc.<eof>
+                     Disallowed: abc.<white-space>, abc.<eof>, abc.<operator +,-,*,/...>
                   */
                   if (
                        !is_end(s_itr_ + 1)                      &&
@@ -4377,18 +4377,18 @@ namespace exprtk
       namespace loop_unroll
       {
          #ifndef exprtk_disable_superscalar_unroll
-         const std::size_t global_loop_batch_size = 16;
+         const unsigned int global_loop_batch_size = 16;
          #else
-         const std::size_t global_loop_batch_size = 4;
+         const unsigned int global_loop_batch_size = 4;
          #endif
 
          struct details
          {
             details(const std::size_t& vsize,
-                    const std::size_t loop_batch_size = global_loop_batch_size)
+                    const unsigned int loop_batch_size = global_loop_batch_size)
             : batch_size(loop_batch_size),
               remainder (vsize % batch_size),
-              upper_bound(static_cast<int>(vsize - (remainder ? loop_batch_size : 0)))
+              upper_bound(static_cast<int>(vsize) - (remainder ? loop_batch_size : 0))
             {}
 
             int  batch_size;
@@ -36286,6 +36286,11 @@ namespace exprtk
 
       nthelement()
       : exprtk::igeneric_function<T>("VT|VTTT")
+        /*
+           Overloads:
+           0. VT   - vector, nth-element
+           1. VTTT - vector, nth-element, r0, r1
+        */
       {}
 
       inline T operator()(const std::size_t& ps_index, parameter_list_t parameters)
@@ -36305,6 +36310,61 @@ namespace exprtk
             return std::numeric_limits<T>::quiet_NaN();
 
          std::nth_element(vec.begin() + r0, vec.begin() + r0 + n , vec.begin() + r1 + 1);
+
+         return T(1);
+      }
+   };
+
+   template <typename T>
+   class iota : public exprtk::igeneric_function<T>
+   {
+   public:
+
+      typedef typename exprtk::igeneric_function<T> igfun_t;
+      typedef typename igfun_t::parameter_list_t    parameter_list_t;
+      typedef typename igfun_t::generic_type        generic_type;
+      typedef typename generic_type::scalar_view    scalar_t;
+      typedef typename generic_type::vector_view    vector_t;
+
+      using exprtk::igeneric_function<T>::operator();
+
+      iota()
+      : exprtk::igeneric_function<T>("VT|VTT|VTTT|VTTTT")
+        /*
+           Overloads:
+           0. VT   - vector, increment
+           1. VT   - vector, increment, base
+           2. VT   - vector, increment, r0, r1
+           3. VT   - vector, increment, base, r0, r1
+        */
+      {}
+
+      inline T operator()(const std::size_t& ps_index, parameter_list_t parameters)
+      {
+         vector_t vec(parameters[0]);
+
+         T increment = scalar_t(parameters[1])();
+         T base      = ((1 == ps_index) || (3 == ps_index))? scalar_t(parameters[2])() : T(0);
+
+         std::size_t r0 = 0;
+         std::size_t r1 = vec.size() - 1;
+
+         if ((2 == ps_index) && !details::load_vector_range<T>::process(parameters,r0,r1,2,3))
+            return std::numeric_limits<T>::quiet_NaN();
+         else if ((3 == ps_index) && !details::load_vector_range<T>::process(parameters,r0,r1,3,4))
+            return std::numeric_limits<T>::quiet_NaN();
+
+         if (details::invalid_range(vec,r0,r1))
+            return std::numeric_limits<T>::quiet_NaN();
+         else
+         {
+            long long j = 0;
+
+            for (std::size_t i = r0; i <= r1; ++i, ++j)
+            {
+               vec[i] = base + (increment * j);
+            }
+         }
 
          return T(1);
       }
@@ -36721,6 +36781,7 @@ namespace exprtk
       shift_right<T> sr;
       sort       <T> st;
       nthelement <T> ne;
+      iota       <T> ia;
       sumk       <T> sk;
       axpy       <T> b1_axpy;
       axpby      <T> b1_axpby;
@@ -36759,6 +36820,8 @@ namespace exprtk
          else if (!symtab.add_function("sort"         ,st))
             return false;
          else if (!symtab.add_function("nth_element"  ,ne))
+            return false;
+         else if (!symtab.add_function("iota"         ,ia))
             return false;
          else if (!symtab.add_function("sumk"         ,sk))
             return false;

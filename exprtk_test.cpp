@@ -6556,6 +6556,12 @@ inline bool run_test18()
                      "var v[9] := {7,8,9,1,2,3,4,5,6}; nth_element(v,trunc(v[] / 2)); sort(v,0,trunc(v[] / 2)); (v[v[] / 2] == 5) and (v[0] == 1)",
                      "var v[9] := {7,8,9,1,2,3,4,5,6}; nth_element(v,trunc(v[] / 3)); sort(v,0,trunc(v[] / 3)); (v[v[] / 3] == 4) and (v[0] == 1)",
 
+                     "var v[5]; iota(v,2);      var r[5] := {0,2,4,6,8}; sum(v == r) == v[]",
+                     "var v[5]; iota(v,2,1);    var r[5] := {1,3,5,7,9}; sum(v == r) == v[]",
+                     "var v[5]; iota(v,1,1,3);  var r[5] := {0,0,1,2,0}; sum(v == r) == v[]",
+                     "var v[5]; iota(v,2,2,1,3);var r[5] := {0,2,4,6,0}; sum(v == r) == v[]",
+                     "var v[5]; iota(v,2,1,1,3);var r[5] := {0,1,3,5,0}; sum(v == r) == v[]",
+
                      " var a := 2; var x[3] := {1,2,3}; var y[3] := {1,2,3}; var r[3] := [0]; r := a * x + y; axpy(a,x,y); sum(y == r) == y[]",
                      " var a := 2; var b := 3; var x[3] := {1,2,3}; var y[3] := {1,2,3}; var r[3] := [0]; r := a * x + b * y; axpby(a,x,b,y); sum(y == r) == y[]",
 

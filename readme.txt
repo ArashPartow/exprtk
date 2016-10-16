@@ -2735,10 +2735,11 @@ file I/O package is made available for the given expression:
    (g) rotate-left (h) rotate-right
    (i) shift-left  (j) shift-right
    (k) sort        (l) nth_element
-   (m) sumk        (n) axpy
-   (o) axpby       (p) axpyz
-   (q) axpbyz      (r) axpbz
-   (s) dot         (t) dotk
+   (m) iota        (n) sumk
+   (o) axpy        (p) axpby
+   (q) axpyz       (r) axpbyz
+   (s) axpbz       (t) dot
+   (u) dotk
 
      ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
