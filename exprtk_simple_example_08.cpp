@@ -65,6 +65,7 @@ void composite()
       for (std::size_t i = 0; i < parser.error_count(); ++i)
       {
          error_t error = parser.get_error(i);
+
          printf("Error: %02d  Position: %02d Type: [%14s] Msg: %s\tExpression: %s\n",
                 static_cast<unsigned int>(i),
                 static_cast<unsigned int>(error.token.position),
