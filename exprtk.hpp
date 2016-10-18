@@ -2436,9 +2436,10 @@ namespace exprtk
                   /*
                      Permit symbols that contain a 'dot'
                      Allowed   : abc.xyz, a123.xyz, abc.123, abc_.xyz a123_.xyz abc._123
-                     Disallowed: abc.<white-space>, abc.<eof>, abc.<operator +,-,*,/...>
+                     Disallowed: .abc, abc.<white-space>, abc.<eof>, abc.<operator +,-,*,/...>
                   */
                   if (
+                       (s_itr_ != initial_itr)                  &&
                        !is_end(s_itr_ + 1)                      &&
                        details::is_letter_or_digit(*s_itr_ + 1) &&
                        ('_' != (*s_itr_ + 1))
@@ -17071,12 +17072,14 @@ namespace exprtk
             for (std::size_t i = 1; i < symbol.size(); ++i)
             {
                if (
-                    (!details::is_letter(symbol[i])) &&
-                    (!details:: is_digit(symbol[i])) &&
+                    !details::is_letter_or_digit(symbol[i]) &&
                     ('_' != symbol[i])
                   )
                {
-                  return false;
+                  if (('.' == symbol[i]) && (i < (symbol.size() - 1)))
+                     continue;
+                  else
+                     return false;
                }
             }
          }
@@ -17095,12 +17098,14 @@ namespace exprtk
             for (std::size_t i = 1; i < symbol.size(); ++i)
             {
                if (
-                    (!details::is_letter(symbol[i])) &&
-                    (!details:: is_digit(symbol[i])) &&
+                    !details::is_letter_or_digit(symbol[i]) &&
                     ('_' != symbol[i])
                   )
                {
-                  return false;
+                  if (('.' == symbol[i]) && (i < (symbol.size() - 1)))
+                     continue;
+                  else
+                     return false;
                }
             }
          }
@@ -17518,7 +17523,18 @@ namespace exprtk
       {
          return details::is_function(expr.control_block_->expr);
       }
+
+      static inline bool is_null(const expression<T>& expr)
+      {
+         return details::is_null_node(expr.control_block_->expr);
+      }
    };
+
+   template <typename T>
+   inline bool is_valid(const expression<T>& expr)
+   {
+      return !expression_helper<T>::is_null(expr);
+   }
 
    namespace parser_error
    {
