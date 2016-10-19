@@ -42,6 +42,7 @@ BUILD_LIST+=exprtk_simple_example_15
 BUILD_LIST+=exprtk_simple_example_16
 BUILD_LIST+=exprtk_simple_example_17
 BUILD_LIST+=exprtk_simple_example_18
+BUILD_LIST+=exprtk_simple_example_19
 
 
 all: $(BUILD_LIST)
