@@ -35695,37 +35695,9 @@ namespace exprtk
 namespace exprtk
 {
    namespace rtl { namespace vecops {
-   namespace details
+
+   namespace helper
    {
-      template <typename T>
-      struct load_vector_range
-      {
-         typedef typename exprtk::igeneric_function<T> igfun_t;
-         typedef typename igfun_t::parameter_list_t    parameter_list_t;
-         typedef typename igfun_t::generic_type        generic_type;
-         typedef typename generic_type::scalar_view    scalar_t;
-
-         static inline bool process(parameter_list_t& parameters,
-                                    std::size_t& r0, std::size_t& r1,
-                                    const std::size_t& r0_prmidx,
-                                    const std::size_t& r1_prmidx)
-         {
-            if (r0_prmidx >= parameters.size())
-               return false;
-
-            if (r1_prmidx >= parameters.size())
-               return false;
-
-            if (!scalar_t(parameters[r0_prmidx]).to_uint(r0))
-               return false;
-
-            if (!scalar_t(parameters[r1_prmidx]).to_uint(r1))
-               return false;
-
-            return true;
-         }
-      };
-
       template <typename Vector>
       inline bool invalid_range(const Vector& v, const std::size_t r0, const std::size_t r1)
       {
@@ -35739,6 +35711,40 @@ namespace exprtk
             return false;
       }
 
+      template <typename T>
+      struct load_vector_range
+      {
+         typedef typename exprtk::igeneric_function<T> igfun_t;
+         typedef typename igfun_t::parameter_list_t    parameter_list_t;
+         typedef typename igfun_t::generic_type        generic_type;
+         typedef typename generic_type::scalar_view    scalar_t;
+         typedef typename generic_type::vector_view    vector_t;
+
+         static inline bool process(parameter_list_t& parameters,
+                                    std::size_t& r0, std::size_t& r1,
+                                    const std::size_t& r0_prmidx,
+                                    const std::size_t& r1_prmidx,
+                                    const std::size_t vec_idx = 0)
+         {
+            if (r0_prmidx >= parameters.size())
+               return false;
+
+            if (r1_prmidx >= parameters.size())
+               return false;
+
+            if (!scalar_t(parameters[r0_prmidx]).to_uint(r0))
+               return false;
+
+            if (!scalar_t(parameters[r1_prmidx]).to_uint(r1))
+               return false;
+
+            return !invalid_range(vector_t(parameters[vec_idx]),r0,r1);
+         }
+      };
+   }
+
+   namespace details
+   {
       template <typename T>
       inline void kahan_sum(T& sum, T& error, T v)
       {
@@ -35778,9 +35784,7 @@ namespace exprtk
          std::size_t r0 = 0;
          std::size_t r1 = vec.size() - 1;
 
-         if ((1 == ps_index) && !details::load_vector_range<T>::process(parameters,r0,r1,1,2))
-            return std::numeric_limits<T>::quiet_NaN();
-         else if (details::invalid_range(vec,r0,r1))
+         if ((1 == ps_index) && !helper::load_vector_range<T>::process(parameters,r0,r1,1,2,0))
             return std::numeric_limits<T>::quiet_NaN();
 
          for (std::size_t i = r0; i <= r1; ++i)
@@ -35823,9 +35827,7 @@ namespace exprtk
          std::size_t r0 = 0;
          std::size_t r1 = vec.size() - 1;
 
-         if ((1 == ps_index) && !details::load_vector_range<T>::process(parameters,r0,r1,1,2))
-            return std::numeric_limits<T>::quiet_NaN();
-         else if (details::invalid_range(vec,r0,r1))
+         if ((1 == ps_index) && !helper::load_vector_range<T>::process(parameters,r0,r1,1,2,0))
             return std::numeric_limits<T>::quiet_NaN();
 
          for (std::size_t i = r0; i <= r1; ++i)
@@ -35868,9 +35870,7 @@ namespace exprtk
          std::size_t r0 = 0;
          std::size_t r1 = vec.size() - 1;
 
-         if ((1 == ps_index) && !details::load_vector_range<T>::process(parameters,r0,r1,1,2))
-            return std::numeric_limits<T>::quiet_NaN();
-         else if (details::invalid_range(vec,r0,r1))
+         if ((1 == ps_index) && !helper::load_vector_range<T>::process(parameters,r0,r1,1,2,0))
             return std::numeric_limits<T>::quiet_NaN();
 
          for (std::size_t i = r0; i <= r1; ++i)
@@ -35913,9 +35913,7 @@ namespace exprtk
          std::size_t r0 = 0;
          std::size_t r1 = vec.size() - 1;
 
-         if ((1 == ps_index) && !details::load_vector_range<T>::process(parameters,r0,r1,1,2))
-            return std::numeric_limits<T>::quiet_NaN();
-         else if (details::invalid_range(vec,r0,r1))
+         if ((1 == ps_index) && !helper::load_vector_range<T>::process(parameters,r0,r1,1,2,0))
             return std::numeric_limits<T>::quiet_NaN();
 
          for (std::size_t i = r0; i <= r1; ++i)
@@ -35958,9 +35956,7 @@ namespace exprtk
          std::size_t r0 = 0;
          std::size_t r1 = vec.size() - 1;
 
-         if ((1 == ps_index) && !details::load_vector_range<T>::process(parameters,r0,r1,1,2))
-            return std::numeric_limits<T>::quiet_NaN();
-         else if (details::invalid_range(vec,r0,r1))
+         if ((1 == ps_index) && !helper::load_vector_range<T>::process(parameters,r0,r1,1,2,0))
             return std::numeric_limits<T>::quiet_NaN();
 
          std::size_t cnt = 0;
@@ -36007,13 +36003,9 @@ namespace exprtk
          std::size_t yr0 = 0;
          std::size_t yr1 = y.size() - 1;
 
-         if ((1 == ps_index) && !details::load_vector_range<T>::process(parameters,xr0,xr1,1,2))
+         if ((1 == ps_index) && !helper::load_vector_range<T>::process(parameters,xr0,xr1,1,2,0))
             return T(0);
-         if ((1 == ps_index) && !details::load_vector_range<T>::process(parameters,yr0,yr1,4,5))
-            return T(0);
-         else if (details::invalid_range(x,xr0,xr1))
-            return T(0);
-         else if (details::invalid_range(y,yr0,yr1))
+         if ((1 == ps_index) && !helper::load_vector_range<T>::process(parameters,yr0,yr1,4,5,3))
             return T(0);
 
          const std::size_t n = std::min(xr1 - xr0 + 1, yr1 - yr0 + 1);
@@ -36057,9 +36049,7 @@ namespace exprtk
          if (!scalar_t(parameters[1]).to_uint(n))
             return T(0);
 
-         if ((1 == ps_index) && !details::load_vector_range<T>::process(parameters,r0,r1,2,3))
-            return T(0);
-         else if (details::invalid_range(vec,r0,r1))
+         if ((1 == ps_index) && !helper::load_vector_range<T>::process(parameters,r0,r1,2,3,0))
             return T(0);
 
          std::size_t dist  = r1 - r0 + 1;
@@ -36104,9 +36094,7 @@ namespace exprtk
          if (!scalar_t(parameters[1]).to_uint(n))
             return T(0);
 
-         if ((1 == ps_index) && !details::load_vector_range<T>::process(parameters,r0,r1,2,3))
-            return T(0);
-         else if (details::invalid_range(vec,r0,r1))
+         if ((1 == ps_index) && !helper::load_vector_range<T>::process(parameters,r0,r1,2,3,0))
             return T(0);
 
          std::size_t dist  = r1 - r0 + 1;
@@ -36151,9 +36139,7 @@ namespace exprtk
          if (!scalar_t(parameters[1]).to_uint(n))
             return T(0);
 
-         if ((1 == ps_index) && !details::load_vector_range<T>::process(parameters,r0,r1,2,3))
-            return T(0);
-         else if (details::invalid_range(vec,r0,r1))
+         if ((1 == ps_index) && !helper::load_vector_range<T>::process(parameters,r0,r1,2,3,0))
             return T(0);
 
          std::size_t dist  = r1 - r0 + 1;
@@ -36205,9 +36191,7 @@ namespace exprtk
          if (!scalar_t(parameters[1]).to_uint(n))
             return T(0);
 
-         if ((1 == ps_index) && !details::load_vector_range<T>::process(parameters,r0,r1,2,3))
-            return T(0);
-         else if (details::invalid_range(vec,r0,r1))
+         if ((1 == ps_index) && !helper::load_vector_range<T>::process(parameters,r0,r1,2,3,0))
             return T(0);
 
          std::size_t dist  = r1 - r0 + 1;
@@ -36259,11 +36243,9 @@ namespace exprtk
          std::size_t r0 = 0;
          std::size_t r1 = vec.size() - 1;
 
-         if ((1 == ps_index) && !details::load_vector_range<T>::process(parameters,r0,r1,1,2))
+         if ((1 == ps_index) && !helper::load_vector_range<T>::process(parameters,r0,r1,1,2,0))
             return T(0);
-         if ((3 == ps_index) && !details::load_vector_range<T>::process(parameters,r0,r1,2,3))
-            return T(0);
-         if (details::invalid_range(vec,r0,r1))
+         if ((3 == ps_index) && !helper::load_vector_range<T>::process(parameters,r0,r1,2,3,0))
             return T(0);
 
          bool ascending = true;
@@ -36320,9 +36302,7 @@ namespace exprtk
          if (!scalar_t(parameters[1]).to_uint(n))
             return T(0);
 
-         if ((1 == ps_index) && !details::load_vector_range<T>::process(parameters,r0,r1,2,3))
-            return std::numeric_limits<T>::quiet_NaN();
-         else if (details::invalid_range(vec,r0,r1))
+         if ((1 == ps_index) && !helper::load_vector_range<T>::process(parameters,r0,r1,2,3,0))
             return std::numeric_limits<T>::quiet_NaN();
 
          std::nth_element(vec.begin() + r0, vec.begin() + r0 + n , vec.begin() + r1 + 1);
@@ -36348,10 +36328,10 @@ namespace exprtk
       : exprtk::igeneric_function<T>("VT|VTT|VTTT|VTTTT")
         /*
            Overloads:
-           0. VT   - vector, increment
-           1. VT   - vector, increment, base
-           2. VT   - vector, increment, r0, r1
-           3. VT   - vector, increment, base, r0, r1
+           0. VT    - vector, increment
+           1. VTT   - vector, increment, base
+           2. VTTTT - vector, increment, r0, r1
+           3. VTTTT - vector, increment, base, r0, r1
         */
       {}
 
@@ -36365,12 +36345,9 @@ namespace exprtk
          std::size_t r0 = 0;
          std::size_t r1 = vec.size() - 1;
 
-         if ((2 == ps_index) && !details::load_vector_range<T>::process(parameters,r0,r1,2,3))
+         if ((2 == ps_index) && !helper::load_vector_range<T>::process(parameters,r0,r1,2,3,0))
             return std::numeric_limits<T>::quiet_NaN();
-         else if ((3 == ps_index) && !details::load_vector_range<T>::process(parameters,r0,r1,3,4))
-            return std::numeric_limits<T>::quiet_NaN();
-
-         if (details::invalid_range(vec,r0,r1))
+         else if ((3 == ps_index) && !helper::load_vector_range<T>::process(parameters,r0,r1,3,4,0))
             return std::numeric_limits<T>::quiet_NaN();
          else
          {
@@ -36414,9 +36391,7 @@ namespace exprtk
          std::size_t r0 = 0;
          std::size_t r1 = vec.size() - 1;
 
-         if ((1 == ps_index) && !details::load_vector_range<T>::process(parameters,r0,r1,1,2))
-            return std::numeric_limits<T>::quiet_NaN();
-         else if (details::invalid_range(vec,r0,r1))
+         if ((1 == ps_index) && !helper::load_vector_range<T>::process(parameters,r0,r1,1,2,0))
             return std::numeric_limits<T>::quiet_NaN();
 
          T result = T(0);
@@ -36462,11 +36437,9 @@ namespace exprtk
          std::size_t r0 = 0;
          std::size_t r1 = std::min(x.size(),y.size()) - 1;
 
-         if ((1 == ps_index) && !details::load_vector_range<T>::process(parameters,r0,r1,3,4))
+         if ((1 == ps_index) && !helper::load_vector_range<T>::process(parameters,r0,r1,3,4,1))
             return std::numeric_limits<T>::quiet_NaN();
-         else if (details::invalid_range(x,r0,r1))
-            return std::numeric_limits<T>::quiet_NaN();
-         else if (details::invalid_range(y,r0,r1))
+         else if (helper::invalid_range(y,r0,r1))
             return std::numeric_limits<T>::quiet_NaN();
 
          T a = scalar_t(parameters[0])();
@@ -36511,11 +36484,9 @@ namespace exprtk
          std::size_t r0 = 0;
          std::size_t r1 = std::min(x.size(),y.size()) - 1;
 
-         if ((1 == ps_index) && !details::load_vector_range<T>::process(parameters,r0,r1,4,5))
+         if ((1 == ps_index) && !helper::load_vector_range<T>::process(parameters,r0,r1,4,5,1))
             return std::numeric_limits<T>::quiet_NaN();
-         else if (details::invalid_range(x,r0,r1))
-            return std::numeric_limits<T>::quiet_NaN();
-         else if (details::invalid_range(y,r0,r1))
+         else if (helper::invalid_range(y,r0,r1))
             return std::numeric_limits<T>::quiet_NaN();
 
          const T a = scalar_t(parameters[0])();
@@ -36562,13 +36533,11 @@ namespace exprtk
          std::size_t r0 = 0;
          std::size_t r1 = std::min(x.size(),y.size()) - 1;
 
-         if ((1 == ps_index) && !details::load_vector_range<T>::process(parameters,r0,r1,3,4))
+         if ((1 == ps_index) && !helper::load_vector_range<T>::process(parameters,r0,r1,3,4,1))
             return std::numeric_limits<T>::quiet_NaN();
-         else if (details::invalid_range(x,r0,r1))
+         else if (helper::invalid_range(y,r0,r1))
             return std::numeric_limits<T>::quiet_NaN();
-         else if (details::invalid_range(y,r0,r1))
-            return std::numeric_limits<T>::quiet_NaN();
-         else if (details::invalid_range(z,r0,r1))
+         else if (helper::invalid_range(z,r0,r1))
             return std::numeric_limits<T>::quiet_NaN();
 
          T a = scalar_t(parameters[0])();
@@ -36614,13 +36583,11 @@ namespace exprtk
          std::size_t r0 = 0;
          std::size_t r1 = std::min(x.size(),y.size()) - 1;
 
-         if ((1 == ps_index) && !details::load_vector_range<T>::process(parameters,r0,r1,4,5))
+         if ((1 == ps_index) && !helper::load_vector_range<T>::process(parameters,r0,r1,4,5,1))
             return std::numeric_limits<T>::quiet_NaN();
-         else if (details::invalid_range(x,r0,r1))
+         else if (helper::invalid_range(y,r0,r1))
             return std::numeric_limits<T>::quiet_NaN();
-         else if (details::invalid_range(y,r0,r1))
-            return std::numeric_limits<T>::quiet_NaN();
-         else if (details::invalid_range(z,r0,r1))
+         else if (helper::invalid_range(z,r0,r1))
             return std::numeric_limits<T>::quiet_NaN();
 
          const T a = scalar_t(parameters[0])();
@@ -36666,11 +36633,9 @@ namespace exprtk
          std::size_t r0 = 0;
          std::size_t r1 = x.size() - 1;
 
-         if ((1 == ps_index) && !details::load_vector_range<T>::process(parameters,r0,r1,4,5))
+         if ((1 == ps_index) && !helper::load_vector_range<T>::process(parameters,r0,r1,4,5,1))
             return std::numeric_limits<T>::quiet_NaN();
-         else if (details::invalid_range(x,r0,r1))
-            return std::numeric_limits<T>::quiet_NaN();
-         else if (details::invalid_range(z,r0,r1))
+         else if (helper::invalid_range(z,r0,r1))
             return std::numeric_limits<T>::quiet_NaN();
 
          const T a = scalar_t(parameters[0])();
@@ -36715,11 +36680,9 @@ namespace exprtk
          std::size_t r0 = 0;
          std::size_t r1 = std::min(x.size(),y.size()) - 1;
 
-         if ((1 == ps_index) && !details::load_vector_range<T>::process(parameters,r0,r1,2,3))
+         if ((1 == ps_index) && !helper::load_vector_range<T>::process(parameters,r0,r1,2,3,0))
             return std::numeric_limits<T>::quiet_NaN();
-         else if (details::invalid_range(x,r0,r1))
-            return std::numeric_limits<T>::quiet_NaN();
-         else if (details::invalid_range(y,r0,r1))
+         else if (helper::invalid_range(y,r0,r1))
             return std::numeric_limits<T>::quiet_NaN();
 
          T result = T(0);
@@ -36763,11 +36726,9 @@ namespace exprtk
          std::size_t r0 = 0;
          std::size_t r1 = std::min(x.size(),y.size()) - 1;
 
-         if ((1 == ps_index) && !details::load_vector_range<T>::process(parameters,r0,r1,2,3))
+         if ((1 == ps_index) && !helper::load_vector_range<T>::process(parameters,r0,r1,2,3,0))
             return std::numeric_limits<T>::quiet_NaN();
-         else if (details::invalid_range(x,r0,r1))
-            return std::numeric_limits<T>::quiet_NaN();
-         else if (details::invalid_range(y,r0,r1))
+         else if (helper::invalid_range(y,r0,r1))
             return std::numeric_limits<T>::quiet_NaN();
 
          T result = T(0);
