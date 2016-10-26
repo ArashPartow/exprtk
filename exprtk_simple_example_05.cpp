@@ -37,13 +37,20 @@ struct myfunc : public exprtk::ifunction<T>
 };
 
 template <typename T>
+inline T myotherfunc(T v0, T v1, T v2)
+{
+   return std::abs(v0 - v1) * v2;
+}
+
+template <typename T>
 void custom_function()
 {
    typedef exprtk::symbol_table<T> symbol_table_t;
    typedef exprtk::expression<T>     expression_t;
    typedef exprtk::parser<T>             parser_t;
 
-   std::string expression_string = "myfunc(sin(x * pi), y / 2)";
+   std::string expression_string =
+                  "myfunc(sin(x / pi), otherfunc(3 * y, x / 2, x * y))";
 
    T x = T(1);
    T y = T(2);
@@ -53,6 +60,7 @@ void custom_function()
    symbol_table.add_variable("x",x);
    symbol_table.add_variable("y",y);
    symbol_table.add_function("myfunc",mf);
+   symbol_table.add_function("otherfunc",myotherfunc);
    symbol_table.add_constants();
 
    expression_t expression;
