@@ -1,11 +1,42 @@
-C++ Mathematical Expression Toolkit Library
+C++ Mathematical Expression Toolkit Library Documentation
+
+  Section 00 - Introduction
+  Section 01 - Capabilities
+  Section 02 - Example Expressions
+  Section 03 - Copyright Notice
+  Section 04 - Downloads & Updates
+  Section 05 - Installation
+  Section 06 - Compilation
+  Section 07 - Compiler Compatibility
+  Section 08 - Built-In Operations & Functions
+  Section 09 - Fundamental Types
+  Section 10 - Components
+  Section 11 - Compilation Options
+  Section 12 - Special Functions
+  Section 13 - Variable, Vector & String Definition
+  Section 14 - Vector Processing
+  Section 15 - User Defined Functions
+  Section 16 - Expression Dependents
+  Section 17 - Hierarchies Of Symbol Tables
+  Section 18 - Unknown Unknowns
+  Section 19 - Enabling & Disabling Features
+  Section 20 - Expression Return Values
+  Section 21 - Compilation Errors
+  Section 22 - Runtime Library Packages
+  Section 23 - Helpers & Utils
+  Section 24 - Exprtk Notes
+  Section 25 - Simple Exprtk Example
+  Section 26 - Build Options
+  Section 27 - Files
+  Section 28 - Language Structure
+
 
 [00 - INTRODUCTION]
 The C++ Mathematical Expression  Toolkit Library (ExprTk) is  a simple
 to  use,   easy  to   integrate  and   extremely  efficient   run-time
 mathematical  expression parsing  and evaluation  engine. The  parsing
 engine  supports numerous  forms  of  functional and  logic processing
-semantics and is easily extendible.
+semantics and is easily extensible.
 
      ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
@@ -116,7 +147,7 @@ include path (e.g: /usr/include/).
 ExprTk has been built error and warning free using the following set
 of C++ compilers:
 
-  (*) GNU Compiler Collection (3.3+)
+  (*) GNU Compiler Collection (3.5+)
   (*) Intel C++ Compiler (8.x+)
   (*) Clang/LLVM (1.1+)
   (*) PGI C++ (10.x+)
@@ -608,7 +639,7 @@ appropriate may represent any of one the following:
 
      ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
-[09 - Fundamental Types]
+[09 - FUNDAMENTAL TYPES]
 ExprTk supports three fundamental types which can be used freely in
 expressions. The types are as follows:
 
@@ -719,7 +750,9 @@ Note: It is possible to register multiple symbol_tables with a  single
 expression  object. In  the event  an expression  has multiple  symbol
 tables,  and  where  there  exists  conflicts  between  symbols,   the
 compilation stage  will resolve  the conflicts  based on  the order of
-registration of the symbol_tables to the expression.
+registration  of  the  symbol_tables to  the  expression.  For a  more
+expansive  discussion  please  review section  [17  -  Hierarchies  Of
+Symbol Tables]
 
    typedef exprtk::symbol_table<double> symbol_table_t;
    typedef exprtk::expression<double>     expression_t;
@@ -1144,7 +1177,7 @@ correctly optimize such expressions for a given architecture.
 
      ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
-[13 - VARIABLE , VECTOR & STRING DEFINITION]
+[13 - VARIABLE, VECTOR & STRING DEFINITION]
 ExprTk supports the definition of expression local variables,  vectors
 and  strings.  The definitions  must  be unique  as  shadowing is  not
 allowed and object life-times are based on scope. Definitions use  the
@@ -1964,7 +1997,7 @@ carried out:
 
 
 Note: For  the igeneric_function  type, there  also needs  to be a 'Z'
-parameter sequence  defined inorder  for the  zero parameter  trait to
+parameter sequence  defined in order for the  zero parameter  trait to
 properly take effect otherwise a compilation error will occur.
 
      ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
@@ -2115,7 +2148,410 @@ will not contain symbols denoting functions.
 
      ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
-[17 - ENABLING AND DISABLING FEATURES]
+[17 - HIERARCHIES OF SYMBOL TABLES]
+Most situations will only require a single symbol_table instance to be
+associated with a given expression instance.
+
+However as an expression can have more than one symbol table  instance
+associated  with  itself,  when  building  more  complex  systems that
+utilize many expressions  where each can  in turn utilize  one or more
+variables  from  a  large set  of  potential  variables, functions  or
+constants, it becomes evident  that grouping variables into  layers of
+symbol_tables will simplify and streamline the overall process.
+
+A suggested hierarchy of symbol tables is as follows:
+
+   (a) Global constant value symbol table
+   (b) Global non side-effect functions symbol table
+   (c) Global variable symbol table
+   (d) Expression specific variable symbol table
+
+
+(a) Global constant value symbol table
+This symbol table will  contain constant variables denoting  immutable
+values. These variables can be made available to all expressions,  and
+in turn expressions  will assume the  values themselves will  never be
+modified for the  duration of the  process run-time. Examples  of such
+variables are:
+
+   (1) pi or e
+   (2) speed_of_light
+   (3) avogadro_number
+   (4) num_cpus
+
+
+(b) Global non side-effect functions symbol table
+This symbol table will contain  only user defined functions that  will
+not incur any side-effects that are visible to any of the  expressions
+that invoke  them. These  functions will  be thread-safe  or threading
+invariant and will not maintain any form of state between invocations.
+Examples of such functions are:
+
+   (1) calc_volume_of_sphere(r)
+   (2) distance(x0,y0,x1,y1)
+
+
+(c) Global variable symbol table
+This symbol table  will contain variables  that will be  accessible to
+all associated expressions  and will not  be specific to  exclusive to
+any one expression. This variant  differs from (a) in that  the values
+of the  variables can  change (or  be updated)  between evaluations of
+expressions  -   but  through   properly  scheduled   evaluations  are
+guaranteed  to never  change during  the evaluation  of any  dependent
+expressions. Furthermore it  is assumed that  these variables will  be
+used in a  read-only context and  that no expressions  will attempt to
+modify these variables via assignments or other means.
+
+   (1) price_of_stock_xyz
+   (2) outside_temperature or inside_temperature
+   (3) fuel_in_tank
+   (4) num_customers_in_store
+   (5) num_items_on_shelf
+
+
+(d) Expression specific variable symbol table
+This  symbol_table is  the most  common form,  and is  used to  store
+variables that are specific and exclusive to a particular  expression.
+That is to say references  to variables in this symbol_table  will not
+be  part of  another expression.  Though it  may be  possible to  have
+expressions that  contain the  variables with  the same  name, in that
+case those variables will be distinct different. Which would mean if a
+particular expression were to be compiled twice, that each  expression
+would have it's own unique symbol_table which in turn would have  it's
+own instances of those variables. Examples of such variables could be:
+
+   (1) x or y
+   (2) customer_name
+
+
+The  following is  a diagram  depicting the  possible version  of the
+denoted symbol table hierarchies. In the diagram there are two  unique
+expressions, each of  which have a  reference to the  Global constant,
+functions and variables symbol tables and an exclusive reference to  a
+local symbol table.
+
+  +-------------------------+    +-------------------------+
+  |     Global Constants    |    |     Global Functions    |
+  |       Symbol Table      |    |       Symbol Table      |
+  +----o--o-----------------+    +--------------------o----+
+       |  |                                           |
+       |  |                                           +-------+
+       |  +------------------->----------------------------+  |
+       |         +----------------------------+            |  |
+       |         |      Global Variables      |            |  |
+       |  +------o        Symbol Table        o-----+      |  V
+       |  |      +----------------------------+     |      |  |
+       |  |                                         |      |  |
+       |  | +----------------+   +----------------+ |      |  |
+       |  | | Symbol Table 0 |   | Symbol Table 1 | |      V  |
+       |  | +--o-------------+   +--o-------------+ |      |  |
+       |  |    |                    |               |      |  |
+       |  |    |                    |               |      |  |
+    +--V--V----V---------+        +-V---------------V--+   |  |
+    |    Expression 0    |        |    Expression 1    |<--+--+
+    |  '2 * sin(x) - y'  |        |  'k + abs(x - y)'  |
+    +--------------------+        +--------------------+
+
+
+Bringing  all of  the above  together, in  the following  example the
+hierarchy  of  symbol  tables  are  instantiated  and  initialised. An
+expression that makes use of various elements of each symbol table  is
+then compiled and later on evaluated:
+
+   typedef exprtk::symbol_table<double> symbol_table_t;
+   typedef exprtk::expression<double>     expression_t;
+
+   // Setup global constants symbol table
+   symbol_table_t glbl_const_symbol_table;
+   glbl_const_symbtab.add_constants(); // pi, epsilon and inf
+   glbl_const_symbtab.add_constant("speed_of_light",299e6);
+   glbl_const_symbtab.add_constant("avogadro_number",6e23);
+
+   // Setup global function symbol table
+   symbol_table_t glbl_funcs_symbol_table;
+   glbl_func_symbtab.add_function('distance',distance);
+   glbl_func_symbtab.add_function('calc_spherevol',calc_sphrvol);
+
+   ......
+
+   // Setup global variable symbol table
+   symbol_table_t glbl_variable_symbol_table;
+   glbl_variable_symbtab.add_variable('temp_outside',thermo.outside);
+   glbl_variable_symbtab.add_variable('temp_inside' ,thermo.inside );
+   glbl_variable_symbtab.add_variable('num_cstmrs',store.num_cstmrs);
+
+   ......
+
+   double x,y,z;
+
+   // Setup expression specific symbol table
+   symbol_table_t symbol_table;
+   symbol_table.add_variable('x',x);
+   symbol_table.add_variable('y',y);
+   symbol_table.add_variable('z',z);
+
+   expression_t expression;
+
+   // Register the various symbol tables
+   expression
+      .register_symbol_table(symbol_table);
+
+   expression
+      .register_symbol_table(glbl_funcs_symbol_table);
+
+   expression
+      .register_symbol_table(glbl_const_symbol_table);
+
+   expression
+      .register_symbol_table(glbl_variable_symbol_table);
+
+   std::string expression_str =
+      "abs(temp_inside - temp_outside) + 2 * speed_of_light / x";
+
+   parser_t parser;
+   parser.compile(expression_str,expression);
+
+   ......
+
+   while (keep_evaluating)
+   {
+     ....
+
+     T result = expression.value();
+
+     ....
+   }
+
+     ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+[18 - UNKNOWN UNKNOWNS]
+In this section  we will discuss  the process of  handling expressions
+with a mix of known and unknown variables. Initially a discussion into
+the types of expressions that exist will be provided, then a series of
+possible solutions will be presented for each scenario.
+
+When parsing an expression, there  may be situations where one  is not
+fully  aware  of what  if  any variables  will  be used  prior  to the
+expression being compiled.
+
+This can become problematic, as in the default scenario it is  assumed
+the symbol_table that is registered with the expression instance  will
+already  posses  the  externally  available  variables,  functions and
+constants needed during the compilation of the expression.
+
+In the event there are symbols in the expression that can't be  mapped
+to   either   a  reserved   word,   or  located   in   the  associated
+symbol_table(s), an "Undefined  symbol" error will  be raised and  the
+compilation process will fail.
+
+The numerous  scenarios that  can occur  when compiling  an expression
+with ExprTk generally fall into one of the following three categories:
+
+   (a) No external variables
+   (b) Predetermined set of external variables
+   (c) Unknown set of variables
+
+
+(a) No external variables
+These  are  expressions that  contain  no external  variables  but may
+contain  local  variables.  As  local  variables  cannot  be  accessed
+externally from the  expression, it is  assumed that such  expressions
+will not have  a need for  a symbol_table and  furthermore expressions
+which  don't  make  use of  functions that  have side-effects  will be
+evaluated completely at  compile time resulting  in a constant  return
+value. The following are examples of such expressions:
+
+   (1) 1 + 2
+   (2) var x := 3; 2 * x - 3
+   (3) var x := 3; var y := abs(x - 8); x - y / 7
+
+
+(b) Predetermined set of external variables
+These  are  expressions  that are  comprised  of  externally available
+variables  and functions  and will  only compile  successfully if  the
+symbols that  correspond to  the variables  and functions  are already
+defined in their associated symbol_table(s).  This is by far the  most
+common scenario when using ExprTk.
+
+As an example, one may have three external variables: x, y and z which
+have been registered with  the associated symbol_table, and  will then
+need to compile  and evaluate expressions  comprised of any  subset of
+these  three  variables. The  following  are a  few  examples of  such
+expressions:
+
+   (1) 1 + x
+   (2) x / y
+   (3) 2 * x * y / z
+
+
+In  this  scenario   one  can  use   the  'dependent_entity_collector'
+component as described in [Section  16] to further determine which  of
+the registered variables were  actually used in the  given expression.
+As  an example  once the  set of  utilized  variables  are known,  any
+further 'attention'  can be  restricted to  only those  variables when
+evaluating the expression. This can be quite useful when dealing  with
+expressions that can draw from a set of hundreds or even thousands  of
+variables.
+
+
+(c) Unknown set of variables
+These are  expressions that  are comprised  of symbols  other than the
+standard ExprTk reserved words or what has been registered with  their
+associated symbol_table, and will normally fail compilation due to the
+associated symbol_table not having a  reference to them. As such  this
+scenario can be  seen as a  combination of scenario  B, where one  may
+have a symbol_table with registered variables, but would also like  to
+handle  the  situation  of  variables  that  aren't  present  in  said
+symbol_table.
+
+When dealing with expressions of category (c), one must perform all of
+the following:
+
+   (1) Determine the variables used in the expression
+   (2) Populate a symbol_table(s) with the entities from (1)
+   (3) Compile the expression
+   (4) Provide a means by which the entities from (1) can be modified
+
+
+Depending on the nature of processing,  steps (1) and (2) can be  done
+either independently of each other or combined into one. The following
+example  will  initially  look  at  solving  the  problem  of  unknown
+variables with the  latter method using  the 'unknown_symbol_resolver'
+component.
+
+   typedef exprtk::symbol_table<T> symbol_table_t;
+   typedef exprtk::expression<T>     expression_t;
+   typedef exprtk::parser<T>             parser_t;
+
+   symbol_table_t unknown_var_symbol_table;
+
+   symbol_table_t symbol_table;
+   symbol_table.add_variable("x",x);
+   symbol_table.add_variable("y",y);
+
+   expression_t expression;
+   expression.register_symbol_table(unknown_var_symbol_table);
+   expression.register_symbol_table(symbol_table);
+
+   parser_t parser;
+   parser.enable_unknown_symbol_resolver();
+
+   std::string expression_str = "x + abs(y / 3k) * z + 2";
+
+   parser.compile(expression_str,expression);
+
+
+In the  example above,  the symbols  'k' and  'z' will  be treated  as
+unknown symbols. The  parser in the  example is set  to handle unknown
+symbols using the built-in default unknown_symbol_resolver (USR).  The
+default  USR  will  automatically resolve  any  unknown  symbols as  a
+variable (scalar type). The new variables will be added to the primary
+symbol_table,  which in  this case  is the  'unknown_var_symbol_table'
+instance.  Once  the  compilation  has  completed  successfully,   the
+variables that were resolved  during compilation can be  accessed from
+the   primary   symbol_table   using   the   'get_variable_list'   and
+'variable_ref' methods and then if needed can be modified  accordingly
+after which the expression itself can be evaluated.
+
+   std::vector<std::string> variable_list;
+
+   unknown_var_symbol_table.get_variable_list(variable_list);
+
+   for (auto& var_name : variable_list)
+   {
+      T& v = symbol_table.variable_ref(var_name);
+
+      v = ...;
+   }
+
+   ...
+
+   expression.value();
+
+
+Note:  As  previously  mentioned the  default  USR  will automatically
+assume any unknown symbol to be a valid scalar variable, and will then
+proceed to add said symbol  as a variable to the  primary symbol_table
+of the associated expression during the compilation process. However a
+problem that may arise, is  that expressions that are parsed  with the
+USR enabled,  but contain  'typos' or  otherwise syntactic  errors may
+inadvertently compile successfully due to the simplistic nature of the
+default USR. The following are some example expressions:
+
+   (1) 1 + abz(x + 1)
+   (2) sine(y / 2) - coz(3x)
+
+
+The two  expression above  contain misspelt  symbols (abz,  sine, coz)
+which if implied  multiplications and default  USR are enabled  during
+compilation will result in them being assumed to be valid 'variables',
+which obviously is  not the intended  outcome by the  user. A possible
+solution to this  problem is for  one to implement  their own specific
+USR that will perform a user defined business logic in determining  if
+an encountered unknown symbol should be treated as a variable or if it
+should raise a compilation error. The following example demonstrated a
+simple user defined USR:
+
+   typedef exprtk::symbol_table<T> symbol_table_t;
+   typedef exprtk::expression<T>     expression_t;
+   typedef exprtk::parser<T>             parser_t;
+
+   template <typename T>
+   struct my_usr : public parser_t::unknown_symbol_resolver
+   {
+      typedef typename parser_t::unknown_symbol_resolver usr_t;
+
+      bool process(const std::string& unknown_symbol,
+                   typename usr_t::usr_symbol_type& st,
+                   T& default_value,
+                   std::string& error_message)
+      {
+         if (0 != unknown_symbol.find('var_'))
+         {
+            error_message = "Invalid symbol: " + unknown_symbol;
+            return false;
+         }
+
+         st = usr_t::e_usr_variable_type;
+         default_value = T(123.123);
+
+         return true;
+      }
+   };
+
+   ...
+
+   symbol_table_t unknown_var_symbol_table;
+
+   symbol_table_t symbol_table;
+   symbol_table.add_variable("x",x);
+   symbol_table.add_variable("y",y);
+
+   expression_t expression;
+   expression.register_symbol_table(unknown_var_symbol_table);
+   expression.register_symbol_table(symbol_table);
+
+   my_usr<T> musr;
+
+   parser_t parser;
+   parser.enable_unknown_symbol_resolver(&musr);
+
+   std::string expression_str = "var_x + abs(var_y - 3) * var_z";
+
+   parser.compile(expression_str,expression);
+
+
+In  the  example  above,  a user  specified  USR  is  defined, and  is
+registered with the parser enabling the USR functionality. The when an
+unknown  symbol is  encountered during  the  compilation  process, the
+USR's process method will be invoked. The USR in the example will only
+'accept' unknown symbols that have  a prefix of 'var_' as  being valid
+variables,  all other  unknown symbols  will result  in a  compilation
+error being raised.
+
+     ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+[19 - ENABLING & DISABLING FEATURES]
 The parser can be configured via its settings instance to either allow
 or  disallow certain  features that  are available  within the  ExprTk
 grammar. The features fall  into one  of the following six categories:
@@ -2438,9 +2874,7 @@ redefined as a function taking degree input.
        }
     };
 
-    .
-    .
-    .
+    ...
 
     typedef exprtk::symbol_table<T> symbol_table_t;
     typedef exprtk::expression<T>     expression_t;
@@ -2473,7 +2907,7 @@ ExprTk reserved words, the add_function call will fail.
 
      ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
-[18 - EXPRESSION RETURN VALUES]
+[20 - EXPRESSION RETURN VALUES]
 ExprTk expressions can return immediately from any point by  utilizing
 the return call. Furthermore the  return call can be used  to transfer
 out multiple return values from within the expression.
@@ -2550,7 +2984,7 @@ generic function call parameters.
 
      ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
-[19 - COMPILATION ERRORS]
+[21 - COMPILATION ERRORS]
 When attempting to compile  a malformed or otherwise  erroneous ExprTk
 expression, the  compilation process  will result  in an  error, as is
 indicated  by  the  'compile'  method  returning  a  false  value.   A
@@ -2670,7 +3104,7 @@ via the 'unknown symbol resolver' mechanism.
 
      ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
-[20 - RUNTIME LIBRARY PACKAGES]
+[22 - RUNTIME LIBRARY PACKAGES]
 ExprTk   contains   a   set  of   simple   extensions,   that  provide
 functionalities  beyond  basic numerical  calculations.  Currently the
 available packages are:
@@ -2745,7 +3179,266 @@ file I/O package is made available for the given expression:
 
      ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
-[21 - EXPRTK NOTES]
+[23 - HELPERS & UTILS]
+The  ExprTk library  provides a  series of  usage simplifications  via
+helper routines that combine various processes into a single 'function
+call'  making  certain  actions   easier  to  carry  out   though  not
+necessarily in the most efficient way possible. A list of the routines
+are as follows:
+
+   (a) collect_variables
+   (b) collect_functions
+   (c) compute
+   (d) integrate
+   (e) derivative
+   (f) second_derivative
+   (g) third_derivative
+
+
+(a) collect_variables
+This function will collect all the variable symbols in a given  string
+representation of an expression and  return them in an STL  compatible
+sequence  data structure  (eg: std::vector,  dequeue etc)  specialised
+upon a std::string type. An example use of the routine is as follows:
+
+   std::string expression = "x + abs(y / z)";
+
+   std::vector<std::string> variable_list;
+
+   exprtk::collect_variables(expression,variable_list);
+
+   for (auto var : variable_list)
+   {
+      ...
+   }
+
+
+(b) collect_functions
+This function will collect all the function symbols in a given  string
+representation of an expression and  return them in an STL  compatible
+sequence  data structure  (eg: std::vector,  dequeue etc)  specialised
+upon a std::string type. An example use of the routine is as follows:
+
+   std::string expression = "x + abs(y / cos(1 + z))";
+
+   std::deque<std::string> variable_list;
+
+   exprtk::collect_functions(expression,function_list);
+
+   for (auto func : function_list)
+   {
+      ...
+   }
+
+
+(c) compute
+This free function  will compute the  value of an  expression from its
+string form.  If an  invalid expression  is passed,  the result of the
+function will be false indicating an error, otherwise the return value
+will  be  true  indicating success.  The  compute  function has  three
+overloads, the definitions of which are:
+
+   (1) No variables
+   (2) One variable called x
+   (3) Two variable called x and y
+   (3) Three variable called x, y and z
+
+
+An example use of each of the three overloads for the compute  routine
+is as follows:
+
+   T result = T(0);
+
+   // No variables overload
+   std::string no_vars = "abs(1 - (3 / pi)) * 5";
+
+   if (!exprtk::compute(no_vars,result))
+      printf("Failed to compute: %s",no_vars.c_str());
+   else
+      printf("Result: %15.5f\n",result);
+
+   // One variable 'x' overload
+   T x = 123.456;
+
+   std::string one_var = "abs(x - (3 / pi)) * 5";
+
+   if (!exprtk::compute(one_var, x, result))
+      printf("Failed to compute: %s",one_var.c_str());
+   else
+      printf("Result: %15.5f\n",result);
+
+   // Two variables 'x' and 'y' overload
+   T y = 789.012;
+
+   std::string two_var = "abs(x - (y / pi)) * 5";
+
+   if (!exprtk::compute(two_var, x, y, result))
+      printf("Failed to compute: %s",two_var.c_str());
+   else
+      printf("Result: %15.5f\n",result);
+
+   // Three variables 'x', 'y' and 'z' overload
+   T z = 345.678;
+
+   std::string three_var = "abs(x - (y / pi)) * z";
+
+   if (!exprtk::compute(three_var, x, y, z, result))
+      printf("Failed to compute: %s",three_var.c_str());
+   else
+      printf("Result: %15.5f\n",result);
+
+
+(d) integrate
+This free function will attempt to perform a numerical integration  of
+a single variable compiled expression  over a defined range and  given
+step size. The numerical integration is based on the three point  form
+of the Simpson's rule. The integrate function has two overloads, where
+the variable of integration can either be passed as a reference or  as
+a name in string form. Example usage of the function is as follows:
+
+   typedef exprtk::parser<T>             parser_t;
+   typedef exprtk::expression<T>     expression_t;
+   typedef exprtk::symbol_table<T> symbol_table_t;
+
+   std::string expression_string = "sqrt(1 - (x^2))";
+
+   T x = T(0);
+
+   symbol_table_t symbol_table;
+   symbol_table.add_variable("x",x);
+
+   expression_t expression;
+   expression.register_symbol_table(symbol_table);
+
+   parser_t parser;
+   parser.compile(expression_string,expression);
+
+   ....
+
+   // Integrate in domain [-1,1] using a reference to x variable
+   T area1 = exprtk::integrate(expression, x, T(-1), T(1));
+
+   // Integrate in domain [-1,1] using name of x variable
+   T area2 = exprtk::integrate(expression, "x", T(-1), T(1));
+
+
+(e) derivative
+This free function will attempt to perform a numerical differentiation
+of a single variable compiled expression at a given point for a  given
+epsilon, using a  variant of Newton's  difference quotient called  the
+five-point stencil method. The derivative function has two  overloads,
+where  the  variable of  differentiation  can either  be  passed as  a
+reference or as a name in string form. A example usage of the function
+is as follows:
+
+   typedef exprtk::parser<T>             parser_t;
+   typedef exprtk::expression<T>     expression_t;
+   typedef exprtk::symbol_table<T> symbol_table_t;
+
+   std::string expression_string = "sqrt(1 - (x^2))";
+
+   T x = T(0);
+
+   symbol_table_t symbol_table;
+   symbol_table.add_variable("x",x);
+
+   expression_t expression;
+   expression.register_symbol_table(symbol_table);
+
+   parser_t parser;
+   parser.compile(expression_string,expression);
+
+   ....
+
+   // Differentiate expression where value of x = 12.3 using a reference
+   // to x variable
+   x = T(12.3);
+   T derivative1 = exprtk::derivative(expression,x);
+
+   // Differentiate expression where value x = 45.6 using name
+   // of x variable
+   x = T(45.6);
+   T derivative2 = exprtk::derivative(expression, "x");
+
+
+(f) second_derivative
+This  free  function  will  attempt  to  perform  a  numerical  second
+derivative of a single variable  compiled expression at a given  point
+for a given epsilon, using  a variant of Newton's difference  quotient
+method. The second_derivative function  has  two overloads, where  the
+variable of differentiation can either be passed as a reference or  as
+a name in string form. Example usage of the function is as follows:
+
+   typedef exprtk::parser<T>             parser_t;
+   typedef exprtk::expression<T>     expression_t;
+   typedef exprtk::symbol_table<T> symbol_table_t;
+
+   std::string expression_string = "sqrt(1 - (x^2))";
+
+   T x = T(0);
+
+   symbol_table_t symbol_table;
+   symbol_table.add_variable("x",x);
+
+   expression_t expression;
+   expression.register_symbol_table(symbol_table);
+
+   parser_t parser;
+   parser.compile(expression_string,expression);
+
+   ....
+
+   // Second derivative of expression where value of x = 12.3 using a
+   // reference to x variable
+   x = T(12.3);
+   T derivative1 = exprtk::second_derivative(expression,x);
+
+   // Second derivative of expression where value of x = 45.6 using
+   // name of x variable
+   x = T(45.6);
+   T derivative2 = exprtk::second_derivative(expression, "x");
+
+
+(g) third_derivative
+This  free  function  will  attempt  to  perform  a  numerical   third
+derivative of a single variable  compiled expression at a given  point
+for a given epsilon, using  a variant of Newton's difference  quotient
+method. The  third_derivative function  has two  overloads, where  the
+variable of differentiation can either be passed as a reference or  as
+a name in string form. Example usage of the function is as follows:
+
+   typedef exprtk::parser<T>             parser_t;
+   typedef exprtk::expression<T>     expression_t;
+   typedef exprtk::symbol_table<T> symbol_table_t;
+
+   std::string expression_string = "sqrt(1 - (x^2))";
+
+   T x = T(0);
+
+   symbol_table_t symbol_table;
+   symbol_table.add_variable("x",x);
+
+   expression_t expression;
+   expression.register_symbol_table(symbol_table);
+
+   parser_t parser;
+   parser.compile(expression_string,expression);
+
+   ....
+
+   // Third derivative of expression where value of x = 12.3 using a
+   // reference to x variable
+   x = T(12.3);
+   T derivative1 = exprtk::third_derivative(expression,x);
+
+   // Third derivative of expression where value of x = 45.6 using
+   // name of x variable
+   x = T(45.6);
+   T derivative2 = exprtk::third_derivative(expression, "x");
+
+     ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+[24 - EXPRTK NOTES]
 The following is a list of facts and suggestions one may want to take
 into account when using ExprTk:
 
@@ -2946,7 +3639,7 @@ into account when using ExprTk:
 
      ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
-[22 - SIMPLE EXPRTK EXAMPLE]
+[25 - SIMPLE EXPRTK EXAMPLE]
 The following is a  simple yet complete example  demonstrating typical
 usage of the ExprTk Library.  The example instantiates a symbol  table
 object, adding to it  three variables named x,  y and z, and  a custom
@@ -3051,7 +3744,7 @@ int main()
 
      ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
-[23 - BUILD OPTIONS]
+[26 - BUILD OPTIONS]
 When building ExprTk there are a number of defines that will enable or
 disable certain features and  capabilities. The defines can  either be
 part of a compiler command line switch or scoped around the include to
@@ -3118,7 +3811,7 @@ error.
 
      ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
-[24 - FILES]
+[27 - FILES]
 The source distribution of ExprTk is comprised of the following set of
 files:
 
@@ -3149,7 +3842,7 @@ files:
 
      ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
-[25 - LANGUAGE STRUCTURE]
+[28 - LANGUAGE STRUCTURE]
 +-------------------------------------------------------------+
 |00 - If Statement                                            |
 |                                                             |

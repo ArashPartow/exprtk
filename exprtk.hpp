@@ -4333,7 +4333,7 @@ namespace exprtk
          e_sf4ext48 = 2048, e_sf4ext49 = 2049, e_sf4ext50 = 2050, e_sf4ext51 = 2051,
          e_sf4ext52 = 2052, e_sf4ext53 = 2053, e_sf4ext54 = 2054, e_sf4ext55 = 2055,
          e_sf4ext56 = 2056, e_sf4ext57 = 2057, e_sf4ext58 = 2058, e_sf4ext59 = 2059,
-         e_sf4ext60 = 2060
+         e_sf4ext60 = 2060, e_sf4ext61 = 2061
       };
 
       inline std::string to_str(const operator_type opr)
@@ -5422,6 +5422,7 @@ namespace exprtk
          virtual const range_t& range_ref() const = 0;
       };
 
+      #ifndef exprtk_disable_string_capabilities
       template <typename T>
       class string_base_node
       {
@@ -5505,6 +5506,7 @@ namespace exprtk
          const std::string value_;
          range_t rp_;
       };
+      #endif
 
       template <typename T>
       class unary_node : public expression_node<T>
@@ -5532,6 +5534,7 @@ namespace exprtk
          inline T value() const
          {
             const T arg = branch_->value();
+
             return numeric::process<T>(operation_,arg);
          }
 
@@ -5664,6 +5667,7 @@ namespace exprtk
          {
             const T arg0 = branch_[0].first->value();
             const T arg1 = branch_[1].first->value();
+
             return numeric::process<T>(operation_,arg0,arg1);
          }
 
@@ -6229,6 +6233,7 @@ namespace exprtk
          inline T value() const
          {
             T result = T(0);
+
             while (is_true(condition_))
             {
                try
@@ -6242,6 +6247,7 @@ namespace exprtk
                catch(const continue_exception&)
                {}
             }
+
             return result;
          }
 
@@ -7375,6 +7381,7 @@ namespace exprtk
          {
             rp_.n1_c.second  = (*value_).size() - 1;
             rp_.cache.second = rp_.n1_c.second;
+
             return std::numeric_limits<T>::quiet_NaN();
          }
 
@@ -8876,57 +8883,58 @@ namespace exprtk
       define_sfop4(ext07,((x - y) - (z / w)),"(t-t)-(t/t)")
       define_sfop4(ext08,((x + y) - (z - w)),"(t+t)-(t-t)")
       define_sfop4(ext09,((x + y) + (z - w)),"(t+t)+(t-t)")
-      define_sfop4(ext10,((x + y) * (z - w)),"(t+t)*(t-t)")
-      define_sfop4(ext11,((x + y) / (z - w)),"(t+t)/(t-t)")
-      define_sfop4(ext12,((x - y) - (z + w)),"(t-t)-(t+t)")
-      define_sfop4(ext13,((x - y) + (z + w)),"(t-t)+(t+t)")
-      define_sfop4(ext14,((x - y) * (z + w)),"(t-t)*(t+t)")
-      define_sfop4(ext15,((x - y) / (z + w)),"(t-t)/(t+t)")
-      define_sfop4(ext16,((x * y) - (z + w)),"(t*t)-(t+t)")
-      define_sfop4(ext17,((x / y) - (z + w)),"(t/t)-(t+t)")
-      define_sfop4(ext18,((x * y) + (z + w)),"(t*t)+(t+t)")
-      define_sfop4(ext19,((x / y) + (z + w)),"(t/t)+(t+t)")
-      define_sfop4(ext20,((x * y) + (z - w)),"(t*t)+(t-t)")
-      define_sfop4(ext21,((x / y) + (z - w)),"(t/t)+(t-t)")
-      define_sfop4(ext22,((x * y) - (z - w)),"(t*t)-(t-t)")
-      define_sfop4(ext23,((x / y) - (z - w)),"(t/t)-(t-t)")
-      define_sfop4(ext24,((x + y) * (z * w)),"(t+t)*(t*t)")
-      define_sfop4(ext25,((x + y) * (z / w)),"(t+t)*(t/t)")
-      define_sfop4(ext26,((x + y) / (z * w)),"(t+t)/(t*t)")
-      define_sfop4(ext27,((x + y) / (z / w)),"(t+t)/(t/t)")
-      define_sfop4(ext28,((x - y) / (z * w)),"(t-t)/(t*t)")
-      define_sfop4(ext29,((x - y) / (z / w)),"(t-t)/(t/t)")
-      define_sfop4(ext30,((x - y) * (z * w)),"(t-t)*(t*t)")
-      define_sfop4(ext31,((x - y) * (z / w)),"(t-t)*(t/t)")
-      define_sfop4(ext32,((x * y) * (z + w)),"(t*t)*(t+t)")
-      define_sfop4(ext33,((x / y) * (z + w)),"(t/t)*(t+t)")
-      define_sfop4(ext34,((x * y) / (z + w)),"(t*t)/(t+t)")
-      define_sfop4(ext35,((x / y) / (z + w)),"(t/t)/(t+t)")
-      define_sfop4(ext36,((x * y) / (z - w)),"(t*t)/(t-t)")
-      define_sfop4(ext37,((x / y) / (z - w)),"(t/t)/(t-t)")
-      define_sfop4(ext38,((x * y) * (z - w)),"(t*t)*(t-t)")
-      define_sfop4(ext39,((x * y) / (z * w)),"(t*t)/(t*t)")
-      define_sfop4(ext40,((x / y) * (z / w)),"(t/t)*(t/t)")
-      define_sfop4(ext41,((x / y) * (z - w)),"(t/t)*(t-t)")
-      define_sfop4(ext42,((x * y) * (z * w)),"(t*t)*(t*t)")
-      define_sfop4(ext43,(x + (y * (z / w))),"t+(t*(t/t))")
-      define_sfop4(ext44,(x - (y * (z / w))),"t-(t*(t/t))")
-      define_sfop4(ext45,(x + (y / (z * w))),"t+(t/(t*t))")
-      define_sfop4(ext46,(x - (y / (z * w))),"t-(t/(t*t))")
-      define_sfop4(ext47,(((x - y) - z) * w),"((t-t)-t)*t")
-      define_sfop4(ext48,(((x - y) - z) / w),"((t-t)-t)/t")
-      define_sfop4(ext49,(((x - y) + z) * w),"((t-t)+t)*t")
-      define_sfop4(ext50,(((x - y) + z) / w),"((t-t)+t)/t")
-      define_sfop4(ext51,((x + (y - z)) * w),"(t+(t-t))*t")
-      define_sfop4(ext52,((x + (y - z)) / w),"(t+(t-t))/t")
-      define_sfop4(ext53,((x + y) / (z + w)),"(t+t)/(t+t)")
-      define_sfop4(ext54,((x - y) / (z - w)),"(t-t)/(t-t)")
-      define_sfop4(ext55,((x + y) * (z + w)),"(t+t)*(t+t)")
-      define_sfop4(ext56,((x - y) * (z - w)),"(t-t)*(t-t)")
-      define_sfop4(ext57,((x - y) + (z - w)),"(t-t)+(t-t)")
-      define_sfop4(ext58,((x - y) - (z - w)),"(t-t)-(t-t)")
-      define_sfop4(ext59,((x / y) + (z * w)),"(t/t)+(t*t)")
-      define_sfop4(ext60,(((x * y) * z) / w),"((t*t)*t)/t")
+      define_sfop4(ext10,((x + y) + (z + w)),"(t+t)+(t+t)")
+      define_sfop4(ext11,((x + y) * (z - w)),"(t+t)*(t-t)")
+      define_sfop4(ext12,((x + y) / (z - w)),"(t+t)/(t-t)")
+      define_sfop4(ext13,((x - y) - (z + w)),"(t-t)-(t+t)")
+      define_sfop4(ext14,((x - y) + (z + w)),"(t-t)+(t+t)")
+      define_sfop4(ext15,((x - y) * (z + w)),"(t-t)*(t+t)")
+      define_sfop4(ext16,((x - y) / (z + w)),"(t-t)/(t+t)")
+      define_sfop4(ext17,((x * y) - (z + w)),"(t*t)-(t+t)")
+      define_sfop4(ext18,((x / y) - (z + w)),"(t/t)-(t+t)")
+      define_sfop4(ext19,((x * y) + (z + w)),"(t*t)+(t+t)")
+      define_sfop4(ext20,((x / y) + (z + w)),"(t/t)+(t+t)")
+      define_sfop4(ext21,((x * y) + (z - w)),"(t*t)+(t-t)")
+      define_sfop4(ext22,((x / y) + (z - w)),"(t/t)+(t-t)")
+      define_sfop4(ext23,((x * y) - (z - w)),"(t*t)-(t-t)")
+      define_sfop4(ext24,((x / y) - (z - w)),"(t/t)-(t-t)")
+      define_sfop4(ext25,((x + y) * (z * w)),"(t+t)*(t*t)")
+      define_sfop4(ext26,((x + y) * (z / w)),"(t+t)*(t/t)")
+      define_sfop4(ext27,((x + y) / (z * w)),"(t+t)/(t*t)")
+      define_sfop4(ext28,((x + y) / (z / w)),"(t+t)/(t/t)")
+      define_sfop4(ext29,((x - y) / (z * w)),"(t-t)/(t*t)")
+      define_sfop4(ext30,((x - y) / (z / w)),"(t-t)/(t/t)")
+      define_sfop4(ext31,((x - y) * (z * w)),"(t-t)*(t*t)")
+      define_sfop4(ext32,((x - y) * (z / w)),"(t-t)*(t/t)")
+      define_sfop4(ext33,((x * y) * (z + w)),"(t*t)*(t+t)")
+      define_sfop4(ext34,((x / y) * (z + w)),"(t/t)*(t+t)")
+      define_sfop4(ext35,((x * y) / (z + w)),"(t*t)/(t+t)")
+      define_sfop4(ext36,((x / y) / (z + w)),"(t/t)/(t+t)")
+      define_sfop4(ext37,((x * y) / (z - w)),"(t*t)/(t-t)")
+      define_sfop4(ext38,((x / y) / (z - w)),"(t/t)/(t-t)")
+      define_sfop4(ext39,((x * y) * (z - w)),"(t*t)*(t-t)")
+      define_sfop4(ext40,((x * y) / (z * w)),"(t*t)/(t*t)")
+      define_sfop4(ext41,((x / y) * (z / w)),"(t/t)*(t/t)")
+      define_sfop4(ext42,((x / y) * (z - w)),"(t/t)*(t-t)")
+      define_sfop4(ext43,((x * y) * (z * w)),"(t*t)*(t*t)")
+      define_sfop4(ext44,(x + (y * (z / w))),"t+(t*(t/t))")
+      define_sfop4(ext45,(x - (y * (z / w))),"t-(t*(t/t))")
+      define_sfop4(ext46,(x + (y / (z * w))),"t+(t/(t*t))")
+      define_sfop4(ext47,(x - (y / (z * w))),"t-(t/(t*t))")
+      define_sfop4(ext48,(((x - y) - z) * w),"((t-t)-t)*t")
+      define_sfop4(ext49,(((x - y) - z) / w),"((t-t)-t)/t")
+      define_sfop4(ext50,(((x - y) + z) * w),"((t-t)+t)*t")
+      define_sfop4(ext51,(((x - y) + z) / w),"((t-t)+t)/t")
+      define_sfop4(ext52,((x + (y - z)) * w),"(t+(t-t))*t")
+      define_sfop4(ext53,((x + (y - z)) / w),"(t+(t-t))/t")
+      define_sfop4(ext54,((x + y) / (z + w)),"(t+t)/(t+t)")
+      define_sfop4(ext55,((x - y) / (z - w)),"(t-t)/(t-t)")
+      define_sfop4(ext56,((x + y) * (z + w)),"(t+t)*(t+t)")
+      define_sfop4(ext57,((x - y) * (z - w)),"(t-t)*(t-t)")
+      define_sfop4(ext58,((x - y) + (z - w)),"(t-t)+(t-t)")
+      define_sfop4(ext59,((x - y) - (z - w)),"(t-t)-(t-t)")
+      define_sfop4(ext60,((x / y) + (z * w)),"(t/t)+(t*t)")
+      define_sfop4(ext61,(((x * y) * z) / w),"((t*t)*t)/t")
 
       #undef define_sfop3
       #undef define_sfop4
@@ -11174,6 +11182,7 @@ namespace exprtk
                   ts.data = vi->vds().data();
                   ts.type = type_store_t::e_vector;
                }
+               #ifndef exprtk_disable_string_capabilities
                else if (is_generally_string_node(arg_list_[i]))
                {
                   string_base_node<T>* sbn = reinterpret_cast<string_base_node<T>*>(0);
@@ -11209,6 +11218,7 @@ namespace exprtk
                   else
                      range_list_[i].range = &(ri->range_ref());
                }
+               #endif
                else if (is_variable_node(arg_list_[i]))
                {
                   variable_node_ptr_t var = variable_node_ptr_t(0);
@@ -11282,10 +11292,11 @@ namespace exprtk
                      type_store_t& ts = typestore_list_[i];
 
                      ts.size = rp.cache_size();
-
+                     #ifndef exprtk_disable_string_capabilities
                      if (ts.type == type_store_t::e_string)
                         ts.data = const_cast<char*>(rdt.str_node->base()) + rp.cache.first;
                      else
+                     #endif
                         ts.data = static_cast<char*>(rdt.data) + (rp.cache.first * rdt.type_size);
                   }
                   else
@@ -11307,6 +11318,7 @@ namespace exprtk
          mutable range_list_t range_list_;
       };
 
+      #ifndef exprtk_disable_string_capabilities
       template <typename T, typename StringFunction>
       class string_function_node : public generic_function_node<T,StringFunction>,
                                    public string_base_node<T>,
@@ -11390,6 +11402,7 @@ namespace exprtk
          mutable range_t     range_;
          mutable std::string ret_string_;
       };
+      #endif
 
       template <typename T, typename GenericFunction>
       class multimode_genfunction_node : public generic_function_node<T,GenericFunction>
@@ -11434,6 +11447,7 @@ namespace exprtk
          std::size_t param_seq_index_;
       };
 
+      #ifndef exprtk_disable_string_capabilities
       template <typename T, typename StringFunction>
       class multimode_strfunction_node : public string_function_node<T,StringFunction>
       {
@@ -11482,6 +11496,7 @@ namespace exprtk
 
          std::size_t param_seq_index_;
       };
+      #endif
 
       class return_exception
       {};
@@ -16286,13 +16301,19 @@ namespace exprtk
          local_data().vector_store.clear();
       }
 
+      inline void clear_local_constants()
+      {
+         local_data().local_symbol_list_.clear();
+      }
+
       inline void clear()
       {
          if (!valid()) return;
-         clear_variables();
-         clear_functions();
-         clear_strings  ();
-         clear_vectors  ();
+         clear_variables      ();
+         clear_functions      ();
+         clear_strings        ();
+         clear_vectors        ();
+         clear_local_constants();
       }
 
       inline std::size_t variable_count() const
@@ -18711,11 +18732,13 @@ namespace exprtk
                case e_st_string         :
                case e_st_local_variable :
                case e_st_local_vector   :
-               case e_st_local_string   :
-               case e_st_function       :
-                  if (collect_variables_ || collect_functions_)
-                     symbol_name_list_.push_back(std::make_pair(symbol,st));
-                  break;
+               case e_st_local_string   : if (collect_variables_)
+                                             symbol_name_list_.push_back(std::make_pair(symbol,st));
+                                          break;
+
+               case e_st_function       : if (collect_functions_)
+                                             symbol_name_list_.push_back(std::make_pair(symbol,st));
+                                          break;
 
                default                  : return;
             }
@@ -22776,6 +22799,7 @@ namespace exprtk
          return result;
       }
 
+      #ifndef exprtk_disable_string_capabilities
       inline expression_node_ptr parse_string_function_call(igeneric_function<T>* function, const std::string& function_name)
       {
          std::vector<expression_node_ptr> arg_list;
@@ -22856,6 +22880,7 @@ namespace exprtk
 
          return result;
       }
+      #endif
 
       template <typename Type, std::size_t NumberOfParameters>
       struct parse_special_function_impl
@@ -24235,6 +24260,7 @@ namespace exprtk
             }
          }
 
+         #ifndef exprtk_disable_string_capabilities
          {
             // Are we dealing with a vararg string returning function?
             igeneric_function<T>* string_function = symtab_store_.get_string_function(symbol);
@@ -24259,6 +24285,7 @@ namespace exprtk
                }
             }
          }
+         #endif
 
          // Are we dealing with a vector?
          if (symtab_store_.is_vector(symbol))
@@ -26373,6 +26400,7 @@ namespace exprtk
             }
          }
 
+         #ifndef exprtk_disable_string_capabilities
          inline expression_node_ptr string_function_call(igeneric_function_t* gf,
                                                          std::vector<expression_node_ptr>& arg_list,
                                                          const std::size_t& param_seq_index = std::numeric_limits<std::size_t>::max())
@@ -26425,6 +26453,7 @@ namespace exprtk
                return error_node();
             }
          }
+         #endif
 
          inline expression_node_ptr return_call(std::vector<expression_node_ptr>& arg_list)
          {
@@ -28078,6 +28107,7 @@ namespace exprtk
                return false;
 
             const std::string node_id = branch_to_id(branch);
+
             typename synthesize_map_t::iterator itr = synthesize_map_.find(node_id);
 
             if (synthesize_map_.end() != itr)
@@ -28278,7 +28308,7 @@ namespace exprtk
                   case_stmt1(48) case_stmt1(49) case_stmt1(50) case_stmt1(51)
                   case_stmt1(52) case_stmt1(53) case_stmt1(54) case_stmt1(55)
                   case_stmt1(56) case_stmt1(57) case_stmt1(58) case_stmt1(59)
-                  case_stmt1(60)
+                  case_stmt1(60) case_stmt1(61)
 
                   #undef case_stmt0
                   #undef case_stmt1
@@ -28357,6 +28387,7 @@ namespace exprtk
                typedef details::T0oT1oT2_base_node<Type>* sf3ext_base_ptr;
 
                sf3ext_base_ptr n = static_cast<sf3ext_base_ptr>(sf3node);
+
                std::string id = "(" + n->type_id() + ")" + expr_gen.to_str(operation) + "t";
 
                switch (n->type())
@@ -33404,7 +33435,7 @@ namespace exprtk
          register_sf4ext(48) register_sf4ext(49) register_sf4ext(50) register_sf4ext(51)
          register_sf4ext(52) register_sf4ext(53) register_sf4ext(54) register_sf4ext(55)
          register_sf4ext(56) register_sf4ext(57) register_sf4ext(58) register_sf4ext(59)
-         register_sf4ext(60)
+         register_sf4ext(60) register_sf4ext(61)
          #undef register_sf4ext
       }
 
@@ -33465,6 +33496,76 @@ namespace exprtk
       lexer::helper::numeric_checker      numeric_checker_;
       lexer::helper::sequence_validator   sequence_validator_;
    };
+
+   template <typename Allocator,
+             template <typename, typename> class Sequence>
+   inline bool collect_variables(const std::string& expr_str,
+                                 Sequence<std::string, Allocator>& symbol_list)
+   {
+      typedef double T;
+      typedef exprtk::symbol_table<T> symbol_table_t;
+      typedef exprtk::expression<T> expression_t;
+      typedef exprtk::parser<T> parser_t;
+      typedef parser_t::dependent_entity_collector::symbol_t symbol_t;
+
+      symbol_table_t symbol_table;
+      expression_t   expression;
+      parser_t       parser;
+
+      expression.register_symbol_table(symbol_table);
+
+      parser.enable_unknown_symbol_resolver();
+      parser.dec().collect_variables() = true;
+
+      if (!parser.compile(expr_str, expression))
+         return false;
+
+      std::deque<symbol_t> symb_list;
+
+      parser.dec().symbols(symb_list);
+
+      for (std::size_t i = 0; i < symb_list.size(); ++i)
+      {
+         symbol_list.push_back(symb_list[i].first);
+      }
+
+      return true;
+   }
+
+   template <typename Allocator,
+             template <typename, typename> class Sequence>
+   inline bool collect_functions(const std::string& expr_str,
+                                 Sequence<std::string, Allocator>& symbol_list)
+   {
+      typedef double T;
+      typedef exprtk::symbol_table<T> symbol_table_t;
+      typedef exprtk::expression<T> expression_t;
+      typedef exprtk::parser<T> parser_t;
+      typedef parser_t::dependent_entity_collector::symbol_t symbol_t;
+
+      symbol_table_t symbol_table;
+      expression_t   expression;
+      parser_t       parser;
+
+      expression.register_symbol_table(symbol_table);
+
+      parser.enable_unknown_symbol_resolver();
+      parser.dec().collect_functions() = true;
+
+      if (!parser.compile(expr_str, expression))
+         return false;
+
+      std::deque<symbol_t> symb_list;
+
+      parser.dec().symbols(symb_list);
+
+      for (std::size_t i = 0; i < symb_list.size(); ++i)
+      {
+         symbol_list.push_back(symb_list[i].first);
+      }
+
+      return true;
+   }
 
    template <typename T>
    inline T integrate(const expression<T>& e,
@@ -33673,6 +33774,8 @@ namespace exprtk
       symbol_table.add_constants();
 
       expression<T> expression;
+      expression.register_symbol_table(symbol_table);
+
       parser<T> parser;
 
       if (parser.compile(expression_string,expression))
@@ -33695,9 +33798,11 @@ namespace exprtk
 
       symbol_table<T> symbol_table;
       symbol_table.add_constants();
-      symbol_table.add_variable(x_var,x);
+      symbol_table.add_constant(x_var,x);
 
       expression<T> expression;
+      expression.register_symbol_table(symbol_table);
+
       parser<T> parser;
 
       if (parser.compile(expression_string,expression))
@@ -33721,10 +33826,12 @@ namespace exprtk
 
       symbol_table<T> symbol_table;
       symbol_table.add_constants();
-      symbol_table.add_variable(x_var,x);
-      symbol_table.add_variable(y_var,y);
+      symbol_table.add_constant(x_var,x);
+      symbol_table.add_constant(y_var,y);
 
       expression<T> expression;
+      expression.register_symbol_table(symbol_table);
+
       parser<T> parser;
 
       if (parser.compile(expression_string,expression))
@@ -33749,11 +33856,13 @@ namespace exprtk
 
       symbol_table<T> symbol_table;
       symbol_table.add_constants();
-      symbol_table.add_variable(x_var,x);
-      symbol_table.add_variable(y_var,y);
-      symbol_table.add_variable(z_var,z);
+      symbol_table.add_constant(x_var,x);
+      symbol_table.add_constant(y_var,y);
+      symbol_table.add_constant(z_var,z);
 
       expression<T> expression;
+      expression.register_symbol_table(symbol_table);
+
       parser<T> parser;
 
       if (parser.compile(expression_string,expression))
@@ -34948,7 +35057,7 @@ namespace exprtk
             else_stmt(46) else_stmt(47) else_stmt(48) else_stmt(49)
             else_stmt(50) else_stmt(51) else_stmt(52) else_stmt(53)
             else_stmt(54) else_stmt(55) else_stmt(56) else_stmt(57)
-            else_stmt(58) else_stmt(59) else_stmt(60)
+            else_stmt(58) else_stmt(59) else_stmt(60) else_stmt(61)
          }
       }
 
@@ -36831,9 +36940,9 @@ namespace exprtk
    namespace information
    {
       static const char* library = "Mathematical Expression Toolkit";
-      static const char* version = "2.71828182845904523536028747135266249775"
-                                   "7247093699959574966967627724076630353547";
-      static const char* date    = "20161010";
+      static const char* version = "2.7182818284590452353602874713526624977572"
+                                   "470936999595749669676277240766303535475945";
+      static const char* date    = "20161212";
 
       static inline std::string data()
       {

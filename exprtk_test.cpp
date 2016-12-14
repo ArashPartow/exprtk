@@ -4030,6 +4030,42 @@ inline bool run_test10()
    }
 
    {
+      T a = T(1);
+      T b = T(2);
+      T c = T(3);
+      T d = T(4);
+
+      std::string e = "a string";
+
+      exprtk::symbol_table<T> symbol_table0;
+      exprtk::symbol_table<T> symbol_table1;
+      expression_t expression;
+
+      for (std::size_t i = 0; i < 10000; ++i)
+      {
+         symbol_table0.clear();
+         symbol_table1.clear();
+
+         symbol_table0.add_variable ("a",a);
+         symbol_table0.add_variable ("b",b);
+         symbol_table0.add_variable ("c",c);
+         symbol_table0.add_variable ("d",d);
+         symbol_table0.add_stringvar("e",e);
+         symbol_table0.add_constants(     );
+
+         symbol_table1.add_variable ("a",a);
+         symbol_table1.add_variable ("b",b);
+         symbol_table1.add_variable ("c",c);
+         symbol_table1.add_variable ("d",d);
+         symbol_table1.add_stringvar("e",e);
+         symbol_table1.add_constants(     );
+
+         expression.register_symbol_table(symbol_table0);
+         expression.register_symbol_table(symbol_table1);
+      }
+   }
+
+   {
       std::string expression_list[] =
       {
         "var x; 1",
