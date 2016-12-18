@@ -3558,9 +3558,28 @@ evaluated 100K times can be executed as follows:
    [*] Total Single Eval Time:  0.000ms
 
 
-From the results above we  can see that the third  expression (e^(3y))
-consumes the  largest amount  of time  and should  perhaps be replaced
-with the 'exp' function for more efficient evaluation.
+From the results above we conclude that the third expression  (e^(3y))
+consumes the largest amount of time. The variable 'e', as used in both
+the  benchmark  and  in the  expression,  is  an approximation  of the
+transcendental mathematical constant e (2.71828182845904...) hence the
+sub-expression  should perhaps be  modified  to use the generally more
+efficient built-in 'exp' function.
+
+   ./exprtk_benchmark test.txt 1000000
+   Expr 1 of 5 86.563 ns 8656300ns (296417859.6) '1/sqrt(2x)*e^(3y)'
+   Expr 2 of 5 40.506 ns 4050600ns (296417859.6) '1/sqrt(2x)*exp(3y)'
+   Expr 3 of 5 14.248 ns 1424799ns (    44267.2) '1/sqrt(2x)'
+   Expr 4 of 5 88.840 ns 8884000ns (615985286.9) 'e^(3y)'
+   Expr 5 of 5 29.267 ns 2926699ns (615985286.9) 'exp(3y)'
+   [*] Number Of Evals:        5000000
+   [*] Total Time:             0.260sec
+   [*] Total Single Eval Time: 0.000ms
+
+
+The above output demonstrates the  results from  making the previously
+mentioned modification to the expression. As can be seen the new  form
+of the expression using the 'exp' function reduces the evaluation time
+by over 50%, in other words increases the evaluation rate by two fold.
 
      ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
