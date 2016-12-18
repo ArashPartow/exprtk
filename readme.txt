@@ -24,11 +24,12 @@ C++ Mathematical Expression Toolkit Library Documentation
   Section 21 - Compilation Errors
   Section 22 - Runtime Library Packages
   Section 23 - Helpers & Utils
-  Section 24 - Exprtk Notes
-  Section 25 - Simple Exprtk Example
-  Section 26 - Build Options
-  Section 27 - Files
-  Section 28 - Language Structure
+  Section 24 - Benchmarking
+  Section 25 - Exprtk Notes
+  Section 26 - Simple Exprtk Example
+  Section 27 - Build Options
+  Section 28 - Files
+  Section 29 - Language Structure
 
 
 [00 - INTRODUCTION]
@@ -2489,7 +2490,7 @@ which obviously is  not the intended  outcome by the  user. A possible
 solution to this  problem is for  one to implement  their own specific
 USR that will perform a user defined business logic in determining  if
 an encountered unknown symbol should be treated as a variable or if it
-should raise a compilation error. The following example demonstrated a
+should raise a compilation error. The following example demonstrates a
 simple user defined USR:
 
    typedef exprtk::symbol_table<T> symbol_table_t;
@@ -3438,7 +3439,132 @@ a name in string form. Example usage of the function is as follows:
 
      ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
-[24 - EXPRTK NOTES]
+[24 - BENCHMARKING]
+As part of the ExprTk package there is an expression benchmark utility
+named 'exprtk_benchmark'. The utility attempts to determine expression
+evaluation  speed (or  rate of  evaluations -  evals  per  second), by
+evaluating each expression numerous times and mutating the  underlying
+variables  of  the  expression between  each  evaluation.  The utility
+assumes any  valid ExprTk  expression (containing  conditionals, loops
+etc), however  it will  only make  use of  a predefined  set of scalar
+variables, namely: a, b,  c, x, y, z,  w. That being said  expressions
+themselves  can  contain any  number  of local  variables,  vectors or
+strings. There are two modes of operation:
+
+   (1) Default
+   (2) User Specified Expressions
+
+
+(1) Default
+The default mode is  enabled simply by executing  the exprtk_benchmark
+binary with no command line parameters. In this mode a predefined  set
+of expressions will be evaluated in three phases:
+
+   (a) ExprTk evaluation
+   (b) Native evaluation
+   (c) ExprTk parse
+
+
+In the first two  phases (a and b)  a list of predefined  (hard-coded)
+expressions  will  be  evaluated using  both  ExprTk  and native  mode
+implementations.  This  is  done so  as  to  compare evaluation  times
+between ExprTk and native implementations. The set of expressions used
+are as follows:
+
+   (01) (y + x)
+   (02) 2 * (y + x)
+   (03) (2 * y + 2 * x)
+   (04) ((1.23 * x^2) / y) - 123.123
+   (05) (y + x / y) * (x - y / x)
+   (06) x / ((x + y) + (x - y)) / y
+   (07) 1 - ((x * y) + (y / x)) - 3
+   (08) (5.5 + x) + (2 * x - 2 / 3 * y) * (x / 3 + y / 4) + (y + 7.7)
+   (09) 1.1x^1 + 2.2y^2 - 3.3x^3 + 4.4y^15 - 5.5x^23 + 6.6y^55
+   (10) sin(2 * x) + cos(pi / y)
+   (11) 1 - sin(2 * x) + cos(pi / y)
+   (12) sqrt(111.111 - sin(2 * x) + cos(pi / y) / 333.333)
+   (13) (x^2 / sin(2 * pi / y)) - x / 2
+   (14) x + (cos(y - sin(2 / x * pi)) - sin(x - cos(2 * y / pi))) - y
+   (15) clamp(-1.0, sin(2 * pi * x) + cos(y / 2 * pi), +1.0)
+   (16) max(3.33, min(sqrt(1 - sin(2 * x) + cos(pi / y) / 3), 1.11))
+   (17) if((y + (x * 2.2)) <= (x + y + 1.1), x - y, x*y) + 2 * pi / x
+
+
+The  third  and  final  phase  (c),  is  used  to  determine   average
+compilation rates  (compiles per  second) for  expressions of  varying
+complexity. Each expression is compiled 100K times and the average for
+each expression is output.
+
+
+(2) User Specified Expressions
+In this mode two parameters are passed to the utility via the  command
+line:
+
+   (a) A name of a text file containing one expression per line
+   (b) An integer representing the number of evaluations per expression
+
+
+An  example execution  of the  benchmark utility  in this  mode is  as
+follows:
+
+   ./exprtk_benchmark my_expressions.txt 1000000
+
+
+The  above  invocation  will  load  the  expressions  from  the   file
+'my_expressions.txt' and will then proceed to evaluate each expression
+one million  times, varying  the above  mentioned variables  (x, y,  z
+etc.) between each evaluation, and at the end of each expression round
+a print out of  running times, result of a single evaluation and total
+sum of results is provided as demonstrated below:
+
+   Expression 1 of 7 4.770 ns 47700 ns  ( 9370368.0) '((((x+y)+z)))'
+   Expression 2 of 7 4.750 ns 47500 ns  ( 1123455.9) '((((x+y)-z)))'
+   Expression 3 of 7 4.766 ns 47659 ns  (21635410.7) '((((x+y)*z)))'
+   Expression 4 of 7 5.662 ns 56619 ns  ( 1272454.9) '((((x+y)/z)))'
+   Expression 5 of 7 4.950 ns 49500 ns  ( 4123455.9) '((((x-y)+z)))'
+   Expression 6 of 7 7.581 ns 75810 ns  (-4123455.9) '((((x-y)-z)))'
+   Expression 7 of 7 4.801 ns 48010 ns  (       0.0) '((((x-y)*z)))'
+
+
+The benchmark utility can be very useful when investigating evaluation
+efficiency  issues with  ExprTk or  simply during  the prototyping  of
+expressions. As an example, lets take the following expression:
+
+   1 / sqrt(2x) * e^(3y)
+
+
+Let's say we would like to determine which sub-part of the  expression
+takes the  most time  to evaluate  and perhaps  attempt to  rework the
+expression based on the results. In order to do this we will create  a
+text file  called 'test.txt'  and then  proceed to  make some educated
+guesses  about  how  to  break   the  expression  up  into  its   more
+'interesting' sub-parts which we will  then add as one expression  per
+line to the file. An example breakdown may be as follows:
+
+   1 / sqrt(2x) * e^(3y)
+   1 / sqrt(2x)
+   e^(3y)
+
+
+The  benchmark with  the given  file, where  each expression  will be
+evaluated 100K times can be executed as follows:
+
+   ./exprtk_benchmark test.txt 100000
+   Expr 1 of 3 90.340 ns 9034000 ns (296417859.3) '1/sqrt(2x)*e^(3y)'
+   Expr 2 of 3 11.100 ns 1109999 ns (    44267.3) '1/sqrt(2x)'
+   Expr 3 of 3 77.830 ns 7783000 ns (615985286.6) 'e^(3y)'
+   [*] Number Of Evals:         300000
+   [*] Total Time:              0.018sec
+   [*] Total Single Eval Time:  0.000ms
+
+
+From the results above we  can see that the third  expression (e^(3y))
+consumes the  largest amount  of time  and should  perhaps be replaced
+with the 'exp' function for more efficient evaluation.
+
+     ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+[25 - EXPRTK NOTES]
 The following is a list of facts and suggestions one may want to take
 into account when using ExprTk:
 
@@ -3639,7 +3765,7 @@ into account when using ExprTk:
 
      ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
-[25 - SIMPLE EXPRTK EXAMPLE]
+[26 - SIMPLE EXPRTK EXAMPLE]
 The following is a  simple yet complete example  demonstrating typical
 usage of the ExprTk Library.  The example instantiates a symbol  table
 object, adding to it  three variables named x,  y and z, and  a custom
@@ -3744,7 +3870,7 @@ int main()
 
      ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
-[26 - BUILD OPTIONS]
+[27 - BUILD OPTIONS]
 When building ExprTk there are a number of defines that will enable or
 disable certain features and  capabilities. The defines can  either be
 part of a compiler command line switch or scoped around the include to
@@ -3811,7 +3937,7 @@ error.
 
      ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
-[27 - FILES]
+[28 - FILES]
 The source distribution of ExprTk is comprised of the following set of
 files:
 
@@ -3842,7 +3968,7 @@ files:
 
      ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
-[28 - LANGUAGE STRUCTURE]
+[29 - LANGUAGE STRUCTURE]
 +-------------------------------------------------------------+
 |00 - If Statement                                            |
 |                                                             |
