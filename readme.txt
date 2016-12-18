@@ -2037,7 +2037,7 @@ associated types from the DEC.
 The kinds of  questions one can  ask regarding the  dependent entities
 within an expression are as follows:
 
-  * What user defined or local variables, vectors or strings are used?
+  * What user defined variables, vectors or strings are used?
   * What functions or custom user functions are used?
   * Which variables, vectors or strings have values assigned to them?
 
@@ -2105,13 +2105,13 @@ associated assignments:
    (1) x             x := y + z
    (2) x, y          x += y += z
    (3) x, y, z       x := y += sin(z := w + 2)
-   (4) z, w          if (x > y, z := x + 2, w := 'A String')
+   (4) w, z          if (x > y, z := x + 2, w := 'A String')
    (5) None          x + y + z
 
 
 Note: In expression 4, both variables 'z' and 'w' are denoted as being
-assignments even though only one of  them can be modified at the  time
-of  evaluation.  Furthermore the  determination  of which  of  the two
+assignments even though only one of  them can ever be modified at  the
+time of evaluation. Furthermore the determination of which of the  two
 variables the  modification will  occur upon  can only  be known  with
 certainty at evaluation time and not beforehand, hence both are listed
 as being candidates for assignment.
@@ -2483,7 +2483,7 @@ default USR. The following are some example expressions:
    (2) sine(y / 2) - coz(3x)
 
 
-The two  expression above  contain misspelt  symbols (abz,  sine, coz)
+The two  expressions above contain misspelt  symbols (abz,  sine, coz)
 which if implied  multiplications and default  USR are enabled  during
 compilation will result in them being assumed to be valid 'variables',
 which obviously is  not the intended  outcome by the  user. A possible
