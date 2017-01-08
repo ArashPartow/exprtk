@@ -15680,7 +15680,10 @@ namespace exprtk
    class symbol_table
    {
    public:
-
+      typedef T (*ff0data_functor)(void*);
+      typedef T (*ff1data_functor)(void*, T);
+      typedef T (*ff2data_functor)(void*, T,T);
+      typedef T (*ff0_functor)();
       typedef T (*ff1_functor)(T);
       typedef T (*ff2_functor)(T,T);
       typedef T (*ff3_functor)(T,T,T);
@@ -15689,7 +15692,45 @@ namespace exprtk
       typedef T (*ff6_functor)(T,T,T,T,T,T);
 
    protected:
+      struct freefunc0data : public exprtk::ifunction<T>
+      {
+          using exprtk::ifunction<T>::operator();
 
+          freefunc0data(ff0data_functor ff,void * data) : exprtk::ifunction<T>(0), f(ff),m_data(data) {}
+          inline T operator()()
+          { return f(m_data); }
+          ff0data_functor f;
+          void * m_data;
+      };
+      struct freefunc1data : public exprtk::ifunction<T>
+      {
+         using exprtk::ifunction<T>::operator();
+
+         freefunc1data(ff1data_functor ff,void * data) : exprtk::ifunction<T>(1), f(ff),m_data(data) {}
+         inline T operator()(const T& v0)
+         { return f(m_data,v0); }
+         ff1data_functor f;
+         void * m_data;
+      };
+      struct freefunc2data : public exprtk::ifunction<T>
+      {
+         using exprtk::ifunction<T>::operator();
+
+         freefunc2data(ff2data_functor ff,void * data) : exprtk::ifunction<T>(2), f(ff),m_data(data) {}
+         inline T operator()(const T& v0, const T& v1)
+         { return f(m_data,v0,v1); }
+         ff2data_functor f;
+         void * m_data;
+      };
+      struct freefunc0 : public exprtk::ifunction<T>
+      {
+         using exprtk::ifunction<T>::operator();
+
+         freefunc0(ff0_functor ff) : exprtk::ifunction<T>(0), f(ff) {}
+         inline T operator()()
+         { return f(); }
+         ff0_functor f;
+      };
       struct freefunc1 : public exprtk::ifunction<T>
       {
          using exprtk::ifunction<T>::operator();
@@ -16594,6 +16635,70 @@ namespace exprtk
             return local_data().string_function_store.add(function_name, function);
          else
             return false;
+      }
+
+      inline bool add_function(const std::string& function_name, ff0data_functor function, void* data)
+      {
+         if (!valid())
+            return false;
+         else if (!valid_symbol(function_name))
+            return false;
+         else if (symbol_exists(function_name))
+            return false;
+
+         exprtk::ifunction<T>* ifunc = new freefunc0data(function,data);
+
+         local_data().free_function_list_.push_back(ifunc);
+
+         return add_function(function_name,(*local_data().free_function_list_.back()));
+      }
+
+      inline bool add_function(const std::string& function_name, ff1data_functor function, void* data)
+      {
+         if (!valid())
+            return false;
+         else if (!valid_symbol(function_name))
+            return false;
+         else if (symbol_exists(function_name))
+            return false;
+
+         exprtk::ifunction<T>* ifunc = new freefunc1data(function,data);
+
+         local_data().free_function_list_.push_back(ifunc);
+
+         return add_function(function_name,(*local_data().free_function_list_.back()));
+      }
+
+      inline bool add_function(const std::string& function_name, ff2data_functor function, void* data)
+      {
+         if (!valid())
+            return false;
+         else if (!valid_symbol(function_name))
+            return false;
+         else if (symbol_exists(function_name))
+            return false;
+
+         exprtk::ifunction<T>* ifunc = new freefunc2data(function,data);
+
+         local_data().free_function_list_.push_back(ifunc);
+
+         return add_function(function_name,(*local_data().free_function_list_.back()));
+      }
+
+      inline bool add_function(const std::string& function_name, ff0_functor function)
+      {
+         if (!valid())
+            return false;
+         else if (!valid_symbol(function_name))
+            return false;
+         else if (symbol_exists(function_name))
+            return false;
+
+         exprtk::ifunction<T>* ifunc = new freefunc0(function);
+
+         local_data().free_function_list_.push_back(ifunc);
+
+         return add_function(function_name,(*local_data().free_function_list_.back()));
       }
 
       inline bool add_function(const std::string& function_name, ff1_functor function)
