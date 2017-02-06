@@ -12,7 +12,7 @@ C++ Mathematical Expression Toolkit Library Documentation
   Section 09 - Fundamental Types
   Section 10 - Components
   Section 11 - Compilation Options
-  Section 12 - Special Functions
+  Section 12 - Expression Structures
   Section 13 - Variable, Vector & String Definition
   Section 14 - Vector Processing
   Section 15 - User Defined Functions
@@ -32,7 +32,7 @@ C++ Mathematical Expression Toolkit Library Documentation
   Section 29 - Language Structure
 
 
-[00 - INTRODUCTION]
+[SECTION 00 - INTRODUCTION]
 The C++ Mathematical Expression  Toolkit Library (ExprTk) is  a simple
 to  use,   easy  to   integrate  and   extremely  efficient   run-time
 mathematical  expression parsing  and evaluation  engine. The  parsing
@@ -41,7 +41,7 @@ semantics and is easily extensible.
 
      ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
-[01 - CAPABILITIES]
+[SECTION 01 - CAPABILITIES]
 The  ExprTk expression  evaluator supports  the following  fundamental
 arithmetic operations, functions and processes:
 
@@ -54,7 +54,7 @@ arithmetic operations, functions and processes:
  (03) Equalities &
       Inequalities:    =, ==, <>, !=, <, <=, >, >=
 
- (04) Boolean logic:   and, mand, mor, nand, nor, not, or, shl, shr,
+ (04) Logic operators: and, mand, mor, nand, nor, not, or, shl, shr,
                        xnor, xor, true, false
 
  (05) Functions:       abs, avg, ceil, clamp, equal, erf, erfc,  exp,
@@ -83,7 +83,7 @@ arithmetic operations, functions and processes:
 
      ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
-[02 - EXAMPLE EXPRESSIONS]
+[SECTION 02 - EXAMPLE EXPRESSIONS]
 The  following  is  a  short listing  of  the  types  of  mathematical
 expressions that can be parsed and evaluated using the ExprTk library.
 
@@ -110,7 +110,7 @@ expressions that can be parsed and evaluated using the ExprTk library.
 
      ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
-[03 - COPYRIGHT NOTICE]
+[SECTION 03 - COPYRIGHT NOTICE]
 Free  use  of  the  C++  Mathematical  Expression  Toolkit  Library is
 permitted under the guidelines and in accordance with the most current
 version of the Common Public License.
@@ -119,7 +119,7 @@ http://www.opensource.org/licenses/cpl1.0.php
 
      ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
-[04 - DOWNLOADS & UPDATES]
+[SECTION 04 - DOWNLOADS & UPDATES]
 The most  recent version  of the C++ Mathematical  Expression  Toolkit
 Library including all updates and tests can be found at the  following
 locations:
@@ -130,13 +130,13 @@ locations:
 
      ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
-[05 - INSTALLATION]
+[SECTION 05 - INSTALLATION]
 The header  file exprtk.hpp  should be  placed in a project or  system
 include path (e.g: /usr/include/).
 
      ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
-[06 - COMPILATION]
+[SECTION 06 - COMPILATION]
   (a) For a complete build: make clean all
   (b) For a PGO build: make clean pgo
   (c) To strip executables: make strip_bin
@@ -144,7 +144,7 @@ include path (e.g: /usr/include/).
 
      ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
-[07 - COMPILER COMPATIBILITY]
+[SECTION 07 - COMPILER COMPATIBILITY]
 ExprTk has been built error and warning free using the following set
 of C++ compilers:
 
@@ -158,7 +158,7 @@ of C++ compilers:
 
      ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
-[08 - BUILT-IN OPERATIONS & FUNCTIONS]
+[SECTION 08 - BUILT-IN OPERATIONS & FUNCTIONS]
 
 (0) Arithmetic & Assignment Operators
 +----------+---------------------------------------------------------+
@@ -640,7 +640,7 @@ appropriate may represent any of one the following:
 
      ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
-[09 - FUNDAMENTAL TYPES]
+[SECTION 09 - FUNDAMENTAL TYPES]
 ExprTk supports three fundamental types which can be used freely in
 expressions. The types are as follows:
 
@@ -672,7 +672,7 @@ however can not interact with scalar or vector types.
 
      ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
-[10 - COMPONENTS]
+[SECTION 10 - COMPONENTS]
 There are three primary components, that are specialized upon a  given
 numeric type, which make up the core of ExprTk. The components are  as
 follows:
@@ -965,14 +965,14 @@ std::vector.
         std::cout << "Error in " << expression_str[i] << "\n";
    }
 
-   for (auto e : expression_list)
+   for (auto& e : expression_list)
    {
       e.value();
    }
 
      ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
-[11 - COMPILATION OPTIONS]
+[SECTION 11 - COMPILATION OPTIONS]
 The exprtk::parser  when being  instantiated takes  as input  a set of
 options  to be  used during  the compilation  process of  expressions.
 An  example instantiation  of exprtk::parser  where only  the  joiner,
@@ -1107,7 +1107,296 @@ larger numerical bound.
 
      ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
-[12 - SPECIAL FUNCTIONS]
+[SECTION 12 - EXPRESSION STRUCTURES]
+Exprtk supports mathematical expressions in numerous forms based on  a
+simple  imperative  programming  model. This  section  will  cover the
+following  topics  related  to general  structure  and  programming of
+expression using ExprTk:
+
+   (1) Multi-Statement Expressions
+   (2) Statements And Side-Effects
+   (3) Conditional Statements
+   (4) Special Functions
+
+
+(1) Multi-Statement Expressions
+Expressions in ExprTk can be  comprised of one more statements,  which
+may  sometimes  be  called  sub-expressions.  The  following  are  two
+examples of expressions stored  in std::string variables, the  first a
+single statement and the second a multi-statement expression:
+
+   std::string single_statement = " z := x + y ";
+
+   std::string multi_statement  = " var temp := x; "
+                                  " x := y + z;    "
+                                  " y := temp;     ";
+
+
+In a  multi-statement expression,  the final  statement will determine
+the overall result of the expression. In the following multi-statement
+expression, the result of the expression when evaluated will be '2.3',
+which will also be the value stored in the 'y' variable.
+
+   z := x + y;
+   y := 2.3;
+
+
+As  demonstrated  in  the  expression  above,  statements  within   an
+expression are  separated using  the semi-colon  ';' operator.  In the
+event  two  statements are  not  separated by  a  semi-colon, and  the
+implied multiplication  feature is  active (enabled  by default),  the
+compiler  will  assume  a  multiplication  operation  between  the two
+statements.
+
+In the following example we have a multi-statement expression composed
+of two variable definitions and initialisations for variables x and  y
+and two seemingly separate mathematical operations.
+
+   var x:= 2;
+   var y:= 3;
+   x + 1
+   y * 2
+
+
+However the result of  the expression will not  be 6 as may  have been
+assumed based on  the calculation of  'y * 2',  but rather the  result
+will be 8. This  is because the compiler  will have conjoined the  two
+mathematical statements into one  via a multiplication operation.  The
+expression when compiled will actually evaluate as the following:
+
+   var x:= 2;
+   var y:= 3;
+   x + 1 * y * 2;   // 2 + 1 * 3 * 2 == 8
+
+
+In ExprTk any valid statement  will itself return a value.  This value
+can  further  be  used  in  conjunction  with  other  statements. This
+includes language structures such as if-statements, loops (for, while)
+and the switch statement. Typically the last statement executed in the
+given construct  (conditional, loop  etc), will  be the  value that is
+returned.
+
+In the following example, the  return value of the expression  will be
+11, which is the sum of the variable 'x' and the final value  computed
+within the loop body on its last iteration:
+
+   var x := 1;
+   x + for (var i := i; i < 10; i += 1)
+       {
+         i / 2;
+         i + 1;
+       }
+
+
+(2) Statements And Side-Effects
+Statements themselves may have side effects, which in-turn effect  the
+proceeding statements in multi-statement expressions.
+
+A statement is said  to have a side-effect  if it causes the  state of
+the  expression to  change in  some way  -  this  includes but  is not
+limited to the  modification of the  state of external  variables used
+within the expression. Currently  the following actions being  present
+in a statement will cause it to have a side-effect:
+
+   (a) Assignment operation (explicit or potentially)
+   (b) Invoking a user-defined function that has side-effects
+
+The following are examples of expressions where the side-effect status
+of the statements (or sub-exressions) within the expressions have been
+noted:
+
+  +-+----------------------+------------------------------+
+  |#|      Expression      |      Side Effect Status      |
+  +-+----------------------+------------------------------+
+  |0| x + y                | False                        |
+  +-+----------------------+------------------------------+
+  |1| z := x + y           | True - Due to assignment     |
+  +-+----------------------+------------------------------+
+  |2| abs(x - y)           | False                        |
+  +-+----------------------+------------------------------+
+  |3| abs(x - y);          | False                        |
+  | | z := (x += y);       | True - Due to assignments    |
+  +-+----------------------+------------------------------+
+  |4| abs(x - y);          | False                        |
+  | | z := (x += y);       | True - Due to assignments    |
+  +-+----------------------+------------------------------+
+  |5| var t := abs(x - y); | True - Due to initialisation |
+  | | t + x;               | False                        |
+  | | z := (x += y);       | True - Due to assignments    |
+  +-+----------------------+------------------------------+
+  |6| foo(x - y)           | True - user defined function |
+  +-+----------------------+------------------------------+
+
+
+Note: In example 6 from the above set, it is assumed the user  defined
+function foo has been registered  as having a side_effect. By  default
+all user defined  functions are assumed  to have side-effects,  unless
+they are  configured in  their constructors  to not  have side-effects
+using   the   'disable_has_side_effects'  free   function.   For  more
+information review  Section 15 - User Defined Functions  sub-section 7
+Function Side-Effects.
+
+At this point we  can see that there  will be expressions composed  of
+certain kinds  of statements  that when  executed will  not effect the
+nature  of the  expression's  result.  These statements  are typically
+called 'dead code'.  These statements though  not effecting the  final
+result will still be executed and as such they will consume processing
+time that could otherwise be saved. As such ExprTk attempts to  detect
+and remove such statements from expressions.
+
+The  'Dead  Code  Elimination' (DCE)  optimisation  process,  which is
+enabled by default, will remove any statements that are determined  to
+not have a side effect in a multi-statement expression, excluding  the
+final or last statement.
+
+By default the final statement in an expression will always be present
+regardless of  its side-effect  status, as  it is  the statement whose
+value will be used as the result of the expression.
+
+In order to further explain the actions taken during the DCE  process,
+lets review the following expression:
+
+   var x := 2;      // Statement 1
+   var y := x + 2;  // Statement 2
+   x + y            // Statement 3
+   y := x + 3y;     // Statement 4
+   x - y;           // Statement 5
+
+
+The above expression has five statements.  Three of them (1, 2 and  4)
+actively have side-effects. The first two are variable declaration and
+initialisations, where as the third is due to an assignment operation.
+There  are  two  statements (3  and 5),  that do  not explicitly  have
+side-effects, however the latter, statement 5, is the final  statement
+in the expression and hence will be assumed to have a side-effect.
+
+During compilation when the DCE  optimisation is applied to the  above
+expression, statement 2 will be removed from the expression, as it has
+no  bearing  on  the  final result  of  expression,  the  rest of  the
+statements will all remain. Hence optimised version of the  expression
+is as follows:
+
+   var x := 2;      // Statement 1
+   var y := x + 2;  // Statement 2
+   y := x + 3y;     // Statement 3
+   x - y;           // Statement 4
+
+
+(3) Conditional Statements (If-Then-Else)
+ExprTk support two forms  of conditional branching or  otherwise known
+as  if-statements.  The  first  form,  is  a  simple  function   based
+conditional  statement, that  takes exactly  three input  expressions:
+condition, consequent  and alternative.  The following  is an  example
+expression that utilizes the function based if-statement.
+
+   x := if (y < z, y + 1, 2* z)
+
+
+In the  example above,  if the  condition 'y  < z'  is true,  then the
+consequent 'y + 1' will be evaluated, it's value will be returned  and
+subsequently assigned to the  variable 'x'. Otherwise the  alternative
+'2 *  z' will  be evaluated  and its  value will  be returned. This is
+essentially the simplest form of an if-then-else statement, As  simple
+variation of  the expression  where the  value of  the if-statement is
+used within another statement is as follows:
+
+   x := 3 * if (y < z, y + 1, 2* z) / 2
+
+
+The second form of if-statement resembles the standard syntax found in
+most imperative languages. There are two variations of the statement:
+
+   (a) If-Statement
+   (b) If-Then-Else Statement
+
+
+(a) If-Statement
+This version  of the  conditional statement  returns the  value of the
+consequent expression when the  condition expression is true,  else it
+will require a quiet NaN value as its result.
+
+   Example 1:
+   x := if (y < z) y + 3;
+
+   Example 2:
+   x := if (y < z)
+        {
+          y + 3
+        }
+
+The two  example expressions  above are  equivalent. If  the condition
+'y < z' is true, the  'x' variable will be  assigned the value of  the
+consequent 'y + 3', otherwise it  will be assigned the value of  quiet
+NaN.  As  previously  discussed,  if-statements  are  value  returning
+constructs, and if  not properly terminated  using a semi-colon,  will
+end-up  combining  with  the  next  statement  via  a   multiplication
+operation. The following example will NOT result in the expected value
+of 'w + x' being returned:
+
+   x := if (y < z) y + 3  // missing semi-colon ';'
+   w + x
+
+
+When the  above supposed  multi-statement expression  is compiled, the
+expression  will  have  a  multiplication  inserted  between  the  two
+'intended' statements resulting in the unanticipated expression:
+
+   x := (if (y < z) y + 3) * w + x
+
+
+The  solution  to  the  above situation  is  to  simply  terminate the
+conditional statement with a semi-colon as follows:
+
+   x := if (y < z) y + 3;
+   w + x
+
+
+(b) If-Then-Else Statement
+The second variation of  the if-statement is to  allow for the use  of
+Else and If-Else cascading statements. Examples of such statements are
+as follows:
+
+   Example 1:           Example 2:
+   if (x < y)           if (x < y)
+     z := x + 3;        {
+   else                   y := z + x;
+     y := x - z;          z := x + 3;
+                        }
+                        else
+                          y := x - z;
+
+   Example 3:           Example 4:
+   if (x > y + 1)       if (2 * x < max(y,3))
+     y := abs(x - z);   {
+   else                   y := z + x;
+   {                      z := x + 3;
+     y := z + x;        }
+     z := x + 3;        else if (2y - z)
+   };                     y := x - z;
+
+   Example 5:           Example 6:
+   if (x < y)           if (x < y or (x + z) > y)
+     z := x + 3;        {
+   else if (2y != z)      z := x + 3;
+   {                      y := x - z;
+     z := x + 3;        }
+     y := x - z;        else if (abs(2y - z) >= 3)
+   }                       y := x - z;
+   else                 else
+     x * x;             {
+                           z := abs(x * x);
+                           x * y * z;
+                        };
+
+
+In  the case  where  there  is no  final else  statement and  the flow
+through the conditional  arrives at this  final point, the  same rules
+apply to this form of if-statement as to the previous. That is a quiet
+NaN will be  returned as the  result of the  if-statement. Furthermore
+the same requirements of  terminating the statement with  a semi-colon
+apply.
+
+(4) Special Functions
 The purpose  of special  functions in  ExprTk is  to provide  compiler
 generated equivalents of common mathematical expressions which can  be
 invoked by  using the  'special function'  syntax (eg:  $f12(x,y,z) or
@@ -1178,7 +1467,7 @@ correctly optimize such expressions for a given architecture.
 
      ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
-[13 - VARIABLE, VECTOR & STRING DEFINITION]
+[SECTION 13 - VARIABLE, VECTOR & STRING DEFINITION]
 ExprTk supports the definition of expression local variables,  vectors
 and  strings.  The definitions  must  be unique  as  shadowing is  not
 allowed and object life-times are based on scope. Definitions use  the
@@ -1311,7 +1600,7 @@ based on the following priorities:
 
      ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
-[14 - VECTOR PROCESSING]
+[SECTION 14 - VECTOR PROCESSING]
 ExprTk  provides  support  for   various  forms  of  vector   oriented
 arithmetic, inequalities and  processing. The various  supported pairs
 are as follows:
@@ -1458,7 +1747,7 @@ evaluated as normal.
 
      ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
-[15 - USER DEFINED FUNCTIONS]
+[SECTION 15 - USER DEFINED FUNCTIONS]
 ExprTk provides a means  whereby custom functions can  be defined  and
 utilized within  expressions.  The   concept  requires  the  user   to
 provide a reference  to the function  coupled with an  associated name
@@ -2003,7 +2292,7 @@ properly take effect otherwise a compilation error will occur.
 
      ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
-[16 - EXPRESSION DEPENDENTS]
+[SECTION 16 - EXPRESSION DEPENDENTS]
 Any  expression  that  is  not  a  literal  (aka  constant)  will have
 dependencies. The types of  'dependencies' an expression can  have are
 as follows:
@@ -2149,7 +2438,7 @@ will not contain symbols denoting functions.
 
      ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
-[17 - HIERARCHIES OF SYMBOL TABLES]
+[SECTION 17 - HIERARCHIES OF SYMBOL TABLES]
 Most situations will only require a single symbol_table instance to be
 associated with a given expression instance.
 
@@ -2194,7 +2483,7 @@ Examples of such functions are:
 
 (c) Global variable symbol table
 This symbol table  will contain variables  that will be  accessible to
-all associated expressions  and will not  be specific to  exclusive to
+all associated expressions  and will not  be specific or  exclusive to
 any one expression. This variant  differs from (a) in that  the values
 of the  variables can  change (or  be updated)  between evaluations of
 expressions  -   but  through   properly  scheduled   evaluations  are
@@ -2211,14 +2500,14 @@ modify these variables via assignments or other means.
 
 
 (d) Expression specific variable symbol table
-This  symbol_table is  the most  common form,  and is  used to  store
+This  symbol_table  is  the most  common form,  and is  used to  store
 variables that are specific and exclusive to a particular  expression.
 That is to say references  to variables in this symbol_table  will not
 be  part of  another expression.  Though it  may be  possible to  have
 expressions that  contain the  variables with  the same  name, in that
-case those variables will be distinct different. Which would mean if a
-particular expression were to be compiled twice, that each  expression
-would have it's own unique symbol_table which in turn would have  it's
+case those variables will be distinctly different. Which would mean if
+a particular  expression were  to be  compiled twice,  each expression
+would have its  own unique symbol_table  which in turn  would have its
 own instances of those variables. Examples of such variables could be:
 
    (1) x or y
@@ -2325,7 +2614,7 @@ then compiled and later on evaluated:
 
      ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
-[18 - UNKNOWN UNKNOWNS]
+[SECTION 18 - UNKNOWN UNKNOWNS]
 In this section  we will discuss  the process of  handling expressions
 with a mix of known and unknown variables. Initially a discussion into
 the types of expressions that exist will be provided, then a series of
@@ -2552,7 +2841,7 @@ error being raised.
 
      ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
-[19 - ENABLING & DISABLING FEATURES]
+[SECTION 19 - ENABLING & DISABLING FEATURES]
 The parser can be configured via its settings instance to either allow
 or  disallow certain  features that  are available  within the  ExprTk
 grammar. The features fall  into one  of the following six categories:
@@ -2699,8 +2988,9 @@ disabled 'all' at once, as is demonstrated below:
       .compile("1 or not(0 and 1)",expression); // compilation success
 
 
-One can also enable or disable specific logical operators. The  following
-example  demonstrates  the disabling  of  the 'and' logical operator:
+One  can  also  enable  or  disable  specific  logical  operators. The
+following  example  demonstrates  the disabling  of the  'and' logical
+operator:
 
     parser_t parser;
     expression_t expression;
@@ -2724,7 +3014,7 @@ The list of available arithmetic operators is as follows:
    +, -, *, /, %, ^
 
 
-The  above  mentioned  arithmetic  operators  can  be  either  enabled or
+The  above mentioned  arithmetic operators  can be  either enabled  or
 disabled 'all' at once, as is demonstrated below:
 
     parser_t parser;
@@ -2741,8 +3031,9 @@ disabled 'all' at once, as is demonstrated below:
       .compile("1 + 2 / 3",expression); // compilation success
 
 
-One can also enable or disable specific arithmetic operators. The  following
-example demonstrates the disabling of  the addition '+' arithmetic operator:
+One  can also  enable or  disable specific  arithmetic operators.  The
+following  example  demonstrates  the disabling  of  the  addition '+'
+arithmetic operator:
 
     parser_t parser;
     expression_t expression;
@@ -2766,7 +3057,7 @@ The list of available inequality operators is as follows:
    <, <=, >, >=, ==, =, != <>
 
 
-The  above  mentioned  inequality  operators  can  be  either  enabled or
+The  above mentioned  inequality operators  can be  either enabled  or
 disabled 'all' at once, as is demonstrated below:
 
     parser_t parser;
@@ -2783,8 +3074,9 @@ disabled 'all' at once, as is demonstrated below:
       .compile("1 < 3",expression); // compilation success
 
 
-One can also enable or disable specific inequality operators. The  following
-example demonstrates the disabling of the less-than '<' inequality operator:
+One  can also  enable or  disable specific  inequality operators.  The
+following  example demonstrates  the disabling  of  the  less-than '<'
+inequality operator:
 
     parser_t parser;
     expression_t expression;
@@ -2808,7 +3100,7 @@ The list of available assignment operators is as follows:
    :=, +=, -=, *=, /=, %=
 
 
-The  above  mentioned  assignment  operators  can  be  either  enabled or
+The  above mentioned  assignment operators  can be  either enabled  or
 disabled 'all' at once, as is demonstrated below:
 
     parser_t parser;
@@ -2832,8 +3124,9 @@ disabled 'all' at once, as is demonstrated below:
       .compile("x := 3",expression); // compilation success
 
 
-One can also enable or disable specific assignment operators. The  following
-example demonstrates the disabling of the '+=' addition assignment operator:
+One  can also  enable or  disable specific  assignment operators.  The
+following  example demonstrates  the  disabling  of the  '+=' addition
+assignment operator:
 
     parser_t parser;
     expression_t expression;
@@ -2908,7 +3201,7 @@ ExprTk reserved words, the add_function call will fail.
 
      ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
-[20 - EXPRESSION RETURN VALUES]
+[SECTION 20 - EXPRESSION RETURN VALUES]
 ExprTk expressions can return immediately from any point by  utilizing
 the return call. Furthermore the  return call can be used  to transfer
 out multiple return values from within the expression.
@@ -2983,9 +3276,55 @@ expression will return normally.
 Note: Processing of the return results is similar to that of the
 generic function call parameters.
 
+It is however recommended that if there is to be only a single flow of
+execution  through  the  expression,  that  the  simpler  approach  of
+registering external variables of appropriate type be used.
+
+This method simply requires the variables that are to hold the various
+results that are to be computed within the expression to be registered
+with an associated symbol_table  instance. Then within the  expression
+itself  to  have  the result  variables  be  assigned the  appropriate
+values.
+
+   typedef exprtk::symbol_table<double> symbol_table_t;
+   typedef exprtk::expression<double>     expression_t;
+   typedef exprtk::parser<double>             parser_t;
+
+   std::string expression_string =
+                  " var x := 123.456;     "
+                  " var s := 'ijk';       "
+                  " result0 := x + 78.90; "
+                  " result1 := s + '123'  ";
+
+   double      result0;
+   std::string result1;
+
+   symbol_table_t symbol_table;
+   symbol_table.add_variable ("result0",result0);
+   symbol_table.add_stringvar("result1",result1);
+
+   expression_t expression;
+   expression.register_symbol_table(symbol_table);
+
+   parser_t parser;
+   parser.compile(expression_string,expression);
+
+   expression.value();
+
+   printf("Result0: %15.5f\n",result0        );
+   printf("Result1: %s\n"    ,result1.c_str());
+
+
+In the example above, the expression will compute two results. As such
+two result variables are defined to hold the values named result0  and
+result1 respectively. The first is of scalar type (double), the second
+is of  string type.  Once the  expression has  been evaluated, the two
+variables will have been updated  with the new result values,  and can
+then be further utilized from within the calling program.
+
      ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
-[21 - COMPILATION ERRORS]
+[SECTION 21 - COMPILATION ERRORS]
 When attempting to compile  a malformed or otherwise  erroneous ExprTk
 expression, the  compilation process  will result  in an  error, as is
 indicated  by  the  'compile'  method  returning  a  false  value.   A
@@ -3105,7 +3444,7 @@ via the 'unknown symbol resolver' mechanism.
 
      ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
-[22 - RUNTIME LIBRARY PACKAGES]
+[SECTION 22 - RUNTIME LIBRARY PACKAGES]
 ExprTk   contains   a   set  of   simple   extensions,   that  provide
 functionalities  beyond  basic numerical  calculations.  Currently the
 available packages are:
@@ -3180,7 +3519,7 @@ file I/O package is made available for the given expression:
 
      ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
-[23 - HELPERS & UTILS]
+[SECTION 23 - HELPERS & UTILS]
 The  ExprTk library  provides a  series of  usage simplifications  via
 helper routines that combine various processes into a single 'function
 call'  making  certain  actions   easier  to  carry  out   though  not
@@ -3200,36 +3539,93 @@ are as follows:
 This function will collect all the variable symbols in a given  string
 representation of an expression and  return them in an STL  compatible
 sequence  data structure  (eg: std::vector,  dequeue etc)  specialised
-upon a std::string type. An example use of the routine is as follows:
+upon a std::string type. If an error occurs during the parsing of  the
+expression  then  the return  value  of the  function  will be  false,
+otherwise it will be  true. An example use  of the given routine is as
+follows:
 
    std::string expression = "x + abs(y / z)";
 
    std::vector<std::string> variable_list;
 
-   exprtk::collect_variables(expression,variable_list);
-
-   for (auto var : variable_list)
+   if (exprtk::collect_variables(expression, variable_list))
    {
-      ...
+      for (auto var : variable_list)
+      {
+         ...
+      }
    }
+   else
+     printf("An error occured.");
 
 
 (b) collect_functions
 This function will collect all the function symbols in a given  string
 representation of an expression and  return them in an STL  compatible
 sequence  data structure  (eg: std::vector,  dequeue etc)  specialised
-upon a std::string type. An example use of the routine is as follows:
+upon a std::string type. If an error occurs during the parsing of  the
+expression  then  the return  value  of the  function  will be  false,
+otherwise it  will be true. An example  use of the given routine is as
+follows:
 
    std::string expression = "x + abs(y / cos(1 + z))";
 
-   std::deque<std::string> variable_list;
+   std::deque<std::string> function_list;
 
-   exprtk::collect_functions(expression,function_list);
-
-   for (auto func : function_list)
+   if (exprtk::collect_functions(expression, function_list))
    {
-      ...
+      for (auto func : function_list)
+      {
+         ...
+      }
    }
+   else
+     printf("An error occured.");
+
+
+Note: When either the 'collect_variables'  or 'collect_functions' free
+functions  return  true  -  that  does  not  necessarily  indicate the
+expression itself is  valid. It is  still possible that  when compiled
+the expression may have certain  'type' related errors - though  it is
+highly likely  that no  semantic errors  will occur  if either  return
+true.
+
+Note: The  default interface  provided for  both the collect_variables
+and collect_functions  free_functions, assumes  that expressions  will
+only be utilising  the ExprTk reserved  funnctions (eg: abs,  cos, min
+etc). When user defined functions are  to be used in an expression,  a
+symbol_table  instance  containing  said functions  can  be  passed to
+either routine, and  will be incorparated  during the compilation  and
+Dependent Entity  Collection processes.  In the  following example,  a
+user  defined  free  function   named  'foo'  is  registered   with  a
+symbol_table.  Finally  the   symbol_table  instance  and   associated
+expression string are passed to the exprtk::collect_functions routine.
+
+   template <typename T>
+   T foo(T v)
+   {
+      return std::abs(v + T(2)) / T(3);
+   }
+
+   ......
+
+   exprtk::symbol_table<T> sym_tab;
+
+   symbol_table.add_function("foo",foo);
+
+   std::string expression = "x + foo(y / cos(1 + z))";
+
+   std::deque<std::string> function_list;
+
+   if (exprtk::collect_functions(expression, sym_tab, function_list))
+   {
+      for (auto func : function_list)
+      {
+         ...
+      }
+   }
+   else
+     printf("An error occured.");
 
 
 (c) compute
@@ -3329,8 +3725,8 @@ of a single variable compiled expression at a given point for a  given
 epsilon, using a  variant of Newton's  difference quotient called  the
 five-point stencil method. The derivative function has two  overloads,
 where  the  variable of  differentiation  can either  be  passed as  a
-reference or as a name in string form. A example usage of the function
-is as follows:
+reference or as a name in string form. Example usage of the derivative
+function is as follows:
 
    typedef exprtk::parser<T>             parser_t;
    typedef exprtk::expression<T>     expression_t;
@@ -3352,12 +3748,12 @@ is as follows:
    ....
 
    // Differentiate expression where value of x = 12.3 using a reference
-   // to x variable
+   // to the x variable
    x = T(12.3);
    T derivative1 = exprtk::derivative(expression,x);
 
    // Differentiate expression where value x = 45.6 using name
-   // of x variable
+   // of the x variable
    x = T(45.6);
    T derivative2 = exprtk::derivative(expression, "x");
 
@@ -3368,7 +3764,8 @@ derivative of a single variable  compiled expression at a given  point
 for a given epsilon, using  a variant of Newton's difference  quotient
 method. The second_derivative function  has  two overloads, where  the
 variable of differentiation can either be passed as a reference or  as
-a name in string form. Example usage of the function is as follows:
+a name in string form. Example usage of the second_derivative function
+is as follows:
 
    typedef exprtk::parser<T>             parser_t;
    typedef exprtk::expression<T>     expression_t;
@@ -3406,7 +3803,8 @@ derivative of a single variable  compiled expression at a given  point
 for a given epsilon, using  a variant of Newton's difference  quotient
 method. The  third_derivative function  has two  overloads, where  the
 variable of differentiation can either be passed as a reference or  as
-a name in string form. Example usage of the function is as follows:
+a name in string form. Example  usage of the third_derivative function
+is as follows:
 
    typedef exprtk::parser<T>             parser_t;
    typedef exprtk::expression<T>     expression_t;
@@ -3428,18 +3826,18 @@ a name in string form. Example usage of the function is as follows:
    ....
 
    // Third derivative of expression where value of x = 12.3 using a
-   // reference to x variable
+   // reference to the x variable
    x = T(12.3);
    T derivative1 = exprtk::third_derivative(expression,x);
 
    // Third derivative of expression where value of x = 45.6 using
-   // name of x variable
+   // name of the x variable
    x = T(45.6);
    T derivative2 = exprtk::third_derivative(expression, "x");
 
      ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
-[24 - BENCHMARKING]
+[SECTION 24 - BENCHMARKING]
 As part of the ExprTk package there is an expression benchmark utility
 named 'exprtk_benchmark'. The utility attempts to determine expression
 evaluation  speed (or  rate of  evaluations -  evals  per  second), by
@@ -3447,7 +3845,7 @@ evaluating each expression numerous times and mutating the  underlying
 variables  of  the  expression between  each  evaluation.  The utility
 assumes any  valid ExprTk  expression (containing  conditionals, loops
 etc), however  it will  only make  use of  a predefined  set of scalar
-variables, namely: a, b,  c, x, y, z,  w. That being said  expressions
+variables, namely: a, b, c, x, y, z and w. That being said expressions
 themselves  can  contain any  number  of local  variables,  vectors or
 strings. There are two modes of operation:
 
@@ -3583,7 +3981,7 @@ by over 50%, in other words increases the evaluation rate by two fold.
 
      ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
-[25 - EXPRTK NOTES]
+[SECTION 25 - EXPRTK NOTES]
 The following is a list of facts and suggestions one may want to take
 into account when using ExprTk:
 
@@ -3784,7 +4182,7 @@ into account when using ExprTk:
 
      ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
-[26 - SIMPLE EXPRTK EXAMPLE]
+[SECTION 26 - SIMPLE EXPRTK EXAMPLE]
 The following is a  simple yet complete example  demonstrating typical
 usage of the ExprTk Library.  The example instantiates a symbol  table
 object, adding to it  three variables named x,  y and z, and  a custom
@@ -3889,7 +4287,7 @@ int main()
 
      ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
-[27 - BUILD OPTIONS]
+[SECTION 27 - BUILD OPTIONS]
 When building ExprTk there are a number of defines that will enable or
 disable certain features and  capabilities. The defines can  either be
 part of a compiler command line switch or scoped around the include to
@@ -3956,7 +4354,7 @@ error.
 
      ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
-[28 - FILES]
+[SECTION 28 - FILES]
 The source distribution of ExprTk is comprised of the following set of
 files:
 
@@ -3987,9 +4385,28 @@ files:
 
      ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
-[29 - LANGUAGE STRUCTURE]
+[SECTION 29 - LANGUAGE STRUCTURE]
+The following  are the  various language  structures available  within
+ExprTk and their structural representations.
+
+   (00) If Statement
+   (01) Else Statement
+   (02) Ternary Statement
+   (03) While Loop
+   (04) Repeat Until Loop
+   (05) For Loop
+   (06) Switch Statement
+   (07) Multi Subexpression Statement
+   (08) Multi Case-Consequent Statement
+   (09) Variable Definition Statement
+   (10) Vector Definition Statement
+   (11) String Definition Statement
+   (12) Range Statement
+   (13) Return Statement
+
+
+(00) - If Statement
 +-------------------------------------------------------------+
-|00 - If Statement                                            |
 |                                                             |
 |   [if] ---> [(] ---> [condition] -+-> [,] -+                |
 |                                   |        |                |
@@ -4007,7 +4424,10 @@ files:
 |   +--> [consequent] --> [;] -{*}-> [else-statement]         |
 |                                                             |
 +-------------------------------------------------------------+
-|01 - Else Statement                                          |
+
+
+(01) - Else Statement
++-------------------------------------------------------------+
 |                                                             |
 |   [else] -+-> [alternative] ---> [;]                        |
 |           |                                                 |
@@ -4016,7 +4436,10 @@ files:
 |           +--> [if-statement]                               |
 |                                                             |
 +-------------------------------------------------------------+
-|02 - Ternary Statement                                       |
+
+
+(02) - Ternary Statement
++-------------------------------------------------------------+
 |                                                             |
 |   [condition] ---> [?] ---> [consequent] ---> [:] --+       |
 |                                                     |       |
@@ -4025,7 +4448,10 @@ files:
 |   +--> [alternative] --> [;]                                |
 |                                                             |
 +-------------------------------------------------------------+
-|03 - While Loop                                              |
+
+
+(03) - While Loop
++-------------------------------------------------------------+
 |                                                             |
 |   [while] ---> [(] ---> [condition] ---> [)] ---+           |
 |                                                 |           |
@@ -4034,7 +4460,10 @@ files:
 |   +--> [{] ---> [expression*] ---> [}]                      |
 |                                                             |
 +-------------------------------------------------------------+
-|04 - Repeat Until Loop                                       |
+
+
+(04) - Repeat Until Loop
++-------------------------------------------------------------+
 |                                                             |
 |   [repeat] ---> [expression*] ---+                          |
 |                                  |                          |
@@ -4043,7 +4472,10 @@ files:
 |   +--> [until] ---> [(] ---> [condition] --->[)]            |
 |                                                             |
 +-------------------------------------------------------------+
-|05 - For Loop                                                |
+
+
+(05) - For Loop
++-------------------------------------------------------------+
 |                                                             |
 |   [for] ---> [(] -+-> [initialise expression] --+--+        |
 |                   |                             |  |        |
@@ -4064,7 +4496,10 @@ files:
 |   +--> [{] ---> [expression*] ---> [}]                      |
 |                                                             |
 +-------------------------------------------------------------+
-|06 - Switch Statement                                        |
+
+
+(06) - Switch Statement
++-------------------------------------------------------------+
 |                                                             |
 |   [switch] ---> [{] ---+                                    |
 |                        |                                    |
@@ -4084,7 +4519,10 @@ files:
 |   +--> [}]                                                  |
 |                                                             |
 +-------------------------------------------------------------+
-|07 - Multi Subexpression Statement                           |
+
+
+(07) - Multi Subexpression Statement
++-------------------------------------------------------------+
 |                                                             |
 |                   +--------------<---------------+          |
 |                   |                              |          |
@@ -4095,7 +4533,10 @@ files:
 |   +--> [}\)]                                                |
 |                                                             |
 +-------------------------------------------------------------+
-|08 - Multi Case-Consequent Statement                         |
+
+
+(08) - Multi Case-Consequent Statement
++-------------------------------------------------------------+
 |                                                             |
 |   [[*]] ---> [{] ---+                                       |
 |                     |                                       |
@@ -4110,7 +4551,10 @@ files:
 |                                 +--> [}]                    |
 |                                                             |
 +-------------------------------------------------------------+
-|09 - Variable Definition Statement                           |
+
+
+(09) - Variable Definition Statement
++-------------------------------------------------------------+
 |                                                             |
 |   [var] ---> [symbol] -+-> [:=] -+-> [expression] -+-> [;]  |
 |                        |         |                 |        |
@@ -4119,7 +4563,10 @@ files:
 |                        +------------->-------------+        |
 |                                                             |
 +-------------------------------------------------------------+
-|10 - Vector Definition Statement                             |
+
+
+(10) - Vector Definition Statement
++-------------------------------------------------------------+
 |                                                             |
 |   [var] ---> [symbol] ---> [[] ---> [constant] ---> []] --+ |
 |                                                           | |
@@ -4132,12 +4579,18 @@ files:
 |                         +--<--- [,] <-----+                 |
 |                                                             |
 +-------------------------------------------------------------+
-|11 - String Definition Statement                             |
+
+
+(11) - String Definition Statement
++-------------------------------------------------------------+
 |                                                             |
 |   [var] --> [symbol] --> [:=] --> [str-expression] ---> [;] |
 |                                                             |
 +-------------------------------------------------------------+
-|12 - Range Statement                                         |
+
+
+(12) - Range Statement
++-------------------------------------------------------------+
 |                                                             |
 |      +-------->--------+                                    |
 |      |                 |                                    |
@@ -4146,7 +4599,10 @@ files:
 |                                 +-------->--------+         |
 |                                                             |
 +-------------------------------------------------------------+
-|13 - Return Statement                                        |
+
+
+(13) - Return Statement
++-------------------------------------------------------------+
 |                                                             |
 |   [return] ---> [[] -+-> [expression] -+-> []] ---> [;]     |
 |                      |                 |                    |
