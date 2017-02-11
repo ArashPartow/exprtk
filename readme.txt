@@ -849,6 +849,48 @@ The above denoted AST will be evaluated in the following order:
    (09) Load Variable  (w)
 
 
+Generally an expression in ExprTk can be thought of as a free function
+similar to those  found in imperative  languages. This form  of pseudo
+function will have a name, it may have a set of one or more inputs and
+will return at least one value as its result. Futhermore the  function
+when invoked, may  cause a side-effect  that changes the  state the of
+host program.
+
+As an  example the  following is  a pseudo-code  definition of  a free
+function that performs a computation taking four inputs, modifying one
+of them and returning a value based on some arbitrary calculation:
+
+   ResultType foo(InputType x, InputType y, InputType z, InputType w)
+   {
+     w = 2 * x^y + z;        // Side-Effect
+     return abs(x - y) / z;  // Return Result
+   }
+
+
+Given the above definition the following is a functionally  equivalent
+version using ExprTk:
+
+   const std::string foo_str = " w := 2 * x^y + z; "
+                               " abs(x - y) / z;   ";
+
+   T x, y, z, w;
+
+   symbol_table_t symbol_table;
+   symbol_table.add_variable("x",x);
+   symbol_table.add_variable("y",y);
+   symbol_table.add_variable("z",z);
+   symbol_table.add_variable("w",w);
+
+   expression_t foo;
+   foo.register_symbol_table(symbol_table);
+
+   parser_t parser;
+   if (parser.compile(foo_str,foo))
+   {
+      foo.value();
+   }
+
+
 (3) Parser
 A  component  which  takes  as input  a  string  representation  of an
 expression and attempts to compile said input with the result being an
@@ -1293,7 +1335,7 @@ expression that utilizes the function based if-statement.
 
 
 In the  example above,  if the  condition 'y  < z'  is true,  then the
-consequent 'y + 1' will be evaluated, it's value will be returned  and
+consequent 'y + 1' will be evaluated, its value will be  returned  and
 subsequently assigned to the  variable 'x'. Otherwise the  alternative
 '2 *  z' will  be evaluated  and its  value will  be returned. This is
 essentially the simplest form of an if-then-else statement, As  simple
