@@ -2439,10 +2439,10 @@ namespace exprtk
                      Disallowed: .abc, abc.<white-space>, abc.<eof>, abc.<operator +,-,*,/...>
                   */
                   if (
-                       (s_itr_ != initial_itr)                  &&
-                       !is_end(s_itr_ + 1)                      &&
-                       details::is_letter_or_digit(*s_itr_ + 1) &&
-                       ('_' != (*s_itr_ + 1))
+                       (s_itr_ != initial_itr)                    &&
+                       !is_end(s_itr_ + 1)                        &&
+                       details::is_letter_or_digit(*(s_itr_ + 1)) &&
+                       ('_' != (*(s_itr_ + 1)))
                      )
                      break;
                }
