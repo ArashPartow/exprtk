@@ -885,10 +885,13 @@ version using ExprTk:
    foo.register_symbol_table(symbol_table);
 
    parser_t parser;
-   if (parser.compile(foo_str,foo))
+   if (!parser.compile(foo_str,foo))
    {
-      foo.value();
+      // Error in expression...
+      return;
    }
+
+   T result = foo.value();
 
 
 (3) Parser
