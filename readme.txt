@@ -853,7 +853,7 @@ Generally an expression in ExprTk can be thought of as a free function
 similar to those  found in imperative  languages. This form  of pseudo
 function will have a name, it may have a set of one or more inputs and
 will return at least one value as its result. Futhermore the  function
-when invoked, may  cause a side-effect  that changes the  state the of
+when invoked, may  cause a side-effect  that changes the  state of the
 host program.
 
 As an  example the  following is  a pseudo-code  definition of  a free
@@ -1318,8 +1318,8 @@ in the expression and hence will be assumed to have a side-effect.
 During compilation when the DCE  optimisation is applied to the  above
 expression, statement 2 will be removed from the expression, as it has
 no  bearing  on  the  final result  of  expression,  the  rest of  the
-statements will all remain. Hence optimised version of the  expression
-is as follows:
+statements will all remain. The optimised form of the expression is as
+follows:
 
    var x := 2;      // Statement 1
    var y := x + 2;  // Statement 2
@@ -1341,7 +1341,7 @@ In the  example above,  if the  condition 'y  < z'  is true,  then the
 consequent 'y + 1' will be evaluated, its value will be  returned  and
 subsequently assigned to the  variable 'x'. Otherwise the  alternative
 '2 *  z' will  be evaluated  and its  value will  be returned. This is
-essentially the simplest form of an if-then-else statement, As  simple
+essentially the  simplest form of  an if-then-else statement. A simple
 variation of  the expression  where the  value of  the if-statement is
 used within another statement is as follows:
 
