@@ -332,6 +332,11 @@ static const test_t global_test_list[] =
                     test_t("7-2",+5.0),
                     test_t("8-1",+7.0),
                     test_t("9-0",+9.0),
+                    test_t("2.*3",+6.0),
+                    test_t("2.*3.",+6.0),
+                    test_t("2.+3",+5.0),
+                    test_t("2.+3.",+5.0),
+                    test_t("123.*456.",+56088.0),
                     test_t(" 0 - 9 ",-9.0),
                     test_t(" 1 - 8 ",-7.0),
                     test_t(" 2 - 7 ",-5.0),
@@ -1596,7 +1601,11 @@ inline bool run_test01()
                                 test_xy<T>("var a := 2; (a / 1) == a",T(0),T(0),T(1)),
                                 test_xy<T>("var a := 2; (0 + a) == a",T(0),T(0),T(1)),
                                 test_xy<T>("var a := 2; (a + 0) == a",T(0),T(0),T(1)),
-                                test_xy<T>("var a := 2; (1 * a) == a",T(0),T(0),T(1))
+                                test_xy<T>("var a := 2; (1 * a) == a",T(0),T(0),T(1)),
+                                test_xy<T>("var a.b     := 3; (2 * a.b    ) == 6",T(0),T(0),T(1)),
+                                test_xy<T>("var aa.bb   := 3; (2 * aa.bb  ) == 6",T(0),T(0),T(1)),
+                                test_xy<T>("var aaa.bbb := 3; (2 * aaa.bbb) == 6",T(0),T(0),T(1)),
+                                test_xy<T>("var a1.b2   := 3; (2 * a1.b2  ) == 6",T(0),T(0),T(1))
                               };
 
       static const std::size_t test_list_size = sizeof(test_list) / sizeof(test_xy<T>);

@@ -2439,9 +2439,9 @@ namespace exprtk
                      Disallowed: .abc, abc.<white-space>, abc.<eof>, abc.<operator +,-,*,/...>
                   */
                   if (
-                       (s_itr_ != initial_itr)                    &&
-                       !is_end(s_itr_ + 1)                        &&
-                       details::is_letter_or_digit(*(s_itr_ + 1)) &&
+                       (s_itr_ != initial_itr)                     &&
+                       !is_end(s_itr_ + 1)                         &&
+                       !details::is_letter_or_digit(*(s_itr_ + 1)) &&
                        ('_' != (*(s_itr_ + 1)))
                      )
                      break;
@@ -2459,21 +2459,23 @@ namespace exprtk
          {
             /*
                Attempt to match a valid numeric value in one of the following formats:
-               01. 123456
-               02. 123.456
-               03. 123.456e3
-               04. 123.456E3
-               05. 123.456e+3
-               06. 123.456E+3
-               07. 123.456e-3
-               08. 123.456E-3
-               09. .1234
-               10. .1234e3
-               11. .1234E+3
-               12. .1234e+3
-               13. .1234E-3
-               14. .1234e-3
+               (01) 123456
+               (02) 123456.
+               (03) 123.456
+               (04) 123.456e3
+               (05) 123.456E3
+               (06) 123.456e+3
+               (07) 123.456E+3
+               (08) 123.456e-3
+               (09) 123.456E-3
+               (00) .1234
+               (11) .1234e3
+               (12) .1234E+3
+               (13) .1234e+3
+               (14) .1234E-3
+               (15) .1234e-3
             */
+
             const char* initial_itr = s_itr_;
             bool dot_found          = false;
             bool e_found            = false;
