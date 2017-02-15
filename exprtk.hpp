@@ -4669,7 +4669,9 @@ namespace exprtk
                   case e_ncdf  : return numeric::ncdf (arg);
                   case e_frac  : return numeric::frac (arg);
                   case e_trunc : return numeric::trunc(arg);
-                  default      : return std::numeric_limits<T>::quiet_NaN();
+
+                  default      : exprtk_debug(("numeric::details::process_impl<T> - Invalid unary operation.\n"));
+                                 return std::numeric_limits<T>::quiet_NaN();
                }
             }
 
@@ -4707,7 +4709,9 @@ namespace exprtk
                   case e_hypot  : return hypot<T>   (arg0,arg1);
                   case e_shr    : return shr<T>     (arg0,arg1);
                   case e_shl    : return shl<T>     (arg0,arg1);
-                  default       : return std::numeric_limits<T>::quiet_NaN();
+
+                  default       : exprtk_debug(("numeric::details::process_impl<T> - Invalid binary operation.\n"));
+                                  return std::numeric_limits<T>::quiet_NaN();
                }
             }
 
@@ -4743,7 +4747,9 @@ namespace exprtk
                   case e_hypot  : return hypot<T>(arg0,arg1);
                   case e_shr    : return arg0 >> arg1;
                   case e_shl    : return arg0 << arg1;
-                  default       : return std::numeric_limits<T>::quiet_NaN();
+
+                  default       : exprtk_debug(("numeric::details::process_impl<IntType> - Invalid binary operation.\n"));
+                                  return std::numeric_limits<T>::quiet_NaN();
                }
             }
          }
@@ -35447,12 +35453,20 @@ namespace exprtk
 
       bool register_package(exprtk::symbol_table<T>& symtab)
       {
-              if (!symtab.add_function("print"   ,p))
-            return false;
-         else if (!symtab.add_function("println" ,pl))
-            return false;
-         else
-            return true;
+         #define exprtk_register_function(FunctionName,FunctionType)              \
+         if (!symtab.add_function(FunctionName,FunctionType))                     \
+         {                                                                        \
+            exprtk_debug((                                                        \
+              "exprtk::rtl::io::register_package - Failed to add function: %s\n", \
+              FunctionName));                                                     \
+            return false;                                                         \
+         }                                                                        \
+
+         exprtk_register_function("print"   , p)
+         exprtk_register_function("println" ,pl)
+         #undef exprtk_register_function
+
+         return true;
       }
    };
 
@@ -35929,20 +35943,24 @@ namespace exprtk
 
       bool register_package(exprtk::symbol_table<T>& symtab)
       {
-              if (!symtab.add_function("open"   ,o))
-            return false;
-         else if (!symtab.add_function("close"  ,c))
-            return false;
-         else if (!symtab.add_function("write"  ,w))
-            return false;
-         else if (!symtab.add_function("read"   ,r))
-            return false;
-         else if (!symtab.add_function("getline",g))
-            return false;
-         else if (!symtab.add_function("eof"    ,e))
-            return false;
-         else
-            return true;
+         #define exprtk_register_function(FunctionName,FunctionType)                    \
+         if (!symtab.add_function(FunctionName,FunctionType))                           \
+         {                                                                              \
+            exprtk_debug((                                                              \
+              "exprtk::rtl::io::file::register_package - Failed to add function: %s\n", \
+              FunctionName));                                                           \
+            return false;                                                               \
+         }                                                                              \
+
+         exprtk_register_function("open"   ,o)
+         exprtk_register_function("close"  ,c)
+         exprtk_register_function("write"  ,w)
+         exprtk_register_function("read"   ,r)
+         exprtk_register_function("getline",g)
+         exprtk_register_function("eof"    ,e)
+         #undef exprtk_register_function
+
+         return true;
       }
    };
 
@@ -37031,54 +37049,41 @@ namespace exprtk
 
       bool register_package(exprtk::symbol_table<T>& symtab)
       {
-              if (!symtab.add_function("all_true"     ,at))
-            return false;
-         else if (!symtab.add_function("all_false"    ,af))
-            return false;
-         else if (!symtab.add_function("any_true"     ,nt))
-            return false;
-         else if (!symtab.add_function("any_false"    ,nf))
-            return false;
-         else if (!symtab.add_function("count"        , c))
-            return false;
-         else if (!symtab.add_function("copy"        , cp))
-            return false;
-         else if (!symtab.add_function("rotate_left"  ,rl))
-            return false;
-         else if (!symtab.add_function("rol"          ,rl))
-            return false;
-         else if (!symtab.add_function("rotate_right" ,rr))
-            return false;
-         else if (!symtab.add_function("ror"          ,rr))
-            return false;
-         else if (!symtab.add_function("shftl"        ,sl))
-            return false;
-         else if (!symtab.add_function("shftr"        ,sr))
-            return false;
-         else if (!symtab.add_function("sort"         ,st))
-            return false;
-         else if (!symtab.add_function("nth_element"  ,ne))
-            return false;
-         else if (!symtab.add_function("iota"         ,ia))
-            return false;
-         else if (!symtab.add_function("sumk"         ,sk))
-            return false;
-         else if (!symtab.add_function("axpy"    ,b1_axpy))
-            return false;
-         else if (!symtab.add_function("axpby"  ,b1_axpby))
-            return false;
-         else if (!symtab.add_function("axpyz"  ,b1_axpyz))
-            return false;
-         else if (!symtab.add_function("axpbyz",b1_axpbyz))
-            return false;
-         else if (!symtab.add_function("axpbz"  ,b1_axpbz))
-            return false;
-         else if (!symtab.add_function("dot"          ,dt))
-            return false;
-         else if (!symtab.add_function("dotk"        ,dtk))
-            return false;
-         else
-            return true;
+         #define exprtk_register_function(FunctionName,FunctionType)                  \
+         if (!symtab.add_function(FunctionName,FunctionType))                         \
+         {                                                                            \
+            exprtk_debug((                                                            \
+              "exprtk::rtl::vecops::register_package - Failed to add function: %s\n", \
+              FunctionName));                                                         \
+            return false;                                                             \
+         }                                                                            \
+
+         exprtk_register_function("all_true"     ,at)
+         exprtk_register_function("all_false"    ,af)
+         exprtk_register_function("any_true"     ,nt)
+         exprtk_register_function("any_false"    ,nf)
+         exprtk_register_function("count"        , c)
+         exprtk_register_function("copy"        , cp)
+         exprtk_register_function("rotate_left"  ,rl)
+         exprtk_register_function("rol"          ,rl)
+         exprtk_register_function("rotate_right" ,rr)
+         exprtk_register_function("ror"          ,rr)
+         exprtk_register_function("shftl"        ,sl)
+         exprtk_register_function("shftr"        ,sr)
+         exprtk_register_function("sort"         ,st)
+         exprtk_register_function("nth_element"  ,ne)
+         exprtk_register_function("iota"         ,ia)
+         exprtk_register_function("sumk"         ,sk)
+         exprtk_register_function("axpy"    ,b1_axpy)
+         exprtk_register_function("axpby"  ,b1_axpby)
+         exprtk_register_function("axpyz"  ,b1_axpyz)
+         exprtk_register_function("axpbyz",b1_axpbyz)
+         exprtk_register_function("axpbz"  ,b1_axpbz)
+         exprtk_register_function("dot"          ,dt)
+         exprtk_register_function("dotk"        ,dtk)
+         #undef exprtk_register_function
+
+         return true;
       }
    };
 
