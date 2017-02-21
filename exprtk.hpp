@@ -8,8 +8,8 @@
  * Copyright notice:                                              *
  * Free use of the C++ Mathematical Expression Toolkit Library is *
  * permitted under the guidelines and in accordance with the most *
- * current version of the Common Public License.                  *
- * http://www.opensource.org/licenses/cpl1.0.php                  *
+ * current version of the MIT License.                            *
+ * http://www.opensource.org/licenses/MIT                         *
  *                                                                *
  * Example expressions:                                           *
  * (00) (y + x / y) * (x - y / x)                                 *

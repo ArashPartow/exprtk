@@ -113,9 +113,9 @@ expressions that can be parsed and evaluated using the ExprTk library.
 [SECTION 03 - COPYRIGHT NOTICE]
 Free  use  of  the  C++  Mathematical  Expression  Toolkit  Library is
 permitted under the guidelines and in accordance with the most current
-version of the Common Public License.
+version of the MIT License.
 
-http://www.opensource.org/licenses/cpl1.0.php
+http://www.opensource.org/licenses/MIT
 
      ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
