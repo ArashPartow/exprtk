@@ -3,7 +3,7 @@
  *         C++ Mathematical Expression Toolkit Library        *
  *                                                            *
  * Examples and Unit-Tests                                    *
- * Author:  Arash Partow (1999-2017)                          *
+ * Author: Arash Partow (1999-2017)                           *
  * URL: http://www.partow.net/programming/exprtk/index.html   *
  *                                                            *
  * Copyright notice:                                          *
@@ -1308,13 +1308,13 @@ inline bool run_test01()
                                 test_xy<T>(" ((2) y) == (2*y)" ,T(2.0),T(3.0),T(1.0)),
                                 test_xy<T>(" (2 (y)) == (2*y)" ,T(2.0),T(3.0),T(1.0)),
                                 test_xy<T>("var a := 2; (a)(3) == 6" ,T(2.0),T(3.0),T(1.0)),
-                                test_xy<T>("var a := 2; (a){3} == 6" ,T(2.0),T(3.0),T(1.0)),
+                                test_xy<T>("var a := 2; (A){3} == 6" ,T(2.0),T(3.0),T(1.0)),
                                 test_xy<T>("var a := 2; (a)[3] == 6" ,T(2.0),T(3.0),T(1.0)),
                                 test_xy<T>("var a := 2; {a}(3) == 6" ,T(2.0),T(3.0),T(1.0)),
                                 test_xy<T>("var a := 2; {a}{3} == 6" ,T(2.0),T(3.0),T(1.0)),
                                 test_xy<T>("var a := 2; {a}[3] == 6" ,T(2.0),T(3.0),T(1.0)),
                                 test_xy<T>("var a := 2; var b := 3; (a)(b) == 6" ,T(2.0),T(3.0),T(1.0)),
-                                test_xy<T>("var a := 2; var b := 3; (a){b} == 6" ,T(2.0),T(3.0),T(1.0)),
+                                test_xy<T>("var a := 2; var b := 3; (a){B} == 6" ,T(2.0),T(3.0),T(1.0)),
                                 test_xy<T>("var a := 2; var b := 3; (a)[b] == 6" ,T(2.0),T(3.0),T(1.0)),
                                 test_xy<T>("var a := 2; var b := 3; {a}(b) == 6" ,T(2.0),T(3.0),T(1.0)),
                                 test_xy<T>("var a := 2; var b := 3; {a}{b} == 6" ,T(2.0),T(3.0),T(1.0)),
@@ -1604,7 +1604,7 @@ inline bool run_test01()
                                 test_xy<T>("var a := 2; (1 * a) == a",T(0),T(0),T(1)),
                                 test_xy<T>("var a.b     := 3; (2 * a.b    ) == 6",T(0),T(0),T(1)),
                                 test_xy<T>("var aa.bb   := 3; (2 * aa.bb  ) == 6",T(0),T(0),T(1)),
-                                test_xy<T>("var aaa.bbb := 3; (2 * aaa.bbb) == 6",T(0),T(0),T(1)),
+                                test_xy<T>("var aaa.bbb := 3; (2 * aAa.BbB) == 6",T(0),T(0),T(1)),
                                 test_xy<T>("var a1.b2   := 3; (2 * a1.b2  ) == 6",T(0),T(0),T(1))
                               };
 
@@ -3273,15 +3273,15 @@ struct myfunc : public exprtk::ifunction<T>
    }
 };
 
-#define define_free_functions(Type)                                                                     \
-Type foo1(Type v0) { return v0; }                                                                       \
-Type foo2(Type v0, Type v1) { return v0 + v1; }                                                         \
-Type foo3(Type v0, Type v1, Type v2) { return v0 + v1 + v2; }                                           \
-Type foo4(Type v0, Type v1, Type v2, Type v3) { return v0 + v1 + v2 + v3; }                             \
-Type foo5(Type v0, Type v1, Type v2, Type v3, Type v4) { return v0 + v1 + v2 + v3 + v4; }               \
-Type foo6(Type v0, Type v1, Type v2, Type v3, Type v4, Type v5) { return v0 + v1 + v2 + v3 + v4 + v5; } \
+#define define_free_functions(N,Type)                                                                   \
+Type N##1(Type v0) { return v0; }                                                                       \
+Type N##2(Type v0, Type v1) { return v0 + v1; }                                                         \
+Type N##3(Type v0, Type v1, Type v2) { return v0 + v1 + v2; }                                           \
+Type N##4(Type v0, Type v1, Type v2, Type v3) { return v0 + v1 + v2 + v3; }                             \
+Type N##5(Type v0, Type v1, Type v2, Type v3, Type v4) { return v0 + v1 + v2 + v3 + v4; }               \
+Type N##6(Type v0, Type v1, Type v2, Type v3, Type v4, Type v5) { return v0 + v1 + v2 + v3 + v4 + v5; } \
 
-define_free_functions(numeric_type)
+define_free_functions(foo,numeric_type)
 #undef define_free_functions
 
 template <typename T>
@@ -4269,10 +4269,10 @@ inline bool run_test10()
         "var x[3] := [8]; var y[3] := {1,2,3};   (x += 1) <=> (y += 1); (x[0] == 2) and (x[1] == 3) and (x[2] == 4)",
         "var x[3] := [8]; var y[2] := {1,2};     (x += 1) <=> (y += 1); (x[0] == 2) and (x[1] == 3) and (x[2] == 9)",
         "var x[3] := [8]; var y[1] := {1};       (x += 1) <=> (y += 1); (x[0] == 2) and (x[1] == 9) and (x[2] == 9)",
-        "var x[3] := [0]; var y[4] := {1,2,3,4}; x <  y",
-        "var x[3] := [0]; var y[3] := {1,2,3};   x <  y",
-        "var x[3] := [0]; var y[2] := {1,2};     x <  y",
-        "var x[3] := [0]; var y[1] := {1};       x <  y",
+        "var x[3] := [0]; var y[4] := {1,2,3,4}; X <  y",
+        "var x[3] := [0]; var y[3] := {1,2,3};   x <  Y",
+        "var x[3] := [0]; var y[2] := {1,2};     X <  y",
+        "var x[3] := [0]; var y[1] := {1};       x <  Y",
         "var x[3] := [0]; var y[4] := {1,2,3,4}; x <= y",
         "var x[3] := [0]; var y[3] := {1,2,3};   x <= y",
         "var x[3] := [0]; var y[2] := {1,2};     x <= y",
@@ -4381,6 +4381,15 @@ inline bool run_test10()
         "0 == (for (var i := 0; i < 10; i += 1) { ~{break[i]; continue; i += i} })",
         "0 == (for (var i := 0; i < 10; i += 1) { ~{continue; break[7]; i += i} })",
         "1 == (for (var i := 0; i < 10; i += 1) { ~{break[i += 1]; continue; i += i} })",
+
+        "var s := 'abc';  s == ~{'abc'     } ",
+        "var s := 'abc';  s == ~{s         } ",
+        "var s := 'abc';  s == ~{'ab' + 'c'} ",
+        "var s := 'abc';  ~{'abc'     } == s ",
+        "var s := 'abc';  ~{s         } == s ",
+        "var s := 'abc';  ~{'ab' + 'c'} == s ",
+        "var s := 'abc';  ~{1 + 2; 'abc' + s; s} == s ",
+        "var s := 'abc';  ~{1 + 2; var x := 'ab'; x + 'c'} == s ",
 
         "var x[10^6] := null; var y[10^7] := null; 0 * (min(x) + min(y)) + x[] + y[] == 10^7 + 10^6"
       };
@@ -7657,53 +7666,163 @@ struct my_usr : public exprtk::parser<T>::unknown_symbol_resolver
 };
 
 template <typename T>
+struct my_usr_ext : public exprtk::parser<T>::unknown_symbol_resolver
+{
+   typedef exprtk::symbol_table<T> symbol_table_t;
+   typedef typename exprtk::parser<T>::unknown_symbol_resolver usr_t;
+
+   my_usr_ext()
+   : usr_t(usr_t::e_usrmode_extended)
+   {}
+
+   virtual bool process(const std::string& unknown_symbol,
+                        symbol_table_t&      symbol_table,
+                        std::string&        error_message)
+   {
+      bool result = false;
+
+      if (unknown_symbol[0] == 'v')
+      {
+         static T var_default_value = 1.0;
+
+         if (!(result = symbol_table.create_variable(unknown_symbol, var_default_value++)))
+         {
+            error_message = "Failed to create variable(" + unknown_symbol + ") in primary symbol table";
+         }
+      }
+      else if (unknown_symbol[0] == 'c')
+      {
+         static T cvar_default_value = 1.0;
+
+         if (!(result = symbol_table.add_constant(unknown_symbol, cvar_default_value++)))
+         {
+            error_message = "Failed to create const variable(" + unknown_symbol + ") in primary symbol table";
+         }
+      }
+      else if (0 == unknown_symbol.find("foo"))
+      {
+         //functions of form: fooXX
+         if (4 >= unknown_symbol.size())
+         {
+            switch(unknown_symbol[3])
+            {
+               case '1' : result = symbol_table.add_function(unknown_symbol,foo1);
+                          break;
+
+               case '2' : result = symbol_table.add_function(unknown_symbol,foo2);
+                          break;
+
+               case '3' : result = symbol_table.add_function(unknown_symbol,foo3);
+                          break;
+
+               case '4' : result = symbol_table.add_function(unknown_symbol,foo4);
+                          break;
+
+               case '5' : result = symbol_table.add_function(unknown_symbol,foo5);
+                          break;
+
+               case '6' : result = symbol_table.add_function(unknown_symbol,foo6);
+                          break;
+            }
+         }
+
+         if (!result)
+         {
+            error_message = "Failed to add function(" + unknown_symbol + ") in primary symbol table";
+         }
+      }
+      else
+         error_message = "Indeterminable symbol type.";
+
+      return result;
+   }
+};
+
+template <typename T>
 inline bool run_test20()
 {
    typedef exprtk::expression<T> expression_t;
 
-   for (std::size_t i = 0; i < 100; ++i)
    {
-      exprtk::symbol_table<T> symbol_table0;
-      exprtk::symbol_table<T> symbol_table1;
-      exprtk::symbol_table<T> symbol_table2;
-      exprtk::symbol_table<T> symbol_table3;
-
-      symbol_table0.add_constants();
-
-      expression_t expression;
-      expression.register_symbol_table(symbol_table0);
-      expression.register_symbol_table(symbol_table1);
-      expression.register_symbol_table(symbol_table2);
-      expression.register_symbol_table(symbol_table3);
-
-      exprtk::parser<T> parser;
-
-      my_usr<T> musr;
-      musr.next_value(true);
-      parser.enable_unknown_symbol_resolver(&musr);
-
-      std::string expr_str = "v01+c02+v03+c04+v05+c06+v07+c08+v09+c10+"
-                             "v11+c12+v13+c14+v15+c16+v17+c18+v19+c20+"
-                             "v21+c22+v23+c24+v25+c26+v27+c28+v29+c30 ";
-
-      if (!parser.compile(expr_str,expression))
+      for (std::size_t i = 0; i < 100; ++i)
       {
-         printf("run_test20() - Error: %s   Expression: %s\n",
-                parser.error().c_str(),
-                expr_str.c_str());
+         exprtk::symbol_table<T> symbol_table0; // primary symbol_table
+         exprtk::symbol_table<T> symbol_table1;
+         exprtk::symbol_table<T> symbol_table2;
+         exprtk::symbol_table<T> symbol_table3;
 
-         return false;
+         symbol_table0.add_constants();
+
+         expression_t expression;
+         expression.register_symbol_table(symbol_table0);
+         expression.register_symbol_table(symbol_table1);
+         expression.register_symbol_table(symbol_table2);
+         expression.register_symbol_table(symbol_table3);
+
+         exprtk::parser<T> parser;
+
+         my_usr<T> musr;
+         musr.next_value(true);
+         parser.enable_unknown_symbol_resolver(&musr);
+
+         std::string expr_str = "v01+c02+v03+c04+v05+c06+v07+c08+v09+c10+"
+                                "v11+c12+v13+c14+v15+c16+v17+c18+v19+c20+"
+                                "v21+c22+v23+c24+v25+c26+v27+c28+v29+c30 ";
+
+         if (!parser.compile(expr_str,expression))
+         {
+            printf("run_test20() - [1] Error: %s   Expression: %s\n",
+                   parser.error().c_str(),
+                   expr_str.c_str());
+
+            return false;
+         }
+
+         T sum_1_30 = T((1 + 30) * 15);
+         T result   = expression.value();
+
+         if (sum_1_30 != result)
+         {
+            printf("run_test20() - [1] Error in evaluation! (1) Expression: %s\n",
+                   expr_str.c_str());
+
+            return false;
+         }
       }
+   }
 
-      T sum_1_30 = T((1 + 30) * 15);
-      T result   = expression.value();
-
-      if (sum_1_30 != result)
+   {
+      for (std::size_t i = 0; i < 100; ++i)
       {
-         printf("run_test20() - Error in evaluation! (1) Expression: %s\n",
-                expr_str.c_str());
+         exprtk::symbol_table<T> symbol_table0; // primary symbol_table
+         exprtk::symbol_table<T> symbol_table1;
+         exprtk::symbol_table<T> symbol_table2;
+         exprtk::symbol_table<T> symbol_table3;
 
-         return false;
+         symbol_table0.add_constants();
+
+         expression_t expression;
+         expression.register_symbol_table(symbol_table0);
+         expression.register_symbol_table(symbol_table1);
+         expression.register_symbol_table(symbol_table2);
+         expression.register_symbol_table(symbol_table3);
+
+         exprtk::parser<T> parser;
+
+         my_usr_ext<T> musr;
+         parser.enable_unknown_symbol_resolver(&musr);
+
+         std::string expr_str = "foo6(foo1(v0),foo2(c1,foo4(v2,c3,v4,c5)),foo3"
+                                "(v6,c7,foo5(v8,c9,v10,c11,v12)),c13,v14,c15) ";
+
+         if (!parser.compile(expr_str,expression))
+         {
+            printf("run_test20() - [2] Error: %s   Expression: %s\n",
+                   parser.error().c_str(),
+                   expr_str.c_str());
+
+            return false;
+         }
       }
    }
 
