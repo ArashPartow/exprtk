@@ -84,7 +84,7 @@ arithmetic operations, functions and processes:
      ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
 [SECTION 02 - EXAMPLE EXPRESSIONS]
-The  following  is  a  short listing  of  the  types  of  mathematical
+The following is  a short listing  of infix format  based mathematical
 expressions that can be parsed and evaluated using the ExprTk library.
 
   (01) sqrt(1 - (3 / x^2))
@@ -1316,7 +1316,7 @@ side-effects, however the latter, statement 5, is the final  statement
 in the expression and hence will be assumed to have a side-effect.
 
 During compilation when the DCE  optimisation is applied to the  above
-expression, statement 2 will be removed from the expression, as it has
+expression, statement 3 will be removed from the expression, as it has
 no  bearing  on  the  final result  of  expression,  the  rest of  the
 statements will all remain. The optimised form of the expression is as
 follows:
@@ -1358,7 +1358,7 @@ most imperative languages. There are two variations of the statement:
 (a) If-Statement
 This version  of the  conditional statement  returns the  value of the
 consequent expression when the  condition expression is true,  else it
-will require a quiet NaN value as its result.
+will return a quiet NaN value as its result.
 
    Example 1:
    x := if (y < z) y + 3;
@@ -2841,7 +2841,7 @@ simple user defined USR:
                    T& default_value,
                    std::string& error_message)
       {
-         if (0 != unknown_symbol.find('var_'))
+         if (0 != unknown_symbol.find("var_"))
          {
             error_message = "Invalid symbol: " + unknown_symbol;
             return false;
@@ -2877,12 +2877,83 @@ simple user defined USR:
 
 
 In  the  example  above,  a user  specified  USR  is  defined, and  is
-registered with the parser enabling the USR functionality. The when an
-unknown  symbol is  encountered during  the  compilation  process, the
+registered with the parser  enabling the USR functionality.  Then when
+an unknown symbol is  encountered during the compilation  process, the
 USR's process method will be invoked. The USR in the example will only
 'accept' unknown symbols that have  a prefix of 'var_' as  being valid
 variables,  all other  unknown symbols  will result  in a  compilation
 error being raised.
+
+In the example above  the callback of the  USR that is invoked  during
+the unknown symbol resolution process only allows for scalar variables
+to be defined and resolved -  as that is the simplest and  most common
+form.
+
+There  is  also  an  extended version  of  the  callback  that can  be
+overridden that will allow for  more control and choice over  the type
+of symbol being  resolved. The following  is an example  definition of
+said extended callback:
+
+   template <typename T>
+   struct my_usr : public parser_t::unknown_symbol_resolver
+   {
+     typedef typename parser_t::unknown_symbol_resolver usr_t;
+
+     my_usr()
+     : usr_t(usr_t::e_usrmode_extended)
+     {}
+
+     virtual bool process(const std::string& unknown_symbol,
+                          symbol_table_t&      symbol_table,
+                          std::string&        error_message)
+     {
+        bool result = false;
+
+        if (0 == unknown_symbol.find("var_"))
+        {
+           // Default value of zero
+           result = symbol_table.create_variable(unknown_symbol,0);
+
+           if (!result)
+           {
+              error_message = "Failed to create variable...";
+           }
+        }
+        else if (0 == unknown_symbol.find("str_"))
+        {
+           // Default value of empty string
+           result = symbol_table.create_stringvar(unknown_symbol,"");
+
+           if (!result)
+           {
+              error_message = "Failed to create string variable...";
+           }
+        }
+        else
+           error_message = "Indeterminable symbol type.";
+
+        return result;
+     }
+   };
+
+
+In the  example above,  the USR  callback when  invoked will  pass the
+primary symbol table associated with the expression being parsed.  The
+symbol  resolution  business  logic  can  then  determine  under  what
+conditions  a  symbol will  be  resolved including  its  type (scalar,
+string, vector etc) and default value. When the callback  successfully
+returns  the  symbol  parsing and  resolution  process  will again  be
+executed by the parser. The idea here is that given the primary symbol
+table will now have the previously detected unknown symbol registered,
+it will be correctly resolved  and the general parsing processing  can
+then resume as per normal.
+
+Note: In order to have the USR's extended mode callback be invoked  It
+is  necessary to  pass the  e_usrmode_extended enum  value during  the
+constructor of the user defined USR.
+
+Note: The primary symbol table  for an expression is the  first symbol
+table to be registered with that instance of the expression.
 
      ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
@@ -4338,47 +4409,53 @@ disable certain features and  capabilities. The defines can  either be
 part of a compiler command line switch or scoped around the include to
 the ExprTk header. The defines are as follows:
 
-   (1) exprtk_enable_debugging
-   (2) exprtk_disable_comments
-   (3) exprtk_disable_break_continue
-   (4) exprtk_disable_sc_andor
-   (5) exprtk_disable_enhanced_features
-   (6) exprtk_disable_string_capabilities
-   (7) exprtk_disable_superscalar_unroll
-   (8) exprtk_disable_rtl_io_file
+   (01) exprtk_enable_debugging
+   (02) exprtk_disable_comments
+   (03) exprtk_disable_break_continue
+   (04) exprtk_disable_sc_andor
+   (05) exprtk_disable_return_statement
+   (06) exprtk_disable_enhanced_features
+   (07) exprtk_disable_string_capabilities
+   (08) exprtk_disable_superscalar_unroll
+   (09) exprtk_disable_rtl_io_file
+   (10) exprtk_disable_rtl_vecops
+   (11) exprtk_disable_caseinsensitivity
 
 
-(1) exprtk_enable_debugging
+(01) exprtk_enable_debugging
 This define will enable printing of debug information to stdout during
 the compilation process.
 
-(2) exprtk_disable_comments
+(02) exprtk_disable_comments
 This define will disable the ability for expressions to have comments.
 Expressions that have comments when parsed with a build that has  this
 option, will result in a compilation failure.
 
-(3) exprtk_disable_break_continue
+(03) exprtk_disable_break_continue
 This  define  will  disable  the  loop-wise  'break'  and   'continue'
 capabilities. Any expression that contains those keywords will  result
 in a compilation failure.
 
-(4) exprtk_disable_sc_andor
+(04) exprtk_disable_sc_andor
 This define  will disable  the short-circuit  '&' (and)  and '|'  (or)
 operators
 
-(5) exprtk_disable_enhanced_features
+(05) exprtk_disable_return_statement
+This define will disable use of return statements within expressions.
+
+(06) exprtk_disable_enhanced_features
 This  define  will  disable all  enhanced  features  such as  strength
 reduction and special  function optimisations and  expression specific
 type instantiations.  This feature  will reduce  compilation times and
 binary sizes but will  also result in massive  performance degradation
 of expression evaluations.
 
-(6) exprtk_disable_string_capabilities
+(07) exprtk_disable_string_capabilities
 This  define  will  disable all  string  processing  capabilities. Any
 expression that contains a string or string related syntax will result
 in a compilation failure.
 
-(7) exprtk_disable_superscalar_unroll
+(08) exprtk_disable_superscalar_unroll
 This define will set  the loop unroll batch  size to 4 operations  per
 loop  instead of  the default  8 operations.  This define  is used  in
 operations that  involve vectors  and aggregations  over vectors. When
@@ -4386,16 +4463,21 @@ targeting  non-superscalar  architectures, it  may  be recommended  to
 build using this particular option if efficiency of evaluations is  of
 concern.
 
-(8) exprtk_disable_rtl_io_file
+(09) exprtk_disable_rtl_io_file
 This  define will  disable  the  file I/O  RTL package  features. When
 present, any  attempts to register  the file I/O package with  a given
 symbol table will fail causing a compilation error.
 
-(9) exprtk_disable_rtl_vecops
+(10) exprtk_disable_rtl_vecops
 This define will  disable the extended  vector operations RTL  package
 features. When present, any attempts to register the vector operations
 package with  a given  symbol table  will fail  causing a  compilation
 error.
+
+(11) exprtk_disable_caseinsensitivity
+This define  will disable  case-insensitivity when  matching variables
+and  functions. Furthermore  all reserved  and keywords  will only  be
+acknowledged when in all lower-case.
 
      ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
