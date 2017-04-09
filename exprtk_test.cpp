@@ -4382,6 +4382,15 @@ inline bool run_test10()
         "0 == (for (var i := 0; i < 10; i += 1) { ~{continue; break[7]; i += i} })",
         "1 == (for (var i := 0; i < 10; i += 1) { ~{break[i += 1]; continue; i += i} })",
 
+        "var s := 'abc';  s == ~{'abc'     } ",
+        "var s := 'abc';  s == ~{s         } ",
+        "var s := 'abc';  s == ~{'ab' + 'c'} ",
+        "var s := 'abc';  ~{'abc'     } == s ",
+        "var s := 'abc';  ~{s         } == s ",
+        "var s := 'abc';  ~{'ab' + 'c'} == s ",
+        "var s := 'abc';  ~{1 + 2; 'abc' + s; s} == s ",
+        "var s := 'abc';  ~{1 + 2; var x := 'ab'; x + 'c'} == s ",
+
         "var x[10^6] := null; var y[10^7] := null; 0 * (min(x) + min(y)) + x[] + y[] == 10^7 + 10^6"
       };
 
