@@ -4464,14 +4464,14 @@ namespace exprtk
                }
             }
 
-            static inline control_block* create(const std::size_t& size, data_t data_ptr = data_t(0), bool dstrct = false)
+            static inline control_block* create(const std::size_t& dsize, data_t data_ptr = data_t(0), bool dstrct = false)
             {
-               if (size)
+               if (dsize)
                {
                   if (0 == data_ptr)
-                     return new control_block(size);
+                     return new control_block(dsize);
                   else
-                     return new control_block(size, data_ptr, dstrct);
+                     return new control_block(dsize, data_ptr, dstrct);
                }
                else
                   return new control_block;
