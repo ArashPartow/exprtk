@@ -22635,7 +22635,7 @@ namespace exprtk
          // Perform compile-time range check
          if (details::is_constant_node(index_expr))
          {
-            const std::size_t index    = std::size_t(index_expr->value());
+            const std::size_t index    = static_cast<std::size_t>(details::numeric::to_int32(index_expr->value()));
             const std::size_t vec_size = vec->size();
 
             if (index >= vec_size)
