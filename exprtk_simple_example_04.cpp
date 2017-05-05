@@ -70,7 +70,7 @@ void fibonacci()
 
    for (std::size_t i = 0; i < 40; ++i)
    {
-      x = i;
+      x = static_cast<T>(i);
 
       T result = expression.value();
 

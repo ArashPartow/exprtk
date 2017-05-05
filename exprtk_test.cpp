@@ -4848,7 +4848,7 @@ inline std::size_t load_expressions(const std::string& file_name,
 
    std::size_t line_count = 0;
 
-   while (std::getline(stream,buffer))
+   while (std::getline(stream,(buffer)))
    {
       if (buffer.empty())
          continue;
@@ -7685,7 +7685,7 @@ struct my_usr_ext : public exprtk::parser<T>::unknown_symbol_resolver
       {
          static T var_default_value = 1.0;
 
-         if (!(result = symbol_table.create_variable(unknown_symbol, var_default_value++)))
+         if ((result = symbol_table.create_variable(unknown_symbol, var_default_value++)) == false)
          {
             error_message = "Failed to create variable(" + unknown_symbol + ") in primary symbol table";
          }
@@ -7694,7 +7694,7 @@ struct my_usr_ext : public exprtk::parser<T>::unknown_symbol_resolver
       {
          static T cvar_default_value = 1.0;
 
-         if (!(result = symbol_table.add_constant(unknown_symbol, cvar_default_value++)))
+         if ((result = symbol_table.add_constant(unknown_symbol, cvar_default_value++)) == false)
          {
             error_message = "Failed to create const variable(" + unknown_symbol + ") in primary symbol table";
          }
