@@ -1962,7 +1962,7 @@ namespace exprtk
       template <typename T>
       inline bool string_to_real(const std::string& s, T& t)
       {
-         const typename numeric::details::number_type<T>::type num_type;
+         typename numeric::details::number_type<T>::type num_type;
 
          const char_t* begin = s.data();
          const char_t* end   = s.data() + s.size();
