@@ -34605,7 +34605,7 @@ namespace exprtk
       typedef exprtk::symbol_table<T> symbol_table_t;
       typedef exprtk::expression<T>     expression_t;
       typedef exprtk::parser<T>             parser_t;
-      typedef parser_t::dependent_entity_collector::symbol_t symbol_t;
+      typedef typename exprtk::parser<T>::dependent_entity_collector::symbol_t symbol_t;
 
       symbol_table_t symbol_table;
       expression_t   expression;
@@ -34679,7 +34679,7 @@ namespace exprtk
       typedef exprtk::symbol_table<T> symbol_table_t;
       typedef exprtk::expression<T>     expression_t;
       typedef exprtk::parser<T>             parser_t;
-      typedef parser_t::dependent_entity_collector::symbol_t symbol_t;
+      typedef typename exprtk::parser<T>::dependent_entity_collector::symbol_t symbol_t;
 
       symbol_table_t symbol_table;
       expression_t   expression;
