@@ -39,14 +39,14 @@ void square_wave()
 
    static const T pi = T(3.141592653589793238462643383279502);
 
-   T f = pi / T(10);
-   T t = T(0);
-   T a = T(10);
+   const T f = pi / T(10);
+   const T a = T(10);
+         T t = T(0);
 
    symbol_table_t symbol_table;
-   symbol_table.add_variable("f",f);
    symbol_table.add_variable("t",t);
-   symbol_table.add_variable("a",a);
+   symbol_table.add_constant("f",f);
+   symbol_table.add_constant("a",a);
    symbol_table.add_constants();
 
    expression_t expression;

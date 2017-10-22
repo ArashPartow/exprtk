@@ -3577,7 +3577,6 @@ namespace exprtk
                add_invalid(lexer::token::e_string ,lexer::token::e_string );
                add_invalid(lexer::token::e_number ,lexer::token::e_string );
                add_invalid(lexer::token::e_string ,lexer::token::e_number );
-               add_invalid(lexer::token::e_string ,lexer::token::e_ternary);
                add_invalid_set1(lexer::token::e_assign );
                add_invalid_set1(lexer::token::e_shr    );
                add_invalid_set1(lexer::token::e_shl    );
@@ -4201,6 +4200,11 @@ namespace exprtk
 
          type_view(type_store_t& ts)
          : ts_(ts),
+           data_(reinterpret_cast<value_t*>(ts_.data))
+         {}
+
+         type_view(const type_store_t& ts)
+         : ts_(const_cast<type_store_t&>(ts)),
            data_(reinterpret_cast<value_t*>(ts_.data))
          {}
 
@@ -15975,6 +15979,7 @@ namespace exprtk
    {
    public:
 
+      typedef T (*ff00_functor)();
       typedef T (*ff01_functor)(T);
       typedef T (*ff02_functor)(T,T);
       typedef T (*ff03_functor)(T,T,T);
@@ -15992,6 +15997,16 @@ namespace exprtk
       typedef T (*ff15_functor)(T,T,T,T,T,T,T,T,T,T,T,T,T,T,T);
 
    protected:
+
+       struct freefunc00 : public exprtk::ifunction<T>
+       {
+          using exprtk::ifunction<T>::operator();
+
+          freefunc00(ff00_functor ff) : exprtk::ifunction<T>(0), f(ff) {}
+          inline T operator() ()
+          { return f(); }
+          ff00_functor f;
+       };
 
       struct freefunc01 : public exprtk::ifunction<T>
       {
@@ -17034,14 +17049,14 @@ namespace exprtk
          return add_function(function_name,(*local_data().free_function_list_.back()));     \
       }                                                                                     \
 
-      exprtk_define_freefunction(01) exprtk_define_freefunction(02)
-      exprtk_define_freefunction(03) exprtk_define_freefunction(04)
-      exprtk_define_freefunction(05) exprtk_define_freefunction(06)
-      exprtk_define_freefunction(07) exprtk_define_freefunction(08)
-      exprtk_define_freefunction(09) exprtk_define_freefunction(10)
-      exprtk_define_freefunction(11) exprtk_define_freefunction(12)
-      exprtk_define_freefunction(13) exprtk_define_freefunction(14)
-      exprtk_define_freefunction(15)
+      exprtk_define_freefunction(00) exprtk_define_freefunction(01)
+      exprtk_define_freefunction(02) exprtk_define_freefunction(03)
+      exprtk_define_freefunction(04) exprtk_define_freefunction(05)
+      exprtk_define_freefunction(06) exprtk_define_freefunction(07)
+      exprtk_define_freefunction(08) exprtk_define_freefunction(09)
+      exprtk_define_freefunction(10) exprtk_define_freefunction(11)
+      exprtk_define_freefunction(12) exprtk_define_freefunction(13)
+      exprtk_define_freefunction(14) exprtk_define_freefunction(15)
 
       #undef exprtk_define_freefunction
 
