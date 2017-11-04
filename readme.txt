@@ -1414,37 +1414,29 @@ The second variation of  the if-statement is to  allow for the use  of
 Else and If-Else cascading statements. Examples of such statements are
 as follows:
 
-   Example 1:           Example 2:
-   if (x < y)           if (x < y)
-     z := x + 3;        {
-   else                   y := z + x;
-     y := x - z;          z := x + 3;
-                        }
-                        else
-                          y := x - z;
+  Example 1:             Example 2:         Example 3:
+  if (x < y)             if (x < y)         if (x > y + 1)
+    z := x + 3;          {                    y := abs(x - z);
+  else                     y := z + x;      else
+    y := x - z;            z := x + 3;      {
+                         }                    y := z + x;
+                         else                 z := x + 3;
+                           y := x - z;      };
 
-   Example 3:           Example 4:
-   if (x > y + 1)       if (2 * x < max(y,3))
-     y := abs(x - z);   {
-   else                   y := z + x;
-   {                      z := x + 3;
-     y := z + x;        }
-     z := x + 3;        else if (2y - z)
-   };                     y := x - z;
 
-   Example 5:           Example 6:
-   if (x < y)           if (x < y or (x + z) > y)
-     z := x + 3;        {
-   else if (2y != z)      z := x + 3;
-   {                      y := x - z;
-     z := x + 3;        }
-     y := x - z;        else if (abs(2y - z) >= 3)
-   }                       y := x - z;
-   else                 else
-     x * x;             {
-                           z := abs(x * x);
-                           x * y * z;
-                        };
+  Example 4:             Example 5:         Example 6:
+  if (2 * x < max(y,3))  if (x < y)         if (x < y or (x + z) > y)
+  {                        z := x + 3;      {
+    y := z + x;          else if (2y != z)    z := x + 3;
+    z := x + 3;          {                    y := x - z;
+  }                        z := x + 3;      }
+  else if (2y - z)         y := x - z;      else if (abs(2y - z) >= 3)
+    y := x - z;          }                    y := x - z;
+                         else               else
+                           x * x;           {
+                                              z := abs(x * x);
+                                              x * y * z;
+                                            };
 
 
 In  the case  where  there  is no  final else  statement and  the flow
