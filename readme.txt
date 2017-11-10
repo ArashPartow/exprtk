@@ -2603,7 +2603,7 @@ own instances of those variables. Examples of such variables could be:
    (2) customer_name
 
 
-The  following is  a diagram  depicting the  possible version  of the
+The  following is  a  diagram  depicting the  possible version  of the
 denoted symbol table hierarchies. In the diagram there are two  unique
 expressions, each of  which have a  reference to the  Global constant,
 functions and variables symbol tables and an exclusive reference to  a
@@ -2633,8 +2633,8 @@ local symbol table.
 
 
 Bringing  all of  the above  together, in  the following  example the
-hierarchy  of  symbol  tables  are  instantiated  and  initialised. An
-expression that makes use of various elements of each symbol table  is
+hierarchy  of  symbol  tables  are instantiated  and  initialised. An
+expression that makes use of various elements of each symbol table is
 then compiled and later on evaluated:
 
    typedef exprtk::symbol_table<double> symbol_table_t;
@@ -3907,7 +3907,7 @@ function is as follows:
 
    ....
 
-   // Differentiate expression where value of x = 12.3 using a reference
+   // Differentiate expression at value of x = 12.3 using a reference
    // to the x variable
    x = T(12.3);
    T derivative1 = exprtk::derivative(expression,x);
