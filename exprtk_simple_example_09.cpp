@@ -130,7 +130,7 @@ void primes()
 
    for (std::size_t i = 0; i < 100; ++i)
    {
-      x = i;
+      x = static_cast<T>(i);
 
       T result1 = expression1.value();
       T result2 = expression2.value();

@@ -283,6 +283,11 @@ namespace exprtk
          return result;
       }
 
+      inline std::string to_str(std::size_t i)
+      {
+         return to_str(static_cast<int>(i));
+      }
+
       inline bool is_hex_digit(const std::string::value_type digit)
       {
          return (('0' <= digit) && (digit <= '9')) ||
@@ -35715,9 +35720,7 @@ namespace exprtk
          {
             scoped_bft<func_1param> sb(*this);
             base_func::update(v0);
-            T result = this->value(base_func::expression);
-
-            return result;
+            return this->value(base_func::expression);
          }
       };
 
@@ -35731,9 +35734,7 @@ namespace exprtk
          {
             scoped_bft<func_2param> sb(*this);
             base_func::update(v0, v1);
-            T result = this->value(base_func::expression);
-
-            return result;
+            return this->value(base_func::expression);
          }
       };
 
@@ -35747,9 +35748,7 @@ namespace exprtk
          {
             scoped_bft<func_3param> sb(*this);
             base_func::update(v0, v1, v2);
-            T result = this->value(base_func::expression);
-
-            return result;
+            return this->value(base_func::expression);
          }
       };
 
@@ -35763,9 +35762,7 @@ namespace exprtk
          {
             scoped_bft<func_4param> sb(*this);
             base_func::update(v0, v1, v2, v3);
-            T result = this->value(base_func::expression);
-
-            return result;
+            return this->value(base_func::expression);
          }
       };
 
@@ -35779,9 +35776,7 @@ namespace exprtk
          {
             scoped_bft<func_5param> sb(*this);
             base_func::update(v0, v1, v2, v3, v4);
-            T result = this->value(base_func::expression);
-
-            return result;
+            return this->value(base_func::expression);
          }
       };
 
@@ -35795,9 +35790,7 @@ namespace exprtk
          {
             scoped_bft<func_6param> sb(*this);
             base_func::update(v0, v1, v2, v3, v4, v5);
-            T result = this->value(base_func::expression);
-
-            return result;
+            return this->value(base_func::expression);
          }
       };
 
@@ -35844,8 +35837,6 @@ namespace exprtk
                       const Sequence<std::string,Allocator>& var_list,
                       const bool override = false)
       {
-         const std::size_t n = var_list.size();
-
          const typename std::map<std::string,expression_t>::iterator itr = expr_map_.find(name);
 
          if (expr_map_.end() != itr)
@@ -35863,6 +35854,8 @@ namespace exprtk
 
          if (compile_expression(name,expression,var_list))
          {
+            const std::size_t n = var_list.size();
+
             fp_map_[n][name]->setup(expr_map_[name]);
 
             return true;
@@ -35928,7 +35921,7 @@ namespace exprtk
 
       inline bool add(const function& f, const bool override = false)
       {
-         return add(f.name_,f.expression_,f.v_,override);
+         return add(f.name_, f.expression_, f.v_,override);
       }
 
    private:
