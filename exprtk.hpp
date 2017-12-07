@@ -1,5 +1,5 @@
 /*
- ******************************************************************
+g ******************************************************************
  *           C++ Mathematical Expression Toolkit Library          *
  *                                                                *
  * Author: Arash Partow (1999-2017)                               *
@@ -17057,12 +17057,8 @@ namespace exprtk
       #define exprtk_define_freefunction(NN)                                                \
       inline bool add_function(const std::string& function_name, ff##NN##_functor function) \
       {                                                                                     \
-         if (!valid())                                                                      \
-            return false;                                                                   \
-         else if (!valid_symbol(function_name))                                             \
-            return false;                                                                   \
-         else if (symbol_exists(function_name))                                             \
-            return false;                                                                   \
+         if (!valid() || !valid_symbol(function_name) || symbol_exists(function_name))      \
+	   {return false;}                                                                  \
                                                                                             \
          exprtk::ifunction<T>* ifunc = new freefunc##NN(function);                          \
                                                                                             \
