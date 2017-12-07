@@ -17058,7 +17058,7 @@ namespace exprtk
       inline bool add_function(const std::string& function_name, ff##NN##_functor function) \
       {                                                                                     \
          if (!valid() || !valid_symbol(function_name) || symbol_exists(function_name))      \
-	   {return false;}                                                                  \
+           {return false;}                                                                  \
                                                                                             \
          exprtk::ifunction<T>* ifunc = new freefunc##NN(function);                          \
                                                                                             \
