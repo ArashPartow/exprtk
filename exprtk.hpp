@@ -2,7 +2,7 @@
  ******************************************************************
  *           C++ Mathematical Expression Toolkit Library          *
  *                                                                *
- * Author: Arash Partow (1999-2017)                               *
+ * Author: Arash Partow (1999-2018)                               *
  * URL: http://www.partow.net/programming/exprtk/index.html       *
  *                                                                *
  * Copyright notice:                                              *
@@ -38252,9 +38252,9 @@ namespace exprtk
    namespace information
    {
       static const char* library = "Mathematical Expression Toolkit";
-      static const char* version = "2.7182818284590452353602874713526624977572470936"
-                                   "999595749669676277240766303535475945713821785251";
-      static const char* date    = "20170505";
+      static const char* version = "2.71828182845904523536028747135266249775724709369"
+                                   "9959574966967627724076630353547594571382178525166";
+      static const char* date    = "20180101";
 
       static inline std::string data()
       {
