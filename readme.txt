@@ -3710,7 +3710,7 @@ follows:
 
    if (exprtk::collect_variables(expression, variable_list))
    {
-      for (auto var : variable_list)
+      for (const auto& var : variable_list)
       {
          ...
       }
@@ -3734,7 +3734,7 @@ follows:
 
    if (exprtk::collect_functions(expression, function_list))
    {
-      for (auto func : function_list)
+      for (const auto& func : function_list)
       {
          ...
       }
@@ -3779,7 +3779,7 @@ expression string are passed to the exprtk::collect_functions routine.
 
    if (exprtk::collect_functions(expression, sym_tab, function_list))
    {
-      for (auto func : function_list)
+      for (const auto& func : function_list)
       {
          ...
       }
@@ -3910,7 +3910,7 @@ function is as follows:
    // Differentiate expression at value of x = 12.3 using a reference
    // to the x variable
    x = T(12.3);
-   T derivative1 = exprtk::derivative(expression,x);
+   T derivative1 = exprtk::derivative(expression, x);
 
    // Differentiate expression where value x = 45.6 using name
    // of the x variable
@@ -3988,7 +3988,7 @@ is as follows:
    // Third derivative of expression where value of x = 12.3 using a
    // reference to the x variable
    x = T(12.3);
-   T derivative1 = exprtk::third_derivative(expression,x);
+   T derivative1 = exprtk::third_derivative(expression, x);
 
    // Third derivative of expression where value of x = 45.6 using
    // name of the x variable
