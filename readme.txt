@@ -1537,7 +1537,7 @@ zero. The following are examples of variable definitions:
        var y := 3;
 
    (c) Initialise z to the expression
-       var z := if (max(1,x + y) > 2,w,v);
+       var z := if (max(1, x + y) > 2, w, v);
 
 
 (2) Vector Definition
@@ -1552,7 +1552,7 @@ zero. The following are examples of vector definitions:
        var x[3] := {};
 
    (c) Initialise all values to given expression
-       var x[3] := [123 + 3y + sin(w/z)];
+       var x[3] := [123 + 3y + sin(w / z)];
 
    (d) Initialise the first two values, all other elements to zero
        var x[3] := { 1 + x[2], sin(y[0] / x[]) + 3 };
