@@ -2355,11 +2355,11 @@ default be assumed to have side-effects and hence will not participate
 in constant folding optimisations.
 
 In the following  example, a two  input parameter free  function named
-'compute', and a three input parameter lambda will be registered  with
-the given symbol_table instance:
+'compute1', and a three  input parameter lambda named  'compute2' will
+be registered with the given symbol_table instance:
 
 
-   double compute(double v0, double v1)
+   double compute1(double v0, double v1)
    {
       return 2.0 * v0 + v1 / 3.0;
    }
@@ -2372,12 +2372,12 @@ the given symbol_table instance:
 
    symbol_table_t symbol_table;
 
-   symbol_table.add_function("compute", compute);
+   symbol_table.add_function("compute1", compute1);
 
-   symbol_table.add_function("lambda",
-                             [](double v0, double v1, double v2) -> double
-                             { return v0 / v1 + v2; });
-
+   symbol_table.add_function(
+      "compute2",
+      [](double v0, double v1, double v2) -> double
+      { return v0 / v1 + v2; });
 
      ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
