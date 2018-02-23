@@ -23048,8 +23048,8 @@ namespace exprtk
                set_error(
                   make_error(parser_error::e_syntax,
                              current_token(),
-                             "ERR108 - Index of " + details::to_str(index) + " out of range for "
-                             "vector '" + symbol + "' of size " + details::to_str(vec_size),
+                             "ERR108 - Index of " + std::to_str(index) + " out of range for "
+                             "vector '" + symbol + "' of size " + std::to_str(vec_size),
                              exprtk_error_location));
 
                free_node(node_allocator_,index_expr);
