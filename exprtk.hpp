@@ -16408,31 +16408,31 @@ namespace exprtk
          {
             struct tie
             {
-               static inline std::pair<bool,variable_node_t*> make(T& t,const bool is_const = false)
+               static inline std::pair<bool,variable_node_t*> make(T& t2,const bool is_const2 = false)
                {
-                  return std::make_pair(is_const, new variable_node_t(t));
+                  return std::make_pair(is_const2, new variable_node_t(t2));
                }
 
                #ifndef exprtk_disable_string_capabilities
-               static inline std::pair<bool,stringvar_node_t*> make(std::string& t,const bool is_const = false)
+               static inline std::pair<bool,stringvar_node_t*> make(std::string& t2,const bool is_const2 = false)
                {
-                  return std::make_pair(is_const, new stringvar_node_t(t));
+                  return std::make_pair(is_const2, new stringvar_node_t(t2));
                }
                #endif
 
-               static inline std::pair<bool,function_t*> make(function_t& t, const bool is_constant = false)
+               static inline std::pair<bool,function_t*> make(function_t& t2, const bool is_constant = false)
                {
-                  return std::make_pair(is_constant,&t);
+                  return std::make_pair(is_constant,&t2);
                }
 
-               static inline std::pair<bool,vararg_function_t*> make(vararg_function_t& t, const bool is_const = false)
+               static inline std::pair<bool,vararg_function_t*> make(vararg_function_t& t2, const bool is_const2 = false)
                {
-                  return std::make_pair(is_const,&t);
+                  return std::make_pair(is_const2,&t2);
                }
 
-               static inline std::pair<bool,generic_function_t*> make(generic_function_t& t, const bool is_constant = false)
+               static inline std::pair<bool,generic_function_t*> make(generic_function_t& t2, const bool is_constant = false)
                {
-                  return std::make_pair(is_constant,&t);
+                  return std::make_pair(is_constant,&t2);
                }
             };
 
@@ -23277,16 +23277,16 @@ namespace exprtk
             struct token_validator
             {
                static inline bool process(const std::string& str,
-                                          std::size_t s, std::size_t e,
+                                          std::size_t s2, std::size_t e,
                                           param_seq_list_t& psl)
                {
                   if (
-                       (e - s) &&
+                       (e - s2) &&
                        (std::string::npos == str.find("?*")) &&
                        (std::string::npos == str.find("**"))
                      )
                   {
-                     const std::string curr_str = str.substr(s, e - s);
+                     const std::string curr_str = str.substr(s2, e - s2);
 
                      if ("Z" == curr_str)
                      {
@@ -36296,7 +36296,7 @@ namespace exprtk
 
       struct execute
       {
-         static inline T process(T& x, T& y, expression<T>& expression)
+         static inline T process(T& x2, T& y2, expression<T>& expression)
          {
             static const T lower_bound = T(-20);
             static const T upper_bound = T(+20);
@@ -36304,9 +36304,9 @@ namespace exprtk
             T delta = T(0.1);
             T total = T(0);
 
-            for (x = lower_bound; x <= upper_bound; x += delta)
+            for (x2 = lower_bound; x2 <= upper_bound; x2 += delta)
             {
-               for (y = lower_bound; y <= upper_bound; y += delta)
+               for (y2 = lower_bound; y2 <= upper_bound; y2 += delta)
                {
                   total += expression.value();
                }
