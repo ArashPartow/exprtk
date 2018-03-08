@@ -2780,7 +2780,7 @@ namespace exprtk
                         Note: The following 'awkward' conditional is
                               due to various broken msvc compilers.
                      */
-                     #if _MSC_VER == 1600
+                     #if defined(_MSC_VER) && (_MSC_VER == 1600)
                      const bool within_range = !is_end(s_itr_ + 2) &&
                                                !is_end(s_itr_ + 3) ;
                      #else
