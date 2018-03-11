@@ -45,22 +45,23 @@ void newton_sqrt()
       .add(
       function_t( // define function: newton_sqrt(x)
            "newton_sqrt",
-           " switch                                              "
-           " {                                                   "
-           "   case x < 0  : -inf;                               "
-           "   case x == 0 : 0;                                  "
-           "   case x == 1 : 1;                                  "
-           "   default:                                          "
-           "   ~{                                                "
-           "      var z := 100;                                  "
-           "      var sqrt_x := x / 2;                           "
-           "      repeat                                         "
-           "        sqrt_x := (1 / 2) * (sqrt_x + (x / sqrt_x)); "
-           "        if (equal(sqrt_x^2, x))                      "
-           "          break[sqrt_x];                             "
-           "      until ((z -= 1) <= 0);                         "
-           "    };                                               "
-           " }                                                   ",
+           " switch                                                "
+           " {                                                     "
+           "   case x < 0  : null;                                 "
+           "   case x == 0 : 0;                                    "
+           "   case x == 1 : 1;                                    "
+           "   default:                                            "
+           "   ~{                                                  "
+           "      var z := 100;                                    "
+           "      var sqrt_x := x / 2;                             "
+           "      repeat                                           "
+           "        if (equal(sqrt_x^2, x))                        "
+           "          break[sqrt_x];                               "
+           "        else                                           "
+           "          sqrt_x := (1 / 2) * (sqrt_x + (x / sqrt_x)); "
+           "      until ((z -= 1) <= 0);                           "
+           "    };                                                 "
+           " }                                                     ",
            "x"));
 
    std::string expression_str = "newton_sqrt(x)";
@@ -77,7 +78,7 @@ void newton_sqrt()
 
       T result = expression.value();
 
-      printf("sqrt(%03d) - Result: %12.10f\tReal: %12.10f\n",
+      printf("sqrt(%03d) - Result: %15.13f\tReal: %15.13f\n",
              static_cast<unsigned int>(i),
              result,
              std::sqrt(x));
