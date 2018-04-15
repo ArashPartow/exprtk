@@ -28,7 +28,7 @@ void composite()
    typedef exprtk::symbol_table<T>      symbol_table_t;
    typedef exprtk::expression<T>          expression_t;
    typedef exprtk::parser<T>                  parser_t;
-   typedef exprtk::parser_error::type          error_t;
+   typedef exprtk::parser_error::type            err_t;
    typedef exprtk::function_compositor<T> compositor_t;
    typedef typename compositor_t::function  function_t;
 
@@ -65,7 +65,7 @@ void composite()
 
       for (std::size_t i = 0; i < parser.error_count(); ++i)
       {
-         error_t error = parser.get_error(i);
+         err_t error = parser.get_error(i);
 
          printf("Error: %02d  Position: %02d Type: [%14s] Msg: %s\tExpression: %s\n",
                 static_cast<unsigned int>(i),
