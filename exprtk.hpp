@@ -17722,6 +17722,13 @@ namespace exprtk
          control_block_->ref_count++;
       }
 
+      expression(const symbol_table<T>& symbol_table)
+      : control_block_(0)
+      {
+         set_expression(new details::null_node<T>());
+         symbol_table_list_.push_back(symbol_table);
+      }
+
       inline expression<T>& operator=(const expression<T>& e)
       {
          if (this != &e)
