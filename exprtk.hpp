@@ -8122,12 +8122,12 @@ namespace exprtk
                if (0 == str0_base_ptr_)
                   return;
 
-               irange_ptr range_ptr = dynamic_cast<irange_ptr>(binary_node<T>::branch_[0].first);
+               irange_ptr range = dynamic_cast<irange_ptr>(binary_node<T>::branch_[0].first);
 
-               if (0 == range_ptr)
+               if (0 == range)
                   return;
 
-               str0_range_ptr_ = &(range_ptr->range_ref());
+               str0_range_ptr_ = &(range->range_ref());
             }
 
             if (is_generally_string_node(binary_node<T>::branch_[1].first))
@@ -8137,12 +8137,12 @@ namespace exprtk
                if (0 == str1_base_ptr_)
                   return;
 
-               irange_ptr range_ptr = dynamic_cast<irange_ptr>(binary_node<T>::branch_[1].first);
+               irange_ptr range = dynamic_cast<irange_ptr>(binary_node<T>::branch_[1].first);
 
-               if (0 == range_ptr)
+               if (0 == range)
                   return;
 
-               str1_range_ptr_ = &(range_ptr->range_ref());
+               str1_range_ptr_ = &(range->range_ref());
             }
 
             initialised_ = str0_base_ptr_  &&
@@ -8387,12 +8387,12 @@ namespace exprtk
                if (0 == str1_base_ptr_)
                   return;
 
-               irange_ptr range_ptr = dynamic_cast<irange_ptr>(binary_node<T>::branch_[1].first);
+               irange_ptr range = dynamic_cast<irange_ptr>(binary_node<T>::branch_[1].first);
 
-               if (0 == range_ptr)
+               if (0 == range)
                   return;
 
-               str1_range_ptr_ = &(range_ptr->range_ref());
+               str1_range_ptr_ = &(range->range_ref());
             }
 
             initialised_ = str0_base_ptr_  &&
@@ -8496,12 +8496,12 @@ namespace exprtk
 
                str0_base_ptr_ = dynamic_cast<str_base_ptr>(binary_node<T>::branch_[0].first);
 
-               irange_ptr range_ptr = dynamic_cast<irange_ptr>(binary_node<T>::branch_[0].first);
+               irange_ptr range = dynamic_cast<irange_ptr>(binary_node<T>::branch_[0].first);
 
-               if (0 == range_ptr)
+               if (0 == range)
                   return;
 
-               str0_range_ptr_ = &(range_ptr->range_ref());
+               str0_range_ptr_ = &(range->range_ref());
             }
 
             if (is_generally_string_node(binary_node<T>::branch_[1].first))
@@ -8511,12 +8511,12 @@ namespace exprtk
                if (0 == str1_base_ptr_)
                   return;
 
-               irange_ptr range_ptr = dynamic_cast<irange_ptr>(binary_node<T>::branch_[1].first);
+               irange_ptr range = dynamic_cast<irange_ptr>(binary_node<T>::branch_[1].first);
 
-               if (0 == range_ptr)
+               if (0 == range)
                   return;
 
-               str1_range_ptr_ = &(range_ptr->range_ref());
+               str1_range_ptr_ = &(range->range_ref());
             }
 
             initialised_ = str0_base_ptr_  &&
@@ -15018,12 +15018,12 @@ namespace exprtk
                if (0 == str0_base_ptr_)
                   return;
 
-               irange_ptr range_ptr = dynamic_cast<irange_ptr>(binary_node<T>::branch_[0].first);
+               irange_ptr range = dynamic_cast<irange_ptr>(binary_node<T>::branch_[0].first);
 
-               if (0 == range_ptr)
+               if (0 == range)
                   return;
 
-               str0_range_ptr_ = &(range_ptr->range_ref());
+               str0_range_ptr_ = &(range->range_ref());
             }
 
             if (is_generally_string_node(binary_node<T>::branch_[1].first))
@@ -15033,12 +15033,12 @@ namespace exprtk
                if (0 == str1_base_ptr_)
                   return;
 
-               irange_ptr range_ptr = dynamic_cast<irange_ptr>(binary_node<T>::branch_[1].first);
+               irange_ptr range = dynamic_cast<irange_ptr>(binary_node<T>::branch_[1].first);
 
-               if (0 == range_ptr)
+               if (0 == range)
                   return;
 
-               str1_range_ptr_ = &(range_ptr->range_ref());
+               str1_range_ptr_ = &(range->range_ref());
             }
          }
 
