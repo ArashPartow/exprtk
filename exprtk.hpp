@@ -17337,8 +17337,8 @@ namespace exprtk
       {
          /*
             Function will return true if symbol_name exists as either a
-            reserved symbol, variable, stringvar or function name in any
-            of the type stores.
+            reserved symbol, variable, stringvar, vector or function name in
+            any of the type stores.
          */
          if (!valid())
             return false;
@@ -17348,6 +17348,8 @@ namespace exprtk
          else if (local_data().stringvar_store.symbol_exists(symbol_name))
             return true;
          #endif
+         else if (local_data().vector_store.symbol_exists(symbol_name))
+            return true;
          else if (local_data().function_store.symbol_exists(symbol_name))
             return true;
          else if (check_reserved_symb && local_data().is_reserved_symbol(symbol_name))
