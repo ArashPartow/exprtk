@@ -827,6 +827,12 @@ namespace exprtk
             }
 
             template <typename T>
+            inline int to_int32_impl(const T v, int_type_tag)
+            {
+               return static_cast<int>(v);
+            }
+
+            template <typename T>
             inline long long int to_int64_impl(const T v, real_type_tag)
             {
                return static_cast<long long int>(v);
@@ -894,7 +900,7 @@ namespace exprtk
             template <typename T>
             inline T expm1_impl(const T v, int_type_tag)
             {
-               return T(std::exp<double>(v)) - T(1);
+              return T(std::exp(v)) - T(1);
             }
 
             template <typename T>
@@ -1337,6 +1343,10 @@ namespace exprtk
             template <typename T> inline T   cot_impl(const T  , int_type_tag) { return std::numeric_limits<T>::quiet_NaN(); }
             template <typename T> inline T   sec_impl(const T  , int_type_tag) { return std::numeric_limits<T>::quiet_NaN(); }
             template <typename T> inline T   csc_impl(const T  , int_type_tag) { return std::numeric_limits<T>::quiet_NaN(); }
+            template <typename T> inline T   r2d_impl(const T v, int_type_tag) { return std::numeric_limits<T>::quiet_NaN(); }
+            template <typename T> inline T   d2r_impl(const T v, int_type_tag) { return std::numeric_limits<T>::quiet_NaN(); }
+            template <typename T> inline T   d2g_impl(const T v, int_type_tag) { return std::numeric_limits<T>::quiet_NaN(); }
+            template <typename T> inline T   g2d_impl(const T v, int_type_tag) { return std::numeric_limits<T>::quiet_NaN(); }
 
             template <typename T>
             inline bool is_integer_impl(const T& v, real_type_tag)
@@ -4990,6 +5000,11 @@ namespace exprtk
       inline bool is_true(const double v)
       {
          return std::not_equal_to<double>()(0.0,v);
+      }
+
+      inline bool is_true(const int v)
+      {
+         return std::not_equal_to<int>()(0,v);
       }
 
       inline bool is_true(const long double v)
