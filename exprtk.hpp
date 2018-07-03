@@ -20496,6 +20496,8 @@ namespace exprtk
                case token_t::e_gt     : current_state.set(e_level05,e_level06,details::    e_gt); break;
                case token_t::e_add    : current_state.set(e_level07,e_level08,details::   e_add); break;
                case token_t::e_sub    : current_state.set(e_level07,e_level08,details::   e_sub); break;
+               case token_t::e_shl    : current_state.set(e_level07,e_level08,details::   e_shl); break;
+               case token_t::e_shr    : current_state.set(e_level07,e_level08,details::   e_shr); break;
                case token_t::e_div    : current_state.set(e_level10,e_level11,details::   e_div); break;
                case token_t::e_mul    : current_state.set(e_level10,e_level11,details::   e_mul); break;
                case token_t::e_mod    : current_state.set(e_level10,e_level11,details::   e_mod); break;
@@ -25314,11 +25316,13 @@ namespace exprtk
       {
          expression_node_ptr branch = error_node();
 
-         if (token_t::e_number == current_token().type)
+        const token_t &tk = current_token();
+        const token_t::token_type token = tk.type;
+         if (token_t::e_number == token)
          {
             T numeric_value = T(0);
 
-            if (details::string_to_real(current_token().value, numeric_value))
+            if (details::string_to_real(tk.value, numeric_value))
             {
                expression_node_ptr literal_exp = expression_generator_(numeric_value);
 
@@ -25326,8 +25330,8 @@ namespace exprtk
                {
                   set_error(
                      make_error(parser_error::e_numeric,
-                                current_token(),
-                                "ERR191 - Failed generate node for scalar: '" + current_token().value + "'",
+                                tk,
+                                "ERR191 - Failed generate node for scalar: '" + tk.value + "'",
                                 exprtk_error_location));
 
                   return error_node();
@@ -25340,24 +25344,24 @@ namespace exprtk
             {
                set_error(
                   make_error(parser_error::e_numeric,
-                             current_token(),
-                             "ERR192 - Failed to convert '" + current_token().value + "' to a number",
+                             tk,
+                             "ERR192 - Failed to convert '" + tk.value + "' to a number",
                              exprtk_error_location));
 
                return error_node();
             }
          }
-         else if (token_t::e_symbol == current_token().type)
+         else if (token_t::e_symbol == token)
          {
             branch = parse_symbol();
          }
          #ifndef exprtk_disable_string_capabilities
-         else if (token_t::e_string == current_token().type)
+         else if (token_t::e_string == token)
          {
             branch = parse_const_string();
          }
          #endif
-         else if (token_t::e_lbracket == current_token().type)
+         else if (token_t::e_lbracket == token)
          {
             next_token();
 
@@ -25367,8 +25371,8 @@ namespace exprtk
             {
                set_error(
                   make_error(parser_error::e_syntax,
-                             current_token(),
-                             "ERR193 - Expected ')' instead of: '" + current_token().value + "'",
+                             tk,
+                             "ERR193 - Expected ')' instead of: '" + tk.value + "'",
                              exprtk_error_location));
 
                free_node(node_allocator_,branch);
@@ -25382,7 +25386,7 @@ namespace exprtk
                return error_node();
             }
          }
-         else if (token_t::e_lsqrbracket == current_token().type)
+         else if (token_t::e_lsqrbracket == token)
          {
             next_token();
 
@@ -25392,8 +25396,8 @@ namespace exprtk
             {
                set_error(
                   make_error(parser_error::e_syntax,
-                             current_token(),
-                             "ERR194 - Expected ']' instead of: '" + current_token().value + "'",
+                             tk,
+                             "ERR194 - Expected ']' instead of: '" + tk.value + "'",
                              exprtk_error_location));
 
                free_node(node_allocator_,branch);
@@ -25407,7 +25411,7 @@ namespace exprtk
                return error_node();
             }
          }
-         else if (token_t::e_lcrlbracket == current_token().type)
+         else if (token_t::e_lcrlbracket == token)
          {
             next_token();
 
@@ -25417,8 +25421,8 @@ namespace exprtk
             {
                set_error(
                   make_error(parser_error::e_syntax,
-                             current_token(),
-                             "ERR195 - Expected '}' instead of: '" + current_token().value + "'",
+                             tk,
+                             "ERR195 - Expected '}' instead of: '" + tk.value + "'",
                              exprtk_error_location));
 
                free_node(node_allocator_,branch);
@@ -25432,7 +25436,7 @@ namespace exprtk
                return error_node();
             }
          }
-         else if (token_t::e_sub == current_token().type)
+         else if (token_t::e_sub == token)
          {
             next_token();
             branch = parse_expression(e_level11);
@@ -25448,16 +25452,26 @@ namespace exprtk
                branch = expression_generator_(details::e_neg,branch);
             }
          }
-         else if (token_t::e_add == current_token().type)
+         else if (token_t::e_add == token)
          {
             next_token();
             branch = parse_expression(e_level13);
          }
-         else if (token_t::e_eof == current_token().type)
+         else if (token_t::e_shl == token)
+         {
+            next_token();
+            branch = parse_expression(e_level13);
+         }         
+          else if (token_t::e_shr == token)
+         {
+            next_token();
+            branch = parse_expression(e_level13);
+         }
+         else if (token_t::e_eof == token)
          {
             set_error(
                make_error(parser_error::e_syntax,
-                          current_token(),
+                          tk,
                           "ERR196 - Premature end of expression[1]",
                           exprtk_error_location));
 
@@ -25467,7 +25481,7 @@ namespace exprtk
          {
             set_error(
                make_error(parser_error::e_syntax,
-                          current_token(),
+                          tk,
                           "ERR197 - Premature end of expression[2]",
                           exprtk_error_location));
 
