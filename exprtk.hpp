@@ -821,6 +821,11 @@ namespace exprtk
             }
 
             template <typename T>
+            inline bool is_nan_impl(const T v, int_type_tag) {
+               return std::not_equal_to<T>()(v, v);
+            }
+
+            template <typename T>
             inline int to_int32_impl(const T v, real_type_tag)
             {
                return static_cast<int>(v);
@@ -835,6 +840,11 @@ namespace exprtk
             template <typename T>
             inline long long int to_int64_impl(const T v, real_type_tag)
             {
+               return static_cast<long long int>(v);
+            }
+
+            template <typename T>
+            inline long long int to_int64_impl(const T v, int_type_tag) {
                return static_cast<long long int>(v);
             }
 
@@ -1978,6 +1988,12 @@ namespace exprtk
 
          t = static_cast<T>((negative) ? -d : d);
          return true;
+      }
+
+     template <typename Iterator, typename T>
+      inline bool string_to_real(Iterator& itr_external, const Iterator end, T& t, numeric::details::int_type_tag) {
+         numeric::details::real_type_tag rtt;
+         return string_to_real(itr_external, end, t, rtt);
       }
 
       template <typename T>
@@ -8564,9 +8580,9 @@ namespace exprtk
                {
                   std::size_t size = std::min((s0_r1 - s0_r0),(s1_r1 - s1_r0)) + 1;
 
-                  std::copy(str1_base_ptr_->base() + s1_r0,
-                            str1_base_ptr_->base() + s1_r0 + size,
-                            const_cast<char_ptr>(base() + s0_r0));
+                  std::copy_n(str1_base_ptr_->base() + s1_r0,
+                              size,
+                              std::back_inserter(str0_node_ptr_->ref()));
                }
             }
 
