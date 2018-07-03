@@ -1114,7 +1114,7 @@ namespace exprtk
             template <typename T>
             inline T and_impl(const T v0, const T v1, int_type_tag)
             {
-               return v0 && v1;
+               return v0 & v1;
             }
 
             template <typename T>
@@ -1138,7 +1138,7 @@ namespace exprtk
             template <typename T>
             inline T or_impl(const T v0, const T v1, int_type_tag)
             {
-               return (v0 || v1);
+               return (v0 | v1);
             }
 
             template <typename T>
