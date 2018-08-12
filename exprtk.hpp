@@ -821,7 +821,18 @@ namespace exprtk
             }
 
             template <typename T>
+            inline bool is_nan_impl(const T v, int_type_tag) {
+               return std::not_equal_to<T>()(v, v);
+            }
+
+            template <typename T>
             inline int to_int32_impl(const T v, real_type_tag)
+            {
+               return static_cast<int>(v);
+            }
+
+            template <typename T>
+            inline int to_int32_impl(const T v, int_type_tag)
             {
                return static_cast<int>(v);
             }
@@ -829,6 +840,11 @@ namespace exprtk
             template <typename T>
             inline long long int to_int64_impl(const T v, real_type_tag)
             {
+               return static_cast<long long int>(v);
+            }
+
+            template <typename T>
+            inline long long int to_int64_impl(const T v, int_type_tag) {
                return static_cast<long long int>(v);
             }
 
@@ -894,7 +910,7 @@ namespace exprtk
             template <typename T>
             inline T expm1_impl(const T v, int_type_tag)
             {
-               return T(std::exp<double>(v)) - T(1);
+              return T(std::exp(v)) - T(1);
             }
 
             template <typename T>
@@ -1098,7 +1114,7 @@ namespace exprtk
             template <typename T>
             inline T and_impl(const T v0, const T v1, int_type_tag)
             {
-               return v0 && v1;
+               return v0 & v1;
             }
 
             template <typename T>
@@ -1122,7 +1138,7 @@ namespace exprtk
             template <typename T>
             inline T or_impl(const T v0, const T v1, int_type_tag)
             {
-               return (v0 || v1);
+               return (v0 | v1);
             }
 
             template <typename T>
@@ -1337,6 +1353,10 @@ namespace exprtk
             template <typename T> inline T   cot_impl(const T  , int_type_tag) { return std::numeric_limits<T>::quiet_NaN(); }
             template <typename T> inline T   sec_impl(const T  , int_type_tag) { return std::numeric_limits<T>::quiet_NaN(); }
             template <typename T> inline T   csc_impl(const T  , int_type_tag) { return std::numeric_limits<T>::quiet_NaN(); }
+            template <typename T> inline T   r2d_impl(const T v, int_type_tag) { return std::numeric_limits<T>::quiet_NaN(); }
+            template <typename T> inline T   d2r_impl(const T v, int_type_tag) { return std::numeric_limits<T>::quiet_NaN(); }
+            template <typename T> inline T   d2g_impl(const T v, int_type_tag) { return std::numeric_limits<T>::quiet_NaN(); }
+            template <typename T> inline T   g2d_impl(const T v, int_type_tag) { return std::numeric_limits<T>::quiet_NaN(); }
 
             template <typename T>
             inline bool is_integer_impl(const T& v, real_type_tag)
@@ -1968,6 +1988,12 @@ namespace exprtk
 
          t = static_cast<T>((negative) ? -d : d);
          return true;
+      }
+
+     template <typename Iterator, typename T>
+      inline bool string_to_real(Iterator& itr_external, const Iterator end, T& t, numeric::details::int_type_tag) {
+         numeric::details::real_type_tag rtt;
+         return string_to_real(itr_external, end, t, rtt);
       }
 
       template <typename T>
@@ -4990,6 +5016,11 @@ namespace exprtk
       inline bool is_true(const double v)
       {
          return std::not_equal_to<double>()(0.0,v);
+      }
+
+      inline bool is_true(const int v)
+      {
+         return std::not_equal_to<int>()(0,v);
       }
 
       inline bool is_true(const long double v)
@@ -8549,9 +8580,9 @@ namespace exprtk
                {
                   std::size_t size = std::min((s0_r1 - s0_r0),(s1_r1 - s1_r0)) + 1;
 
-                  std::copy(str1_base_ptr_->base() + s1_r0,
-                            str1_base_ptr_->base() + s1_r0 + size,
-                            const_cast<char_ptr>(base() + s0_r0));
+                  std::copy_n(str1_base_ptr_->base() + s1_r0,
+                              size,
+                              std::back_inserter(str0_node_ptr_->ref()));
                }
             }
 
@@ -20467,6 +20498,8 @@ namespace exprtk
                case token_t::e_gt     : current_state.set(e_level05,e_level06,details::    e_gt); break;
                case token_t::e_add    : current_state.set(e_level07,e_level08,details::   e_add); break;
                case token_t::e_sub    : current_state.set(e_level07,e_level08,details::   e_sub); break;
+               case token_t::e_shl    : current_state.set(e_level07,e_level08,details::   e_shl); break;
+               case token_t::e_shr    : current_state.set(e_level07,e_level08,details::   e_shr); break;
                case token_t::e_div    : current_state.set(e_level10,e_level11,details::   e_div); break;
                case token_t::e_mul    : current_state.set(e_level10,e_level11,details::   e_mul); break;
                case token_t::e_mod    : current_state.set(e_level10,e_level11,details::   e_mod); break;
@@ -25283,11 +25316,13 @@ namespace exprtk
       {
          expression_node_ptr branch = error_node();
 
-         if (token_t::e_number == current_token().type)
+        const token_t &tk = current_token();
+        const token_t::token_type token = tk.type;
+         if (token_t::e_number == token)
          {
             T numeric_value = T(0);
 
-            if (details::string_to_real(current_token().value, numeric_value))
+            if (details::string_to_real(tk.value, numeric_value))
             {
                expression_node_ptr literal_exp = expression_generator_(numeric_value);
 
@@ -25295,8 +25330,8 @@ namespace exprtk
                {
                   set_error(
                      make_error(parser_error::e_numeric,
-                                current_token(),
-                                "ERR191 - Failed generate node for scalar: '" + current_token().value + "'",
+                                tk,
+                                "ERR191 - Failed generate node for scalar: '" + tk.value + "'",
                                 exprtk_error_location));
 
                   return error_node();
@@ -25309,24 +25344,24 @@ namespace exprtk
             {
                set_error(
                   make_error(parser_error::e_numeric,
-                             current_token(),
-                             "ERR192 - Failed to convert '" + current_token().value + "' to a number",
+                             tk,
+                             "ERR192 - Failed to convert '" + tk.value + "' to a number",
                              exprtk_error_location));
 
                return error_node();
             }
          }
-         else if (token_t::e_symbol == current_token().type)
+         else if (token_t::e_symbol == token)
          {
             branch = parse_symbol();
          }
          #ifndef exprtk_disable_string_capabilities
-         else if (token_t::e_string == current_token().type)
+         else if (token_t::e_string == token)
          {
             branch = parse_const_string();
          }
          #endif
-         else if (token_t::e_lbracket == current_token().type)
+         else if (token_t::e_lbracket == token)
          {
             next_token();
 
@@ -25336,8 +25371,8 @@ namespace exprtk
             {
                set_error(
                   make_error(parser_error::e_syntax,
-                             current_token(),
-                             "ERR193 - Expected ')' instead of: '" + current_token().value + "'",
+                             tk,
+                             "ERR193 - Expected ')' instead of: '" + tk.value + "'",
                              exprtk_error_location));
 
                free_node(node_allocator_,branch);
@@ -25351,7 +25386,7 @@ namespace exprtk
                return error_node();
             }
          }
-         else if (token_t::e_lsqrbracket == current_token().type)
+         else if (token_t::e_lsqrbracket == token)
          {
             next_token();
 
@@ -25361,8 +25396,8 @@ namespace exprtk
             {
                set_error(
                   make_error(parser_error::e_syntax,
-                             current_token(),
-                             "ERR194 - Expected ']' instead of: '" + current_token().value + "'",
+                             tk,
+                             "ERR194 - Expected ']' instead of: '" + tk.value + "'",
                              exprtk_error_location));
 
                free_node(node_allocator_,branch);
@@ -25376,7 +25411,7 @@ namespace exprtk
                return error_node();
             }
          }
-         else if (token_t::e_lcrlbracket == current_token().type)
+         else if (token_t::e_lcrlbracket == token)
          {
             next_token();
 
@@ -25386,8 +25421,8 @@ namespace exprtk
             {
                set_error(
                   make_error(parser_error::e_syntax,
-                             current_token(),
-                             "ERR195 - Expected '}' instead of: '" + current_token().value + "'",
+                             tk,
+                             "ERR195 - Expected '}' instead of: '" + tk.value + "'",
                              exprtk_error_location));
 
                free_node(node_allocator_,branch);
@@ -25401,7 +25436,7 @@ namespace exprtk
                return error_node();
             }
          }
-         else if (token_t::e_sub == current_token().type)
+         else if (token_t::e_sub == token)
          {
             next_token();
             branch = parse_expression(e_level11);
@@ -25417,16 +25452,26 @@ namespace exprtk
                branch = expression_generator_(details::e_neg,branch);
             }
          }
-         else if (token_t::e_add == current_token().type)
+         else if (token_t::e_add == token)
          {
             next_token();
             branch = parse_expression(e_level13);
          }
-         else if (token_t::e_eof == current_token().type)
+         else if (token_t::e_shl == token)
+         {
+            next_token();
+            branch = parse_expression(e_level13);
+         }         
+          else if (token_t::e_shr == token)
+         {
+            next_token();
+            branch = parse_expression(e_level13);
+         }
+         else if (token_t::e_eof == token)
          {
             set_error(
                make_error(parser_error::e_syntax,
-                          current_token(),
+                          tk,
                           "ERR196 - Premature end of expression[1]",
                           exprtk_error_location));
 
@@ -25436,7 +25481,7 @@ namespace exprtk
          {
             set_error(
                make_error(parser_error::e_syntax,
-                          current_token(),
+                          tk,
                           "ERR197 - Premature end of expression[2]",
                           exprtk_error_location));
 
