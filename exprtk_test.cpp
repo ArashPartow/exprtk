@@ -7904,6 +7904,126 @@ inline bool run_test20()
       }
    }
 
+   {
+      T              var;
+      std::string    str;
+      std::vector<T> vec(10,0.0);
+
+      typedef exprtk::symbol_table<T> symbol_table_t;
+
+      bool result = true;
+
+      {
+         symbol_table_t symbol_table;
+
+         symbol_table.add_variable ("val",var);
+         symbol_table.add_stringvar("str",str);
+         symbol_table.add_vector   ("vec",vec);
+
+         if (symbol_table.get_variable("val") == 0 || !symbol_table.symbol_exists("val"))
+         {
+            printf("run_test20() - [3] Failed to get 'val' from symbol_table\n");
+            result = false;
+         }
+
+         if (symbol_table.get_stringvar("str") == 0 || !symbol_table.symbol_exists("str"))
+         {
+            printf("run_test20() - [3] Failed to get 'str' from symbol_table\n");
+            result = false;
+         }
+
+         if (symbol_table.get_vector("vec") == 0 || !symbol_table.symbol_exists("vec"))
+         {
+            printf("run_test20() - [3] Failed to get 'vec' from symbol_table\n");
+            result = false;
+         }
+      }
+
+      if (!result)
+         return result;
+
+      {
+         symbol_table_t symbol_table;
+
+         symbol_table.add_variable("val",var);
+
+         if (symbol_table.get_variable("val") == 0 || !symbol_table.symbol_exists("val"))
+         {
+            printf("run_test20() - [4] Failed to get 'val' from symbol_table\n");
+            result = false;
+         }
+
+         if (symbol_table.get_stringvar("str") != 0 || symbol_table.symbol_exists("str"))
+         {
+            printf("run_test20() - [4] Failed to get 'str' from symbol_table\n");
+            result = false;
+         }
+
+         if (symbol_table.get_vector("vec") != 0 || symbol_table.symbol_exists("vec"))
+         {
+            printf("run_test20() - [4] Failed to get 'vec' from symbol_table\n");
+            result = false;
+         }
+      }
+
+      if (!result)
+         return result;
+
+      {
+         symbol_table_t symbol_table;
+
+         symbol_table.add_stringvar("str",str);
+
+         if (symbol_table.get_stringvar("str") == 0 || !symbol_table.symbol_exists("str"))
+         {
+            printf("run_test20() - [5] Failed to get 'str' from symbol_table\n");
+            result = false;
+         }
+
+         if (symbol_table.get_variable("val") != 0 || symbol_table.symbol_exists("val"))
+         {
+            printf("run_test20() - [5] Failed to get 'val' from symbol_table\n");
+            result = false;
+         }
+
+         if (symbol_table.get_vector("vec") != 0 || symbol_table.symbol_exists("vec"))
+         {
+            printf("run_test20() - [5] Failed to get 'vec' from symbol_table\n");
+            result = false;
+         }
+      }
+
+      if (!result)
+         return result;
+
+      {
+         symbol_table_t symbol_table;
+
+         symbol_table.add_vector("vec",vec);
+
+         if (symbol_table.get_vector("vec") == 0 || !symbol_table.symbol_exists("vec"))
+         {
+            printf("run_test20() - [6] Failed to get 'vec' from symbol_table\n");
+            result = false;
+         }
+
+         if (symbol_table.get_variable("val") != 0 || symbol_table.symbol_exists("val"))
+         {
+            printf("run_test20() - [6] Failed to get 'val' from symbol_table\n");
+            result = false;
+         }
+
+         if (symbol_table.get_stringvar("str") != 0 || symbol_table.symbol_exists("str"))
+         {
+            printf("run_test20() - [6] Failed to get 'str' from symbol_table\n");
+            result = false;
+         }
+      }
+
+      if (!result)
+         return result;
+   }
+
    return true;
 }
 
