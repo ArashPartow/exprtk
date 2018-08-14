@@ -619,7 +619,14 @@ namespace exprtk
                return false;
          }
 
-         return (d_itr == data_end) && (p_itr == pattern_end);
+         if (d_itr != data_end)
+            return false;
+         else if (p_itr == pattern_end)
+            return true;
+         else if ((zero_or_more == *p_itr) || (zero_or_one == *p_itr))
+            ++p_itr;
+
+         return pattern_end == p_itr;
       }
 
       inline bool wc_match(const std::string& wild_card,
