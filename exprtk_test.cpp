@@ -2452,6 +2452,11 @@ inline bool run_test02()
                              test_ab<T>("var x := 'XXXXX'; var y := '01234567890'; var i := 0; x[0:i+3] <=> y[:]; (x == '0123X') and (y == 'XXXX4567890')", "","",T(1.0)),
                              test_ab<T>("var x := 'XXXXX'; var y := '01234567890'; var i := 0; x[0:i+4] <=> y[:]; (x == '01234') and (y == 'XXXXX567890')", "","",T(1.0)),
 
+                             test_ab<T>("var v[4] := {1,2,3,4}; for (var i := 0; i < v[]; i += 1) { v[i] += 10; v[i] == 0 }; sum(v) == (1 + 2 + 3 + 4) + (v[] * 10)", "","",T(1.0)),
+                             test_ab<T>("var v[4] := {1,2,3,4}; for (var i := 0; i < v[]; i += 1) { v[i] -= 10; v[i] == 0 }; sum(v) == (1 + 2 + 3 + 4) - (v[] * 10)", "","",T(1.0)),
+                             test_ab<T>("var v[4] := {1,2,3,4}; for (var i := 0; i < v[]; i += 1) { v[i] *= 10; v[i] == 0 }; sum(v) == (1 + 2 + 3 + 4) * 10", "","",T(1.0)),
+                             test_ab<T>("var v[4] := {1,2,3,4}; for (var i := 0; i < v[]; i += 1) { v[i] /= 10; v[i] == 0 }; sum(v) == (1 + 2 + 3 + 4) / 10", "","",T(1.0)),
+
                              test_ab<T>("a like b", "abcd", "abcd*", T(1.0)),
                              test_ab<T>("a like b", "abcd", "abcd" , T(1.0)),
                              test_ab<T>("a like b", "abcd", "abc*" , T(1.0)),
