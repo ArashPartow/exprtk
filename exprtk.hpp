@@ -20590,8 +20590,8 @@ namespace exprtk
                     details::is_return_node(right_branch)
                   )
                {
-                  free_node(node_allocator_,  expression);
-                  free_node(node_allocator_,right_branch);
+                  free_node(node_allocator_,   expression);
+                  free_node(node_allocator_, right_branch);
 
                   set_error(
                      make_error(parser_error::e_syntax,
@@ -20623,7 +20623,8 @@ namespace exprtk
                                 exprtk_error_location));
                }
 
-               free_node(node_allocator_,expression);
+               free_node(node_allocator_,   expression);
+               free_node(node_allocator_, right_branch);
 
                return error_node();
             }

@@ -2811,7 +2811,16 @@ inline bool run_test03()
                                    "1 v x",
                                    "1 v y",
                                    "x v 1",
-                                   "y v 1"
+                                   "y v 1",
+                                   
+                                   "(x == 'a string'                    )",
+                                   "(x == 'a string'[1:2]               )",
+                                   "(x == 'a string' + 'b string'       )",
+                                   "(x == ('a string' + 'b string')[3:5])",
+                                   "('a string' == x                    )",
+                                   "('a string'[1:2] == x               )",
+                                   "('a string' + 'b string' == x       )",
+                                   "(('a string' + 'b string')[3:5] == x)"
                                  };
 
       const std::size_t invalid_expr_size = sizeof(invalid_expr) / sizeof(std::string);
