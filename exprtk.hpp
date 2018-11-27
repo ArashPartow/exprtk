@@ -16732,7 +16732,7 @@ namespace exprtk
          return (*this);
       }
 
-      inline bool operator==(const symbol_table<T>& st)
+      inline bool operator==(const symbol_table<T>& st) const
       {
          return (this == &st) || (control_block_ == st.control_block_);
       }
