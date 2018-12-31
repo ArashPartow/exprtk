@@ -3,7 +3,7 @@
  *         C++ Mathematical Expression Toolkit Library        *
  *                                                            *
  * Examples and Unit-Tests                                    *
- * Author: Arash Partow (1999-2018)                           *
+ * Author: Arash Partow (1999-2019)                           *
  * URL: http://www.partow.net/programming/exprtk/index.html   *
  *                                                            *
  * Copyright notice:                                          *
@@ -2674,6 +2674,10 @@ inline bool run_test02()
 template <typename T>
 inline bool run_test03()
 {
+   typedef exprtk::symbol_table<T> symbol_table_t;
+   typedef exprtk::expression<T>     expression_t;
+   typedef exprtk::parser<T>             parser_t;
+
    std::string expression_string = "A+A0+aA+Aa0+b+B1+Bb+bB1+A+A0+AA+AA0+B+B1+BB+BB1+a+a0+aa+aa0+b+b1+bb+bb1+"
                                    "c+C2+Cc+Cc2+D+D3+dD+dD3+C+C2+CC+CC2+D+D3+DD+DD3+c+c2+cc+cc2+d+d3+dd+dd3+"
                                    "E+E4+eE+Ee4+f+F5+Ff+fF5+E+E4+EE+EE4+F+F5+FF+FF5+e+e4+ee+ee4+f+f5+ff+ff5+"
@@ -2711,9 +2715,9 @@ inline bool run_test03()
 
    for (std::size_t r = 0; r < rounds; ++r)
    {
-      exprtk::symbol_table<T> symbol_table_0;
-      exprtk::symbol_table<T> symbol_table_1;
-      exprtk::expression<T> expression;
+      symbol_table_t symbol_table_0;
+      symbol_table_t symbol_table_1;
+      expression_t   expression;
 
       std::vector<T> v;
       v.resize(variable_list_size);
@@ -2812,7 +2816,7 @@ inline bool run_test03()
                                    "1 v y",
                                    "x v 1",
                                    "y v 1",
-                                   
+
                                    "(x == 'a string'                    )",
                                    "(x == 'a string'[1:2]               )",
                                    "(x == 'a string' + 'b string'       )",
@@ -2820,7 +2824,22 @@ inline bool run_test03()
                                    "('a string' == x                    )",
                                    "('a string'[1:2] == x               )",
                                    "('a string' + 'b string' == x       )",
-                                   "(('a string' + 'b string')[3:5] == x)"
+                                   "(('a string' + 'b string')[3:5] == x)",
+
+                                   "var a; var b; 3in(a)+sin(b)               ",
+                                   "var a; var b; sin(a)+3in(b)               ",
+                                   "var a; var b; sqrt(a)<3in(8)              ",
+                                   "var a; var b; (1.99-3in((b-b)))           ",
+                                   "var a; var b; ((3in(sin((b+b)))/1.06)-a)  ",
+                                   "var a; var b; ((sin(3in((b+b)))/1.06)-a)  ",
+                                   "var a; var b; (3in(x*(y+z))+cos(x*(y-z))) ",
+                                   "var a; var b; (cos(x*(y+z))+3in(x*(y-z))) ",
+
+                                   "1++++",
+                                   "1+-+-+",
+                                   "1===",
+                                   "1====",
+                                   "[*][*][*][*][*]"
                                  };
 
       const std::size_t invalid_expr_size = sizeof(invalid_expr) / sizeof(std::string);
@@ -2828,9 +2847,9 @@ inline bool run_test03()
       {
          for (std::size_t i = 0; i < invalid_expr_size; ++i)
          {
-            exprtk::symbol_table<T> symbol_table;
-
-            exprtk::expression<T> expression;
+            symbol_table_t symbol_table;
+            expression_t   expression;
+            parser_t       parser;
 
             T x = T(0);
             std::string s;
@@ -2839,8 +2858,6 @@ inline bool run_test03()
             symbol_table.add_variable ("x",x);
             symbol_table.add_stringvar("s",s);
             symbol_table.add_vector   ("v",v);
-
-            exprtk::parser<T> parser;
 
             if (parser.compile(invalid_expr[i],expression))
             {
@@ -2857,13 +2874,12 @@ inline bool run_test03()
          std::string s;
          std::vector<T> v(10, T(1.234));
 
-         exprtk::symbol_table<T> symbol_table;
+         symbol_table_t symbol_table;
+         parser_t parser;
 
          symbol_table.add_variable ("x",x);
          symbol_table.add_stringvar("s",s);
          symbol_table.add_vector   ("v",v);
-
-         exprtk::parser<T> parser;
 
          for (std::size_t i = 0; i < invalid_expr_size; ++i)
          {
@@ -2877,6 +2893,64 @@ inline bool run_test03()
                return false;
             }
          }
+      }
+
+      {
+         const std::string base_expression =
+                              "1+(2+2(3+3(4+4cos(((((a+((x*(e-tan((cos((((((b/(tan(((1.60*a)-0.34))-0.76))-x)+y)-3.27)+a))/pi))))^a))+y)*b)-e))+e)/z)+w)+"
+                              "(((b+(a/((((tan((b*((((((a-(cos((cos(tan(((a+a)*3.33)))-b))/2.52))*x)/b)+3.07)^0.86)+b)))*3.95)/0.39)*y)+a)))*a)*z)";
+
+         const std::string mod =
+                              "abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789^+-/*,;:<>=%?[]{}() #&'\"\\\t\r\n";
+
+         symbol_table_t symbol_table;
+         expression_t   expression;
+         parser_t       parser;
+
+         T a = T(1.1     );
+         T b = T(2.2     );
+         T c = T(3.3     );
+         T d = T(4.5     );
+         T e = T(4.5     );
+         T x = T(2.123456);
+         T y = T(3.123456);
+         T z = T(4.123456);
+         T w = T(5.123456);
+
+         symbol_table.add_variable("a", a);
+         symbol_table.add_variable("b", b);
+         symbol_table.add_variable("c", c);
+         symbol_table.add_variable("d", d);
+         symbol_table.add_variable("e", e);
+
+         symbol_table.add_variable("x", x);
+         symbol_table.add_variable("y", y);
+         symbol_table.add_variable("z", z);
+         symbol_table.add_variable("w", w);
+
+         expression.register_symbol_table(symbol_table);
+
+         T total = T(0);
+
+         for (std::size_t j = 0; j < base_expression.size(); ++j)
+         {
+            std::string expression_str = base_expression;
+            const char old_c = base_expression[j];
+
+            for (std::size_t i = 0; i < mod.size(); ++i)
+            {
+               expression_str[j] = mod[i];
+
+               if (parser.compile(expression_str, expression))
+               {
+                  total += expression.value();
+               }
+            }
+
+            expression_str[j] = old_c;
+         }
+
+         if (total == T(12345.6789)) { printf(" "); }
       }
    }
 

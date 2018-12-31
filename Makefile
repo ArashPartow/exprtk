@@ -2,7 +2,7 @@
 # **************************************************************
 # *         C++ Mathematical Expression Toolkit Library        *
 # *                                                            *
-# * Author: Arash Partow (1999-2018)                           *
+# * Author: Arash Partow (1999-2019)                           *
 # * URL: http://www.partow.net/programming/exprtk/index.html   *
 # *                                                            *
 # * Copyright notice:                                          *
@@ -16,7 +16,7 @@
 
 
 COMPILER         := -c++
-#COMPILER        := -clang
+#COMPILER        := -clang++
 OPTIMIZATION_OPT := -O1
 BASE_OPTIONS     := -pedantic-errors -Wall -Wextra -Werror -Wno-long-long
 OPTIONS          := $(BASE_OPTIONS) $(OPTIMIZATION_OPT)
