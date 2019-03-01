@@ -20262,7 +20262,7 @@ namespace exprtk
          return settings_;
       }
 
-      inline parser_error::type get_error(const std::size_t& index)
+      inline parser_error::type get_error(const std::size_t& index) const
       {
          if (index < error_list_.size())
             return error_list_[index];
