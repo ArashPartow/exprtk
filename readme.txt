@@ -2893,7 +2893,7 @@ after which the expression itself can be evaluated.
 
    for (auto& var_name : variable_list)
    {
-      T& v = symbol_table.variable_ref(var_name);
+      T& v = unknown_var_symbol_table.variable_ref(var_name);
 
       v = ...;
    }
