@@ -2839,7 +2839,14 @@ inline bool run_test03()
                                    "1+-+-+",
                                    "1===",
                                    "1====",
-                                   "[*][*][*][*][*]"
+                                   "[*][*][*][*][*]",
+
+                                   "var v[1] := {}; var s0appe0 := false; repeat s0appe0 false for(){(){}}",
+                                   "var v[2] := {}; repeat var s0appe0 := false; s0appe0 false for(){(){}}",
+                                   "var v[3] := {}; repeat var s0appe0 := false; for(){(){}} s0appe0 false",
+                                   "var v[4] := {}; repeat var s0appe0 := false; s0appe0 for(){(){}} false",
+                                   "var v[5] := {}; repeat for(){(){}} var s0appe0 := false; s0appe0 false",
+                                   "var v{};v ;v  60;v 60;v o5"
                                  };
 
       const std::size_t invalid_expr_size = sizeof(invalid_expr) / sizeof(std::string);
