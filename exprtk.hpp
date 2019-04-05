@@ -860,13 +860,13 @@ namespace exprtk
             template <typename T>
             inline T min_impl(const T v0, const T v1, real_type_tag)
             {
-               return std::min<T>(v0,v1);
+               return std::min(v0,v1);
             }
 
             template <typename T>
             inline T max_impl(const T v0, const T v1, real_type_tag)
             {
-               return std::max<T>(v0,v1);
+               return std::max(v0,v1);
             }
 
             template <typename T>
@@ -4900,8 +4900,8 @@ namespace exprtk
                   case e_mod    : return modulus<T>(arg0,arg1);
                   case e_pow    : return pow<T>(arg0,arg1);
                   case e_atan2  : return atan2<T>(arg0,arg1);
-                  case e_min    : return std::min<T>(arg0,arg1);
-                  case e_max    : return std::max<T>(arg0,arg1);
+                  case e_min    : return std::min(arg0,arg1);
+                  case e_max    : return std::max(arg0,arg1);
                   case e_logn   : return logn<T>(arg0,arg1);
                   case e_lt     : return (arg0 <  arg1) ? T(1) : T(0);
                   case e_lte    : return (arg0 <= arg1) ? T(1) : T(0);
@@ -4939,8 +4939,8 @@ namespace exprtk
                   case e_div    : return (arg0 / arg1);
                   case e_mod    : return arg0 % arg1;
                   case e_pow    : return pow<T>(arg0,arg1);
-                  case e_min    : return std::min<T>(arg0,arg1);
-                  case e_max    : return std::max<T>(arg0,arg1);
+                  case e_min    : return std::min(arg0,arg1);
+                  case e_max    : return std::max(arg0,arg1);
                   case e_logn   : return logn<T>(arg0,arg1);
                   case e_lt     : return (arg0 <  arg1) ? T(1) : T(0);
                   case e_lte    : return (arg0 <= arg1) ? T(1) : T(0);
@@ -12550,29 +12550,29 @@ namespace exprtk
          template <typename Sequence>
          static inline T process_2(const Sequence& arg_list)
          {
-            return std::min<T>(value(arg_list[0]),value(arg_list[1]));
+            return std::min(value(arg_list[0]),value(arg_list[1]));
          }
 
          template <typename Sequence>
          static inline T process_3(const Sequence& arg_list)
          {
-            return std::min<T>(std::min<T>(value(arg_list[0]),value(arg_list[1])),value(arg_list[2]));
+            return std::min(std::min(value(arg_list[0]),value(arg_list[1])),value(arg_list[2]));
          }
 
          template <typename Sequence>
          static inline T process_4(const Sequence& arg_list)
          {
-            return std::min<T>(
-                        std::min<T>(value(arg_list[0]),value(arg_list[1])),
-                        std::min<T>(value(arg_list[2]),value(arg_list[3])));
+            return std::min(
+                        std::min(value(arg_list[0]),value(arg_list[1])),
+                        std::min(value(arg_list[2]),value(arg_list[3])));
          }
 
          template <typename Sequence>
          static inline T process_5(const Sequence& arg_list)
          {
-            return std::min<T>(
-                   std::min<T>(std::min<T>(value(arg_list[0]),value(arg_list[1])),
-                               std::min<T>(value(arg_list[2]),value(arg_list[3]))),
+            return std::min(
+                   std::min(std::min(value(arg_list[0]),value(arg_list[1])),
+                               std::min(value(arg_list[2]),value(arg_list[3]))),
                                value(arg_list[4]));
          }
       };
@@ -12621,29 +12621,29 @@ namespace exprtk
          template <typename Sequence>
          static inline T process_2(const Sequence& arg_list)
          {
-            return std::max<T>(value(arg_list[0]),value(arg_list[1]));
+            return std::max(value(arg_list[0]),value(arg_list[1]));
          }
 
          template <typename Sequence>
          static inline T process_3(const Sequence& arg_list)
          {
-            return std::max<T>(std::max<T>(value(arg_list[0]),value(arg_list[1])),value(arg_list[2]));
+            return std::max(std::max(value(arg_list[0]),value(arg_list[1])),value(arg_list[2]));
          }
 
          template <typename Sequence>
          static inline T process_4(const Sequence& arg_list)
          {
-            return std::max<T>(
-                        std::max<T>(value(arg_list[0]),value(arg_list[1])),
-                        std::max<T>(value(arg_list[2]),value(arg_list[3])));
+            return std::max(
+                        std::max(value(arg_list[0]),value(arg_list[1])),
+                        std::max(value(arg_list[2]),value(arg_list[3])));
          }
 
          template <typename Sequence>
          static inline T process_5(const Sequence& arg_list)
          {
-            return std::max<T>(
-                   std::max<T>(std::max<T>(value(arg_list[0]),value(arg_list[1])),
-                               std::max<T>(value(arg_list[2]),value(arg_list[3]))),
+            return std::max(
+                   std::max(std::max(value(arg_list[0]),value(arg_list[1])),
+                               std::max(value(arg_list[2]),value(arg_list[3]))),
                                value(arg_list[4]));
          }
       };
