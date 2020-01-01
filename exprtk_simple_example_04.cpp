@@ -3,7 +3,7 @@
  *         C++ Mathematical Expression Toolkit Library        *
  *                                                            *
  * Simple Example 4                                           *
- * Author: Arash Partow (1999-2018)                           *
+ * Author: Arash Partow (1999-2020)                           *
  * URL: http://www.partow.net/programming/exprtk/index.html   *
  *                                                            *
  * Copyright notice:                                          *
@@ -18,6 +18,7 @@
 
 #include <cstdio>
 #include <string>
+
 #include "exprtk.hpp"
 
 
@@ -72,7 +73,7 @@ void fibonacci()
    {
       x = static_cast<T>(i);
 
-      T result = expression.value();
+      const T result = expression.value();
 
       printf("fibonacci(%3d) = %10.0f\n",
              static_cast<int>(i),

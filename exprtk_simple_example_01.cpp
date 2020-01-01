@@ -3,7 +3,7 @@
  *         C++ Mathematical Expression Toolkit Library        *
  *                                                            *
  * Simple Example 1                                           *
- * Author: Arash Partow (1999-2018)                           *
+ * Author: Arash Partow (1999-2020)                           *
  * URL: http://www.partow.net/programming/exprtk/index.html   *
  *                                                            *
  * Copyright notice:                                          *
@@ -18,6 +18,7 @@
 
 #include <cstdio>
 #include <string>
+
 #include "exprtk.hpp"
 
 
@@ -28,7 +29,8 @@ void trig_function()
    typedef exprtk::expression<T>     expression_t;
    typedef exprtk::parser<T>             parser_t;
 
-   std::string expression_string = "clamp(-1.0,sin(2 * pi * x) + cos(x / 2 * pi),+1.0)";
+   const std::string expression_string =
+                     "clamp(-1.0,sin(2 * pi * x) + cos(x / 2 * pi),+1.0)";
 
    T x;
 
@@ -44,8 +46,8 @@ void trig_function()
 
    for (x = T(-5); x <= T(+5); x += T(0.001))
    {
-      T y = expression.value();
-      printf("%19.15f\t%19.15f\n",x,y);
+      const T y = expression.value();
+      printf("%19.15f\t%19.15f\n", x, y);
    }
 }
 

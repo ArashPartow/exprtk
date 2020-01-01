@@ -3,7 +3,7 @@
  *         C++ Mathematical Expression Toolkit Library        *
  *                                                            *
  * Simple Example 16                                          *
- * Author: Arash Partow (1999-2018)                           *
+ * Author: Arash Partow (1999-2020)                           *
  * URL: http://www.partow.net/programming/exprtk/index.html   *
  *                                                            *
  * Copyright notice:                                          *
@@ -19,6 +19,7 @@
 #include <cstdio>
 #include <cstdlib>
 #include <string>
+
 #include "exprtk.hpp"
 
 
@@ -29,7 +30,7 @@ void linear_least_squares()
    typedef exprtk::expression<T>     expression_t;
    typedef exprtk::parser<T>             parser_t;
 
-   std::string linear_least_squares_program =
+   const std::string linear_least_squares_program =
                   " if (x[] == y[])                                       "
                   " {                                                     "
                   "   beta  := (sum(x * y) - sum(x) * sum(y) / x[]) /     "
