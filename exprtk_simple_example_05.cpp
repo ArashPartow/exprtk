@@ -3,7 +3,7 @@
  *         C++ Mathematical Expression Toolkit Library        *
  *                                                            *
  * Simple Example 5                                           *
- * Author: Arash Partow (1999-2018)                           *
+ * Author: Arash Partow (1999-2020)                           *
  * URL: http://www.partow.net/programming/exprtk/index.html   *
  *                                                            *
  * Copyright notice:                                          *
@@ -18,6 +18,7 @@
 
 #include <cstdio>
 #include <string>
+
 #include "exprtk.hpp"
 
 
@@ -49,7 +50,7 @@ void custom_function()
    typedef exprtk::expression<T>     expression_t;
    typedef exprtk::parser<T>             parser_t;
 
-   std::string expression_string =
+   const std::string expression_string =
                   "myfunc(sin(x / pi), otherfunc(3 * y, x / 2, x * y))";
 
    T x = T(1);
@@ -69,7 +70,7 @@ void custom_function()
    parser_t parser;
    parser.compile(expression_string,expression);
 
-   T result = expression.value();
+   const T result = expression.value();
    printf("Result: %10.5f\n",result);
 }
 

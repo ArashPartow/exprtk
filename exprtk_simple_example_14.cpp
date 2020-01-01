@@ -3,7 +3,7 @@
  *         C++ Mathematical Expression Toolkit Library        *
  *                                                            *
  * Simple Example 14                                          *
- * Author: Arash Partow (1999-2018)                           *
+ * Author: Arash Partow (1999-2020)                           *
  * URL: http://www.partow.net/programming/exprtk/index.html   *
  *                                                            *
  * Copyright notice:                                          *
@@ -18,6 +18,7 @@
 
 #include <cstdio>
 #include <string>
+
 #include "exprtk.hpp"
 
 
@@ -27,7 +28,7 @@ void stddev_example()
    typedef exprtk::expression<T> expression_t;
    typedef exprtk::parser<T>         parser_t;
 
-   std::string stddev_program =
+   const std::string stddev_program =
                   " var x[25] := {                     "
                   "                 1,  2,  3,  4,  5, "
                   "                 6,  7,  8,  9, 10, "
@@ -43,7 +44,7 @@ void stddev_example()
    parser_t parser;
    parser.compile(stddev_program,expression);
 
-   T stddev = expression.value();
+   const T stddev = expression.value();
 
    printf("stddev(1..25) = %10.6f\n",stddev);
 }

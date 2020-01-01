@@ -1,12 +1,22 @@
+dist: xenial
+
 language: cpp
 
 sudo: required
 
-dist: trusty
+addons:
+  apt:
+    sources:
+      - ubuntu-toolchain-r-test
+    packages:
+      - gcc-7
+      - g++-7
 
-compiler:
-  - gcc
+before_install:
+  - sudo add-apt-repository -y ppa:edd/misc
 
 script:
-  - make clean all
+  - export CC=gcc-7
+  - export CXX=g++-7
+  - make clean all -j 2
   - ./exprtk_test
