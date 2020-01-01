@@ -3,7 +3,7 @@
  *         C++ Mathematical Expression Toolkit Library        *
  *                                                            *
  * Simple Example 11                                          *
- * Author: Arash Partow (1999-2018)                           *
+ * Author: Arash Partow (1999-2020)                           *
  * URL: http://www.partow.net/programming/exprtk/index.html   *
  *                                                            *
  * Copyright notice:                                          *
@@ -18,6 +18,7 @@
 
 #include <cstdio>
 #include <string>
+
 #include "exprtk.hpp"
 
 
@@ -28,7 +29,7 @@ void square_wave2()
    typedef exprtk::expression<T>     expression_t;
    typedef exprtk::parser<T>             parser_t;
 
-   std::string wave_program =
+   const std::string wave_program =
                   " var r := 0;                                         "
                   " for (var i := 0; i < 1000; i += 1)                  "
                   " {                                                   "
@@ -58,8 +59,8 @@ void square_wave2()
 
    for (t = (T(-2) * pi); t <= (T(+2) * pi); t += delta)
    {
-      T result = expression.value();
-      printf("%19.15f\t%19.15f\n",t,result);
+      const T result = expression.value();
+      printf("%19.15f\t%19.15f\n", t, result);
    }
 }
 

@@ -3,7 +3,7 @@
  *         C++ Mathematical Expression Toolkit Library        *
  *                                                            *
  * Simple Example 15                                          *
- * Author: Arash Partow (1999-2018)                           *
+ * Author: Arash Partow (1999-2020)                           *
  * URL: http://www.partow.net/programming/exprtk/index.html   *
  *                                                            *
  * Copyright notice:                                          *
@@ -18,6 +18,7 @@
 
 #include <cstdio>
 #include <string>
+
 #include "exprtk.hpp"
 
 
@@ -28,7 +29,7 @@ void black_scholes_merton_model()
    typedef exprtk::expression<T>     expression_t;
    typedef exprtk::parser<T>             parser_t;
 
-   std::string bsm_model_program =
+   const std::string bsm_model_program =
                   " var d1 := (log(s / x) + (r + v^2 / 2) * t) / (v * sqrt(t)); "
                   " var d2 := d1 - v * sqrt(t);                                 "
                   "                                                             "
@@ -70,7 +71,7 @@ void black_scholes_merton_model()
 
       printf("BSM(%s,%5.3f,%5.3f,%5.3f,%5.3f,%5.3f) = %10.6f\n",
              callput_flag.c_str(),
-             s,x,t,r,v,
+             s, x, t, r, v,
              bsm);
    }
 
@@ -81,7 +82,7 @@ void black_scholes_merton_model()
 
       printf("BSM(%s,%5.3f,%5.3f,%5.3f,%5.3f,%5.3f) = %10.6f\n",
              callput_flag.c_str(),
-             s,x,t,r,v,
+             s, x, t, r, v,
              bsm);
    }
 }
