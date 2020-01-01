@@ -428,8 +428,8 @@ of C++ compilers:
 | [r0:r1]  | The closed interval [r0,r1] of the specified string.    |
 |          | eg: Given a string x with a value of 'abcdefgh' then:   |
 |          | 1. x[1:4] == 'bcde'                                     |
-|          | 2. x[ :5] == x[:5] == 'abcdef'                          |
-|          | 3. x[3: ] == x[3:] =='cdefgh'                           |
+|          | 2. x[ :5] == x[:10 / 2] == 'abcdef'                     |
+|          | 3. x[2 + 1: ] == x[3:] =='defgh'                        |
 |          | 4. x[ : ] == x[:] == 'abcdefgh'                         |
 |          | 5. x[4/2:3+2] == x[2:5] == 'cdef'                       |
 |          |                                                         |
@@ -706,6 +706,61 @@ This allows for the original  element to be modified independently  of
 the  expression  instance  and  to also  allow  the  expression  to be
 evaluated using the current value of the element.
 
+Note:  Any  variable  reference  provided  to  a  given   symbol_table
+instance, must have a life time  at least as long as the  life-time of
+the  symbol_table instance.  In the  event the  variable reference  is
+invalidated  before  the  symbol_table  or  any  dependent  expression
+instances  have  been  destructed,  then  any  associated   expression
+evaluations or variable referencing via the symbol_table instance will
+result in undefined behaviour.
+
+The following bit of  code instantiates a symbol_table  and expression
+instance,  then  proceeds  to   demonstrate  various  ways  in   which
+references to  variables can  be added  to the  symbol_table, and  how
+those  references are  subsequently invalidated  resulting in  various
+forms of undefined behaviour.
+
+   typedef exprtk::symbol_table<double> symbol_table_t;
+
+   symbol_table_t symbol_table;
+   expression_t expression;
+
+   {
+      double x = 123.4567;
+      symbol_table.add_variable("x", x);
+   }             // Reference to variable x has been invalidated
+
+   std::deque<double> y {1.1, 2.2, 3.3};
+
+   symbol_table.add_variable("y", y.back());
+
+   y.pop_back(); // Reference to variable y has been invalidated
+
+   std::vector<double> z {4.4, 5.5, 6.6};
+
+   symbol_table.add_variable("z", z.front());
+
+   z.erase(z.begin());
+                 // Reference to variable z has been invalidated
+
+   double* w = new double(123.456);
+
+   symbol_table.add_variable("w", *w);
+
+   delete w;     // Reference to variable w has been invalidated
+
+   const std::string expression_str = "x + y / z * w";
+
+                 // Compilation of expression will succeed
+   parser.compile(expression_str,expression);
+
+   expression.value();
+                // Evaluation will result in undefined behaviour
+
+   symbol_table.get_variable("x")->ref() = 135.791;
+                // Assignment will result in undefined behaviour
+
+
 The  example  below demonstrates  the  relationship between variables,
 symbol_table and expression. Note  the variables are modified  as they
 normally would in a program, and when the expression is  evaluated the
@@ -865,7 +920,7 @@ The above denoted AST will be evaluated in the following order:
 Generally an expression in ExprTk can be thought of as a free function
 similar to those  found in imperative  languages. This form  of pseudo
 function will have a name, it may have a set of one or more inputs and
-will return at least one value as its result. Futhermore the  function
+will return at least one value as its result. Furthermore the function
 when invoked, may  cause a side-effect  that changes the  state of the
 host program.
 
@@ -968,7 +1023,7 @@ copied,  it  will then  result  in two  or more  identical expressions
 utilizing the exact same  references for variables. This  obviously is
 not the  default assumed  scenario and  will give  rise to non-obvious
 behaviours  when  using the  expressions in  various contexts such  as
-muli-threading et al.
+multi-threading et al.
 
 The prescribed method for cloning an expression is to compile it  from
 its string  form. Doing so will allow the 'user' to  properly consider
@@ -1260,7 +1315,7 @@ in a statement will cause it to have a side-effect:
    (b) Invoking a user-defined function that has side-effects
 
 The following are examples of expressions where the side-effect status
-of the statements (or sub-exressions) within the expressions have been
+of the  statements (sub-expressions) within the expressions  have been
 noted:
 
   +-+----------------------+------------------------------+
@@ -1814,15 +1869,16 @@ embedded into the expression.
 
 There are five types of function interface:
 
-  +---+----------------------+-------------+----------------------+
-  | # |         Name         | Return Type | Input Types          |
-  +---+----------------------+-------------+----------------------+
-  | 1 | ifunction            | Scalar      | Scalar               |
-  | 2 | ivararg_function     | Scalar      | Scalar               |
-  | 3 | igeneric_function    | Scalar      | Scalar,Vector,String |
-  | 4 | igeneric_function II | String      | Scalar,Vector,String |
-  | 5 | function_compositor  | Scalar      | Scalar               |
-  +---+----------------------+-------------+----------------------+
+  +---+----------------------+--------------+----------------------+
+  | # |         Name         | Return Type  | Input Types          |
+  +---+----------------------+--------------+----------------------+
+  | 1 | ifunction            | Scalar       | Scalar               |
+  | 2 | ivararg_function     | Scalar       | Scalar               |
+  | 3 | igeneric_function    | Scalar       | Scalar,Vector,String |
+  | 4 | igeneric_function II | String       | Scalar,Vector,String |
+  | 5 | igeneric_function III| String/Scalar| Scalar,Vector,String |
+  | 6 | function_compositor  | Scalar       | Scalar               |
+  +---+----------------------+--------------+----------------------+
 
 (1) ifunction
 This interface supports zero to 20 input parameters of only the scalar
@@ -2198,7 +2254,60 @@ as follows:
    (4) Scalar                                (4) String
 
 
-(5) function_compositor
+(5) igeneric_function III
+In this section we will discuss an extension of the  igeneric_function
+interface that will allow for the overloading of a user defined custom
+function, where by it can return either a scalar or string value  type
+depending on the input parameter  sequence with which the function  is
+invoked.
+
+   template <typename T>
+   struct foo : public exprtk::igeneric_function<T>
+   {
+      typedef typename exprtk::igeneric_function<T>::parameter_list_t
+                                                     parameter_list_t;
+
+      foo()
+      : exprtk::igeneric_function<T>
+        (
+          "T:T|S:TS",
+          igfun_t::e_rtrn_overload
+        )
+      {}
+
+      // Scalar value returning invocations
+      inline T operator()(const std::size_t& ps_index,
+                          parameter_list_t parameters)
+      {
+         ...
+      }
+
+      // String value returning invocations
+      inline T operator()(const std::size_t& ps_index,
+                          std::string& result,
+                          parameter_list_t& parameters)
+      {
+         ...
+      }
+   };
+
+
+In the  example above  the custom  user defined  function "foo" can be
+invoked by using  either one of  two input parameter  sequences, which
+are defined as follows:
+
+   Sequence-0    Sequence-1
+   'T' -> T      'TS' -> S
+   (1) Scalar    (1) Scalar
+                 (2) String
+
+
+The parameter  sequence definitions  are identical  to the  previously
+define igeneric_function, with the  exception of the inclusion  of the
+return type - which can only be either a scalar T or a string S.
+
+
+(6) function_compositor
 The function  compositor is  a factory  that allows  one to define and
 construct a function using ExprTk syntax. The functions are limited to
 returning a single scalar value and consuming up to six parameters  as
@@ -2715,7 +2824,7 @@ expression being compiled.
 
 This can become problematic, as in the default scenario it is  assumed
 the symbol_table that is registered with the expression instance  will
-already  posses  the  externally  available  variables,  functions and
+already possess  the  externally  available  variables,  functions and
 constants needed during the compilation of the expression.
 
 In the event there are symbols in the expression that can't be  mapped
@@ -2838,7 +2947,7 @@ after which the expression itself can be evaluated.
 
    for (auto& var_name : variable_list)
    {
-      T& v = symbol_table.variable_ref(var_name);
+      T& v = unknown_var_symbol_table.variable_ref(var_name);
 
       v = ...;
    }
@@ -2998,6 +3107,24 @@ constructor of the user defined USR.
 
 Note: The primary symbol table  for an expression is the  first symbol
 table to be registered with that instance of the expression.
+
+Note: For a successful symbol  resolution using the normal USR  all of
+the following are required:
+
+   (1) Only if successful shall the process method return TRUE
+   (2) The default_value parameter will have been set
+   (3) The error_message parameter will be empty
+   (4) usr_symbol_type input parameter field will be set to either:
+         (*) e_usr_variable_type
+         (*) e_usr_constant_type
+
+Note: For a successful symbol resolution using the extended USR all of
+the following are required:
+
+   (1) Only if successful shall the process method return TRUE
+   (2) symbol_table parameter will have had the newly resolved
+       variable or string added to it
+   (3) error_message parameter will be empty
 
      ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
@@ -3716,7 +3843,7 @@ follows:
       }
    }
    else
-     printf("An error occured.");
+     printf("An error occurred.");
 
 
 (b) collect_functions
@@ -3740,7 +3867,7 @@ follows:
       }
    }
    else
-     printf("An error occured.");
+     printf("An error occurred.");
 
 
 Note: When either the 'collect_variables'  or 'collect_functions' free
@@ -3752,10 +3879,10 @@ true.
 
 Note: The  default interface  provided for  both the collect_variables
 and collect_functions  free_functions, assumes  that expressions  will
-only be utilising  the ExprTk reserved  funnctions (eg: abs,  cos, min
+only be utilising  the ExprTk  reserved  functions (eg: abs,  cos, min
 etc). When user defined functions are  to be used in an expression,  a
 symbol_table  instance  containing  said functions  can  be  passed to
-either routine, and  will be incorparated  during the compilation  and
+either routine, and  will be incorporated  during the compilation  and
 Dependent Entity  Collection processes.  In the  following example,  a
 user  defined  free  function   named  'foo'  is  registered   with  a
 symbol_table.  Finally  the   symbol_table  instance  and   associated
@@ -3785,7 +3912,7 @@ expression string are passed to the exprtk::collect_functions routine.
       }
    }
    else
-     printf("An error occured.");
+     printf("An error occurred.");
 
 
 (c) compute
