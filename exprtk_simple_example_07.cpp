@@ -3,7 +3,7 @@
  *         C++ Mathematical Expression Toolkit Library        *
  *                                                            *
  * Simple Example 7                                           *
- * Author: Arash Partow (1999-2018)                           *
+ * Author: Arash Partow (1999-2020)                           *
  * URL: http://www.partow.net/programming/exprtk/index.html   *
  *                                                            *
  * Copyright notice:                                          *
@@ -18,6 +18,7 @@
 
 #include <cstdio>
 #include <string>
+
 #include "exprtk.hpp"
 
 
@@ -28,7 +29,7 @@ void logic()
    typedef exprtk::expression<T>     expression_t;
    typedef exprtk::parser<T>             parser_t;
 
-   std::string expression_string = "not(A and B) or C";
+   const std::string expression_string = "not(A and B) or C";
 
    symbol_table_t symbol_table;
    symbol_table.create_variable("A");
@@ -52,7 +53,7 @@ void logic()
       symbol_table.get_variable("B")->ref() = T((i & 0x02) ? 1 : 0);
       symbol_table.get_variable("C")->ref() = T((i & 0x04) ? 1 : 0);
 
-      int result = static_cast<int>(expression.value());
+      const int result = static_cast<int>(expression.value());
 
       printf(" %d | %d | %d | %d | %d \n",
              i,

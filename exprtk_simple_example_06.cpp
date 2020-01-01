@@ -3,7 +3,7 @@
  *         C++ Mathematical Expression Toolkit Library        *
  *                                                            *
  * Simple Example 6                                           *
- * Author: Arash Partow (1999-2018)                           *
+ * Author: Arash Partow (1999-2020)                           *
  * URL: http://www.partow.net/programming/exprtk/index.html   *
  *                                                            *
  * Copyright notice:                                          *
@@ -18,6 +18,7 @@
 
 #include <cstdio>
 #include <string>
+
 #include "exprtk.hpp"
 
 
@@ -28,7 +29,7 @@ void vector_function()
    typedef exprtk::expression<T>     expression_t;
    typedef exprtk::parser<T>             parser_t;
 
-   std::string expression_string =
+   const std::string expression_string =
                   " for (var i := 0; i < min(x[],y[],z[]); i += 1) "
                   " {                                              "
                   "   z[i] := 3sin(x[i]) + 2log(y[i]);             "

@@ -3,7 +3,7 @@
  *         C++ Mathematical Expression Toolkit Library        *
  *                                                            *
  * Simple Example 8                                           *
- * Author: Arash Partow (1999-2018)                           *
+ * Author: Arash Partow (1999-2020)                           *
  * URL: http://www.partow.net/programming/exprtk/index.html   *
  *                                                            *
  * Copyright notice:                                          *
@@ -18,6 +18,7 @@
 
 #include <cstdio>
 #include <string>
+
 #include "exprtk.hpp"
 
 
@@ -27,7 +28,7 @@ void composite()
    typedef exprtk::symbol_table<T>      symbol_table_t;
    typedef exprtk::expression<T>          expression_t;
    typedef exprtk::parser<T>                  parser_t;
-   typedef exprtk::parser_error::type          error_t;
+   typedef exprtk::parser_error::type            err_t;
    typedef exprtk::function_compositor<T> compositor_t;
    typedef typename compositor_t::function  function_t;
 
@@ -64,7 +65,7 @@ void composite()
 
       for (std::size_t i = 0; i < parser.error_count(); ++i)
       {
-         error_t error = parser.get_error(i);
+         const err_t error = parser.get_error(i);
 
          printf("Error: %02d  Position: %02d Type: [%14s] Msg: %s\tExpression: %s\n",
                 static_cast<unsigned int>(i),
@@ -77,7 +78,7 @@ void composite()
       return;
    }
 
-   T result = expression.value();
+   const T result = expression.value();
 
    printf("%s = %e\n", expression_string.c_str(), result);
 }

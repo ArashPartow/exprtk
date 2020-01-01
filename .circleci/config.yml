@@ -1,0 +1,34 @@
+version: 2.1
+jobs:
+
+  build_gcc_6:
+    docker:
+      - image: gcc:6
+    steps:
+      - checkout
+      - run: make all -j 2
+      - run: ./exprtk_test
+
+  build_gcc_7:
+    docker:
+      - image: gcc:7
+    steps:
+      - checkout
+      - run: make all -j 2
+      - run: ./exprtk_test
+
+  build_gcc_latest:
+    docker:
+      - image: gcc:latest
+    steps:
+      - checkout
+      - run: make all -j 2
+      - run: ./exprtk_test
+
+workflows:
+  version: 2
+  build_and_test:
+    jobs:
+      - build_gcc_6
+      - build_gcc_7
+      - build_gcc_latest
