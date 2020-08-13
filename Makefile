@@ -27,7 +27,9 @@ LSAN_OPT         := -g -fsanitize=leak      -fno-omit-frame-pointer
 USAN_OPT         := -g -fsanitize=undefined -fno-omit-frame-pointer
 BUILD_SRC        := $(sort $(wildcard exprtk_*.cpp))
 BUILD_LIST       := $(BUILD_SRC:%.cpp=%)
-
+ifeq ($(PREFIX),)
+	PREFIX := /usr/local
+endif
 
 all: $(BUILD_LIST)
 
@@ -49,6 +51,10 @@ pgo: exprtk_benchmark.cpp exprtk.hpp
 	$(COMPILER) $(BASE_OPTIONS) -O3 -march=native -fprofile-generate -o exprtk_benchmark exprtk_benchmark.cpp $(LINKER_OPT)
 	./exprtk_benchmark
 	$(COMPILER) $(BASE_OPTIONS) -O3 -march=native -fprofile-use -o exprtk_benchmark exprtk_benchmark.cpp $(LINKER_OPT)
+
+install: 
+	install -d $(PREFIX)/include/
+	install -m 644 exprtk.hpp $(PREFIX)/include/
 
 clean:
 	rm -f core.* *~ *.o *.bak *stackdump gmon.out *.gcda *.gcno *.gcnor *.gch
