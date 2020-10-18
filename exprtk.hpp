@@ -24489,7 +24489,7 @@ namespace exprtk
                }
             }
 
-            if (vec_initilizer_list.size() > vector_size)
+            if (T(vec_initilizer_list.size()) > vector_size)
             {
                set_error(
                   make_error(parser_error::e_syntax,
