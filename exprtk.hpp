@@ -2896,7 +2896,7 @@ namespace exprtk
       {
       public:
 
-         virtual ~token_scanner()
+         ~token_scanner() override
          {}
 
          explicit token_scanner(const std::size_t& stride)
@@ -2908,7 +2908,7 @@ namespace exprtk
             }
          }
 
-         inline std::size_t process(generator& g)
+         inline std::size_t process(generator& g) override
          {
             if (g.token_list_.size() >= stride_)
             {
@@ -3003,7 +3003,7 @@ namespace exprtk
       {
       public:
 
-         inline std::size_t process(generator& g)
+         inline std::size_t process(generator& g) override
          {
             std::size_t changes = 0;
 
@@ -3031,7 +3031,7 @@ namespace exprtk
             }
          }
 
-         inline std::size_t process(generator& g)
+         inline std::size_t process(generator& g) override
          {
             if (g.token_list_.empty())
                return 0;
@@ -3135,7 +3135,7 @@ namespace exprtk
          : stride_(stride)
          {}
 
-         inline std::size_t process(generator& g)
+         inline std::size_t process(generator& g) override
          {
             if (g.token_list_.empty())
                return 0;
@@ -3268,7 +3268,7 @@ namespace exprtk
                ignore_set_.insert(symbol);
             }
 
-            inline int insert(const lexer::token& t0, const lexer::token& t1, lexer::token& new_token)
+            inline int insert(const lexer::token& t0, const lexer::token& t1, lexer::token& new_token) override
             {
                bool match         = false;
                new_token.type     = lexer::token::e_mul;
@@ -3323,7 +3323,7 @@ namespace exprtk
             : token_joiner(stride)
             {}
 
-            inline bool join(const lexer::token& t0, const lexer::token& t1, lexer::token& t)
+            inline bool join(const lexer::token& t0, const lexer::token& t1, lexer::token& t) override
             {
                // ': =' --> ':='
                if ((t0.type == lexer::token::e_colon) && (t1.type == lexer::token::e_eq))
@@ -3468,7 +3468,7 @@ namespace exprtk
                   return false;
             }
 
-            inline bool join(const lexer::token& t0, const lexer::token& t1, const lexer::token& t2, lexer::token& t)
+            inline bool join(const lexer::token& t0, const lexer::token& t1, const lexer::token& t2, lexer::token& t) override
             {
                // '[ * ]' --> '[*]'
                if (
@@ -3499,7 +3499,7 @@ namespace exprtk
               state_(true)
             {}
 
-            bool result()
+            bool result() override
             {
                if (!stack_.empty())
                {
@@ -3520,7 +3520,7 @@ namespace exprtk
                return error_token_;
             }
 
-            void reset()
+            void reset() override
             {
                // Why? because msvc doesn't support swap properly.
                stack_ = std::stack<std::pair<char,std::size_t> >();
@@ -3528,7 +3528,7 @@ namespace exprtk
                error_token_.clear();
             }
 
-            bool operator() (const lexer::token& t)
+            bool operator() (const lexer::token& t) override
             {
                if (
                     !t.value.empty()                       &&
@@ -3584,18 +3584,18 @@ namespace exprtk
               current_index_(0)
             {}
 
-            bool result()
+            bool result() override
             {
                return error_list_.empty();
             }
 
-            void reset()
+            void reset() override
             {
                error_list_.clear();
                current_index_ = 0;
             }
 
-            bool operator() (const lexer::token& t)
+            bool operator() (const lexer::token& t) override
             {
                if (token::e_number == t.type)
                {
@@ -3679,7 +3679,7 @@ namespace exprtk
 
          private:
 
-            bool modify(lexer::token& t)
+            bool modify(lexer::token& t) override
             {
                if (lexer::token::e_symbol == t.type)
                {
@@ -3742,12 +3742,12 @@ namespace exprtk
                add_invalid_set1(lexer::token::e_ternary);
             }
 
-            bool result()
+            bool result() override
             {
                return error_list_.empty();
             }
 
-            bool operator() (const lexer::token& t0, const lexer::token& t1)
+            bool operator() (const lexer::token& t0, const lexer::token& t1) override
             {
                const set_t::value_type p = std::make_pair(t0.type,t1.type);
 
@@ -3909,12 +3909,12 @@ namespace exprtk
                add_invalid(lexer::token::e_pow   , lexer::token::e_mod   , lexer::token::e_pow   );
             }
 
-            bool result()
+            bool result() override
             {
                return error_list_.empty();
             }
 
-            bool operator() (const lexer::token& t0, const lexer::token& t1, const lexer::token& t2)
+            bool operator() (const lexer::token& t0, const lexer::token& t1, const lexer::token& t2) override
             {
                const set_t::value_type p = std::make_pair(t0.type,std::make_pair(t1.type,t2.type));
 
