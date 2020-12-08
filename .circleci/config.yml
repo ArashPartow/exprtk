@@ -1,4 +1,4 @@
-version: 2.0
+version: 2.1
 jobs:
 
   build_gcc_6:
@@ -31,4 +31,4 @@ workflows:
     jobs:
       - build_gcc_6
       - build_gcc_7
-      - build_gcc_latest
+      - build_gcc_latest 
