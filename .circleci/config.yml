@@ -6,7 +6,8 @@ jobs:
       - image: gcc:6
     steps:
       - checkout
-      - run: make all -j 4
+      - run: c++ --version
+      - run: make all -j 2
       - run: ./exprtk_test
 
   build_gcc_7:
@@ -14,7 +15,8 @@ jobs:
       - image: gcc:7
     steps:
       - checkout
-      - run: make all -j 4
+      - run: c++ --version
+      - run: make all -j 2
       - run: ./exprtk_test
 
   build_gcc_latest:
@@ -22,7 +24,8 @@ jobs:
       - image: gcc:latest
     steps:
       - checkout
-      - run: make all -j 4
+      - run: c++ --version
+      - run: make all -j 2
       - run: ./exprtk_test
 
 workflows:
@@ -31,4 +34,4 @@ workflows:
     jobs:
       - build_gcc_6
       - build_gcc_7
-      - build_gcc_latest 
+      - build_gcc_latest
