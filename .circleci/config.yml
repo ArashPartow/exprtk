@@ -6,6 +6,7 @@ jobs:
       - image: gcc:6
     steps:
       - checkout
+      - run: c++ --version
       - run: make all -j 2
       - run: ./exprtk_test
 
@@ -14,6 +15,7 @@ jobs:
       - image: gcc:7
     steps:
       - checkout
+      - run: c++ --version
       - run: make all -j 2
       - run: ./exprtk_test
 
@@ -22,6 +24,7 @@ jobs:
       - image: gcc:latest
     steps:
       - checkout
+      - run: c++ --version
       - run: make all -j 2
       - run: ./exprtk_test
 
