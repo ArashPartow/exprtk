@@ -3,7 +3,7 @@
  *         C++ Mathematical Expression Toolkit Library        *
  *                                                            *
  * Simple Example 17                                          *
- * Author: Arash Partow (1999-2020)                           *
+ * Author: Arash Partow (1999-2021)                           *
  * URL: http://www.partow.net/programming/exprtk/index.html   *
  *                                                            *
  * Copyright notice:                                          *
@@ -44,8 +44,8 @@ template <typename T>
 void monte_carlo_pi()
 {
    typedef exprtk::symbol_table<T> symbol_table_t;
-   typedef exprtk::expression<T>     expression_t;
-   typedef exprtk::parser<T>             parser_t;
+   typedef exprtk::expression<T>   expression_t;
+   typedef exprtk::parser<T>       parser_t;
 
    const std::string monte_carlo_pi_program =
                   " var experiments[5 * 10^7] := [(rnd_01^2 + rnd_01^2) <= 1]; "

@@ -3,7 +3,7 @@
  *         C++ Mathematical Expression Toolkit Library        *
  *                                                            *
  * Simple Example 16                                          *
- * Author: Arash Partow (1999-2020)                           *
+ * Author: Arash Partow (1999-2021)                           *
  * URL: http://www.partow.net/programming/exprtk/index.html   *
  *                                                            *
  * Copyright notice:                                          *
@@ -27,8 +27,8 @@ template <typename T>
 void linear_least_squares()
 {
    typedef exprtk::symbol_table<T> symbol_table_t;
-   typedef exprtk::expression<T>     expression_t;
-   typedef exprtk::parser<T>             parser_t;
+   typedef exprtk::expression<T>   expression_t;
+   typedef exprtk::parser<T>       parser_t;
 
    const std::string linear_least_squares_program =
                   " if (x[] == y[])                                       "
@@ -55,11 +55,11 @@ void linear_least_squares()
    T rmse  = T(0);
 
    symbol_table_t symbol_table;
-   symbol_table.add_variable("alpha",alpha);
-   symbol_table.add_variable("beta" ,beta );
-   symbol_table.add_variable("rmse" ,rmse );
-   symbol_table.add_vector  ("x"    ,x    );
-   symbol_table.add_vector  ("y"    ,y    );
+   symbol_table.add_variable("alpha", alpha);
+   symbol_table.add_variable("beta" , beta );
+   symbol_table.add_variable("rmse" , rmse );
+   symbol_table.add_vector  ("x"    , x    );
+   symbol_table.add_vector  ("y"    , y    );
 
    expression_t expression;
    expression.register_symbol_table(symbol_table);
@@ -69,10 +69,10 @@ void linear_least_squares()
 
    expression.value();
 
-   printf("alpha: %15.12f\n",alpha);
-   printf("beta:  %15.12f\n",beta );
-   printf("rmse:  %15.12f\n",rmse );
-   printf("y = %15.12fx + %15.12f\n",beta,alpha);
+   printf("alpha: %15.12f\n", alpha);
+   printf("beta:  %15.12f\n", beta );
+   printf("rmse:  %15.12f\n", rmse );
+   printf("y = %15.12fx + %15.12f\n", beta, alpha);
 }
 
 int main()

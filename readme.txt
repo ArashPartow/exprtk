@@ -59,7 +59,7 @@ arithmetic operations, functions and processes:
 
  (05) Functions:       abs, avg, ceil, clamp, equal, erf, erfc,  exp,
                        expm1, floor, frac,  log, log10, log1p,  log2,
-                       logn,  max,  min,  mul,  ncdf,  nequal,  root,
+                       logn, max,  min, mul,  ncdf,  not_equal, root,
                        round, roundn, sgn, sqrt, sum, swap, trunc
 
  (06) Trigonometry:    acos, acosh, asin, asinh, atan, atanh,  atan2,
@@ -124,7 +124,7 @@ The most  recent version  of the C++ Mathematical  Expression  Toolkit
 Library including all updates and tests can be found at the  following
 locations:
 
-  (a) Download:   http://www.partow.net/programming/exprtk/index.html
+  (a) Download:   https://www.partow.net/programming/exprtk/index.html
   (b) Repository: https://github.com/ArashPartow/exprtk
                   https://github.com/ArashPartow/exprtk-extras
 
@@ -321,7 +321,7 @@ of C++ compilers:
 +----------+---------------------------------------------------------+
 | ncdf     | Normal cumulative distribution function.  (eg: ncdf(x)) |
 +----------+---------------------------------------------------------+
-| nequal   | Not-equal test between x and y using normalised epsilon |
+| not_equal| Not-equal test between x and y using normalised epsilon |
 +----------+---------------------------------------------------------+
 | pow      | x to the power of y.  (eg: pow(x,y) == x ^ y)           |
 +----------+---------------------------------------------------------+
@@ -767,8 +767,8 @@ normally would in a program, and when the expression is  evaluated the
 current values assigned to the variables will be used.
 
    typedef exprtk::symbol_table<double> symbol_table_t;
-   typedef exprtk::expression<double>     expression_t;
-   typedef exprtk::parser<double>             parser_t;
+   typedef exprtk::expression<double>   expression_t;
+   typedef exprtk::parser<double>       parser_t;
 
    symbol_table_t symbol_table;
    expression_t   expression;
@@ -811,8 +811,8 @@ expansive  discussion  please  review section  [17  -  Hierarchies  Of
 Symbol Tables]
 
    typedef exprtk::symbol_table<double> symbol_table_t;
-   typedef exprtk::expression<double>     expression_t;
-   typedef exprtk::parser<double>             parser_t;
+   typedef exprtk::expression<double>   expression_t;
+   typedef exprtk::parser<double>       parser_t;
 
    symbol_table_t symbol_table0;
    symbol_table_t symbol_table1;
@@ -869,7 +869,7 @@ a false result due to one or more of the following reasons:
 
 
 (2) Expression
-A structure that holds an abstract syntax tree or AST for a  specified
+A structure that holds an Abstract Syntax Tree or AST for a  specified
 expression and is used to evaluate said expression. Evaluation of  the
 expression is accomplished by performing a post-order traversal of the
 AST.  If  a  compiled  Expression  uses  variables  or  user   defined
@@ -1342,7 +1342,7 @@ noted:
 
 
 Note: In example 6 from the above set, it is assumed the user  defined
-function foo has been registered  as having a side_effect. By  default
+function foo has been registered  as having a side-effect. By  default
 all user defined  functions are assumed  to have side-effects,  unless
 they are  configured in  their constructors  to not  have side-effects
 using   the   'disable_has_side_effects'  free   function.   For  more
@@ -2322,8 +2322,8 @@ methods, composited functions and implicitly registering the functions
 with the denoted symbol table.
 
    typedef exprtk::symbol_table<T>         symbol_table_t;
-   typedef exprtk::function_compositor<T>    compositor_t;
-   typedef typename compositor_t::function     function_t;
+   typedef exprtk::function_compositor<T>  compositor_t;
+   typedef typename compositor_t::function function_t;
 
    symbol_table_t symbol_table;
 
@@ -2351,11 +2351,11 @@ expression, an instance of each function needs to be registered with a
 symbol_table that  has been  associated with  the expression instance.
 The following demonstrates how all the pieces are put together:
 
-   typedef exprtk::symbol_table<double>      symbol_table_t;
+   typedef exprtk::symbol_table<double>        symbol_table_t;
    typedef exprtk::expression<double>          expression_t;
-   typedef exprtk::parser<double>                  parser_t;
+   typedef exprtk::parser<double>              parser_t;
    typedef exprtk::function_compositor<double> compositor_t;
-   typedef typename compositor_t::function       function_t;
+   typedef typename compositor_t::function     function_t;
 
    foo<double> f;
    boo<double> b;
@@ -2747,7 +2747,7 @@ expression that makes use of various elements of each symbol table is
 then compiled and later on evaluated:
 
    typedef exprtk::symbol_table<double> symbol_table_t;
-   typedef exprtk::expression<double>     expression_t;
+   typedef exprtk::expression<double>   expression_t;
 
    // Setup global constants symbol table
    symbol_table_t glbl_const_symbol_table;
@@ -2908,8 +2908,8 @@ variables with the  latter method using  the 'unknown_symbol_resolver'
 component.
 
    typedef exprtk::symbol_table<T> symbol_table_t;
-   typedef exprtk::expression<T>     expression_t;
-   typedef exprtk::parser<T>             parser_t;
+   typedef exprtk::expression<T>   expression_t;
+   typedef exprtk::parser<T>       parser_t;
 
    symbol_table_t unknown_var_symbol_table;
 
@@ -2981,8 +2981,8 @@ should raise a compilation error. The following example demonstrates a
 simple user defined USR:
 
    typedef exprtk::symbol_table<T> symbol_table_t;
-   typedef exprtk::expression<T>     expression_t;
-   typedef exprtk::parser<T>             parser_t;
+   typedef exprtk::expression<T>   expression_t;
+   typedef exprtk::parser<T>       parser_t;
 
    template <typename T>
    struct my_usr : public parser_t::unknown_symbol_resolver
@@ -3458,8 +3458,8 @@ redefined as a function taking degree input.
     ...
 
     typedef exprtk::symbol_table<T> symbol_table_t;
-    typedef exprtk::expression<T>     expression_t;
-    typedef exprtk::parser<T>             parser_t;
+    typedef exprtk::expression<T>   expression_t;
+    typedef exprtk::parser<T>       parser_t;
 
     typedef typename parser_t::settings_store settings_t;
 
@@ -3511,8 +3511,8 @@ expression will return normally.
                   " return [x, y, x + y, x - y, 'return-call 3'] ";
 
    typedef exprtk::symbol_table<double> symbol_table_t;
-   typedef exprtk::expression<double>     expression_t;
-   typedef exprtk::parser<double>             parser_t;
+   typedef exprtk::expression<double>   expression_t;
+   typedef exprtk::parser<double>       parser_t;
 
    symbol_table_t symbol_table;
    expression_t   expression;
@@ -3574,8 +3574,8 @@ itself  to  have  the result  variables  be  assigned the  appropriate
 values.
 
    typedef exprtk::symbol_table<double> symbol_table_t;
-   typedef exprtk::expression<double>     expression_t;
-   typedef exprtk::parser<double>             parser_t;
+   typedef exprtk::expression<double>   expression_t;
+   typedef exprtk::parser<double>       parser_t;
 
    std::string expression_string =
                   " var x := 123.456;     "
@@ -3751,8 +3751,8 @@ expression's associated  symbol table.  In the  following example, the
 file I/O package is made available for the given expression:
 
    typedef exprtk::symbol_table<T> symbol_table_t;
-   typedef exprtk::expression<T>     expression_t;
-   typedef exprtk::parser<T>             parser_t;
+   typedef exprtk::expression<T>   expression_t;
+   typedef exprtk::parser<T>       parser_t;
 
    exprtk::rtl::io::file::package<T> fileio_package;
 
@@ -3980,9 +3980,9 @@ Simpson's rule. The  integrate function has  two overloads, where  the
 variable of integration can  either be passed as  a reference or as  a
 name in string form. Example usage of the function is as follows:
 
-   typedef exprtk::parser<T>             parser_t;
-   typedef exprtk::expression<T>     expression_t;
    typedef exprtk::symbol_table<T> symbol_table_t;
+   typedef exprtk::expression<T>   expression_t;
+   typedef exprtk::parser<T>       parser_t;
 
    std::string expression_string = "sqrt(1 - (x^2))";
 
@@ -4015,9 +4015,9 @@ where  the  variable of  differentiation  can either  be  passed as  a
 reference or as a name in string form. Example usage of the derivative
 function is as follows:
 
-   typedef exprtk::parser<T>             parser_t;
-   typedef exprtk::expression<T>     expression_t;
    typedef exprtk::symbol_table<T> symbol_table_t;
+   typedef exprtk::expression<T>   expression_t;
+   typedef exprtk::parser<T>       parser_t;
 
    std::string expression_string = "sqrt(1 - (x^2))";
 
@@ -4054,9 +4054,9 @@ variable of differentiation can either be passed as a reference or  as
 a name in string form. Example usage of the second_derivative function
 is as follows:
 
-   typedef exprtk::parser<T>             parser_t;
-   typedef exprtk::expression<T>     expression_t;
    typedef exprtk::symbol_table<T> symbol_table_t;
+   typedef exprtk::expression<T>   expression_t;
+   typedef exprtk::parser<T>       parser_t;
 
    std::string expression_string = "sqrt(1 - (x^2))";
 
@@ -4093,9 +4093,9 @@ variable of differentiation can either be passed as a reference or  as
 a name in string form. Example  usage of the third_derivative function
 is as follows:
 
-   typedef exprtk::parser<T>             parser_t;
-   typedef exprtk::expression<T>     expression_t;
    typedef exprtk::symbol_table<T> symbol_table_t;
+   typedef exprtk::expression<T>   expression_t;
+   typedef exprtk::parser<T>       parser_t;
 
    std::string expression_string = "sqrt(1 - (x^2))";
 
@@ -4310,7 +4310,7 @@ into account when using ExprTk:
       of that  symbol-table, otherwise  the result  will be undefined
       behavior.
 
- (10) Equal  and  Nequal  are  normalised-epsilon  equality routines,
+ (10) Equal and not_equal  are  normalised-epsilon  equality routines,
       which use epsilons of 0.0000000001 and 0.000001 for double  and
       float types respectively.
 
@@ -4517,9 +4517,9 @@ struct myfunc : public exprtk::ifunction<T>
 int main()
 {
    typedef exprtk::symbol_table<double> symbol_table_t;
-   typedef exprtk::expression<double>     expression_t;
-   typedef exprtk::parser<double>             parser_t;
-   typedef exprtk::parser_error::type          error_t;
+   typedef exprtk::expression<double>   expression_t;
+   typedef exprtk::parser<double>       parser_t;
+   typedef exprtk::parser_error::type   error_t;
 
    std::string expression_str =
                   "z := 2 myfunc([4 + sin(x / pi)^3],y ^ 2)";

@@ -3,7 +3,7 @@
  *         C++ Mathematical Expression Toolkit Library        *
  *                                                            *
  * Simple Example 14                                          *
- * Author: Arash Partow (1999-2020)                           *
+ * Author: Arash Partow (1999-2021)                           *
  * URL: http://www.partow.net/programming/exprtk/index.html   *
  *                                                            *
  * Copyright notice:                                          *
@@ -26,7 +26,7 @@ template <typename T>
 void stddev_example()
 {
    typedef exprtk::expression<T> expression_t;
-   typedef exprtk::parser<T>         parser_t;
+   typedef exprtk::parser<T>     parser_t;
 
    const std::string stddev_program =
                   " var x[25] := {                     "

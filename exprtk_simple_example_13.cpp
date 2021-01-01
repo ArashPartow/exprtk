@@ -3,7 +3,7 @@
  *         C++ Mathematical Expression Toolkit Library        *
  *                                                            *
  * Simple Example 13                                          *
- * Author: Arash Partow (1999-2020)                           *
+ * Author: Arash Partow (1999-2021)                           *
  * URL: http://www.partow.net/programming/exprtk/index.html   *
  *                                                            *
  * Copyright notice:                                          *
@@ -28,8 +28,8 @@ template <typename T>
 void savitzky_golay_filter()
 {
    typedef exprtk::symbol_table<T> symbol_table_t;
-   typedef exprtk::expression<T>     expression_t;
-   typedef exprtk::parser<T>             parser_t;
+   typedef exprtk::expression<T>   expression_t;
+   typedef exprtk::parser<T>       parser_t;
 
    const std::string sgfilter_program =
                   " var weight[9] :=                                          "
@@ -69,15 +69,15 @@ void savitzky_golay_filter()
    // Generate a signal with noise.
    for (T t = T(-5); t <= T(+5); t += T(10.0 / n))
    {
-      T noise = T(0.5 * (rand() / (RAND_MAX + 1.0) - 0.5));
+      const T noise = T(0.5 * (rand() / (RAND_MAX + 1.0) - 0.5));
       v_in.push_back(sin(2.0 * pi * t) + noise);
    }
 
    v_out.resize(v_in.size());
 
    symbol_table_t symbol_table;
-   symbol_table.add_vector("v_in" , v_in);
-   symbol_table.add_vector("v_out",v_out);
+   symbol_table.add_vector("v_in" , v_in );
+   symbol_table.add_vector("v_out", v_out);
 
    expression_t expression;
    expression.register_symbol_table(symbol_table);

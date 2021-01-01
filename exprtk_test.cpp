@@ -3,7 +3,7 @@
  *         C++ Mathematical Expression Toolkit Library        *
  *                                                            *
  * Examples and Unit-Tests                                    *
- * Author: Arash Partow (1999-2020)                           *
+ * Author: Arash Partow (1999-2021)                           *
  * URL: http://www.partow.net/programming/exprtk/index.html   *
  *                                                            *
  * Copyright notice:                                          *
@@ -358,6 +358,42 @@ static const test_t global_test_list[] =
                     test_t("( 7 - 2 )",+5.0),
                     test_t("( 8 - 1 )",+7.0),
                     test_t("( 9 - 0 )",+9.0),
+                    test_t("1 - -1" , 2.0),
+                    test_t("1 --1"  , 2.0),
+                    test_t("1-- 1"  , 2.0),
+                    test_t("1--1"   , 2.0),
+                    test_t("1 -- -1", 0.0),
+                    test_t("1 + -1" , 0.0),
+                    test_t("1 +-1"  , 0.0),
+                    test_t("1+- 1"  , 0.0),
+                    test_t("1+-1"   , 0.0),
+                    test_t("1 +- -1", 2.0),
+                    test_t("1 + +1" , 2.0),
+                    test_t("1 ++1"  , 2.0),
+                    test_t("1 - -1 + 1" , 3.0),
+                    test_t("1 --1 + 1"  , 3.0),
+                    test_t("1-- 1 + 1"  , 3.0),
+                    test_t("1--1 + 1"   , 3.0),
+                    test_t("1 -- -1 + 1", 1.0),
+                    test_t("1 + -1 + 1" , 1.0),
+                    test_t("1 +-1 + 1"  , 1.0),
+                    test_t("1+- 1 + 1"  , 1.0),
+                    test_t("1+-1 + 1"   , 1.0),
+                    test_t("1 +- -1 + 1", 3.0),
+                    test_t("1 + +1 + 1" , 3.0),
+                    test_t("1 ++1 + 1"  , 3.0),
+                    test_t("1 - -1 - 1" , 1.0),
+                    test_t("1 --1 - 1"  , 1.0),
+                    test_t("1-- 1 - 1"  , 1.0),
+                    test_t("1--1 - 1"   , 1.0),
+                    test_t("1 -- -1 - 1", -1.0),
+                    test_t("1 + -1 - 1" , -1.0),
+                    test_t("1 +-1 - 1"  , -1.0),
+                    test_t("1+- 1 - 1"  , -1.0),
+                    test_t("1+-1 - 1"   , -1.0),
+                    test_t("1 +- -1 - 1", 1.0),
+                    test_t("1 + +1 - 1" , 1.0),
+                    test_t("1 ++1 - 1"  , 1.0),
                     test_t("-(1+2)",-3.0),
                     test_t("+(1+2)",+3.0),
                     test_t("+(1-2)",-1.0),
@@ -1162,20 +1198,57 @@ inline bool test_expression(const std::string& expression_string, const T& expec
       return false;
    }
 
-   T result = expression.value();
+   const T result = expression.value();
 
    if (not_equal(result,expected_result))
    {
       printf("test_expression() - Computation Error:  Expression: [%s]\tExpected: %19.15f\tResult: %19.15f\n",
              expression_string.c_str(),
-             (double)expected_result,
-             (double)result);
+             static_cast<double>(expected_result),
+             static_cast<double>(result));
 
       return false;
    }
 
    return true;
 }
+
+template <typename T>
+struct edge_cases {};
+
+template <>
+struct edge_cases<float>
+{
+   static inline std::vector<test_t> test_cases()
+   {
+      std::vector<test_t> cases;
+      cases.push_back(test_t(" 1.175494350822287508e-38",  1.175494350822287508e-38));
+      cases.push_back(test_t(" 3.402823466385288598e+38",  3.402823466385288598e+38));
+      cases.push_back(test_t("+1.175494350822287508e-38", +1.175494350822287508e-38));
+      cases.push_back(test_t("+3.402823466385288598e+38", +3.402823466385288598e+38));
+      cases.push_back(test_t("-1.175494350822287508e-38", -1.175494350822287508e-38));
+      cases.push_back(test_t("-3.402823466385288598e+38", -3.402823466385288598e+38));
+
+      return cases;
+   }
+};
+
+template <>
+struct edge_cases<double>
+{
+   static inline std::vector<test_t> test_cases()
+   {
+      std::vector<test_t> cases;
+      cases.push_back(test_t(" 2.2250738585072013831e-308",  2.2250738585072013831e-308));
+      cases.push_back(test_t(" 1.7976931348623157081e+308",  1.7976931348623157081e+308));
+      cases.push_back(test_t("+2.2250738585072013831e-308", +2.2250738585072013831e-308));
+      cases.push_back(test_t("+1.7976931348623157081e+308", +1.7976931348623157081e+308));
+      cases.push_back(test_t("-2.2250738585072013831e-308", -2.2250738585072013831e-308));
+      cases.push_back(test_t("-1.7976931348623157081e+308", -1.7976931348623157081e+308));
+
+      return cases;
+   }
+};
 
 template <typename T>
 inline bool run_test00()
@@ -1187,6 +1260,25 @@ inline bool run_test00()
       for (std::size_t i = 0; i < global_test_list_size; ++i)
       {
          if (!test_expression<T>(global_test_list[i].first,T(global_test_list[i].second)))
+         {
+            result = false;
+         }
+      }
+
+      if (!result)
+      {
+         return false;
+      }
+   }
+
+   {
+      const std::vector<test_t> tests = edge_cases<T>::test_cases();
+
+      bool result = true;
+
+      for (std::size_t i = 0; i < tests.size(); ++i)
+      {
+         if (!test_expression<T>(tests[i].first,T(tests[i].second)))
          {
             result = false;
          }
@@ -1256,34 +1348,106 @@ inline bool run_test01()
                                 test_xy<T>("2 * (x + y) - 1"   ,T(2.2),T(3.3),T(10.0  )),
                                 test_xy<T>("y + (x + 1)"       ,T(2.2),T(3.3),T(6.5  )),
                                 test_xy<T>("(x + 1) + y"       ,T(2.2),T(3.3),T(6.5  )),
-                                test_xy<T>("2 * x"  ,T(2.2),T(0.0),T(4.4)),
-                                test_xy<T>("x * 2"  ,T(2.2),T(0.0),T(4.4)),
-                                test_xy<T>("1.1 + x",T(2.2),T(0.0),T(3.3)),
-                                test_xy<T>("x + 1.1",T(2.2),T(0.0),T(3.3)),
-                                test_xy<T>("x * 1 == x"    ,T(2.0),T(3.0),T(1.0)),
-                                test_xy<T>("1 * x == x"    ,T(2.0),T(3.0),T(1.0)),
-                                test_xy<T>("y * 1 == y"    ,T(2.0),T(3.0),T(1.0)),
-                                test_xy<T>("1 * y == y"    ,T(2.0),T(3.0),T(1.0)),
-                                test_xy<T>("x * 0 == 0"    ,T(2.0),T(3.0),T(1.0)),
-                                test_xy<T>("0 * x == 0"    ,T(2.0),T(3.0),T(1.0)),
-                                test_xy<T>("y * 0 == 0"    ,T(2.0),T(3.0),T(1.0)),
-                                test_xy<T>("0 * y == 0"    ,T(2.0),T(3.0),T(1.0)),
-                                test_xy<T>("x + 1 == 1 + x",T(2.0),T(3.0),T(1.0)),
-                                test_xy<T>("y + 1 == 1 + y",T(2.0),T(3.0),T(1.0)),
-                                test_xy<T>("x + y == y + x",T(2.0),T(3.0),T(1.0)),
-                                test_xy<T>("x * y == y * x",T(2.0),T(3.0),T(1.0)),
-                                test_xy<T>("x < y"         ,T(2.0),T(3.0),T(1.0)),
-                                test_xy<T>("y > x"         ,T(2.0),T(3.0),T(1.0)),
-                                test_xy<T>("x <= y"        ,T(2.0),T(3.0),T(1.0)),
-                                test_xy<T>("y >= x"        ,T(2.0),T(3.0),T(1.0)),
-                                test_xy<T>("x + y > y"     ,T(2.0),T(3.0),T(1.0)),
-                                test_xy<T>("x + y > x"     ,T(2.0),T(3.0),T(1.0)),
-                                test_xy<T>("x * y > y"     ,T(2.0),T(3.0),T(1.0)),
-                                test_xy<T>("x * y > x"     ,T(2.0),T(3.0),T(1.0)),
-                                test_xy<T>("(x + y) > y"   ,T(2.0),T(3.0),T(1.0)),
-                                test_xy<T>("(x + y) > x"   ,T(2.0),T(3.0),T(1.0)),
-                                test_xy<T>("(x * y) > y"   ,T(2.0),T(3.0),T(1.0)),
-                                test_xy<T>("(x * y) > x"   ,T(2.0),T(3.0),T(1.0)),
+                                test_xy<T>("2 * x"             ,T(2.2),T(0.0),T(4.4)),
+                                test_xy<T>("x * 2"             ,T(2.2),T(0.0),T(4.4)),
+                                test_xy<T>("1.1 + x"           ,T(2.2),T(0.0),T(3.3)),
+                                test_xy<T>("x + 1.1"           ,T(2.2),T(0.0),T(3.3)),
+                                test_xy<T>("x - -1 "           ,T(1.0),T(0.0),T(2)),
+                                test_xy<T>("x --1  "           ,T(1.0),T(0.0),T(2)),
+                                test_xy<T>("x-- 1  "           ,T(1.0),T(0.0),T(2)),
+                                test_xy<T>("x--1   "           ,T(1.0),T(0.0),T(2)),
+                                test_xy<T>("x -- -1"           ,T(1.0),T(0.0),T(0)),
+                                test_xy<T>("x + -1 "           ,T(1.0),T(0.0),T(0)),
+                                test_xy<T>("x +-1  "           ,T(1.0),T(0.0),T(0)),
+                                test_xy<T>("x+- 1  "           ,T(1.0),T(0.0),T(0)),
+                                test_xy<T>("x+-1   "           ,T(1.0),T(0.0),T(0)),
+                                test_xy<T>("x +- -1"           ,T(1.0),T(0.0),T(2)),
+                                test_xy<T>("x + +1 "           ,T(1.0),T(0.0),T(2)),
+                                test_xy<T>("x ++1  "           ,T(1.0),T(0.0),T(2)),
+                                test_xy<T>("1 - -x "           ,T(1.0),T(0.0),T(2)),
+                                test_xy<T>("1 --x  "           ,T(1.0),T(0.0),T(2)),
+                                test_xy<T>("1-- x  "           ,T(1.0),T(0.0),T(2)),
+                                test_xy<T>("1--x   "           ,T(1.0),T(0.0),T(2)),
+                                test_xy<T>("1 -- -x"           ,T(1.0),T(0.0),T(0)),
+                                test_xy<T>("1 + -x "           ,T(1.0),T(0.0),T(0)),
+                                test_xy<T>("1 +-x  "           ,T(1.0),T(0.0),T(0)),
+                                test_xy<T>("1+- x  "           ,T(1.0),T(0.0),T(0)),
+                                test_xy<T>("1+-x   "           ,T(1.0),T(0.0),T(0)),
+                                test_xy<T>("1 +- -x"           ,T(1.0),T(0.0),T(2)),
+                                test_xy<T>("1 + +x "           ,T(1.0),T(0.0),T(2)),
+                                test_xy<T>("1 ++x  "           ,T(1.0),T(0.0),T(2)),
+                                test_xy<T>("(x - -1  + 1)"     ,T(1.0),T(0.0),T(3)),
+                                test_xy<T>("(x --1   + 1)"     ,T(1.0),T(0.0),T(3)),
+                                test_xy<T>("(x-- 1   + 1)"     ,T(1.0),T(0.0),T(3)),
+                                test_xy<T>("(x--1    + 1)"     ,T(1.0),T(0.0),T(3)),
+                                test_xy<T>("(x -- -1 + 1)"     ,T(1.0),T(0.0),T(1)),
+                                test_xy<T>("(x + -1  + 1)"     ,T(1.0),T(0.0),T(1)),
+                                test_xy<T>("(x +-1   + 1)"     ,T(1.0),T(0.0),T(1)),
+                                test_xy<T>("(x+- 1   + 1)"     ,T(1.0),T(0.0),T(1)),
+                                test_xy<T>("(x+-1    + 1)"     ,T(1.0),T(0.0),T(1)),
+                                test_xy<T>("(x +- -1 + 1)"     ,T(1.0),T(0.0),T(3)),
+                                test_xy<T>("(x + +1  + 1)"     ,T(1.0),T(0.0),T(3)),
+                                test_xy<T>("(x ++1   + 1)"     ,T(1.0),T(0.0),T(3)),
+                                test_xy<T>("(1 - -x  + 1)"     ,T(1.0),T(0.0),T(3)),
+                                test_xy<T>("(1 --x   + 1)"     ,T(1.0),T(0.0),T(3)),
+                                test_xy<T>("(1-- x   + 1)"     ,T(1.0),T(0.0),T(3)),
+                                test_xy<T>("(1--x    + 1)"     ,T(1.0),T(0.0),T(3)),
+                                test_xy<T>("(1 -- -x + 1)"     ,T(1.0),T(0.0),T(1)),
+                                test_xy<T>("(1 + -x  + 1)"     ,T(1.0),T(0.0),T(1)),
+                                test_xy<T>("(1 +-x   + 1)"     ,T(1.0),T(0.0),T(1)),
+                                test_xy<T>("(1+- x   + 1)"     ,T(1.0),T(0.0),T(1)),
+                                test_xy<T>("(1+-x    + 1)"     ,T(1.0),T(0.0),T(1)),
+                                test_xy<T>("(1 +- -x + 1)"     ,T(1.0),T(0.0),T(3)),
+                                test_xy<T>("(1 + +x  + 1)"     ,T(1.0),T(0.0),T(3)),
+                                test_xy<T>("(1 ++x   + 1)"     ,T(1.0),T(0.0),T(3)),
+                                test_xy<T>("(x - -1  - 1)"     ,T(1.0),T(0.0),T(1)),
+                                test_xy<T>("(x --1   - 1)"     ,T(1.0),T(0.0),T(1)),
+                                test_xy<T>("(x-- 1   - 1)"     ,T(1.0),T(0.0),T(1)),
+                                test_xy<T>("(x--1    - 1)"     ,T(1.0),T(0.0),T(1)),
+                                test_xy<T>("(x -- -1 - 1)"     ,T(1.0),T(0.0),T(-1)),
+                                test_xy<T>("(x + -1  - 1)"     ,T(1.0),T(0.0),T(-1)),
+                                test_xy<T>("(x +-1   - 1)"     ,T(1.0),T(0.0),T(-1)),
+                                test_xy<T>("(x+- 1   - 1)"     ,T(1.0),T(0.0),T(-1)),
+                                test_xy<T>("(x+-1    - 1)"     ,T(1.0),T(0.0),T(-1)),
+                                test_xy<T>("(x +- -1 - 1)"     ,T(1.0),T(0.0),T(1)),
+                                test_xy<T>("(x + +1  - 1)"     ,T(1.0),T(0.0),T(1)),
+                                test_xy<T>("(x ++1   - 1)"     ,T(1.0),T(0.0),T(1)),
+                                test_xy<T>("(1 - -x  - 1)"     ,T(1.0),T(0.0),T(1)),
+                                test_xy<T>("(1 --x   - 1)"     ,T(1.0),T(0.0),T(1)),
+                                test_xy<T>("(1-- x   - 1)"     ,T(1.0),T(0.0),T(1)),
+                                test_xy<T>("(1--x    - 1)"     ,T(1.0),T(0.0),T(1)),
+                                test_xy<T>("(1 -- -x - 1)"     ,T(1.0),T(0.0),T(-1)),
+                                test_xy<T>("(1 + -x  - 1)"     ,T(1.0),T(0.0),T(-1)),
+                                test_xy<T>("(1 +-x   - 1)"     ,T(1.0),T(0.0),T(-1)),
+                                test_xy<T>("(1+- x   - 1)"     ,T(1.0),T(0.0),T(-1)),
+                                test_xy<T>("(1+-x    - 1)"     ,T(1.0),T(0.0),T(-1)),
+                                test_xy<T>("(1 +- -x - 1)"     ,T(1.0),T(0.0),T(1)),
+                                test_xy<T>("(1 + +x  - 1)"     ,T(1.0),T(0.0),T(1)),
+                                test_xy<T>("(1 ++x   - 1)"     ,T(1.0),T(0.0),T(1)),
+                                test_xy<T>("x * 1 == x"        ,T(2.0),T(3.0),T(1.0)),
+                                test_xy<T>("1 * x == x"        ,T(2.0),T(3.0),T(1.0)),
+                                test_xy<T>("y * 1 == y"        ,T(2.0),T(3.0),T(1.0)),
+                                test_xy<T>("1 * y == y"        ,T(2.0),T(3.0),T(1.0)),
+                                test_xy<T>("x * 0 == 0"        ,T(2.0),T(3.0),T(1.0)),
+                                test_xy<T>("0 * x == 0"        ,T(2.0),T(3.0),T(1.0)),
+                                test_xy<T>("y * 0 == 0"        ,T(2.0),T(3.0),T(1.0)),
+                                test_xy<T>("0 * y == 0"        ,T(2.0),T(3.0),T(1.0)),
+                                test_xy<T>("x + 1 == 1 + x"    ,T(2.0),T(3.0),T(1.0)),
+                                test_xy<T>("y + 1 == 1 + y"    ,T(2.0),T(3.0),T(1.0)),
+                                test_xy<T>("x + y == y + x"    ,T(2.0),T(3.0),T(1.0)),
+                                test_xy<T>("x * y == y * x"    ,T(2.0),T(3.0),T(1.0)),
+                                test_xy<T>("x < y"             ,T(2.0),T(3.0),T(1.0)),
+                                test_xy<T>("y > x"             ,T(2.0),T(3.0),T(1.0)),
+                                test_xy<T>("x <= y"            ,T(2.0),T(3.0),T(1.0)),
+                                test_xy<T>("y >= x"            ,T(2.0),T(3.0),T(1.0)),
+                                test_xy<T>("x + y > y"         ,T(2.0),T(3.0),T(1.0)),
+                                test_xy<T>("x + y > x"         ,T(2.0),T(3.0),T(1.0)),
+                                test_xy<T>("x * y > y"         ,T(2.0),T(3.0),T(1.0)),
+                                test_xy<T>("x * y > x"         ,T(2.0),T(3.0),T(1.0)),
+                                test_xy<T>("(x + y) > y"       ,T(2.0),T(3.0),T(1.0)),
+                                test_xy<T>("(x + y) > x"       ,T(2.0),T(3.0),T(1.0)),
+                                test_xy<T>("(x * y) > y"       ,T(2.0),T(3.0),T(1.0)),
+                                test_xy<T>("(x * y) > x"       ,T(2.0),T(3.0),T(1.0)),
                                 test_xy<T>("(2x + 3y)  == (2*x + 3*y)" ,T(2.0),T(3.0),T(1.0)),
                                 test_xy<T>("2(x +  y)  == (2*x + 2*y)" ,T(2.0),T(3.0),T(1.0)),
                                 test_xy<T>(" (x +  y)3 == (3*x + 3*y)" ,T(2.0),T(3.0),T(1.0)),
@@ -1646,14 +1810,14 @@ inline bool run_test01()
                }
             }
 
-            T result = expression.value();
+            const T result = expression.value();
 
             if (not_equal(result,test.result))
             {
                printf("run_test01() - Computation Error:  Expression: [%s]\tExpected: %19.15f\tResult: %19.15f\n",
                       test.expr.c_str(),
-                      (double)test.result,
-                      (double)result);
+                      static_cast<double>(test.result),
+                      static_cast<double>(result));
 
                loop_result = false;
             }
@@ -1758,14 +1922,14 @@ inline bool run_test01()
                }
             }
 
-            T result = expression.value();
+            const T result = expression.value();
 
             if (not_equal(result,test.result))
             {
                printf("run_test01() - Computation Error:  Expression: [%s]\tExpected: %19.15f\tResult: %19.15f\n",
                       test.expr.c_str(),
-                      (double)test.result,
-                      (double)result);
+                      static_cast<double>(test.result),
+                      static_cast<double>(result));
 
                loop_result = false;
             }
@@ -1841,14 +2005,14 @@ inline bool run_test01()
                }
             }
 
-            T result = expression.value();
+            const T result = expression.value();
 
             if (not_equal(result,T(1)))
             {
                printf("run_test01() - Computation Error:  Expression: [%s]\tExpected: %19.15f\tResult: %19.15f\n",
                       expr_list[i].c_str(),
-                      (double)1.0,
-                      (double)result);
+                      static_cast<double>(1.0),
+                      static_cast<double>(result));
 
                loop_result = false;
             }
@@ -1901,14 +2065,14 @@ inline bool run_test01()
                }
             }
 
-            T result = expression.value();
+            const T result = expression.value();
 
             if (not_equal(result,T(1)))
             {
                printf("run_test01() - Computation Error:  Expression: [%s]\tExpected: %19.15f\tResult: %19.15f\n",
                       expr_list[i].c_str(),
-                      (double)1.0,
-                      (double)result);
+                      static_cast<double>(1.0),
+                      static_cast<double>(result));
                loop_result = false;
             }
          }
@@ -2422,6 +2586,17 @@ inline bool run_test02()
                              test_ab<T>("var i := 0; a[0:i+3] <=> b[:]; (a == '0123X') and (b == 'XXXX4567890')", "XXXXX","01234567890",T(1.0)),
                              test_ab<T>("var i := 0; a[0:i+4] <=> b[:]; (a == '01234') and (b == 'XXXXX567890')", "XXXXX","01234567890",T(1.0)),
 
+                             test_ab<T>("var y:= 2; '01234567890'[y:] == a                ", "234567890","" ,T(1.0)),
+                             test_ab<T>("var y:= 2; '01234567890'[y:][y:] == a            ", "4567890"  ,"" ,T(1.0)),
+                             test_ab<T>("var y:= 2; '01234567890'[y:][y:][y:] == a        ", "67890"    ,"" ,T(1.0)),
+                             test_ab<T>("var y:= 2; '01234567890'[y:][y:][y:][y:] == a    ", "890"      ,"" ,T(1.0)),
+                             test_ab<T>("var y:= 2; '01234567890'[y:][y:][y:][y:][y:] == a", "0"        ,"" ,T(1.0)),
+                             test_ab<T>("var y:= 2; '0123456789'[y:] == a                 ", "23456789" ,"" ,T(1.0)),
+                             test_ab<T>("var y:= 2; '0123456789'[y:][y:] == a             ", "456789"   ,"" ,T(1.0)),
+                             test_ab<T>("var y:= 2; '0123456789'[y:][y:][y:] == a         ", "6789"     ,"" ,T(1.0)),
+                             test_ab<T>("var y:= 2; '0123456789'[y:][y:][y:][y:] == a     ", "89"       ,"" ,T(1.0)),
+                             test_ab<T>("var y:= 2; '0123456789'[y:][y:][y:][y:][y:] == a ", ""         ,"" ,T(1.0)),
+
                              test_ab<T>("var x := 'XXXXX'; var y := '01234567890'; x[0:0] := y[:]; x == '0XXXX'", "","",T(1.0)),
                              test_ab<T>("var x := 'XXXXX'; var y := '01234567890'; x[0:1] := y[:]; x == '01XXX'", "","",T(1.0)),
                              test_ab<T>("var x := 'XXXXX'; var y := '01234567890'; x[0:2] := y[:]; x == '012XX'", "","",T(1.0)),
@@ -2598,8 +2773,8 @@ inline bool run_test02()
                printf("run_test02() - Computation Error:  Expression: [%s]\tExpected: %19.15f\tResult: %19.15f\t"
                       "a='%s'\tb='%s'\tc='%s'\n",
                       test.expr.c_str(),
-                      (double)test.result,
-                      (double)expr_result,
+                      static_cast<double>(test.result),
+                      static_cast<double>(expr_result),
                       str_a.c_str(),
                       str_b.c_str(),
                       str_c.c_str());
@@ -2676,8 +2851,8 @@ template <typename T>
 inline bool run_test03()
 {
    typedef exprtk::symbol_table<T> symbol_table_t;
-   typedef exprtk::expression<T>     expression_t;
-   typedef exprtk::parser<T>             parser_t;
+   typedef exprtk::expression<T>   expression_t;
+   typedef exprtk::parser<T>       parser_t;
 
    std::string expression_string = "A+A0+aA+Aa0+b+B1+Bb+bB1+A+A0+AA+AA0+B+B1+BB+BB1+a+a0+aa+aa0+b+b1+bb+bb1+"
                                    "c+C2+Cc+Cc2+D+D3+dD+dD3+C+C2+CC+CC2+D+D3+DD+DD3+c+c2+cc+cc2+d+d3+dd+dd3+"
@@ -3013,10 +3188,10 @@ inline bool run_test04()
       {
          printf("run_test04() - Computation Error:  Expression: [%s]\tExpected: %19.15f\tResult: %19.15f x:%19.15f\ty:%19.15f\n",
                 expression_string.c_str(),
-                (double)result1,
-                (double)result2,
-                (double)x,
-                (double)y);
+                static_cast<double>(result1),
+                static_cast<double>(result2),
+                static_cast<double>(x),
+                static_cast<double>(y));
 
          return false;
       }
@@ -3083,10 +3258,10 @@ inline bool run_test05()
          {
             printf("run_test05() - Computation Error:  Expression: [%s]\tExpected: %19.15f\tResult: %19.15f x:%19.15f\ty:%19.15f\tIndex:%d\n",
                    expression_string.c_str(),
-                   (double)real_result,
-                   (double)result,
-                   (double)x,
-                   (double)y,
+                   static_cast<double>(real_result),
+                   static_cast<double>(result),
+                   static_cast<double>(x),
+                   static_cast<double>(y),
                    static_cast<unsigned int>(i));
 
             return false;
@@ -3140,8 +3315,8 @@ inline bool run_test06()
    if (not_equal(total_area1,T(pi) / T(2),T(0.000001)))
    {
       printf("run_test06() - Integration Error:  Expected: %19.15f\tResult: %19.15f\n",
-             (double)(pi / T(2)),
-             (double)total_area1);
+             static_cast<double>(pi / T(2)),
+             static_cast<double>(total_area1));
 
       return false;
    }
@@ -3192,9 +3367,9 @@ inline bool run_test07()
          if (not_equal(deriv1_result1,deriv1_real_result,T(0.00001)))
          {
             printf("run_test07() - 1st Derivative Error:  x: %19.15f\tExpected: %19.15f\tResult: %19.15f\n",
-                   (double)x,
-                   (double)deriv1_real_result,
-                   (double)deriv1_result1);
+                   static_cast<double>(x),
+                   static_cast<double>(deriv1_real_result),
+                   static_cast<double>(deriv1_result1));
 
             return false;
          }
@@ -3214,9 +3389,9 @@ inline bool run_test07()
          if (not_equal(deriv2_result1,deriv2_real_result,T(0.01)))
          {
             printf("run_test07() - 2nd Derivative Error:  x: %19.15f\tExpected: %19.15f\tResult: %19.15f\n",
-                   (double)x,
-                   (double)deriv2_real_result,
-                   (double)deriv2_result1);
+                   static_cast<double>(x),
+                   static_cast<double>(deriv2_real_result),
+                   static_cast<double>(deriv2_result1));
 
             return false;
          }
@@ -3236,9 +3411,9 @@ inline bool run_test07()
          if (not_equal(deriv3_result1,deriv3_real_result,T(0.01)))
          {
             printf("run_test07() - 3rd Derivative Error:  x: %19.15f\tExpected: %19.15f\tResult: %19.15f\n",
-                   (double)x,
-                   (double)deriv3_real_result,
-                   (double)deriv3_result1);
+                   static_cast<double>(x),
+                   static_cast<double>(deriv3_real_result),
+                   static_cast<double>(deriv3_result1));
 
             return false;
          }
@@ -3526,9 +3701,9 @@ inline bool run_test09()
 
          const T pi = T(3.141592653589793238462643383279502);
 
-         T result = expression.value();
+         const T result = expression.value();
 
-         T expected = T(4) *
+         const T expected = T(4) *
                       (
                          mf(sin(x*pi),y / T(2)) +
                          mf(sin(x*pi),y / T(2)) +
@@ -3545,8 +3720,8 @@ inline bool run_test09()
          if (not_equal(result,expected,T(0.0000001)))
          {
             printf("run_test09() - Error Expected: %19.15f\tResult: %19.15f\n",
-                   (double)expected,
-                   (double)result);
+                   static_cast<double>(expected),
+                   static_cast<double>(result));
 
             return false;
          }
@@ -4311,6 +4486,78 @@ inline bool run_test10()
       {
         "var x; 1",
         "var x := 1; x",
+        "var x:= 1; x - -1 == 2",
+        "var x:= 1; x --1  == 2",
+        "var x:= 1; x-- 1  == 2",
+        "var x:= 1; x--1   == 2",
+        "var x:= 1; x -- -1== 0",
+        "var x:= 1; x + -1 == 0",
+        "var x:= 1; x +-1  == 0",
+        "var x:= 1; x+- 1  == 0",
+        "var x:= 1; x+-1   == 0",
+        "var x:= 1; x +- -1== 2",
+        "var x:= 1; x + +1 == 2",
+        "var x:= 1; x ++1  == 2",
+        "var x:= 1; 1 - -x == 2",
+        "var x:= 1; 1 --x  == 2",
+        "var x:= 1; 1-- x  == 2",
+        "var x:= 1; 1--x   == 2",
+        "var x:= 1; 1 -- -x== 0",
+        "var x:= 1; 1 + -x == 0",
+        "var x:= 1; 1 +-x  == 0",
+        "var x:= 1; 1+- x  == 0",
+        "var x:= 1; 1+-x   == 0",
+        "var x:= 1; 1 +- -x== 2",
+        "var x:= 1; 1 + +x == 2",
+        "var x:= 1; 1 ++x  == 2",
+        "var x:= 1; (x - -1  + 1) == 3",
+        "var x:= 1; (x --1   + 1) == 3",
+        "var x:= 1; (x-- 1   + 1) == 3",
+        "var x:= 1; (x--1    + 1) == 3",
+        "var x:= 1; (x -- -1 + 1) == 1",
+        "var x:= 1; (x + -1  + 1) == 1",
+        "var x:= 1; (x +-1   + 1) == 1",
+        "var x:= 1; (x+- 1   + 1) == 1",
+        "var x:= 1; (x+-1    + 1) == 1",
+        "var x:= 1; (x +- -1 + 1) == 3",
+        "var x:= 1; (x + +1  + 1) == 3",
+        "var x:= 1; (x ++1   + 1) == 3",
+        "var x:= 1; (1 - -x  + 1) == 3",
+        "var x:= 1; (1 --x   + 1) == 3",
+        "var x:= 1; (1-- x   + 1) == 3",
+        "var x:= 1; (1--x    + 1) == 3",
+        "var x:= 1; (1 -- -x + 1) == 1",
+        "var x:= 1; (1 + -x  + 1) == 1",
+        "var x:= 1; (1 +-x   + 1) == 1",
+        "var x:= 1; (1+- x   + 1) == 1",
+        "var x:= 1; (1+-x    + 1) == 1",
+        "var x:= 1; (1 +- -x + 1) == 3",
+        "var x:= 1; (1 + +x  + 1) == 3",
+        "var x:= 1; (1 ++x   + 1) == 3",
+        "var x:= 1; (x - -1  - 1) == 1",
+        "var x:= 1; (x --1   - 1) == 1",
+        "var x:= 1; (x-- 1   - 1) == 1",
+        "var x:= 1; (x--1    - 1) == 1",
+        "var x:= 1; (x -- -1 - 1) == -1",
+        "var x:= 1; (x + -1  - 1) == -1",
+        "var x:= 1; (x +-1   - 1) == -1",
+        "var x:= 1; (x+- 1   - 1) == -1",
+        "var x:= 1; (x+-1    - 1) == -1",
+        "var x:= 1; (x +- -1 - 1) == 1",
+        "var x:= 1; (x + +1  - 1) == 1",
+        "var x:= 1; (x ++1   - 1) == 1",
+        "var x:= 1; (1 - -x  - 1) == 1",
+        "var x:= 1; (1 --x   - 1) == 1",
+        "var x:= 1; (1-- x   - 1) == 1",
+        "var x:= 1; (1--x    - 1) == 1",
+        "var x:= 1; (1 -- -x - 1) == -1",
+        "var x:= 1; (1 + -x  - 1) == -1",
+        "var x:= 1; (1 +-x   - 1) == -1",
+        "var x:= 1; (1+- x   - 1) == -1",
+        "var x:= 1; (1+-x    - 1) == -1",
+        "var x:= 1; (1 +- -x - 1) == 1",
+        "var x:= 1; (1 + +x  - 1) == 1",
+        "var x:= 1; (1 ++x   - 1) == 1",
         "var x := 1; var y := 2; 1",
         "var x := 1; var y := 2; x",
         "var x:=6; var y:=4; x + -3  ==   3",
@@ -4623,7 +4870,43 @@ inline bool run_test10()
         "var s := 'abc';  ~{1 + 2; 'abc' + s; s} == s ",
         "var s := 'abc';  ~{1 + 2; var x := 'ab'; x + 'c'} == s ",
 
-        "var x[10^6] := null; var y[10^7] := null; 0 * (min(x) + min(y)) + x[] + y[] == 10^7 + 10^6"
+        "var x[10^6] := null; var y[10^7] := null; 0 * (min(x) + min(y)) + x[] + y[] == 10^7 + 10^6",
+
+        "var v0[3] := {1,2,3}; var v1[3] := {7,8,9}; if (1 < 2, v0, v1) == v0",
+        "var v0[3] := {1,2,3}; var v1[3] := {7,8,9}; if (1 > 2, v0, v1) == v1",
+        "var v0[3] := {1,2,3}; var v1[3] := {7,8,9}; if (1 < 2, v0 - v1, v1 - v0) == (v0 - v1)",
+        "var v0[3] := {1,2,3}; var v1[3] := {7,8,9}; if (1 > 2, v0 - v1, v1 - v0) == (v1 - v0)",
+        "var v0[3] := {1,2,3}; var v1[3] := {7,8,9}; var x := 1; var y := 2; if (x < y, v0, v1) == v0",
+        "var v0[3] := {1,2,3}; var v1[3] := {7,8,9}; var x := 1; var y := 2; if (x > y, v0, v1) == v1",
+        "var v0[3] := {1,2,3}; var v1[3] := {7,8,9}; var x := 1; var y := 2; if (x < y, v0 - v1, v1 - v0) == (v0 - v1)",
+        "var v0[3] := {1,2,3}; var v1[3] := {7,8,9}; var x := 1; var y := 2; if (x > y, v0 - v1, v1 - v0) == (v1 - v0)",
+
+        "var v0[3] := {1,2,3}; var v1[4] := {6,7,8,9}; if (1 < 2, v0, v1) == v0",
+        "var v0[3] := {1,2,3}; var v1[4] := {6,7,8,9}; if (1 > 2, v0, v1) == v1",
+        "var v0[3] := {1,2,3}; var v1[4] := {6,7,8,9}; if (1 < 2, v0 - v1, v1 - v0) == (v0 - v1)",
+        "var v0[3] := {1,2,3}; var v1[4] := {6,7,8,9}; if (1 > 2, v0 - v1, v1 - v0) == (v1 - v0)",
+        "var v0[3] := {1,2,3}; var v1[4] := {6,7,8,9}; var x := 1; var y := 2; if (x < y, v0, v1) == v0",
+        "var v0[3] := {1,2,3}; var v1[4] := {6,7,8,9}; var x := 1; var y := 2; if (x > y, v0, v1) == v1",
+        "var v0[3] := {1,2,3}; var v1[4] := {6,7,8,9}; var x := 1; var y := 2; if (x < y, v0 - v1, v1 - v0) == (v0 - v1)",
+        "var v0[3] := {1,2,3}; var v1[4] := {6,7,8,9}; var x := 1; var y := 2; if (x > y, v0 - v1, v1 - v0) == (v1 - v0)",
+
+        "var v0[3] := {1,2,3}; var v1[3] := {7,8,9}; (if (1 < 2) v0; else v1;) == v0",
+        "var v0[3] := {1,2,3}; var v1[3] := {7,8,9}; (if (1 > 2) v0; else v1;) == v1",
+        "var v0[3] := {1,2,3}; var v1[3] := {7,8,9}; (if (1 < 2) v0 - v1; else v1 - v0;) == (v0 - v1)",
+        "var v0[3] := {1,2,3}; var v1[3] := {7,8,9}; (if (1 > 2) v0 - v1; else v1 - v0;) == (v1 - v0)",
+        "var v0[3] := {1,2,3}; var v1[3] := {7,8,9}; var x := 1; var y := 2; (if (x < y) v0; else v1;) == v0",
+        "var v0[3] := {1,2,3}; var v1[3] := {7,8,9}; var x := 1; var y := 2; (if (x > y) v0; else v1;) == v1",
+        "var v0[3] := {1,2,3}; var v1[3] := {7,8,9}; var x := 1; var y := 2; (if (x < y) v0 - v1; else v1 - v0;) == (v0 - v1)",
+        "var v0[3] := {1,2,3}; var v1[3] := {7,8,9}; var x := 1; var y := 2; (if (x > y) v0 - v1; else v1 - v0;) == (v1 - v0)",
+
+        "var v0[3] := {1,2,3}; var v1[4] := {6,7,8,9}; (if (1 < 2) v0; else v1;) == v0",
+        "var v0[3] := {1,2,3}; var v1[4] := {6,7,8,9}; (if (1 > 2) v0; else v1;) == v1",
+        "var v0[3] := {1,2,3}; var v1[4] := {6,7,8,9}; (if (1 < 2) v0 - v1; else v1 - v0;) == (v0 - v1)",
+        "var v0[3] := {1,2,3}; var v1[4] := {6,7,8,9}; (if (1 > 2) v0 - v1; else v1 - v0;) == (v1 - v0)",
+        "var v0[3] := {1,2,3}; var v1[4] := {6,7,8,9}; var x := 1; var y := 2; (if (x < y) v0; else v1;) == v0",
+        "var v0[3] := {1,2,3}; var v1[4] := {6,7,8,9}; var x := 1; var y := 2; (if (x > y) v0; else v1;) == v1",
+        "var v0[3] := {1,2,3}; var v1[4] := {6,7,8,9}; var x := 1; var y := 2; (if (x < y) v0 - v1; else v1 - v0;) == (v0 - v1)",
+        "var v0[3] := {1,2,3}; var v1[4] := {6,7,8,9}; var x := 1; var y := 2; (if (x > y) v0 - v1; else v1 - v0;) == (v1 - v0)",
       };
 
       const std::size_t expression_list_size = sizeof(expression_list) / sizeof(std::string);
@@ -4662,7 +4945,7 @@ inline bool run_test10()
                }
             }
 
-            T result = expression.value();
+            const T result = expression.value();
 
             if (T(1) != result)
             {
@@ -4699,7 +4982,7 @@ inline bool run_test10()
                continue;
             }
 
-            T result = expression.value();
+            const T result = expression.value();
 
             if (T(1) != result)
             {
@@ -4927,8 +5210,8 @@ template <typename T>
 inline bool run_test13()
 {
    typedef exprtk::symbol_table<T> symbol_table_t;
-   typedef exprtk::expression<T>     expression_t;
-   typedef exprtk::parser<T>             parser_t;
+   typedef exprtk::expression<T>   expression_t;
+   typedef exprtk::parser<T>       parser_t;
 
    static const std::string expression_string[] =
                             {
@@ -5287,8 +5570,8 @@ inline bool run_test15()
       if (not_equal(base_result,result))
       {
          printf("run_test15() - Error in evaluation! (1)  Base: %20.10f\tResult: %20.10f\tExpression: %s\n",
-                (double)base_result,
-                (double)result,
+                static_cast<double>(base_result),
+                static_cast<double>(result),
                 expr_str_list[i].c_str());
 
          failure = true;
@@ -5918,6 +6201,96 @@ template <typename T>
 inline bool run_test18()
 {
    {
+      exprtk::symbol_table<T> symbol_table;
+      symbol_table.remove_variable("x",true);
+      symbol_table.remove_variable("x",false);
+      symbol_table.remove_stringvar("x");
+      symbol_table.remove_function("x");
+      symbol_table.remove_vararg_function("x");
+      symbol_table.remove_vector("x");
+   }
+
+   {
+      exprtk::symbol_table<T> symbol_table;
+
+      {
+         T x;
+         const bool result1 = symbol_table.add_variable("x", x);
+         const bool result2 = symbol_table.remove_variable("x");
+         const bool result3 = symbol_table.remove_variable("x");
+
+         if (!result1 || !result2 || result3)
+         {
+            printf("run_test18() - Failed sym_tab add/remove [1]\n");
+         }
+      }
+
+      {
+         std::string x;
+         const bool result1 = symbol_table.add_stringvar("x", x);
+         const bool result2 = symbol_table.remove_stringvar("x");
+         const bool result3 = symbol_table.remove_stringvar("x");
+
+         if (!result1 || !result2 || result3)
+         {
+            printf("run_test18() - Failed sym_tab add/remove [2]\n");
+         }
+      }
+
+      {
+         std::vector<T> x(10,T(0));
+         const bool result1 = symbol_table.add_vector("x", x);
+         const bool result2 = symbol_table.remove_vector("x");
+         const bool result3 = symbol_table.remove_vector("x");
+
+         if (!result1 || !result2 || result3)
+         {
+            printf("run_test18() - Failed sym_tab add/remove [3]\n");
+         }
+      }
+
+      {
+         myfunc<T> x;
+         const bool result1 = symbol_table.add_function("x", x);
+         const bool result2 = symbol_table.remove_function("x");
+         const bool result3 = symbol_table.remove_function("x");
+
+         if (!result1 || !result2 || result3)
+         {
+            printf("run_test18() - Failed sym_tab add/remove [4]\n");
+         }
+      }
+
+      {
+         va_func<T> x;
+         const bool result1 = symbol_table.add_function("x", x);
+         const bool result2 = symbol_table.remove_vararg_function("x");
+         const bool result3 = symbol_table.remove_vararg_function("x");
+
+         if (!result1 || !result2 || result3)
+         {
+            printf("run_test18() - Failed sym_tab add/remove [5]\n");
+         }
+      }
+
+      {
+         symbol_table.add_function("foo1",foo1);
+         symbol_table.add_function("foo2",foo2);
+         symbol_table.add_function("foo3",foo3);
+         symbol_table.add_function("foo4",foo4);
+         symbol_table.add_function("foo5",foo5);
+         symbol_table.add_function("foo6",foo6);
+
+         symbol_table.remove_function("foo1");
+         symbol_table.remove_function("foo2");
+         symbol_table.remove_function("foo3");
+         symbol_table.remove_function("foo4");
+         symbol_table.remove_function("foo5");
+         symbol_table.remove_function("foo6");
+      }
+   }
+
+   {
       typedef exprtk::expression<T> expression_t;
 
       T x = T(1.1);
@@ -6001,8 +6374,8 @@ inline bool run_test18()
 
    {
       typedef exprtk::symbol_table<T> symbol_table_t;
-      typedef exprtk::expression<T>     expression_t;
-      typedef exprtk::parser<T>             parser_t;
+      typedef exprtk::expression<T>   expression_t;
+      typedef exprtk::parser<T>       parser_t;
 
       T x = T(33);
       T y = T(77);
@@ -6100,8 +6473,8 @@ inline bool run_test18()
 
    {
       typedef exprtk::symbol_table<T> symbol_table_t;
-      typedef exprtk::expression<T>     expression_t;
-      typedef exprtk::parser<T>             parser_t;
+      typedef exprtk::expression<T>   expression_t;
+      typedef exprtk::parser<T>       parser_t;
 
       T x = T(33);
       T y = T(77);
@@ -6278,8 +6651,8 @@ inline bool run_test18()
       for (std::size_t i = 0; i < expression_list_size; ++i)
       {
          typedef exprtk::symbol_table<T> symbol_table_t;
-         typedef exprtk::expression<T>     expression_t;
-         typedef exprtk::parser<T>             parser_t;
+         typedef exprtk::expression<T>   expression_t;
+         typedef exprtk::parser<T>       parser_t;
 
          T x = T(33);
          T y = T(77);
@@ -6395,8 +6768,8 @@ inline bool run_test18()
       std::string s4 = "XXXXXXXXXXXXXXX";
 
       typedef exprtk::symbol_table<T> symbol_table_t;
-      typedef exprtk::expression<T>     expression_t;
-      typedef exprtk::parser<T>             parser_t;
+      typedef exprtk::expression<T>   expression_t;
+      typedef exprtk::parser<T>       parser_t;
 
       symbol_table_t symbol_table;
 
@@ -6448,7 +6821,7 @@ inline bool run_test18()
             return false;
          }
 
-         T result = expression.value();
+         const T result = expression.value();
 
          if (result != T(1))
          {
@@ -6508,8 +6881,8 @@ inline bool run_test18()
       bool failure = false;
 
       typedef exprtk::symbol_table<T> symbol_table_t;
-      typedef exprtk::expression<T>     expression_t;
-      typedef exprtk::parser<T>             parser_t;
+      typedef exprtk::expression<T>   expression_t;
+      typedef exprtk::parser<T>       parser_t;
 
       symbol_table_t symbol_table;
 
@@ -6579,8 +6952,8 @@ inline bool run_test18()
       bool failure = false;
 
       typedef exprtk::symbol_table<T> symbol_table_t;
-      typedef exprtk::expression<T>     expression_t;
-      typedef exprtk::parser<T>             parser_t;
+      typedef exprtk::expression<T>   expression_t;
+      typedef exprtk::parser<T>       parser_t;
 
       std::vector<T> v0;
       std::vector<T> v1;
@@ -6666,8 +7039,8 @@ inline bool run_test18()
       bool failure = false;
 
       typedef exprtk::symbol_table<T> symbol_table_t;
-      typedef exprtk::expression<T>     expression_t;
-      typedef exprtk::parser<T>             parser_t;
+      typedef exprtk::expression<T>   expression_t;
+      typedef exprtk::parser<T>       parser_t;
 
       std::vector<T> v0;
       std::vector<T> s;
@@ -6729,8 +7102,8 @@ inline bool run_test18()
       bool failure = false;
 
       typedef exprtk::symbol_table<T> symbol_table_t;
-      typedef exprtk::expression<T>     expression_t;
-      typedef exprtk::parser<T>             parser_t;
+      typedef exprtk::expression<T>   expression_t;
+      typedef exprtk::parser<T>       parser_t;
 
       std::vector<T> v0;
       std::vector<T> s;
@@ -6792,8 +7165,8 @@ inline bool run_test18()
       bool failure = false;
 
       typedef exprtk::symbol_table<T> symbol_table_t;
-      typedef exprtk::expression<T>     expression_t;
-      typedef exprtk::parser<T>             parser_t;
+      typedef exprtk::expression<T>   expression_t;
+      typedef exprtk::parser<T>       parser_t;
 
       std::vector<T> v0;
       std::vector<T> s;
@@ -6853,8 +7226,8 @@ inline bool run_test18()
 
    {
       typedef exprtk::symbol_table<T> symbol_table_t;
-      typedef exprtk::expression<T>     expression_t;
-      typedef exprtk::parser<T>             parser_t;
+      typedef exprtk::expression<T>   expression_t;
+      typedef exprtk::parser<T>       parser_t;
 
       T v0[] = { T(0), T(1), T(2), T(3), T(4) };
       T v1[] = { T(5), T(6), T(7), T(8), T(9) };
@@ -6917,8 +7290,8 @@ inline bool run_test18()
       bool failure = false;
 
       typedef exprtk::symbol_table<T> symbol_table_t;
-      typedef exprtk::expression<T>     expression_t;
-      typedef exprtk::parser<T>             parser_t;
+      typedef exprtk::expression<T>   expression_t;
+      typedef exprtk::parser<T>       parser_t;
 
       exprtk::rtl::vecops::package<T> vecops_pkg;
 
@@ -7041,7 +7414,7 @@ inline bool run_test18()
             continue;
          }
 
-         T result = expression.value();
+         const T result = expression.value();
 
          if (result != T(1))
          {
@@ -7351,11 +7724,11 @@ inline bool run_test18()
 template <typename T>
 inline bool run_test19()
 {
-   typedef exprtk::symbol_table<T>      symbol_table_t;
-   typedef exprtk::expression<T>          expression_t;
-   typedef exprtk::parser<T>                  parser_t;
-   typedef exprtk::function_compositor<T> compositor_t;
-   typedef typename compositor_t::function  function_t;
+   typedef exprtk::symbol_table<T>         symbol_table_t;
+   typedef exprtk::expression<T>           expression_t;
+   typedef exprtk::parser<T>               parser_t;
+   typedef exprtk::function_compositor<T>  compositor_t;
+   typedef typename compositor_t::function function_t;
 
    {
       T x = T(123.123);
@@ -7564,7 +7937,7 @@ inline bool run_test19()
             continue;
          }
 
-         T result = expression.value();
+         const T result = expression.value();
 
          if (result_list[i] != result)
          {
@@ -8061,15 +8434,15 @@ inline bool run_test19()
       {
          x = static_cast<T>(i);
 
-         T result = expression.value();
+         const T result = expression.value();
 
          if (not_equal(result,std::sqrt(x),T(0.0000001)))
          {
             printf("run_test19() - Computation Error  "
                    "Expression: [%s]\tExpected: %12.8f\tResult: %12.8f\n",
                    expression_str.c_str(),
-                   (double)std::sqrt(x),
-                   (double)result);
+                   static_cast<double>(std::sqrt(x)),
+                   static_cast<double>(result));
 
             failure = true;
          }
@@ -8191,7 +8564,7 @@ inline bool run_test19()
 
          sum += x;
 
-         T result = expression.value();
+         const T result = expression.value();
 
          if (result != sum)
          {
@@ -8684,8 +9057,8 @@ template <typename T>
 inline bool run_test21()
 {
    typedef exprtk::symbol_table<T> symbol_table_t;
-   typedef exprtk::expression<T>     expression_t;
-   typedef exprtk::parser<T>             parser_t;
+   typedef exprtk::expression<T>   expression_t;
+   typedef exprtk::parser<T>       parser_t;
 
    T x = T(1.1);
    T y = T(2.2);
