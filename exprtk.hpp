@@ -2,7 +2,7 @@
  ******************************************************************
  *           C++ Mathematical Expression Toolkit Library          *
  *                                                                *
- * Author: Arash Partow (1999-2020)                               *
+ * Author: Arash Partow (1999-2021)                               *
  * URL: http://www.partow.net/programming/exprtk/index.html       *
  *                                                                *
  * Copyright notice:                                              *
@@ -2785,7 +2785,10 @@ namespace exprtk
             // $fdd(x,x,x) = at least 11 chars
             if (std::distance(s_itr_,s_end_) < 11)
             {
-               t.set_error(token::e_err_sfunc, initial_itr, s_itr_, base_itr_);
+               t.set_error(
+                  token::e_err_sfunc,
+                  initial_itr, std::min(initial_itr + 11, s_end_),
+                  base_itr_);
                token_list_.push_back(t);
 
                return;
@@ -2798,7 +2801,10 @@ namespace exprtk
                    (details::is_digit(*(s_itr_ + 3))))
                )
             {
-               t.set_error(token::e_err_sfunc, initial_itr, s_itr_, base_itr_);
+               t.set_error(
+                  token::e_err_sfunc,
+                  initial_itr, std::min(initial_itr + 4, s_end_),
+                  base_itr_);
                token_list_.push_back(t);
 
                return;
@@ -40025,11 +40031,11 @@ namespace exprtk
    namespace information
    {
       static const char* library = "Mathematical Expression Toolkit";
-      static const char* version = "2.71828182845904523536028747135"
-                                   "2662497757247093699959574966967"
-                                   "6277240766303535475945713821785"
-                                   "2516642742746639193200305992181";
-      static const char* date    = "20200101";
+      static const char* version = "2.718281828459045235360287471352"
+                                   "66249775724709369995957496696762"
+                                   "77240766303535475945713821785251"
+                                   "66427427466391932003059921817413";
+      static const char* date    = "20210101";
 
       static inline std::string data()
       {
