@@ -17368,12 +17368,13 @@ namespace exprtk
             {
                struct deleter
                {
-                  static inline void process(std::pair<bool,variable_node_t*>& n)  { delete n.second; }
-                  static inline void process(std::pair<bool,vector_t*>& n)         { delete n.second; }
+                  static inline void process(std::pair<bool,variable_node_t*>&    n) { delete n.second; }
+                  static inline void process(std::pair<bool,ivararg_function_t*>& n) { delete n.second; }
+                  static inline void process(std::pair<bool,vector_t*>& n)           { delete n.second; }
                   #ifndef exprtk_disable_string_capabilities
-                  static inline void process(std::pair<bool,stringvar_node_t*>& n) { delete n.second; }
+                  static inline void process(std::pair<bool,stringvar_node_t*>&   n) { delete n.second; }
                   #endif
-                  static inline void process(std::pair<bool,function_t*>&)         {                  }
+                  static inline void process(std::pair<bool,function_t*>&)           {                  }
                };
 
                if (delete_node)
