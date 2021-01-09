@@ -24403,9 +24403,9 @@ namespace exprtk
             parse_function_prototypes(func_prototypes);
          }
 
-         void set_default_return_type(const std::string& return_type)
+         void set_default_return_type(const return_type_t return_type)
          {
-            default_return_type_ = return_type;
+            const_cast<return_type_t&>(default_return_type_) = return_type;
          }
 
          bool verify(const std::string& param_seq, std::size_t& pseq_index)
