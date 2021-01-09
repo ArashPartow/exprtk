@@ -2415,7 +2415,11 @@ namespace exprtk
             return (s_end_ == itr);
          }
 
-         inline bool is_comment_start(details::char_cptr itr)
+         inline bool is_comment_start(details::char_cptr
+            #ifndef exprtk_disable_comments
+            itr
+            #endif
+         )
          {
             #ifndef exprtk_disable_comments
             const char_t c0 = *(itr + 0);
