@@ -18062,7 +18062,7 @@ namespace exprtk
                  )
             return false;
          else if (
-                   generic_function_t::e_rtrn_overload &&
+                   generic_function_t::e_rtrn_overload == function.rtrn_type &&
                    std::string::npos != function.parameter_sequence.find_first_not_of("STV*?|:")
                  )
             return false;
