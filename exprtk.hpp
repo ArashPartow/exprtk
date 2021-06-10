@@ -17318,7 +17318,7 @@ namespace exprtk
                       (symbol_name, v, is_const);
          }
 
-         inline bool add(const std::string& symbol_name, RawType& t, const bool is_const = false)
+         inline bool add(const std::string& symbol_name, RawType& t2, const bool is_const2 = false)
          {
             struct tie
             {
@@ -17354,7 +17354,7 @@ namespace exprtk
 
             if (map.end() == itr)
             {
-               map[symbol_name] = tie::make(t,is_const);
+               map[symbol_name] = tie::make(t2,is_const2);
                ++size;
             }
 
