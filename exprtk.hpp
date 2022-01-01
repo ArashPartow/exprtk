@@ -2,7 +2,7 @@
  ******************************************************************
  *           C++ Mathematical Expression Toolkit Library          *
  *                                                                *
- * Author: Arash Partow (1999-2021)                               *
+ * Author: Arash Partow (1999-2022)                               *
  * URL: https://www.partow.net/programming/exprtk/index.html      *
  *                                                                *
  * Copyright notice:                                              *
@@ -37903,44 +37903,48 @@ namespace exprtk
 
          virtual ~base_func() {}
 
-         #define assign(Index)   \
+         #define exprtk_assign(Index)   \
          (*v[Index]) = v##Index; \
 
          inline void update(const T& v0)
          {
-            assign(0)
+            exprtk_assign(0)
          }
 
          inline void update(const T& v0, const T& v1)
          {
-            assign(0) assign(1)
+            exprtk_assign(0) exprtk_assign(1)
          }
 
          inline void update(const T& v0, const T& v1, const T& v2)
          {
-            assign(0) assign(1)
-            assign(2)
+            exprtk_assign(0) exprtk_assign(1)
+            exprtk_assign(2)
          }
 
          inline void update(const T& v0, const T& v1, const T& v2, const T& v3)
          {
-            assign(0) assign(1)
-            assign(2) assign(3)
+            exprtk_assign(0) exprtk_assign(1)
+            exprtk_assign(2) exprtk_assign(3)
          }
 
          inline void update(const T& v0, const T& v1, const T& v2, const T& v3, const T& v4)
          {
-            assign(0) assign(1)
-            assign(2) assign(3)
-            assign(4)
+            exprtk_assign(0) exprtk_assign(1)
+            exprtk_assign(2) exprtk_assign(3)
+            exprtk_assign(4)
          }
 
          inline void update(const T& v0, const T& v1, const T& v2, const T& v3, const T& v4, const T& v5)
          {
-            assign(0) assign(1)
-            assign(2) assign(3)
-            assign(4) assign(5)
+            exprtk_assign(0) exprtk_assign(1)
+            exprtk_assign(2) exprtk_assign(3)
+            exprtk_assign(4) exprtk_assign(5)
          }
+
+         #ifdef exprtk_assign
+         #undef exprtk_assign
+         #endif
 
          inline function_t& setup(expression_t& expr)
          {
@@ -40682,11 +40686,11 @@ namespace exprtk
    namespace information
    {
       static const char* library = "Mathematical Expression Toolkit";
-      static const char* version = "2.718281828459045235360287471352"
-                                   "66249775724709369995957496696762"
-                                   "77240766303535475945713821785251"
-                                   "66427427466391932003059921817413";
-      static const char* date    = "20210101";
+      static const char* version = "2.7182818284590452353602874713526"
+                                   "624977572470936999595749669676277"
+                                   "240766303535475945713821785251664"
+                                   "274274663919320030599218174135966";
+      static const char* date    = "20220101";
 
       static inline std::string data()
       {
