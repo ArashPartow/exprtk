@@ -8304,3 +8304,7 @@ equal(true,~{var v0[3] := {1,2,3}; var v1[4] := {6,7,8,9}; var x_ := 1; var y_ :
 equal(true,~{var v0[3] := {1,2,3}; var v1[4] := {6,7,8,9}; var x_ := 1; var y_ := 2; ((x_ > y_) ? v0 : v1) == v1})
 equal(true,~{var v0[3] := {1,2,3}; var v1[4] := {6,7,8,9}; var x_ := 1; var y_ := 2; ((x_ < y_) ? v0 - v1 : v1 - v0) == (v0 - v1)})
 equal(true,~{var v0[3] := {1,2,3}; var v1[4] := {6,7,8,9}; var x_ := 1; var y_ := 2; ((x_ > y_) ? v0 - v1 : v1 - v0) == (v1 - v0)})
+equal(true,~{var xx := 0; for(var i:= 0; i < 10; i+=1) { for(var j:= 0; j < 100; j+=1) { if (j > i) break; xx += 1; } }; xx == 55})
+equal(true,~{var xx := 0; for(var i:= 0; i < 10; i+=1) { for(var j:= 0; j < 100; j+=1) { xx += 1; if (j > i) break; } }; xx == 65})
+equal(true,~{var xx := 0; var i := 0; while(i < 10) { var j := 0; while(j < 100) { if (j > i) break; xx += 1; j+=1 }; i+=1 }; xx == 55})
+equal(true,~{var xx := 0; var i := 0; while(i < 10) { var j := 0; while(j < 100) { xx += 1; if (j > i) break; j+=1 }; i+=1 }; xx == 65})

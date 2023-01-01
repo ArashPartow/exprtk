@@ -3,14 +3,14 @@
  *         C++ Mathematical Expression Toolkit Library        *
  *                                                            *
  * ExprTk vs Native Benchmarks                                *
- * Author: Arash Partow (1999-2022)                           *
- * URL: http://www.partow.net/programming/exprtk/index.html   *
+ * Author: Arash Partow (1999-2023)                           *
+ * URL: https://www.partow.net/programming/exprtk/index.html  *
  *                                                            *
  * Copyright notice:                                          *
  * Free use of the Mathematical Expression Toolkit Library is *
  * permitted under the guidelines and in accordance with the  *
  * most current version of the MIT License.                   *
- * http://www.opensource.org/licenses/MIT                     *
+ * https://www.opensource.org/licenses/MIT                    *
  *                                                            *
  **************************************************************
 */
@@ -361,8 +361,6 @@ int main(int argc, char* argv[])
 
 double pgo_primer()
 {
-   exprtk::pgo_primer<double>();
-
    static const double lower_bound_x = -50.0;
    static const double lower_bound_y = -50.0;
    static const double upper_bound_x = +50.0;

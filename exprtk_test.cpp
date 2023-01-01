@@ -3,14 +3,14 @@
  *         C++ Mathematical Expression Toolkit Library        *
  *                                                            *
  * Examples and Unit-Tests                                    *
- * Author: Arash Partow (1999-2022)                           *
- * URL: http://www.partow.net/programming/exprtk/index.html   *
+ * Author: Arash Partow (1999-2023)                           *
+ * URL: https://www.partow.net/programming/exprtk/index.html  *
  *                                                            *
  * Copyright notice:                                          *
  * Free use of the Mathematical Expression Toolkit Library is *
  * permitted under the guidelines and in accordance with the  *
  * most current version of the MIT License.                   *
- * http://www.opensource.org/licenses/MIT                     *
+ * https://www.opensource.org/licenses/MIT                    *
  *                                                            *
  **************************************************************
 */
@@ -5072,12 +5072,6 @@ inline bool run_test11()
       }
    }
 
-   if (!exprtk::pgo_primer<T>())
-   {
-      printf("run_test11() - Failed PGO primer\n");
-      return false;
-   }
-
    return true;
 }
 
@@ -7206,7 +7200,7 @@ inline bool run_test18()
       {
          v.rebase(v0.data() + i);
 
-         T sum = expression.value();
+         const T sum = expression.value();
 
          if (not_equal(sum,s[i]))
          {
@@ -7259,7 +7253,7 @@ inline bool run_test18()
          return false;
       }
 
-      const T expected_result0 = std::accumulate(v0, v0 + v0_size,T(0));
+      const T expected_result0 = std::accumulate(v0, v0 + v0_size, T(0));
 
       if (expression.value() != expected_result0)
       {
@@ -7273,7 +7267,7 @@ inline bool run_test18()
 
       v.rebase(v1);
 
-      const T expected_result1 = std::accumulate(v1, v1 + v1_size,T(0));
+      const T expected_result1 = std::accumulate(v1, v1 + v1_size, T(0));
 
       if (expression.value() != expected_result1)
       {
@@ -8436,7 +8430,7 @@ inline bool run_test19()
 
          const T result = expression.value();
 
-         if (not_equal(result,std::sqrt(x),T(0.0000001)))
+         if (not_equal(result, std::sqrt(x), T(0.0000001)))
          {
             printf("run_test19() - Computation Error  "
                    "Expression: [%s]\tExpected: %12.8f\tResult: %12.8f\n",
@@ -9060,17 +9054,17 @@ inline bool run_test21()
    typedef exprtk::expression<T>   expression_t;
    typedef exprtk::parser<T>       parser_t;
 
-   T x = T(1.1);
-   T y = T(2.2);
-   T z = T(3.3);
-
-   symbol_table_t symbol_table;
-   symbol_table.add_constants();
-   symbol_table.add_variable("x",x);
-   symbol_table.add_variable("y",y);
-   symbol_table.add_variable("z",z);
-
    {
+      T x = T(1.1);
+      T y = T(2.2);
+      T z = T(3.3);
+
+      symbol_table_t symbol_table;
+      symbol_table.add_constants();
+      symbol_table.add_variable("x",x);
+      symbol_table.add_variable("y",y);
+      symbol_table.add_variable("z",z);
+
       static const std::string expression_list[] =
          {
            "return[]; x;",
@@ -9169,6 +9163,16 @@ inline bool run_test21()
    }
 
    {
+      T x = T(1.1);
+      T y = T(2.2);
+      T z = T(3.3);
+
+      symbol_table_t symbol_table;
+      symbol_table.add_constants();
+      symbol_table.add_variable("x",x);
+      symbol_table.add_variable("y",y);
+      symbol_table.add_variable("z",z);
+
       static const std::string expression_list[] =
          {
            "x := 1; x + 1; x + 2; x + 3; x + 5; x + 7;  return [x + 1];  ",
@@ -9258,6 +9262,86 @@ inline bool run_test21()
 
       if (failure)
          return false;
+   }
+
+   {
+      const std::string invalid_expressions[] =
+      {
+         "x := 1",
+         "x += 1",
+         "v := 1 + v",
+         "v += 1",
+         "v += x + 1",
+         "v += v",
+         "v[0] += x",
+         "v[1] += x",
+         "v[2] += x",
+         "v[3] += x",
+         "v[4] += x",
+         "var i := 2; v[i] := x",
+         "var i := 2; v[i] += x",
+         "s := 'abc' + s",
+         "s[0:2] := 'abc'",
+         "s[1:3] := 'abc'",
+         "aa[4:4] := bb",
+         "aa[1:3] := bb",
+         "var i := 2; aa[i:3] := bb",
+         "var i := 2; aa[i+1:3] := bb",
+         "var i := 2; aa[0:i] := bb",
+         "var i := 2; aa[0:i+1] := bb",
+         "var i := 1; var j := 3; aa[i:j] := bb",
+         "var i := 1; var j := 3; aa[i+1:j] := bb",
+         "var i := 1; var j := 3; aa[i:j+1] := bb",
+         "var i := 1; var j := 3; aa[i+1:j+1] := bb",
+      };
+
+      const std::size_t invalid_expressions_size = sizeof(invalid_expressions) / sizeof(std::string);
+
+      for (std::size_t i = 0; i < invalid_expressions_size; ++i)
+      {
+         symbol_table_t mutable_symbol_table;
+         symbol_table_t immutable_symbol_table(symbol_table_t::e_immutable);
+
+         T x = 0.0;
+         T v[5];
+         std::string s = "xyz";
+         std::string aa = "0123456789";
+         std::string bb = "A";
+
+         T x_ = 0.0;
+         T v_[5];
+         std::string s_ = "xyz";
+
+         std::string a_ = "0123456789";
+         std::string b_ = "A";
+
+         immutable_symbol_table.add_variable ("x" , x );
+         immutable_symbol_table.add_vector   ("v" , v );
+         immutable_symbol_table.add_stringvar("s" , s );
+         immutable_symbol_table.add_stringvar("aa", aa);
+         immutable_symbol_table.add_stringvar("bb", bb);
+
+         mutable_symbol_table.add_variable   ("x_", x_);
+         mutable_symbol_table.add_vector     ("v_", v_);
+         mutable_symbol_table.add_stringvar  ("s_", s_);
+         mutable_symbol_table.add_stringvar  ("a_", a_);
+         mutable_symbol_table.add_stringvar  ("b_", b_);
+
+         const std::string& expression_str = invalid_expressions[i];
+         expression_t expression;
+         expression.register_symbol_table(immutable_symbol_table);
+         expression.register_symbol_table(mutable_symbol_table  );
+
+         parser_t parser;
+         const bool compile_result = parser.compile(expression_str, expression);
+
+         if (compile_result)
+         {
+            expression.value();
+            printf("run_test21() - Invalid expression due to immutability was successfully compiled. Expression: %s\n",
+                   expression_str.c_str());
+         }
+      }
    }
 
    return true;
