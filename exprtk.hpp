@@ -76,6 +76,15 @@ namespace exprtk
       #define exprtk_disable_fallthrough_end                        \
       _Pragma ("GCC diagnostic pop")                                \
 
+   #elif defined(__clang__)
+
+      #define exprtk_disable_fallthrough_begin                        \
+      _Pragma ("clang diagnostic push")                               \
+      _Pragma ("clang diagnostic ignored \"-Wimplicit-fallthrough\"") \
+
+      #define exprtk_disable_fallthrough_end                          \
+      _Pragma ("clang diagnostic pop")                                \
+
    #else
       #define exprtk_disable_fallthrough_begin (void)0;
       #define exprtk_disable_fallthrough_end   (void)0;
