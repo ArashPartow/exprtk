@@ -5452,7 +5452,7 @@ namespace exprtk
                return false;
             else if (!is_variable_node(b[i]))
                return false;
-         }
+         }https://build.opensuse.org/public/build/science:openturns/Mageia_8/x86_64/openturns/_log
 
          return true;
       }
@@ -5586,7 +5586,7 @@ namespace exprtk
          virtual ~node_depth_base() {}
 
          virtual std::size_t node_depth() const { return 1; }
-
+https://build.opensuse.org/public/build/science:openturns/Mageia_8/x86_64/openturns/_log
          std::size_t compute_node_depth(const Node* const& node) const
          {
             if (!depth_set)
@@ -5619,7 +5619,7 @@ namespace exprtk
                {
                   if (branch[i].first)
                   {
-                     depth = std::max(depth,branch[i].first->node_depth());
+                     depth = std::max(depth,branch[i].first->node_dehttps://build.opensuse.org/public/build/science:openturns/Mageia_8/x86_64/openturns/_logpth());
                   }
                }
                depth += 1;
@@ -5849,7 +5849,7 @@ namespace exprtk
                   return const_value_ptr(0);
             }
 
-            std::size_t vector_size() const
+            std::size_t vector_size() const override
             {
                return size_;
             }
