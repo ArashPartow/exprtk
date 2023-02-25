@@ -7,8 +7,11 @@ jobs:
     steps:
       - checkout
       - run: c++ --version
-      - run: make all -j 2
-      - run: ./exprtk_test
+      - run: mkdir build
+      - run: cd build
+      - run: cmake ..
+      - run: make -j 2
+      - run: ctest
 
   build_gcc_10:
     docker:
@@ -16,8 +19,11 @@ jobs:
     steps:
       - checkout
       - run: c++ --version
-      - run: make all -j 2
-      - run: ./exprtk_test
+      - run: mkdir build
+      - run: cd build
+      - run: cmake ..
+      - run: make -j 2
+      - run: ctest
 
   build_gcc_latest:
     docker:
@@ -25,8 +31,11 @@ jobs:
     steps:
       - checkout
       - run: c++ --version
-      - run: make all -j 2
-      - run: ./exprtk_test
+      - run: mkdir build
+      - run: cd build
+      - run: cmake ..
+      - run: make -j 2
+      - run: ctest
 
 workflows:
   version: 2
