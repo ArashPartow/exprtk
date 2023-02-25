@@ -55,3 +55,10 @@ option(ExprTk_BUILD_EXAMPLES "Build ExprTk examples" ON)
 if (ExprTk_BUILD_EXAMPLES)
   add_subdirectory(examples)
 endif ()
+
+# create an ExprTK option for building benchmarks
+option(ExprTk_BUILD_BENCHMARKS "Build ExprTk benchmarks" ON)
+# if ExprTk_BUILD_BENCHMARKS is set to ON, then build the benchmarks
+if (ExprTk_BUILD_BENCHMARKS)
+  add_subdirectory(benchmarks)
+endif ()
