@@ -1,0 +1,6 @@
+@PACKAGE_INIT@
+
+# Our library dependencies (contains definitions for IMPORTED targets)
+include("${CMAKE_CURRENT_LIST_DIR}/ExprTkTargets.cmake")
+
+check_required_components(ExprTk)

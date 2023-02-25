@@ -5,8 +5,8 @@ C++ Mathematical Expression Toolkit Library Documentation
   Section 02 - Example Expressions
   Section 03 - Copyright Notice
   Section 04 - Downloads & Updates
-  Section 05 - Installation
-  Section 06 - Compilation
+  Section 05 - Compilation
+  Section 06 - Installation & CMake Usage
   Section 07 - Compiler Compatibility
   Section 08 - Built-In Operations & Functions
   Section 09 - Fundamental Types
@@ -130,17 +130,36 @@ locations:
 
      ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
-[SECTION 05 - INSTALLATION]
-The header  file exprtk.hpp  should be  placed in a project or  system
-include path (e.g: /usr/include/).
+[SECTION 05 - COMPILATION]
+  (a) mkdir build 
+  (b) cd build
+  (c) cmake ..
+  (d) make -j
 
      ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
-[SECTION 06 - COMPILATION]
-  (a) For a complete build: make clean all
-  (b) For a PGO build: make clean pgo
-  (c) To strip executables: make strip_bin
-  (d) Execute valgrind check: make valgrind_check
+[SECTION 06 - INSTALLATION & CMAKE USAGE]
+The header file exprtk.hpp should be placed in a project or system
+include path (e.g: /usr/include/). or you compile ExprTK as shown in
+SECTION 05, and then install it with ```make install```. This will
+place the exprtk.hpp at the correct system include path and also
+create cmake related files to detect the library and its version.
+
+Once you have ExprTk installed, you may use it in your own project
+by adding:
+
+  find_package(ExprTk)
+
+or if you want a specific version x.x.x
+
+  find_package(ExprTk x.x.x)
+
+Now you can link your executable to the ExprTk library.
+Assuming you have an executable named `example`,
+ExprTk uses CMake's _namespace_ feature, so you should
+link to the ExprTk library like so:
+
+  target_link_libraries(example PUBLIC ExprTk::ExprTk)
 
      ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
@@ -4780,30 +4799,37 @@ operations.
 The source distribution of ExprTk is comprised of the following set of
 files:
 
-   (00) Makefile
-   (01) readme.txt
-   (02) exprtk.hpp
-   (03) exprtk_test.cpp
-   (04) exprtk_benchmark.cpp
-   (05) exprtk_simple_example_01.cpp
-   (06) exprtk_simple_example_02.cpp
-   (07) exprtk_simple_example_03.cpp
-   (08) exprtk_simple_example_04.cpp
-   (09) exprtk_simple_example_05.cpp
-   (10) exprtk_simple_example_06.cpp
-   (11) exprtk_simple_example_07.cpp
-   (12) exprtk_simple_example_08.cpp
-   (13) exprtk_simple_example_09.cpp
-   (14) exprtk_simple_example_10.cpp
-   (15) exprtk_simple_example_11.cpp
-   (16) exprtk_simple_example_12.cpp
-   (17) exprtk_simple_example_13.cpp
-   (18) exprtk_simple_example_14.cpp
-   (19) exprtk_simple_example_15.cpp
-   (20) exprtk_simple_example_16.cpp
-   (21) exprtk_simple_example_17.cpp
-   (22) exprtk_simple_example_18.cpp
-   (23) exprtk_simple_example_19.cpp
+   (00) ./circleci/config.yml
+   (01) benchmarks/exprtk_benchmark.cpp
+   (02) benchmarks/CMakeLists.txt
+   (03) cmake/ExprTkConfig.cmake.in
+   (04) cmake/GitDetermineVersion.cmake
+   (05) examples/exprtk_simple_example_01.cpp
+   (06) examples/exprtk_simple_example_02.cpp
+   (07) examples/exprtk_simple_example_03.cpp
+   (08) examples/exprtk_simple_example_04.cpp
+   (09) examples/exprtk_simple_example_05.cpp
+   (10) examples/exprtk_simple_example_06.cpp
+   (11) examples/exprtk_simple_example_07.cpp
+   (12) examples/exprtk_simple_example_08.cpp
+   (13) examples/exprtk_simple_example_09.cpp
+   (14) examples/exprtk_simple_example_10.cpp
+   (15) examples/exprtk_simple_example_11.cpp
+   (16) examples/exprtk_simple_example_12.cpp
+   (17) examples/exprtk_simple_example_13.cpp
+   (18) examples/exprtk_simple_example_14.cpp
+   (19) examples/exprtk_simple_example_15.cpp
+   (20) examples/exprtk_simple_example_16.cpp
+   (21) examples/exprtk_simple_example_17.cpp
+   (22) examples/exprtk_simple_example_18.cpp
+   (23) examples/exprtk_simple_example_19.cpp
+   (24) examples/CMakeLists.txt
+   (25) include/exprtk.hpp
+   (26) tests/exprtk_test.cpp
+   (27) tests/CMakeLists.txt
+   (28) CMakeLists.txt
+   (29) readme.txt
+   (30) LICENCE.md
 
      ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 

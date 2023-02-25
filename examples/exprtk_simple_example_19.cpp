@@ -23,7 +23,6 @@
 
 #include "exprtk.hpp"
 
-
 template <typename T>
 class randu : public exprtk::igeneric_function<T>
 {

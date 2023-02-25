@@ -2,7 +2,7 @@
  **************************************************************
  *         C++ Mathematical Expression Toolkit Library        *
  *                                                            *
- * Simple Example 7                                           *
+ * Simple Example 11                                          *
  * Author: Arash Partow (1999-2023)                           *
  * URL: https://www.partow.net/programming/exprtk/index.html  *
  *                                                            *
@@ -21,51 +21,50 @@
 
 #include "exprtk.hpp"
 
-
 template <typename T>
-void logic()
+void square_wave2()
 {
    typedef exprtk::symbol_table<T> symbol_table_t;
    typedef exprtk::expression<T>   expression_t;
    typedef exprtk::parser<T>       parser_t;
 
-   const std::string expression_string = "not(A and B) or C";
+   const std::string wave_program =
+                  " var r := 0;                                         "
+                  " for (var i := 0; i < 1000; i += 1)                  "
+                  " {                                                   "
+                  "   r += (1 / (2i + 1)) * sin((4i + 2) * pi * f * t); "
+                  " };                                                  "
+                  " r *= a * (4 / pi);                                  ";
+
+   static const T pi = T(3.141592653589793238462643383279502);
+
+   T f = pi / T(10);
+   T t = T(0);
+   T a = T(10);
 
    symbol_table_t symbol_table;
-   symbol_table.create_variable("A");
-   symbol_table.create_variable("B");
-   symbol_table.create_variable("C");
+   symbol_table.add_variable("f",f);
+   symbol_table.add_variable("t",t);
+   symbol_table.add_variable("a",a);
+   symbol_table.add_constants();
 
    expression_t expression;
    expression.register_symbol_table(symbol_table);
 
    parser_t parser;
-   parser.compile(expression_string,expression);
+   parser.compile(wave_program,expression);
 
-   printf(" # | A | B | C | %s\n"
-          "---+---+---+---+-%s\n",
-          expression_string.c_str(),
-          std::string(expression_string.size(),'-').c_str());
+   const T delta = (T(4) * pi) / T(1000);
 
-   for (int i = 0; i < 8; ++i)
+   for (t = (T(-2) * pi); t <= (T(+2) * pi); t += delta)
    {
-      symbol_table.get_variable("A")->ref() = T((i & 0x01) ? 1 : 0);
-      symbol_table.get_variable("B")->ref() = T((i & 0x02) ? 1 : 0);
-      symbol_table.get_variable("C")->ref() = T((i & 0x04) ? 1 : 0);
-
-      const int result = static_cast<int>(expression.value());
-
-      printf(" %d | %d | %d | %d | %d \n",
-             i,
-             static_cast<int>(symbol_table.get_variable("A")->value()),
-             static_cast<int>(symbol_table.get_variable("B")->value()),
-             static_cast<int>(symbol_table.get_variable("C")->value()),
-             result);
+      const T result = expression.value();
+      printf("%19.15f\t%19.15f\n", t, result);
    }
 }
 
 int main()
 {
-   logic<double>();
+   square_wave2<double>();
    return 0;
 }

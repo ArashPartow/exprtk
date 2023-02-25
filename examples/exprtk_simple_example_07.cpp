@@ -2,7 +2,7 @@
  **************************************************************
  *         C++ Mathematical Expression Toolkit Library        *
  *                                                            *
- * Simple Example 3                                           *
+ * Simple Example 7                                           *
  * Author: Arash Partow (1999-2023)                           *
  * URL: https://www.partow.net/programming/exprtk/index.html  *
  *                                                            *
@@ -21,23 +21,19 @@
 
 #include "exprtk.hpp"
 
-
 template <typename T>
-void polynomial()
+void logic()
 {
    typedef exprtk::symbol_table<T> symbol_table_t;
    typedef exprtk::expression<T>   expression_t;
    typedef exprtk::parser<T>       parser_t;
 
-   const std::string expression_string =
-                  "25x^5 - 35x^4 - 15x^3 + 40x^2 - 15x + 1";
-
-   const T r0 = T(0);
-   const T r1 = T(1);
-         T  x = T(0);
+   const std::string expression_string = "not(A and B) or C";
 
    symbol_table_t symbol_table;
-   symbol_table.add_variable("x",x);
+   symbol_table.create_variable("A");
+   symbol_table.create_variable("B");
+   symbol_table.create_variable("C");
 
    expression_t expression;
    expression.register_symbol_table(symbol_table);
@@ -45,16 +41,30 @@ void polynomial()
    parser_t parser;
    parser.compile(expression_string,expression);
 
-   const T delta = T(1.0 / 100.0);
+   printf(" # | A | B | C | %s\n"
+          "---+---+---+---+-%s\n",
+          expression_string.c_str(),
+          std::string(expression_string.size(),'-').c_str());
 
-   for (x = r0; x <= r1; x += delta)
+   for (int i = 0; i < 8; ++i)
    {
-      printf("%19.15f\t%19.15f\n", x, expression.value());
+      symbol_table.get_variable("A")->ref() = T((i & 0x01) ? 1 : 0);
+      symbol_table.get_variable("B")->ref() = T((i & 0x02) ? 1 : 0);
+      symbol_table.get_variable("C")->ref() = T((i & 0x04) ? 1 : 0);
+
+      const int result = static_cast<int>(expression.value());
+
+      printf(" %d | %d | %d | %d | %d \n",
+             i,
+             static_cast<int>(symbol_table.get_variable("A")->value()),
+             static_cast<int>(symbol_table.get_variable("B")->value()),
+             static_cast<int>(symbol_table.get_variable("C")->value()),
+             result);
    }
 }
 
 int main()
 {
-   polynomial<double>();
+   logic<double>();
    return 0;
 }

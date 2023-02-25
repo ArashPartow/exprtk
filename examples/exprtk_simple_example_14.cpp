@@ -21,7 +21,6 @@
 
 #include "exprtk.hpp"
 
-
 template <typename T>
 void stddev_example()
 {

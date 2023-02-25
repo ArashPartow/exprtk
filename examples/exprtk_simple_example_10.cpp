@@ -22,7 +22,6 @@
 
 #include "exprtk.hpp"
 
-
 template <typename T>
 void newton_sqrt()
 {
