@@ -36,6 +36,17 @@ include(GitDetermineVersion)
 # ExprTk_VERSION_PATCH, ExprTk_VERSION_PATCH_EXTRA, ExprTk_VERSION_FULL
 determine_version("${CMAKE_CURRENT_SOURCE_DIR}" "${GIT_EXECUTABLE}" "ExprTk")
 
+# compiling options
+if (MSVC)
+  add_definitions(/bigobj)
+  add_compile_definitions(_SECURE_SCL=0)
+  add_compile_definitions(_CRT_SECURE_NO_WARNINGS)
+  add_compile_definitions(_SCL_SECURE_NO_WARNINGS)
+  add_compile_definitions(_HAS_ITERATOR_DEBUGGING=0)
+else ()
+  add_compile_options(-pedantic-errors -Wall -Wextra -Werror)
+endif ()
+
 # create an ExprTk option for building the library with a sanitizer
 option(ExprTk_USE_SANITiZER "Use a sanitizer. The sanitizer is specified by ExprTk_SANITIZER" OFF)
 # define the requested sanitizer
