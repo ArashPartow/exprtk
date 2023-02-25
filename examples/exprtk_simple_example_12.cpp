@@ -21,7 +21,6 @@
 
 #include "exprtk.hpp"
 
-
 template <typename T>
 void bubble_sort()
 {

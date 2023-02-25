@@ -22,7 +22,6 @@
 
 #include "exprtk.hpp"
 
-
 template <typename T>
 void linear_least_squares()
 {

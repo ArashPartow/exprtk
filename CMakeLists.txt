@@ -48,3 +48,10 @@ if (ExprTk_BUILD_TESTING)
   enable_testing()
   add_subdirectory(tests)
 endif ()
+
+# create an ExprTK option for building examples
+option(ExprTk_BUILD_EXAMPLES "Build ExprTk examples" ON)
+# if ExprTk_BUILD_EXAMPLES is set to ON, then build the examples
+if (ExprTk_BUILD_EXAMPLES)
+  add_subdirectory(examples)
+endif ()

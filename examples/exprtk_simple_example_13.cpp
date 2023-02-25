@@ -23,7 +23,6 @@
 
 #include "exprtk.hpp"
 
-
 template <typename T>
 void savitzky_golay_filter()
 {

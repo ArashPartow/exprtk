@@ -21,7 +21,6 @@
 
 #include "exprtk.hpp"
 
-
 template <typename T>
 void trig_function()
 {

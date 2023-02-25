@@ -2,7 +2,7 @@
  **************************************************************
  *         C++ Mathematical Expression Toolkit Library        *
  *                                                            *
- * Simple Example 2                                           *
+ * Simple Example 6                                           *
  * Author: Arash Partow (1999-2023)                           *
  * URL: https://www.partow.net/programming/exprtk/index.html  *
  *                                                            *
@@ -21,53 +21,39 @@
 
 #include "exprtk.hpp"
 
-
 template <typename T>
-void square_wave()
+void vector_function()
 {
    typedef exprtk::symbol_table<T> symbol_table_t;
    typedef exprtk::expression<T>   expression_t;
    typedef exprtk::parser<T>       parser_t;
 
-   const std::string expr_string =
-                  "a*(4/pi)*"
-                  "((1 /1)*sin( 2*pi*f*t)+(1 /3)*sin( 6*pi*f*t)+"
-                  " (1 /5)*sin(10*pi*f*t)+(1 /7)*sin(14*pi*f*t)+"
-                  " (1 /9)*sin(18*pi*f*t)+(1/11)*sin(22*pi*f*t)+"
-                  " (1/13)*sin(26*pi*f*t)+(1/15)*sin(30*pi*f*t)+"
-                  " (1/17)*sin(34*pi*f*t)+(1/19)*sin(38*pi*f*t)+"
-                  " (1/21)*sin(42*pi*f*t)+(1/23)*sin(46*pi*f*t)+"
-                  " (1/25)*sin(50*pi*f*t)+(1/27)*sin(54*pi*f*t))";
+   const std::string expression_string =
+                  " for (var i := 0; i < min(x[],y[],z[]); i += 1) "
+                  " {                                              "
+                  "   z[i] := 3sin(x[i]) + 2log(y[i]);             "
+                  " }                                              ";
 
-   static const T pi = T(3.141592653589793238462643383279502);
-
-   const T f = pi / T(10);
-   const T a = T(10);
-         T t = T(0);
+   T x[] = { T(1.1), T(2.2), T(3.3), T(4.4), T(5.5) };
+   T y[] = { T(1.1), T(2.2), T(3.3), T(4.4), T(5.5) };
+   T z[] = { T(0.0), T(0.0), T(0.0), T(0.0), T(0.0) };
 
    symbol_table_t symbol_table;
-   symbol_table.add_variable("t",t);
-   symbol_table.add_constant("f",f);
-   symbol_table.add_constant("a",a);
-   symbol_table.add_constants();
+   symbol_table.add_vector("x",x);
+   symbol_table.add_vector("y",y);
+   symbol_table.add_vector("z",z);
 
    expression_t expression;
    expression.register_symbol_table(symbol_table);
 
    parser_t parser;
-   parser.compile(expr_string,expression);
+   parser.compile(expression_string,expression);
 
-   const T delta = (T(4) * pi) / T(1000);
-
-   for (t = (T(-2) * pi); t <= (T(+2) * pi); t += delta)
-   {
-      const T result = expression.value();
-      printf("%19.15f\t%19.15f\n", t, result);
-   }
+   expression.value();
 }
 
 int main()
 {
-   square_wave<double>();
+   vector_function<double>();
    return 0;
 }
