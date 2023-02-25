@@ -36,6 +36,24 @@ include(GitDetermineVersion)
 # ExprTk_VERSION_PATCH, ExprTk_VERSION_PATCH_EXTRA, ExprTk_VERSION_FULL
 determine_version("${CMAKE_CURRENT_SOURCE_DIR}" "${GIT_EXECUTABLE}" "ExprTk")
 
+# create an ExprTk option for building the library with a sanitizer
+option(ExprTk_USE_SANITiZER "Use a sanitizer. The sanitizer is specified by ExprTk_SANITIZER" OFF)
+# define the requested sanitizer
+set(ExprTk_SANITIZER "" CACHE STRING "The sanitizer options are: ASAN, MSAN, LSAN, USAN")
+if (ExprTk_USE_SANITiZER)
+  if (ExprTk_SANITIZER STREQUAL "ASAN")
+    add_compile_options(-fsanitize=address -fno-omit-frame-pointer)
+  elseif (ExprTk_SANITIZER STREQUAL "MSAN")
+    add_compile_options(-fsanitize=memory -fno-omit-frame-pointer)
+  elseif (ExprTk_SANITIZER STREQUAL "LSAN")
+    add_compile_options(-fsanitize=leak -fno-omit-frame-pointer)
+  elseif (ExprTk_SANITIZER STREQUAL "USAN")
+    add_compile_options(-fsanitize=undefined -fno-omit-frame-pointer)
+  else ()
+    message(FATAL_ERROR "The sanitizer options are: ASAN, MSAN, LSAN, USAN")
+  endif ()
+endif ()
+
 # create an interface library for the ExprTk header
 add_library(ExprTk INTERFACE)
 # set the include directory for the interface library
