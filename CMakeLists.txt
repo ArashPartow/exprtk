@@ -40,3 +40,11 @@ determine_version("${CMAKE_CURRENT_SOURCE_DIR}" "${GIT_EXECUTABLE}" "ExprTk")
 add_library(ExprTk INTERFACE)
 # set the include directory for the interface library
 target_include_directories(ExprTk INTERFACE include)
+
+# create an ExprTK option for building testing
+option(ExprTk_BUILD_TESTING "Build ExprTk tests" ON)
+# if ExprTk_BUILD_TESTING is set to ON, then build the tests
+if (ExprTk_BUILD_TESTING)
+  enable_testing()
+  add_subdirectory(tests)
+endif ()
