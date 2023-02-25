@@ -39,7 +39,8 @@ determine_version("${CMAKE_CURRENT_SOURCE_DIR}" "${GIT_EXECUTABLE}" "ExprTk")
 # create an interface library for the ExprTk header
 add_library(ExprTk INTERFACE)
 # set the include directory for the interface library
-target_include_directories(ExprTk INTERFACE include)
+target_include_directories(ExprTk INTERFACE
+  $<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}/include>)
 
 # create an ExprTK option for building testing
 option(ExprTk_BUILD_TESTING "Build ExprTk tests" ON)
@@ -62,3 +63,79 @@ option(ExprTk_BUILD_BENCHMARKS "Build ExprTk benchmarks" ON)
 if (ExprTk_BUILD_BENCHMARKS)
   add_subdirectory(benchmarks)
 endif ()
+
+#########################
+# Installation commands #
+#########################
+
+# Includes
+include(GNUInstallDirs)
+include(CMakePackageConfigHelpers)
+
+if (NOT ExprTk_EXPORT_GROUP)
+  set(ExprTk_EXPORT_GROUP ExprTkExport)
+endif ()
+if (NOT ExprTk_INSTALL_DOC_DIR)
+  set(ExprTK_INSTALL_DOC_DIR ${CMAKE_INSTALL_DOCDIR})
+endif ()
+if (NOT ExprTk_INSTALL_INCLUDE_DIR)
+  set(ExprTk_INSTALL_INCLUDE_DIR ${CMAKE_INSTALL_INCLUDEDIR})
+endif ()
+if (NOT ExprTk_INSTALL_INCLUDE_SUBDIR)
+  set(ExprTk_INSTALL_INCLUDE_SUBDIR ExprTk)
+endif ()
+if (NOT ExprTk_INSTALL_BIN_DIR)
+  set(ExprTk_INSTALL_BIN_DIR ${CMAKE_INSTALL_BINDIR})
+endif ()
+if (NOT ExprTk_INSTALL_LIB_DIR)
+  set(ExprTk_INSTALL_LIB_DIR ${CMAKE_INSTALL_LIBDIR})
+endif ()
+if (NOT ExprTk_INSTALL_CMAKE_DIR)
+  set(ExprTk_INSTALL_CMAKE_DIR ${CMAKE_INSTALL_LIBDIR}/cmake/ExprTk)
+endif ()
+
+# Install documentation
+install(FILES
+  readme.txt
+  DESTINATION ${ExprTk_INSTALL_DOC_DIR}/ExprTk/${ExprTk_VERSION}/ COMPONENT ExprTkDevelopment)
+
+# Install required header files
+install(FILES
+  include/exprtk.hpp
+  DESTINATION ${ExprTk_INSTALL_INCLUDE_DIR} COMPONENT ExprTkDevelopment)
+target_include_directories(ExprTk INTERFACE
+  $<INSTALL_INTERFACE:${ExprTk_INSTALL_INCLUDE_DIR}>)
+
+# Install library
+install(TARGETS ExprTk EXPORT ${ExprTk_EXPORT_GROUP}
+  RUNTIME DESTINATION ${ExprTk_INSTALL_BIN_DIR} COMPONENT Runtime # .exe, .dll
+  LIBRARY DESTINATION ${ExprTk_INSTALL_LIB_DIR} COMPONENT Runtime # .so, .dll
+  ARCHIVE DESTINATION ${ExprTk_INSTALL_LIB_DIR} COMPONENT ExprTkDevelopment #[[.a, .lib]])
+
+# Export Targets file
+export(EXPORT ${ExprTk_EXPORT_GROUP}
+  FILE "${CMAKE_CURRENT_BINARY_DIR}/cmake/ExprTkTargets.cmake"
+  NAMESPACE ExprTk::)
+
+# Install Targets file
+install(EXPORT ${ExprTk_EXPORT_GROUP}
+  FILE "ExprTkTargets.cmake"
+  NAMESPACE ExprTk::
+  DESTINATION ${ExprTk_INSTALL_CMAKE_DIR} COMPONENT ExprTkDevelopment)
+
+# Create Config file
+configure_package_config_file(${CMAKE_CURRENT_SOURCE_DIR}/cmake/ExprTkConfig.cmake.in
+  "${CMAKE_CURRENT_BINARY_DIR}/ExprTkConfig.cmake"
+  INSTALL_DESTINATION ${ExprTk_INSTALL_CMAKE_DIR})
+
+# Generate the version file for the Config file
+write_basic_package_version_file(
+  "${CMAKE_CURRENT_BINARY_DIR}/ExprTkConfigVersion.cmake"
+  VERSION "${ExprTk_VERSION}"
+  COMPATIBILITY AnyNewerVersion)
+
+# Install Config and ConfigVersion files
+install(FILES
+  "${CMAKE_CURRENT_BINARY_DIR}/ExprTkConfig.cmake"
+  "${CMAKE_CURRENT_BINARY_DIR}/ExprTkConfigVersion.cmake"
+  DESTINATION ${ExprTk_INSTALL_CMAKE_DIR} COMPONENT ExprTkDevelopment)
