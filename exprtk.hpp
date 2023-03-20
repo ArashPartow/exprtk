@@ -8620,7 +8620,7 @@ namespace exprtk
 
          char_cptr base() const exprtk_override
          {
-            return &value_[0];
+            return value_.c_str();
          }
 
          std::size_t size() const exprtk_override
@@ -8776,7 +8776,7 @@ namespace exprtk
 
          char_cptr base() const exprtk_override
          {
-            return &value_[0];
+            return value_.c_str();
          }
 
          std::size_t size() const exprtk_override
@@ -9556,7 +9556,7 @@ namespace exprtk
 
          char_cptr base() const exprtk_override
          {
-            return &value_[0];
+            return value_.c_str();
          }
 
          std::size_t size() const exprtk_override
@@ -9684,7 +9684,7 @@ namespace exprtk
 
          char_cptr base() const
          {
-            return &value_[0];
+            return value_.c_str();
          }
 
          std::size_t size() const
@@ -12792,7 +12792,7 @@ namespace exprtk
 
          char_cptr base() const exprtk_override
          {
-           return &ret_string_[0];
+           return ret_string_.c_str();
          }
 
          std::size_t size() const exprtk_override
@@ -22569,7 +22569,7 @@ namespace exprtk
          scoped_delete(parser<T>& pr, ptr_t (&p)[N])
          : delete_ptr(true)
          , parser_(pr)
-         , p_(&p[0])
+         , p_(p)
          {}
 
         ~scoped_delete()
