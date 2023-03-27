@@ -7849,8 +7849,7 @@ namespace exprtk
 
       template <typename T>
       class vector_elem_node exprtk_final
-                             : public expression_node<T>,
-                               public ivariable      <T>
+                             : public expression_node<T>
       {
       public:
 
@@ -7866,19 +7865,26 @@ namespace exprtk
             construct_branch_pair(index_, index);
          }
 
-         inline T value() const exprtk_override
-         {
-            return *(vector_base_ + static_cast<std::size_t>(details::numeric::to_int64(index_.first->value())));
+         inline T value() const exprtk_override {
+            std::size_t index = static_cast<std::size_t>(details::numeric::to_int64(index_.first->value()));
+            if (index < vec_holder_->size()) {
+               *(vector_base_ + index);
+            }
+            return T(0);
+         }
+         inline void set(T value) {
+            std::size_t index = static_cast<std::size_t>(details::numeric::to_int64(index_.first->value()));
+            if (index < vec_holder_->size()) {
+               vector_base_[index] = value;
+            }
          }
 
-         inline T& ref() exprtk_override
-         {
-            return *(vector_base_ + static_cast<std::size_t>(details::numeric::to_int64(index_.first->value())));
-         }
-
-         inline const T& ref() const exprtk_override
-         {
-            return *(vector_base_ + static_cast<std::size_t>(details::numeric::to_int64(index_.first->value())));
+         inline const T* ref() const {
+            std::size_t index = static_cast<std::size_t>(details::numeric::to_int64(index_.first->value()));
+            if (index >= vec_holder_->size()) {
+              return nullptr;
+            }
+            return *(vector_base_ + index);
          }
 
          inline typename expression_node<T>::node_type type() const exprtk_override
@@ -10418,9 +10424,8 @@ namespace exprtk
             if (vec_node_ptr_)
             {
                assert(branch(1));
-
-               T& result = vec_node_ptr_->ref();
-               result = branch(1)->value();
+               T result = branch(1)->value();
+               vec_node_ptr_->set(result);
 
                return result;
             }
@@ -10861,10 +10866,8 @@ namespace exprtk
             if (vec_node_ptr_)
             {
                assert(branch(1));
-
-               T& v = vec_node_ptr_->ref();
-                  v = Operation::process(v,branch(1)->value());
-
+               T v = Operation::process(v, branch(1)->value());
+               vec_node_ptr_->set(v);
                return v;
             }
             else
@@ -29993,7 +29996,7 @@ namespace exprtk
                      return reinterpret_cast<const void*>(&static_cast<variable_node_t*>(node)->ref());
 
                   case details::expression_node<T>::e_vecelem:
-                     return reinterpret_cast<const void*>(&static_cast<vector_elem_node_t*>(node)->ref());
+                     return reinterpret_cast<const void*>(static_cast<vector_elem_node_t*>(node)->ref());
 
                   case details::expression_node<T>::e_rbvecelem:
                      return reinterpret_cast<const void*>(&static_cast<rebasevector_elem_node_t*>(node)->ref());
