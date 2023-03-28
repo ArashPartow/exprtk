@@ -4469,15 +4469,27 @@ namespace exprtk
          {
             return ts_.size;
          }
-
+#ifdef exprtk_enable_vector_runtime_checks
+         inline void set(std::size_t i, value_t value)
+      	 {
+             if (i < size())
+             {
+                 data_[i] = value;
+             }
+         }
+#else
          inline value_t& operator[](const std::size_t& i)
          {
             return data_[i];
          }
-
+#endif
          inline const value_t& operator[](const std::size_t& i) const
          {
+#ifdef exprtk_enable_vector_runtime_checks
+            return i < size() ? data_[i] : data_[size() - 1];
+#else
             return data_[i];
+#endif
          }
 
          inline const value_t* begin() const { return data_; }
@@ -7533,8 +7545,13 @@ namespace exprtk
 
          virtual ~ivariable() {}
 
-         virtual T& ref() = 0;
          virtual const T& ref() const = 0;
+
+         #ifdef exprtk_enable_vector_runtime_checks
+          virtual void set(T val) = 0;
+         #else
+          virtual T& ref() = 0;
+         #endif
       };
 
       template <typename T>
@@ -7564,12 +7581,18 @@ namespace exprtk
             return (*value_);
          }
 
+#ifdef exprtk_enable_vector_runtime_checks
+         inline void set(T val) exprtk_override
+         {
+             *value_ = val;
+         }
+#endif
          inline T& ref() exprtk_override
          {
             return (*value_);
          }
 
-         inline const T& ref() const exprtk_override
+      	 inline const T& ref() const exprtk_override
          {
             return (*value_);
          }
@@ -7849,7 +7872,8 @@ namespace exprtk
 
       template <typename T>
       class vector_elem_node exprtk_final
-                             : public expression_node<T>
+                             : public expression_node<T>,
+                               public ivariable      <T>
       {
       public:
 
@@ -7866,25 +7890,46 @@ namespace exprtk
          }
 
          inline T value() const exprtk_override {
-            std::size_t index = static_cast<std::size_t>(details::numeric::to_int64(index_.first->value()));
-            if (index < vec_holder_->size()) {
-               *(vector_base_ + index);
-            }
-            return T(0);
-         }
-         inline void set(T value) {
-            std::size_t index = static_cast<std::size_t>(details::numeric::to_int64(index_.first->value()));
-            if (index < vec_holder_->size()) {
-               vector_base_[index] = value;
-            }
+             #ifdef exprtk_enable_vector_runtime_checks
+              std::size_t index = static_cast<std::size_t>(details::numeric::to_int64(index_.first->value()));
+              if (index < vec_holder_->size()) {
+                  return vector_base_[index];
+              }
+              return T(0);
+             #else
+              return *(vector_base_ + static_cast<std::size_t>(details::numeric::to_int64(index_.first->value())));
+             #endif            
          }
 
-         inline const T* ref() const {
-            std::size_t index = static_cast<std::size_t>(details::numeric::to_int64(index_.first->value()));
-            if (index >= vec_holder_->size()) {
-              return nullptr;
-            }
-            return *(vector_base_ + index);
+         #ifdef exprtk_enable_vector_runtime_checks
+          inline void set(T value) {
+             std::size_t index = static_cast<std::size_t>(details::numeric::to_int64(index_.first->value()));
+             if (index < vec_holder_->size())
+             {
+                 vector_base_[index] = value;
+             }
+         }
+         #else
+         inline T& ref() exprtk_override
+         {
+             return *(vector_base_ + static_cast<std::size_t>(details::numeric::to_int64(index_.first->value())));
+         }
+         #endif
+
+         #ifdef exprtk_enable_vector_runtime_checks
+         inline const T* value_ptr() const {
+             std::size_t index = static_cast<std::size_t>(details::numeric::to_int64(index_.first->value()));
+             if (index >= vec_holder_->size()) {
+                 return nullptr;
+             }
+             return vector_base_ + index;
+         }
+
+         #endif
+
+         inline const T& ref() const exprtk_override
+         {
+             return *(vector_base_ + static_cast<std::size_t>(details::numeric::to_int64(index_.first->value())));
          }
 
          inline typename expression_node<T>::node_type type() const exprtk_override
@@ -7938,12 +7983,23 @@ namespace exprtk
          inline T value() const exprtk_override
          {
             return *(vds_.data() + static_cast<std::size_t>(details::numeric::to_int64(index_.first->value())));
-         }
+         }         
 
+         #ifdef exprtk_enable_vector_runtime_checks
+         inline void set(T val) exprtk_override
+         {
+             size_t index = static_cast<std::size_t>(details::numeric::to_int64(index_.first->value()));
+             if (index < vector_holder_->size())
+             {
+                vds_.data()[index] = val;
+             }
+         }
+         #else
          inline T& ref() exprtk_override
          {
-            return *(vds_.data() + static_cast<std::size_t>(details::numeric::to_int64(index_.first->value())));
+             return *(vds_.data() + static_cast<std::size_t>(details::numeric::to_int64(index_.first->value())));
          }
+         #endif
 
          inline const T& ref() const exprtk_override
          {
@@ -8002,10 +8058,20 @@ namespace exprtk
             return *(vds_.data() + index_);
          }
 
+         #ifdef exprtk_enable_vector_runtime_checks
+         inline void set(T val) exprtk_override
+         {
+             if (index_ < vector_holder_->size())
+             {
+                 vds_.data()[index_] = val;
+             }
+         }
+         #else
          inline T& ref() exprtk_override
          {
-            return *(vds_.data() + index_);
+             return *(vds_.data() + index_);
          }
+         #endif         
 
          inline const T& ref() const exprtk_override
          {
@@ -8148,8 +8214,16 @@ namespace exprtk
 
          inline T value() const exprtk_override
          {
-            std::swap(var0_->ref(),var1_->ref());
-            return var1_->ref();
+            assert(var0_ != nullptr && var1_ != nullptr);
+            #ifdef exprtk_enable_vector_runtime_checks
+             const T tmp = var1_->ref();
+             var1_->set(var0_->ref());
+             var0_->set(tmp);
+             return tmp;
+            #else
+             std::swap(var0_->ref(), var1_->ref());
+             return var1_->ref();
+            #endif
          }
 
          inline typename expression_node<T>::node_type type() const exprtk_override
@@ -10424,9 +10498,13 @@ namespace exprtk
             if (vec_node_ptr_)
             {
                assert(branch(1));
-               T result = branch(1)->value();
-               vec_node_ptr_->set(result);
-
+               #ifdef exprtk_enable_vector_runtime_checks
+                T result = branch(1)->value();
+                vec_node_ptr_->set(result);
+               #else
+                T& result = vec_node_ptr_->ref();
+                   result = branch(1)->value();
+               #endif
                return result;
             }
             else
@@ -10463,11 +10541,13 @@ namespace exprtk
             if (rbvec_node_ptr_)
             {
                assert(branch(1));
-
+#ifdef exprtk_enable_vector_runtime_checks
+               T result = branch(1)->value();
+               rbvec_node_ptr_->set(result);
+#else
                T& result = rbvec_node_ptr_->ref();
-
-               result = branch(1)->value();
-
+                  result = branch(1)->value();
+#endif               
                return result;
             }
             else
@@ -10504,11 +10584,15 @@ namespace exprtk
             if (rbvec_node_ptr_)
             {
                assert(branch(1));
-
+#ifdef exprtk_enable_vector_runtime_checks
+               T val = branch(1)->value();
+               rbvec_node_ptr_->set(val);
+               return val;
+#else
                T& result = rbvec_node_ptr_->ref();
                result = branch(1)->value();
-
                return result;
+#endif
             }
             else
                return std::numeric_limits<T>::quiet_NaN();
@@ -10826,9 +10910,13 @@ namespace exprtk
             if (var_node_ptr_)
             {
                assert(branch(1));
-
-               T& v = var_node_ptr_->ref();
-               v = Operation::process(v,branch(1)->value());
+               #ifdef exprtk_enable_vector_runtime_checks
+                T v = Operation::process(var_node_ptr_->ref(), branch(1)->value());
+                var_node_ptr_->set(v);
+               #else
+                T& v = var_node_ptr_->ref();
+                   v = Operation::process(v, branch(1)->value());
+               #endif
 
                return v;
             }
@@ -10866,8 +10954,13 @@ namespace exprtk
             if (vec_node_ptr_)
             {
                assert(branch(1));
-               T v = Operation::process(v, branch(1)->value());
-               vec_node_ptr_->set(v);
+               #ifdef exprtk_enable_vector_runtime_checks
+                T v = Operation::process(vec_node_ptr_->ref(), branch(1)->value());
+                vec_node_ptr_->set(v);
+               #else
+                T& v = vec_node_ptr_->ref();
+                   v = Operation::process(v, branch(1)->value());
+               #endif
                return v;
             }
             else
@@ -10904,9 +10997,13 @@ namespace exprtk
             if (rbvec_node_ptr_)
             {
                assert(branch(1));
-
-               T& v = rbvec_node_ptr_->ref();
-                  v = Operation::process(v,branch(1)->value());
+               #ifdef exprtk_enable_vector_runtime_checks
+                T v = Operation::process(rbvec_node_ptr_->ref(), branch(1)->value());
+                rbvec_node_ptr_->set(v);
+               #else
+                T& v = rbvec_node_ptr_->ref();
+                   v = Operation::process(v,branch(1)->value());
+               #endif
 
                return v;
             }
@@ -10944,10 +11041,13 @@ namespace exprtk
             if (rbvec_node_ptr_)
             {
                assert(branch(1));
-
-               T& v = rbvec_node_ptr_->ref();
-                  v = Operation::process(v,branch(1)->value());
-
+               #ifdef exprtk_enable_vector_runtime_checks
+                T v = Operation::process(rbvec_node_ptr_->ref(), branch(1)->value());
+                rbvec_node_ptr_->set(v);
+               #else
+                T& v = rbvec_node_ptr_->ref();
+                   v = Operation::process(v,branch(1)->value());
+               #endif
                return v;
             }
             else
@@ -29209,7 +29309,7 @@ namespace exprtk
          inline expression_node_ptr synthesize_uv_expression(const details::operator_type& operation,
                                                              expression_node_ptr (&branch)[1])
          {
-            T& v = static_cast<details::variable_node<T>*>(branch[0])->ref();
+            const T& v = static_cast<details::variable_node<T>*>(branch[0])->ref();
 
             switch (operation)
             {
@@ -29996,9 +30096,13 @@ namespace exprtk
                      return reinterpret_cast<const void*>(&static_cast<variable_node_t*>(node)->ref());
 
                   case details::expression_node<T>::e_vecelem:
-                     return reinterpret_cast<const void*>(static_cast<vector_elem_node_t*>(node)->ref());
+                     #ifdef exprtk_enable_vector_runtime_checks
+               	      return reinterpret_cast<const void*>(static_cast<vector_elem_node_t*>(node)->value_ptr());
+                     #else
+                      return reinterpret_cast<const void*>(&static_cast<vector_elem_node_t*>(node)->ref());
+                     #endif
 
-                  case details::expression_node<T>::e_rbvecelem:
+               	  case details::expression_node<T>::e_rbvecelem:
                      return reinterpret_cast<const void*>(&static_cast<rebasevector_elem_node_t*>(node)->ref());
 
                   case details::expression_node<T>::e_rbveccelem:
@@ -40251,7 +40355,11 @@ namespace exprtk
 
          for (std::size_t i = r1 - n + 1; i <= r1; ++i)
          {
+#ifdef exprtk_enable_vector_runtime_checks
+             vec.set(i, T(0));
+#else
             vec[i] = T(0);
+#endif
          }
 
          return T(1);
@@ -40311,7 +40419,11 @@ namespace exprtk
 
          for (std::size_t i = r0; i < r0 + n; ++i)
          {
+#ifdef exprtk_enable_vector_runtime_checks
+             vec.set(i, T(0));
+#else
             vec[i] = T(0);
+#endif
          }
 
          return T(1);
@@ -40470,7 +40582,11 @@ namespace exprtk
 
             for (std::size_t i = r0; i <= r1; ++i, ++j)
             {
+#ifdef exprtk_enable_vector_runtime_checks
+                vec.set(i, base + (increment * j));
+#else
                vec[i] = base + (increment * j);
+#endif
             }
          }
 
@@ -40561,7 +40677,11 @@ namespace exprtk
 
          for (std::size_t i = r0; i <= r1; ++i)
          {
+#ifdef exprtk_enable_vector_runtime_checks
+             y.set(i, (a * x[i]) + y[i]);
+#else
             y[i] = (a * x[i]) + y[i];
+#endif
          }
 
          return T(1);
@@ -40609,7 +40729,11 @@ namespace exprtk
 
          for (std::size_t i = r0; i <= r1; ++i)
          {
+#ifdef exprtk_enable_vector_runtime_checks
+             y.set(i, (a * x[i]) + (b * y[i]));
+#else
             y[i] = (a * x[i]) + (b * y[i]);
+#endif
          }
 
          return T(1);
@@ -40659,7 +40783,11 @@ namespace exprtk
 
          for (std::size_t i = r0; i <= r1; ++i)
          {
+#ifdef exprtk_enable_vector_runtime_checks
+            z.set(i, (a * x[i]) + y[i]);
+#else
             z[i] = (a * x[i]) + y[i];
+#endif
          }
 
          return T(1);
@@ -40710,7 +40838,11 @@ namespace exprtk
 
          for (std::size_t i = r0; i <= r1; ++i)
          {
+#ifdef exprtk_enable_vector_runtime_checks
+             z.set(i, (a * x[i]) + (b * y[i]));
+#else
             z[i] = (a * x[i]) + (b * y[i]);
+#endif
          }
 
          return T(1);
@@ -40758,7 +40890,11 @@ namespace exprtk
 
          for (std::size_t i = r0; i <= r1; ++i)
          {
+#ifdef exprtk_enable_vector_runtime_checks
+             z.set(i, (a * x[i]) + b);
+#else
             z[i] = (a * x[i]) + b;
+#endif
          }
 
          return T(1);
