@@ -4471,7 +4471,7 @@ namespace exprtk
          }
 #ifdef exprtk_enable_vector_runtime_checks
          inline void set(std::size_t i, value_t value)
-      	 {
+         {
              if (i < size())
              {
                  data_[i] = value;
@@ -7598,7 +7598,7 @@ namespace exprtk
          }
 #endif
 
-      	 inline const T& ref() const exprtk_override
+         inline const T& ref() const exprtk_override
          {
             return (*value_);
          }
@@ -7904,7 +7904,7 @@ namespace exprtk
               return T(0);
              #else
               return *(vector_base_ + static_cast<std::size_t>(details::numeric::to_int64(index_.first->value())));
-             #endif            
+             #endif
          }
 
          #ifdef exprtk_enable_vector_runtime_checks
@@ -8077,7 +8077,7 @@ namespace exprtk
          {
              return *(vds_.data() + index_);
          }
-         #endif         
+         #endif
 
          inline const T& ref() const exprtk_override
          {
@@ -8189,15 +8189,15 @@ namespace exprtk
 
          inline T value() const exprtk_override
          {
-#ifdef exprtk_enable_vector_runtime_checks
-            const T tmp = var1_->ref();
-            var1_->set(var0_->ref());
-            var0_->set(tmp);
-            return tmp;
-#else
-            std::swap(var0_->ref(),var1_->ref());
-            return var1_->ref();
-#endif
+            #ifdef exprtk_enable_vector_runtime_checks
+             const T tmp = var1_->ref();
+             var1_->set(var0_->ref());
+             var0_->set(tmp);
+             return tmp;
+            #else
+             std::swap(var0_->ref(),var1_->ref());
+             return var1_->ref();
+            #endif
          }
 
          inline typename expression_node<T>::node_type type() const exprtk_override
@@ -10471,13 +10471,13 @@ namespace exprtk
             if (var_node_ptr_)
             {
                assert(branch(1));
-#ifdef exprtk_enable_vector_runtime_checks
-               T result = branch(1)->value();
-               var_node_ptr_->set(result);
-#else
-               T& result = var_node_ptr_->ref();
-               result = branch(1)->value();
-#endif
+               #ifdef exprtk_enable_vector_runtime_checks
+                T result = branch(1)->value();
+                var_node_ptr_->set(result);
+               #else
+                T& result = var_node_ptr_->ref();
+                result = branch(1)->value();
+               #endif
 
                return result;
             }
@@ -10558,13 +10558,13 @@ namespace exprtk
             if (rbvec_node_ptr_)
             {
                assert(branch(1));
-#ifdef exprtk_enable_vector_runtime_checks
-               T result = branch(1)->value();
-               rbvec_node_ptr_->set(result);
-#else
-               T& result = rbvec_node_ptr_->ref();
-                  result = branch(1)->value();
-#endif               
+               #ifdef exprtk_enable_vector_runtime_checks
+                T result = branch(1)->value();
+                rbvec_node_ptr_->set(result);
+               #else
+                T& result = rbvec_node_ptr_->ref();
+                   result = branch(1)->value();
+               #endif
                return result;
             }
             else
@@ -10601,15 +10601,15 @@ namespace exprtk
             if (rbvec_node_ptr_)
             {
                assert(branch(1));
-#ifdef exprtk_enable_vector_runtime_checks
-               T val = branch(1)->value();
-               rbvec_node_ptr_->set(val);
-               return val;
-#else
-               T& result = rbvec_node_ptr_->ref();
-               result = branch(1)->value();
-               return result;
-#endif
+               #ifdef exprtk_enable_vector_runtime_checks
+                T val = branch(1)->value();
+                rbvec_node_ptr_->set(val);
+                return val;
+               #else
+                T& result = rbvec_node_ptr_->ref();
+                result = branch(1)->value();
+                return result;
+               #endif
             }
             else
                return std::numeric_limits<T>::quiet_NaN();
@@ -12759,7 +12759,11 @@ namespace exprtk
                      return false;
 
                   ts.size = 1;
+#ifdef exprtk_enable_vector_runtime_checks
                   ts.data = var->value_ptr();
+#else
+                  ts.data = &var->ref();
+#endif
                   ts.type = type_store_t::e_scalar;
                }
                else
@@ -37812,21 +37816,21 @@ namespace exprtk
 
       if (var)
       {
-#ifdef exprtk_enable_vector_runtime_checks
+         #ifdef exprtk_enable_vector_runtime_checks
           T& x = *(var->value_ptr());
           const T x_original = x;
           const T result = integrate(e, x, r0, r1, number_of_intervals);
           var->set(x_original);
 
           return result;
-#else
-         T& x = var->ref();
-         const T x_original = x;
-         const T result = integrate(e, x, r0, r1, number_of_intervals);
-         x = x_original;
+         #else
+          T& x = var->ref();
+          const T x_original = x;
+          const T result = integrate(e, x, r0, r1, number_of_intervals);
+          x = x_original;
 
-         return result;
-#endif
+          return result;
+         #endif
       }
       else
          return std::numeric_limits<T>::quiet_NaN();
@@ -37912,21 +37916,21 @@ namespace exprtk
 
       if (var)
       {
-#ifdef exprtk_enable_vector_runtime_checks
-         T& x = *(var->value_ptr());
-         const T x_original = x;
-         const T result = derivative(e, x, h);
-         var->set(x_original);
+         #ifdef exprtk_enable_vector_runtime_checks
+          T& x = *(var->value_ptr());
+          const T x_original = x;
+          const T result = derivative(e, x, h);
+          var->set(x_original);
 
-         return result;
-#else
-      	 T& x = var->ref();
-         const T x_original = x;
-         const T result = derivative(e, x, h);
-         x = x_original;
+          return result;
+         #else
+          T& x = var->ref();
+          const T x_original = x;
+          const T result = derivative(e, x, h);
+          x = x_original;
 
-         return result;
-#endif
+          return result;
+         #endif
       }
       else
          return std::numeric_limits<T>::quiet_NaN();
@@ -37948,21 +37952,21 @@ namespace exprtk
 
       if (var)
       {
-#ifdef exprtk_enable_vector_runtime_checks
-         T &x = *(var->value_ptr());
-         const T x_original = x;
-         const T result = second_derivative(e, x, h);
-         var->set(x_original);
+         #ifdef exprtk_enable_vector_runtime_checks
+          T &x = *(var->value_ptr());
+          const T x_original = x;
+          const T result = second_derivative(e, x, h);
+          var->set(x_original);
 
-         return result;
-#else         
-         T& x = var->ref();
-         const T x_original = x;
-         const T result = second_derivative(e, x, h);
-         x = x_original;
+          return result;
+         #else
+          T& x = var->ref();
+          const T x_original = x;
+          const T result = second_derivative(e, x, h);
+          x = x_original;
 
-         return result;
-#endif
+          return result;
+         #endif
       }
       else
          return std::numeric_limits<T>::quiet_NaN();
@@ -37984,21 +37988,21 @@ namespace exprtk
 
       if (var)
       {
-#ifdef exprtk_enable_vector_runtime_checks
-         T &x = *(var->value_ptr());
-         const T x_original = x;
-         const T result = third_derivative(e, x, h);
-         var->set(x_original);
+         #ifdef exprtk_enable_vector_runtime_checks
+          T &x = *(var->value_ptr());
+          const T x_original = x;
+          const T result = third_derivative(e, x, h);
+          var->set(x_original);
 
-         return result;
-#else
-         T& x = var->ref();
-         const T x_original = x;
-         const T result = third_derivative(e, x, h);
-         x = x_original;
+          return result;
+         #else
+          T& x = var->ref();
+          const T x_original = x;
+          const T result = third_derivative(e, x, h);
+          x = x_original;
 
-         return result;
-#endif
+          return result;
+         #endif
       }
       else
          return std::numeric_limits<T>::quiet_NaN();
@@ -40408,11 +40412,11 @@ namespace exprtk
 
          for (std::size_t i = r1 - n + 1; i <= r1; ++i)
          {
-#ifdef exprtk_enable_vector_runtime_checks
-            vec.set(i, T(0));
-#else
-            vec[i] = T(0);
-#endif
+            #ifdef exprtk_enable_vector_runtime_checks
+             vec.set(i, T(0));
+            #else
+             vec[i] = T(0);
+            #endif
          }
 
          return T(1);
@@ -40472,11 +40476,11 @@ namespace exprtk
 
          for (std::size_t i = r0; i < r0 + n; ++i)
          {
-#ifdef exprtk_enable_vector_runtime_checks
-            vec.set(i, T(0));
-#else
-            vec[i] = T(0);
-#endif
+            #ifdef exprtk_enable_vector_runtime_checks
+             vec.set(i, T(0));
+            #else
+             vec[i] = T(0);
+            #endif
          }
 
          return T(1);
@@ -40635,11 +40639,11 @@ namespace exprtk
 
             for (std::size_t i = r0; i <= r1; ++i, ++j)
             {
-#ifdef exprtk_enable_vector_runtime_checks
-               vec.set(i, base + (increment * j));
-#else
-               vec[i] = base + (increment * j);
-#endif
+               #ifdef exprtk_enable_vector_runtime_checks
+                vec.set(i, base + (increment * j));
+               #else
+                vec[i] = base + (increment * j);
+               #endif
             }
          }
 
@@ -40730,11 +40734,11 @@ namespace exprtk
 
          for (std::size_t i = r0; i <= r1; ++i)
          {
-#ifdef exprtk_enable_vector_runtime_checks
-            y.set(i, (a * x[i]) + y[i]);
-#else
-            y[i] = (a * x[i]) + y[i];
-#endif
+            #ifdef exprtk_enable_vector_runtime_checks
+             y.set(i, (a * x[i]) + y[i]);
+            #else
+             y[i] = (a * x[i]) + y[i];
+            #endif
          }
 
          return T(1);
@@ -40782,11 +40786,11 @@ namespace exprtk
 
          for (std::size_t i = r0; i <= r1; ++i)
          {
-#ifdef exprtk_enable_vector_runtime_checks
-            y.set(i, (a * x[i]) + (b * y[i]));
-#else
-            y[i] = (a * x[i]) + (b * y[i]);
-#endif
+            #ifdef exprtk_enable_vector_runtime_checks
+             y.set(i, (a * x[i]) + (b * y[i]));
+            #else
+             y[i] = (a * x[i]) + (b * y[i]);
+            #endif
          }
 
          return T(1);
@@ -40836,11 +40840,11 @@ namespace exprtk
 
          for (std::size_t i = r0; i <= r1; ++i)
          {
-#ifdef exprtk_enable_vector_runtime_checks
-            z.set(i, (a * x[i]) + y[i]);
-#else
-            z[i] = (a * x[i]) + y[i];
-#endif
+            #ifdef exprtk_enable_vector_runtime_checks
+             z.set(i, (a * x[i]) + y[i]);
+            #else
+             z[i] = (a * x[i]) + y[i];
+            #endif
          }
 
          return T(1);
@@ -40891,11 +40895,11 @@ namespace exprtk
 
          for (std::size_t i = r0; i <= r1; ++i)
          {
-#ifdef exprtk_enable_vector_runtime_checks
-            z.set(i, (a * x[i]) + (b * y[i]));
-#else
-            z[i] = (a * x[i]) + (b * y[i]);
-#endif
+            #ifdef exprtk_enable_vector_runtime_checks
+             z.set(i, (a * x[i]) + (b * y[i]));
+            #else
+             z[i] = (a * x[i]) + (b * y[i]);
+            #endif
          }
 
          return T(1);
@@ -40943,11 +40947,11 @@ namespace exprtk
 
          for (std::size_t i = r0; i <= r1; ++i)
          {
-#ifdef exprtk_enable_vector_runtime_checks
-            z.set(i, (a * x[i]) + b);
-#else
-            z[i] = (a * x[i]) + b;
-#endif
+            #ifdef exprtk_enable_vector_runtime_checks
+             z.set(i, (a * x[i]) + b);
+            #else
+             z[i] = (a * x[i]) + b;
+            #endif
          }
 
          return T(1);
