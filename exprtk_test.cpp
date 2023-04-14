@@ -5988,7 +5988,11 @@ struct inc_func : public exprtk::igeneric_function<T>
 
                                              for (std::size_t x = 0; x < vector.size(); ++x)
                                              {
+#ifdef exprtk_enable_vector_runtime_checks
+                                                vector.set(x, vector[x] + T(1));
+#else
                                                 vector[x] += T(1);
+#endif
                                              }
                                           }
                                           break;
@@ -5998,7 +6002,11 @@ struct inc_func : public exprtk::igeneric_function<T>
 
                                              for (std::size_t x = 0; x < string.size(); ++x)
                                              {
+#ifdef exprtk_enable_vector_runtime_checks
+                                                string.set(x, string[x] + static_cast<typename string_t::value_t>(1));
+#else
                                                 string[x] += static_cast<typename string_t::value_t>(1);
+#endif
                                              }
                                           }
                                           break;
