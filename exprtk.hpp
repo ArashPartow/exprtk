@@ -827,6 +827,12 @@ namespace exprtk
             exprtk_define_epsilon_type(float      , 0.00000100000f)
             exprtk_define_epsilon_type(double     , 0.000000000100)
             exprtk_define_epsilon_type(long double, 0.000000000001)
+            exprtk_define_epsilon_type(int, 0)
+            exprtk_define_epsilon_type(short, 0)
+            exprtk_define_epsilon_type(_int64_t, 0)
+            exprtk_define_epsilon_type(unsigned short, 0)
+            exprtk_define_epsilon_type(unsigned int, 0)
+            exprtk_define_epsilon_type(_uint64_t, 0)
 
             #undef exprtk_define_epsilon_type
 
@@ -837,13 +843,31 @@ namespace exprtk
             }
 
             template <typename T>
+            inline bool is_nan_impl(const T v, int_type_tag)
+            {
+               return false;
+            }
+
+            template <typename T>
             inline int to_int32_impl(const T v, real_type_tag)
             {
                return static_cast<int>(v);
             }
 
             template <typename T>
+            inline int to_int32_impl(const T v, int_type_tag)
+            {
+               return static_cast<int>(v);
+            }
+
+            template <typename T>
             inline _int64_t to_int64_impl(const T v, real_type_tag)
+            {
+               return static_cast<_int64_t>(v);
+            }
+
+            template <typename T>
+            inline _int64_t to_int64_impl(const T v, int_type_tag)
             {
                return static_cast<_int64_t>(v);
             }
@@ -910,7 +934,7 @@ namespace exprtk
             template <typename T>
             inline T expm1_impl(const T v, int_type_tag)
             {
-               return T(std::exp<double>(v)) - T(1);
+               return T(std::exp<T>(static_cast<double>(v))) - T(1);
             }
 
             template <typename T>
@@ -1325,11 +1349,16 @@ namespace exprtk
             template <typename T> inline T    const_e_impl(real_type_tag) { return T(numeric::constant::e);             }
             template <typename T> inline T const_qnan_impl(real_type_tag) { return std::numeric_limits<T>::quiet_NaN(); }
 
+            template <typename T> inline T   r2d_impl(const T v, int_type_tag) { return (static_cast<T>(v * numeric::constant::_180_pi)); }
+            template <typename T> inline T   d2r_impl(const T v, int_type_tag) { return (static_cast<T>(v * numeric::constant::pi_180));  }
+            template <typename T> inline T   d2g_impl(const T v, int_type_tag) { return (static_cast<T>(v * 20.0/9.0)); }
+            template <typename T> inline T   g2d_impl(const T v, int_type_tag) { return (static_cast<T>(v * 9.0/20.0)); }
+            template <typename T> inline T   const_pi_impl(int_type_tag) { return T(numeric::constant::pi);            }
             template <typename T> inline T   abs_impl(const T v, int_type_tag) { return ((v >= T(0)) ? v : -v); }
             template <typename T> inline T   exp_impl(const T v, int_type_tag) { return std::exp  (v); }
             template <typename T> inline T   log_impl(const T v, int_type_tag) { return std::log  (v); }
             template <typename T> inline T log10_impl(const T v, int_type_tag) { return std::log10(v); }
-            template <typename T> inline T  log2_impl(const T v, int_type_tag) { return std::log(v)/T(numeric::constant::log2); }
+            template <typename T> inline T  log2_impl(const T v, int_type_tag) { return static_cast<T>(std::log(v)/numeric::constant::log2); }
             template <typename T> inline T   neg_impl(const T v, int_type_tag) { return -v;            }
             template <typename T> inline T   pos_impl(const T v, int_type_tag) { return +v;            }
             template <typename T> inline T  ceil_impl(const T v, int_type_tag) { return v;             }
@@ -1371,7 +1400,12 @@ namespace exprtk
          template <typename Type>
          struct numeric_info { enum { length = 0, size = 32, bound_length = 0, min_exp = 0, max_exp = 0 }; };
 
-         template <> struct numeric_info<int        > { enum { length = 10, size = 16, bound_length = 9 }; };
+         template <> struct numeric_info<int        > { enum { length = 10, size = 16, bound_length = 9, min_exp = 0, max_exp = 0 }; };
+         template <> struct numeric_info<short      > { enum { length = 10, size = 16, bound_length = 9, min_exp = 0, max_exp = 0 }; };
+         template <> struct numeric_info<_int64_t   > { enum { length = 10, size = 16, bound_length = 9, min_exp = 0, max_exp = 0 }; };
+         template <> struct numeric_info<unsigned short> { enum { length = 10, size = 16, bound_length = 9, min_exp = 0, max_exp = 0 }; };
+         template <> struct numeric_info<unsigned int  > { enum { length = 10, size = 16, bound_length = 9, min_exp = 0, max_exp = 0 }; };
+         template <> struct numeric_info<_uint64_t  > { enum { length = 10, size = 16, bound_length = 9, min_exp = 0, max_exp = 0 }; };
          template <> struct numeric_info<float      > { enum { min_exp =  -38, max_exp =  +38 }; };
          template <> struct numeric_info<double     > { enum { min_exp = -308, max_exp = +308 }; };
          template <> struct numeric_info<long double> { enum { min_exp = -308, max_exp = +308 }; };
@@ -1556,7 +1590,6 @@ namespace exprtk
                   v *= v;
                   k /= 2;
                }
-
                return l;
             }
          };
@@ -1916,6 +1949,176 @@ namespace exprtk
                      return false;
 
                   d += compute_pow10(tmp_d, frac_exponent);
+               }
+
+               #undef parse_digit_1
+               #undef parse_digit_2
+            }
+
+            if (end != itr)
+            {
+               typename std::iterator_traits<Iterator>::value_type c = (*itr);
+
+               if (('e' == c) || ('E' == c))
+               {
+                  int exp = 0;
+
+                  if (!details::string_to_type_converter_impl_ref(++itr, end, exp))
+                  {
+                     if (end == itr)
+                        return false;
+                     else
+                        c = (*itr);
+                  }
+
+                  exponent += exp;
+               }
+
+               if (end != itr)
+               {
+                  if (('f' == c) || ('F' == c) || ('l' == c) || ('L' == c))
+                     ++itr;
+                  else if ('#' == c)
+                  {
+                     if (end == ++itr)
+                        return false;
+                     else if (('I' <= (*itr)) && ((*itr) <= 'n'))
+                     {
+                        if (('i' == (*itr)) || ('I' == (*itr)))
+                        {
+                           return parse_inf(itr, end, t, negative);
+                        }
+                        else if (('n' == (*itr)) || ('N' == (*itr)))
+                        {
+                           return parse_nan(itr, end, t);
+                        }
+                        else
+                           return false;
+                     }
+                     else
+                        return false;
+                  }
+                  else if (('I' <= (*itr)) && ((*itr) <= 'n'))
+                  {
+                     if (('i' == (*itr)) || ('I' == (*itr)))
+                     {
+                        return parse_inf(itr, end, t, negative);
+                     }
+                     else if (('n' == (*itr)) || ('N' == (*itr)))
+                     {
+                        return parse_nan(itr, end, t);
+                     }
+                     else
+                        return false;
+                  }
+                  else
+                     return false;
+               }
+            }
+         }
+
+         if ((end != itr) || (!instate))
+            return false;
+         else if (!valid_exponent<T>(exponent, numeric::details::real_type_tag()))
+            return false;
+         else if (exponent)
+            d = compute_pow10(d,exponent);
+
+         t = static_cast<T>((negative) ? -d : d);
+         return true;
+      }
+
+      template <typename Iterator, typename T>
+      inline bool string_to_real(Iterator& itr_external, const Iterator end, T& t, numeric::details::int_type_tag)
+      {
+         if (end == itr_external) return false;
+
+         Iterator itr = itr_external;
+
+         T d = T(0);
+
+         const bool negative = ('-' == (*itr));
+
+         if (negative || '+' == (*itr))
+         {
+            if (end == ++itr)
+               return false;
+         }
+
+         bool instate = false;
+
+         static const char_t zero = static_cast<uchar_t>('0');
+
+         #define parse_digit_1(d)          \
+         if ((digit = (*itr - zero)) < 10) \
+            { d = d * T(10) + digit; }     \
+         else                              \
+            { break; }                     \
+         if (end == ++itr) break;          \
+
+         #define parse_digit_2(d)          \
+         if ((digit = (*itr - zero)) < 10) \
+            { d = d * T(10) + digit; }     \
+         else { break; }                   \
+            ++itr;                         \
+
+         if ('.' != (*itr))
+         {
+            const Iterator curr = itr;
+
+            while ((end != itr) && (zero == (*itr))) ++itr;
+
+            while (end != itr)
+            {
+               // Note: For 'physical' superscalar architectures it
+               // is advised that the following loop be: 4xPD1 and 1xPD2
+               unsigned int digit;
+
+               #ifdef exprtk_enable_superscalar
+               parse_digit_1(d)
+               parse_digit_1(d)
+               #endif
+               parse_digit_1(d)
+               parse_digit_1(d)
+               parse_digit_2(d)
+            }
+
+            if (curr != itr) instate = true;
+         }
+
+         int exponent = 0;
+
+         if (end != itr)
+         {
+            if ('.' == (*itr))
+            {
+               const Iterator curr = ++itr;
+               T tmp_d = T(0);
+
+               while (end != itr)
+               {
+                  unsigned int digit;
+
+                  #ifdef exprtk_enable_superscalar
+                  parse_digit_1(tmp_d)
+                  parse_digit_1(tmp_d)
+                  parse_digit_1(tmp_d)
+                  #endif
+                  parse_digit_1(tmp_d)
+                  parse_digit_1(tmp_d)
+                  parse_digit_2(tmp_d)
+               }
+
+               if (curr != itr)
+               {
+                  instate = true;
+
+                  const int exponent = static_cast<int>(-std::distance(curr, itr));
+
+                  if (!valid_exponent<T>(exponent, numeric::details::real_type_tag()))
+                     return false;
+
+                  d += compute_pow10(tmp_d, exponent);
                }
 
                #undef parse_digit_1
@@ -5211,6 +5414,22 @@ namespace exprtk
 
       template <typename T>
       inline bool is_generally_string_node(const expression_node<T>* node);
+
+      inline bool is_true(const uint32_t v) {
+         return v != 0;
+      }
+
+      inline bool is_true(const uint64_t v) {
+         return v != 0;
+      }
+
+      inline bool is_true(const int32_t v) {
+         return v != 0;
+      }
+
+      inline bool is_true(const int64_t v) {
+         return v != 0;
+      }
 
       inline bool is_true(const double v)
       {
