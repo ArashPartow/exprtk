@@ -3044,7 +3044,7 @@ inline bool run_test03()
 
             if (parser.compile(invalid_expr[i],expression))
             {
-               printf("run_test03() - Error: [1] Invalid expression compiled successfuly.   Expression: %s\n",
+               printf("run_test03() - Error: [1] Invalid expression compiled successfully.   Expression: %s\n",
                       invalid_expr[i].c_str());
 
                return false;
@@ -3070,7 +3070,7 @@ inline bool run_test03()
 
             if (parser.compile(invalid_expr[i],expression))
             {
-               printf("run_test03() - Error: [2] Invalid expression compiled successfuly.   Expression: %s\n",
+               printf("run_test03() - Error: [2] Invalid expression compiled successfully.   Expression: %s\n",
                       invalid_expr[i].c_str());
 
                return false;
@@ -4466,7 +4466,7 @@ inline bool run_test10()
                                           expected_var_symbol_list.begin());
       if (!var_result)
       {
-         printf("run_test10() - Failed collected variable comparison between recieved and expected variables\n");
+         printf("run_test10() - Failed collected variable comparison between received and expected variables\n");
          return false;
       }
 
@@ -4476,7 +4476,7 @@ inline bool run_test10()
                                           expected_func_symbol_list.begin());
       if (!func_result)
       {
-         printf("run_test10() - Failed collected fuctions comparison between recieved and expected functions\n");
+         printf("run_test10() - Failed collected functions comparison between received and expected functions\n");
          return false;
       }
    }

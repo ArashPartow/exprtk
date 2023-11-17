@@ -2858,12 +2858,12 @@ namespace exprtk
                        ((s_itr_ + 4) <= s_end_)
                      )
                   {
-                     const bool x_seperator = ('X' == std::toupper(*(s_itr_ + 1)));
+                     const bool x_separator = ('X' == std::toupper(*(s_itr_ + 1)));
 
                      const bool both_digits = details::is_hex_digit(*(s_itr_ + 2)) &&
                                               details::is_hex_digit(*(s_itr_ + 3)) ;
 
-                     if (!(x_seperator && both_digits))
+                     if (!(x_separator && both_digits))
                      {
                         t.set_error(token::e_err_string, initial_itr, s_itr_, base_itr_);
                         token_list_.push_back(t);
@@ -12134,7 +12134,7 @@ namespace exprtk
       {
       public:
 
-         // Function of N paramters.
+         // Function of N parameters.
          typedef expression_node<T>* expression_ptr;
          typedef std::pair<expression_ptr,bool> branch_t;
          typedef IFunction ifunction;
@@ -21925,7 +21925,7 @@ namespace exprtk
          if (index < error_list_.size())
             return error_list_[index];
          else
-            throw std::invalid_argument("parser::get_error() - Invalid error index specificed");
+            throw std::invalid_argument("parser::get_error() - Invalid error index specified");
       }
 
       inline std::string error() const
@@ -23611,7 +23611,7 @@ namespace exprtk
          }
          else
          {
-            const token_t::token_type seperator = token_t::e_eof;
+            const token_t::token_type separator = token_t::e_eof;
 
             scope_handler sh(*this);
 
@@ -23642,12 +23642,12 @@ namespace exprtk
                const bool is_next_until = peek_token_is(token_t::e_symbol) &&
                                           peek_token_is("until");
 
-               if (!token_is(seperator) && is_next_until)
+               if (!token_is(separator) && is_next_until)
                {
                   set_error(
                      make_error(parser_error::e_syntax,
                                 current_token(),
-                                "ERR064 - Expected '" + token_t::to_str(seperator) + "' in body of repeat until loop",
+                                "ERR064 - Expected '" + token_t::to_str(separator) + "' in body of repeat until loop",
                                 exprtk_error_location));
 
                   return error_node();
@@ -24493,7 +24493,7 @@ namespace exprtk
       {
          token_t::token_type open_bracket  = token_t::e_lcrlbracket;
          token_t::token_type close_bracket = token_t::e_rcrlbracket;
-         token_t::token_type seperator     = token_t::e_eof;
+         token_t::token_type separator     = token_t::e_eof;
 
          if (!token_is(open_bracket))
          {
@@ -24501,7 +24501,7 @@ namespace exprtk
             {
                open_bracket  = token_t::e_lbracket;
                close_bracket = token_t::e_rbracket;
-               seperator     = token_t::e_comma;
+               separator     = token_t::e_comma;
             }
             else
             {
@@ -24550,12 +24550,12 @@ namespace exprtk
 
             const bool is_next_close = peek_token_is(close_bracket);
 
-            if (!token_is(seperator) && is_next_close)
+            if (!token_is(separator) && is_next_close)
             {
                set_error(
                   make_error(parser_error::e_syntax,
                              current_token(),
-                             "ERR103 - Expected '" + details::to_str(seperator) + "' for call to multi-sequence section of " + source,
+                             "ERR103 - Expected '" + details::to_str(separator) + "' for call to multi-sequence section of " + source,
                              exprtk_error_location));
 
                return error_node();
