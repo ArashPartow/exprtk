@@ -2912,7 +2912,7 @@ inline bool run_test03()
 
       if (variable_list_size != total_symbol_count)
       {
-         printf("run_test03() - Error - Invalid number of variables in symbol_table!  Expected: %d  got: %d\n",
+         printf("run_test03() - Error - Invalid number of variables in symbol_table!  Expected: %u  got: %u\n",
                 static_cast<unsigned int>(variable_list_size),
                 static_cast<unsigned int>(total_symbol_count));
 
@@ -3256,7 +3256,7 @@ inline bool run_test05()
 
          if (not_equal(result,real_result))
          {
-            printf("run_test05() - Computation Error:  Expression: [%s]\tExpected: %19.15f\tResult: %19.15f x:%19.15f\ty:%19.15f\tIndex:%d\n",
+            printf("run_test05() - Computation Error:  Expression: [%s]\tExpected: %19.15f\tResult: %19.15f x:%19.15f\ty:%19.15f\tIndex:%u\n",
                    expression_string.c_str(),
                    static_cast<double>(real_result),
                    static_cast<double>(result),
@@ -3618,7 +3618,7 @@ struct myfunc : public exprtk::ifunction<T>
 
    myfunc() : exprtk::ifunction<T>(2) {}
 
-   inline T operator()(const T& v1, const T& v2)
+   inline T operator()(const T& v1, const T& v2) exprtk_override
    {
       return T(1) + (v1 * v2) / T(3);
    }
@@ -5181,7 +5181,7 @@ struct sine_deg : public exprtk::ifunction<T>
 
    sine_deg() : exprtk::ifunction<T>(1) {}
 
-   inline T operator()(const T& v)
+   inline T operator()(const T& v) exprtk_override
    {
       return std::sin((v * T(exprtk::details::numeric::constant::pi)) / T(180));
    }
@@ -5194,7 +5194,7 @@ struct cosine_deg : public exprtk::ifunction<T>
 
    cosine_deg() : exprtk::ifunction<T>(1) {}
 
-   inline T operator()(const T& v)
+   inline T operator()(const T& v) exprtk_override
    {
       return std::cos((v * T(exprtk::details::numeric::constant::pi)) / T(180));
    }
@@ -5582,12 +5582,12 @@ struct base_func : public exprtk::ifunction<T>
 
    typedef const T& type;
    base_func(const std::size_t& n) : exprtk::ifunction<T>(n) {}
-   inline T operator()(type v0, type v1, type v2, type v3, type v4) { return (v0 + v1 + v2 + v3 + v4); }
-   inline T operator()(type v0, type v1, type v2, type v3) { return (v0 + v1 + v2 + v3); }
-   inline T operator()(type v0, type v1, type v2) { return (v0 + v1 + v2); }
-   inline T operator()(type v0, type v1) { return (v0 + v1); }
-   inline T operator()(type v0) { return v0; }
-   inline T operator()() { return T(1.1234); }
+   inline T operator()(type v0, type v1, type v2, type v3, type v4) exprtk_override { return (v0 + v1 + v2 + v3 + v4); }
+   inline T operator()(type v0, type v1, type v2, type v3) exprtk_override { return (v0 + v1 + v2 + v3); }
+   inline T operator()(type v0, type v1, type v2) exprtk_override { return (v0 + v1 + v2); }
+   inline T operator()(type v0, type v1) exprtk_override { return (v0 + v1); }
+   inline T operator()(type v0) exprtk_override { return v0; }
+   inline T operator()() exprtk_override { return T(1.1234); }
 };
 
 template <typename T> struct test_func5 : public base_func<T> { test_func5() : base_func<T>(5){} };
@@ -5863,7 +5863,7 @@ struct va_func : public exprtk::ivararg_function<T>
       exprtk::set_max_num_args(*this, 20);
    }
 
-   inline T operator()(const std::vector<T>& arglist)
+   inline T operator()(const std::vector<T>& arglist) exprtk_override
    {
       T result = T(0);
 
@@ -6158,7 +6158,7 @@ struct overload_func : exprtk::igeneric_function<T>
 
       for (std::size_t i = 0; i < parameters.size(); ++i)
       {
-         generic_type& gt = parameters[i];
+         const generic_type& gt = parameters[i];
 
          switch (gt.type)
          {
@@ -6984,9 +6984,7 @@ inline bool run_test18()
          failure = true;
       }
 
-      T sum = { T(0) };
-
-      sum = expression.value();
+      T sum = expression.value();
 
       if (not_equal(sum,T(7)))
       {
@@ -8084,7 +8082,7 @@ inline bool run_test19()
 
          if (!parser.compile(expression_str[i],expression))
          {
-            printf("run_test19() - Error: %s   Expression%d: %s\n",
+            printf("run_test19() - Error: %s   Expression%u: %s\n",
                    parser.error().c_str(),
                    static_cast<unsigned int>(i),
                    expression_str[i].c_str());
@@ -8142,12 +8140,12 @@ inline bool run_test19()
 
          if (failure)
          {
-            printf("run_test19() - Error in evaluation! (3)  Results don't match!  Prime: %d\n",
+            printf("run_test19() - Error in evaluation! (3)  Results don't match!  Prime: %u\n",
                    static_cast<unsigned int>(prime_list[i]));
 
             for (std::size_t j = 0; j < expression_list.size(); ++j)
             {
-               printf("Expression[%02d]: %s = %d\n",
+               printf("Expression[%02u]: %s = %u\n",
                       static_cast<unsigned int>(j),
                       expression_str[j].c_str(),
                       static_cast<unsigned int>(result[j]));
@@ -8155,12 +8153,12 @@ inline bool run_test19()
          }
          else  if (T(1) != expression_list[0].value())
          {
-            printf("run_test19() - Error in evaluation! (4)  Results don't match!  Prime: %d\n",
+            printf("run_test19() - Error in evaluation! (4)  Results don't match!  Prime: %u\n",
                    static_cast<unsigned int>(prime_list[i]));
 
             for (std::size_t j = 0; j < expression_list.size(); ++j)
             {
-               printf("Expression[%02d]: %s = %d\n",
+               printf("Expression[%02u]: %s = %u\n",
                       static_cast<unsigned int>(j),
                       expression_str[j].c_str(),
                       static_cast<unsigned int>(result[j]));
@@ -8286,7 +8284,7 @@ inline bool run_test19()
 
          if (!parser.compile(expression_str[i],expression))
          {
-            printf("run_test19() - Error: %s   Expression[%02d]: %s\n",
+            printf("run_test19() - Error: %s   Expression[%02u]: %s\n",
                    parser.error().c_str(),
                    static_cast<unsigned int>(i),
                    expression_str[i].c_str());
@@ -8335,13 +8333,13 @@ inline bool run_test19()
 
          if (failure)
          {
-            printf("run_test19() - Error in evaluation! (5)  Results don't match!  fibonacci(%d) = %d\n",
+            printf("run_test19() - Error in evaluation! (5)  Results don't match!  fibonacci(%u) = %u\n",
                    static_cast<unsigned int>(i),
                    static_cast<unsigned int>(fibonacci_list[i]));
 
             for (std::size_t j = 0; j < expression_list.size(); ++j)
             {
-               printf("Expression[%02d]: %s = %d\n",
+               printf("Expression[%02u]: %s = %u\n",
                       static_cast<unsigned int>(j),
                       expression_str[j].c_str(),
                       static_cast<unsigned int>(result[j]));
@@ -8349,13 +8347,13 @@ inline bool run_test19()
          }
          else  if (fibonacci_list[i] != expression_list[0].value())
          {
-            printf("run_test19() - Error in evaluation! (6)  Results don't match!  fibonacci(%d) = %d\n",
+            printf("run_test19() - Error in evaluation! (6)  Results don't match!  fibonacci(%u) = %u\n",
                    static_cast<unsigned int>(i),
                    static_cast<unsigned int>(fibonacci_list[i]));
 
             for (std::size_t j = 0; j < expression_list.size(); ++j)
             {
-               printf("Expression[%02d]: %s = %d\n",
+               printf("Expression[%02u]: %s = %u\n",
                       static_cast<unsigned int>(j),
                       expression_str[j].c_str(),
                       static_cast<unsigned int>(result[j]));
@@ -8663,7 +8661,7 @@ inline bool run_test19()
 
          if (T(1) != e[i].value())
          {
-            printf("run_test19() - erf/erfc computation error %d",
+            printf("run_test19() - erf/erfc computation error %u",
                    static_cast<unsigned int>(i));
 
             return false;
@@ -8682,7 +8680,7 @@ struct my_usr : public exprtk::parser<T>::unknown_symbol_resolver
    bool process(const std::string& unknown_symbol,
                 typename usr_t::usr_symbol_type& st,
                 T& default_value,
-                std::string& error_message)
+                std::string& error_message) exprtk_override
    {
       if (unknown_symbol[0] == 'v')
       {

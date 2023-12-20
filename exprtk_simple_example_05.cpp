@@ -31,7 +31,7 @@ struct myfunc : public exprtk::ifunction<T>
    : exprtk::ifunction<T>(2)
    { exprtk::disable_has_side_effects(*this); }
 
-   inline T operator()(const T& v1, const T& v2)
+   inline T operator()(const T& v1, const T& v2) exprtk_override
    {
       return T(1) + (v1 * v2) / T(3);
    }

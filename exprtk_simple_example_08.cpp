@@ -67,7 +67,7 @@ void composite()
       {
          const error_t error = parser.get_error(i);
 
-         printf("Error: %02d  Position: %02d Type: [%14s] Msg: %s\tExpression: %s\n",
+         printf("Error: %02u  Position: %02d Type: [%14s] Msg: %s\tExpression: %s\n",
                 static_cast<unsigned int>(i),
                 static_cast<unsigned int>(error.token.position),
                 exprtk::parser_error::to_str(error.mode).c_str(),

@@ -78,7 +78,7 @@ void newton_sqrt()
 
       const T result = expression.value();
 
-      printf("sqrt(%03d) - Result: %15.13f\tReal: %15.13f\n",
+      printf("sqrt(%03u) - Result: %15.13f\tReal: %15.13f\n",
              static_cast<unsigned int>(i),
              result,
              std::sqrt(x));

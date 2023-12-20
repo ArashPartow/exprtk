@@ -3735,27 +3735,6 @@ namespace exprtk
 
          private:
 
-            bool modify(lexer::token& t)
-            {
-               if (lexer::token::e_symbol == t.type)
-               {
-                  if (replace_map_.empty())
-                     return false;
-
-                  const replace_map_t::iterator itr = replace_map_.find(t.value);
-
-                  if (replace_map_.end() != itr)
-                  {
-                     t.value = itr->second.first;
-                     t.type  = itr->second.second;
-
-                     return true;
-                  }
-               }
-
-               return false;
-            }
-
             replace_map_t replace_map_;
          };
 
@@ -38661,7 +38640,7 @@ namespace exprtk
          }
       };
 
-      static T return_value(expression_t& e)
+      static T return_value(const expression_t& e)
       {
          typedef exprtk::results_context<T> results_context_t;
          typedef typename results_context_t::type_store_t type_t;

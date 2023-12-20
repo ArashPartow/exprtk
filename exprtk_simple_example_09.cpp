@@ -137,7 +137,7 @@ void primes()
       const T result2 = expression2.value();
       const T result3 = expression3.value();
 
-      printf("%03d  Result1: %c  Result2: %c  Result3: %c\n",
+      printf("%03u  Result1: %c  Result2: %c  Result3: %c\n",
              static_cast<unsigned int>(i),
              (result1 == T(1)) ? 'T' : 'F',
              (result2 == T(1)) ? 'T' : 'F',

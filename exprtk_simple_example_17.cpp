@@ -32,7 +32,7 @@ struct rnd_01 : public exprtk::ifunction<T>
    rnd_01() : exprtk::ifunction<T>(0)
    { ::srand(static_cast<unsigned int>(time(NULL))); }
 
-   inline T operator()()
+   inline T operator()() exprtk_override
    {
       // Note: Do not use this in production
       // Result is in the interval [0,1)
