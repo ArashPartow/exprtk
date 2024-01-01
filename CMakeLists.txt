@@ -2,7 +2,7 @@
 # ******************************************************************
 # *           C++ Mathematical Expression Toolkit Library          *
 # *                                                                *
-# * Author: Arash Partow (1999-2022)                               *
+# * Author: Arash Partow (1999-2023)                               *
 # * URL: https://www.partow.net/programming/exprtk/index.html      *
 # *                                                                *
 # * Copyright notice:                                              *
@@ -20,7 +20,7 @@ cmake_minimum_required(VERSION 3.15)
 project(
    ExprTk
    LANGUAGES CXX
-   VERSION 0.0.1
+   VERSION 0.0.2
    DESCRIPTION  "C++ Mathematical Expression Toolkit Library (ExprTk)"
    HOMEPAGE_URL "https://www.partow.net/programming/exprtk/index.html"
 )
