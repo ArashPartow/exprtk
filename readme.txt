@@ -450,7 +450,7 @@ of C++ compilers:
 |          | Note: Both r0 and r1 are assumed to be integers, where  |
 |          | r0 <= r1. They may also be the result of an expression, |
 |          | in the event they have fractional components truncation |
-|          | will be performed. (eg: 1.67 --> 1)                     |
+|          | shall be performed. (eg: 1.67 --> 1)                    |
 +----------+---------------------------------------------------------+
 |  :=      | Assign the value of x to y. Where y is a mutable string |
 |          | or string range and x is either a string or a string    |
@@ -540,7 +540,7 @@ of C++ compilers:
 +----------+---------------------------------------------------------+
 | while    | The structure will repeatedly evaluate the internal     |
 |          | statement(s) 'while' the condition is true. The final   |
-|          | statement in the final iteration will be used as the    |
+|          | statement in the final iteration shall be used as the   |
 |          | return value of the loop.                               |
 |          | eg:                                                     |
 |          | while ((x -= 1) > 0)                                    |
@@ -551,7 +551,7 @@ of C++ compilers:
 +----------+---------------------------------------------------------+
 | repeat/  | The structure will repeatedly evaluate the internal     |
 | until    | statement(s) 'until' the condition is true. The final   |
-|          | statement in the final iteration will be used as the    |
+|          | statement in the final iteration shall be used as the   |
 |          | return value of the loop.                               |
 |          | eg:                                                     |
 |          | repeat                                                  |
@@ -724,7 +724,7 @@ evaluated using the current value of the element.
 The  example  below demonstrates  the  relationship between variables,
 symbol_table and expression. Note  the variables are modified  as they
 normally would in a program, and when the expression is  evaluated the
-current values assigned to the variables will be used.
+current values assigned to the variables shall be used.
 
    typedef exprtk::symbol_table<double> symbol_table_t;
    typedef exprtk::expression<double>   expression_t;
@@ -1070,7 +1070,7 @@ constant and X is a normal variable. Both are registered with a symbol
 table that is immutable. The  expression when compiled will result  in
 the "(y + y)" part being  const-folded at compile time to the  literal
 value of 246. Whereas  the current value of  X, being updated via  the
-for-loop, externally to  the expression and  the symbol table  will be
+for-loop, externally to  the expression and  the symbol table shall be
 observable to the expression upon each evaluation.
 
 
@@ -1110,7 +1110,7 @@ Expression:  z := (x + y^-2.345) * sin(pi / min(w - 7.3,v))
                              Variable(w)      Constant(7.3)
 
 
-The above denoted AST will be evaluated in the following order:
+The above denoted AST shall be evaluated in the following order:
 
    (01) Load Variable  (z)        (10) Load Constant  (7.3)
    (02) Load Variable  (x)        (11) Subtraction    (09 & 10)
@@ -1327,7 +1327,7 @@ enabled by default. The options and their explanations are as follows:
 
 (1) Replacer (e_replacer)
 Enable replacement of specific  tokens with other tokens.  For example
-the token  "true" of  type symbol  will be  replaced with  the numeric
+the token  "true" of  type symbol  shall be  replaced with the numeric
 token of value one.
 
    (a) (x < y) == true   --->  (x < y) == 1
@@ -1493,7 +1493,7 @@ value. The max size value can be changed via the parser settings.
 In the above  code, the max  local vector size  is set to  one million
 elements. During  compilation  of an expression  if there is  a vector
 definition  where  the  vector  size exceeds  the  max  vector  size a
-compilation error will be emitted.
+compilation error shall be emitted.
 
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
@@ -1641,7 +1641,7 @@ final or last statement.
 
 By default the final statement in an expression will always be present
 regardless of  its side-effect  status, as  it is  the statement whose
-value will be used as the result of the expression.
+value shall be used as the result of the expression.
 
 In order to further explain the actions taken during the DCE  process,
 lets review the following expression:
@@ -1683,7 +1683,7 @@ expression that utilises the function based if-statement.
 
 
 In the  example above,  if the  condition 'y  < z'  is true,  then the
-consequent 'y + 1' will be evaluated, its value will be  returned  and
+consequent 'y + 1' will be evaluated, its value shall be  returned and
 subsequently assigned to the  variable 'x'. Otherwise the  alternative
 '2 *  z' will  be evaluated  and its  value will  be returned. This is
 essentially the  simplest form of  an if-then-else statement. A simple
@@ -1715,7 +1715,7 @@ will return a quiet NaN value as its result.
         };
 
 The two  example expressions  above are  equivalent. If  the condition
-'y < z' is true, the  'x' variable will be  assigned the value of  the
+'y < z' is true, the 'x' variable shall be  assigned the value of  the
 consequent 'y + 3', otherwise it  will be assigned the value of  quiet
 NaN.  As  previously  discussed,  if-statements  are  value  returning
 constructs, and if  not properly terminated  using a semi-colon,  will
@@ -1774,7 +1774,7 @@ as follows:
 In  the case  where  there  is no  final else  statement and  the flow
 through the conditional  arrives at this  final point, the  same rules
 apply to this form of if-statement as to the previous. That is a quiet
-NaN will be  returned as the  result of the  if-statement. Furthermore
+NaN shall be returned as the  result of the  if-statement. Furthermore
 the same requirements of  terminating the statement with  a semi-colon
 apply.
 
@@ -1958,7 +1958,7 @@ examples of string variable definitions:
 Variable and vector  definitions have a  return value. In  the case of
 variable definitions, the value  to which the variable  is initialised
 will be returned. Where as for vectors, the value of the first element
-(eg: v[0]) will be returned.
+(eg: v[0]) shall be returned.
 
    8 == ((var x := 7;) + 1)
    4 == (var y[3] := {4, 5, 6};)
@@ -2200,7 +2200,7 @@ inputs but will always return a single value of the underlying numeric
 type.
 
 During  expression  compilation  when required  the  reference  to the
-function  will be  obtained from  the associated  symbol_table and  be
+function  shall be obtained from  the associated  symbol_table and  be
 embedded into the expression.
 
 There are five types of function interface:
@@ -2418,11 +2418,11 @@ parameters in the following sequence:
    (3) Scalar
    (4) Scalar
 
-Note16: The 'Z' or  no parameter option may not be used in conjunction
+Note16: The 'Z' or no parameter option may not be used in  conjunction
 with any other type option in a parameter sequence. When  incorporated
-in the parameter sequence list, the no parameter option indicates that
-the function may be invoked  without any parameters being passed.  For
-more information refer to the section: 'Zero Parameter Functions'
+in the parameter  sequence list, the  'No Parameter' option  indicates
+that the function may be invoked without any parameters being  passed.
+For more information refer to the section: 'Zero Parameter Functions'
 
 
 (4) igeneric_function II
@@ -2639,7 +2639,7 @@ are defined as follows:
 
 
 The parameter  sequence definitions  are identical  to the  previously
-define igeneric_function, with the  exception of the inclusion  of the
+defined igeneric_function, with the exception of the inclusion  of the
 return type - which can only be either a scalar T or a string S.
 
 
@@ -2650,18 +2650,22 @@ returning a single scalar value and consuming up to six parameters  as
 input.
 
 All composited functions are registered with a symbol table,  allowing
-them to call other functions that have been registered with the symbol
-table instance. Furthermore the  functions can be recursive  in nature
-due to the inherent  function prototype forwarding that  occurs during
-construction.  The following  example  defines, by using two different
-methods, composited functions and implicitly registering the functions
-with the denoted symbol table.
+them  to  call  other  functions  and  use  variables  that  have been
+registered with the symbol  table instance. Furthermore the  functions
+can be  recursive in  nature due  to the  inherent function  prototype
+forwarding  that  occurs during  construction.  The following  example
+defines,  by using  two different  methods, composited  functions and
+implicitly registering the functions with the denoted symbol table.
 
    typedef exprtk::symbol_table<T>         symbol_table_t;
    typedef exprtk::function_compositor<T>  compositor_t;
    typedef typename compositor_t::function function_t;
 
+   T avogadro = T(6.022e23);
+
    symbol_table_t symbol_table;
+
+   symbol_table.add_constant("avogadro", avogadro);
 
    compositor_t compositor(symbol_table);
 
@@ -2671,7 +2675,7 @@ with the denoted symbol table.
       .vars("v1", "v2")
       .expression
       (
-         " 1 + cos(v1 * v2) / 3; "
+         " 1 + cos(v1 * v2) / avogadro; "
       ));
 
    // Define function koo1(x, y, z) { ... }
@@ -2681,8 +2685,53 @@ with the denoted symbol table.
       .var("x").var("y").var("z")
       .expression
       (
-         "1 + cos(x * y) / z;"
+         "1 + koo0(x * y, 3) / z;"
       ));
+
+
+A function compositor can also be instantiated without a symbol_table.
+When this is the case an internal symbol_table is used for holding the
+references to the composited functions.
+
+   compositor_t compositor;
+
+   // Define function koo2(v1, v2) { ... }
+   compositor.add(
+      function_t("koo2"),
+      .vars("v1", "v2", "v3")
+      .expression
+      ( " abs(v1 * v2) / v3; " ));
+
+
+When wanting to  reference functions from  the compositor above  in an
+expression, the compositor's symbol_table  will need to be  registered
+with the expression  prior to compilation,  as is demonstrated  in the
+following code:
+
+   expression_t expression;
+   .
+   .
+   expression.register_symbol_table(compositor.symbol_table());
+
+
+In the situation where  more than one symbol table's contents will  be
+required by the functions  being composited, then those  symbol tables
+can be registered as auxiliary symbol tables with the compositor:
+
+   symbol_table_t global_symbol_table;
+   symbol_table_t local_symbol_table;
+   .
+   .
+   .
+   compositor_t compositor;
+
+   compositor.add_auxiliary_symtab(global_symbol_table);
+   compositor.add_auxiliary_symtab(local_symbol_table );
+
+Note19: In the event, that two or more symbol tables contain similarly
+named  variables,  vectors,  strings   or  functions,  the  order   of
+registration with the compositor shall determine the symbol table from
+which the target symbol will be referenced.
 
 
 (7) Using Functions In Expressions
@@ -2789,7 +2838,7 @@ carried out:
    };
 
 
-Note19: For the igeneric_function  type, there  also needs to be a 'Z'
+Note20: For the igeneric_function  type, there  also needs to be a 'Z'
 parameter sequence  defined in order for the  zero parameter  trait to
 properly take effect otherwise a compilation error will occur.
 
@@ -2836,7 +2885,7 @@ registered with the given symbol_table instance:
       { return v0 / v1 + v2; });
 
 
-Note20: Similar to  variables registered with  symbol_table instances,
+Note21: Similar to  variables registered with  symbol_table instances,
 for any of the following function providers:
 
    1. ifunction
@@ -2940,7 +2989,7 @@ dependents of the given expression:
    }
 
 
-Note21: The 'symbol_t'  type is a  std::pair comprising of  the symbol
+Note22: The 'symbol_t'  type is a  std::pair comprising of  the symbol
 name (std::string) and the associated type of the symbol as denoted by
 the cases in the switch statement.
 
@@ -2959,7 +3008,7 @@ associated assignments:
    (5) None          x + y + z
 
 
-Note22: In  expression 4,  both variables  'w' and  'z' are denoted as
+Note23: In  expression 4,  both variables  'w' and  'z' are denoted as
 being assignments even though only one of them can ever be modified at
 the time of evaluation. Furthermore the determination of which of  the
 two variables the modification will occur upon can only be known  with
@@ -2994,7 +3043,7 @@ of the DEC in determining the 'assignments' of the given expression:
    }
 
 
-Note23: The  assignments will  only consist  of variable  types and as
+Note24: The  assignments will  only consist  of variable  types and as
 such will not contain symbols denoting functions.
 
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
@@ -3323,7 +3372,7 @@ after which the expression itself can be evaluated.
    expression.value();
 
 
-Note24: As previously  mentioned the  default  USR  will automatically
+Note25: As previously  mentioned the  default  USR  will automatically
 assume any unknown symbol to be a valid scalar variable, and will then
 proceed to add said symbol  as a variable to the  primary symbol_table
 of the associated expression during the compilation process. However a
@@ -3470,14 +3519,14 @@ table will now have the previously detected unknown symbol registered,
 it will be correctly resolved  and the general parsing processing  can
 then resume as per normal.
 
-Note25: In order to have  the USR's extended mode callback  be invoked
+Note26: In order to have  the USR's extended mode callback  be invoked
 it is necessary to pass  the e_usrmode_extended enum value during  the
 constructor of the user defined USR.
 
-Note26: The primary symbol table for an expression is the first symbol
+Note27: The primary symbol table for an expression is the first symbol
 table to be registered with that instance of the expression.
 
-Note27: For a successful symbol resolution using the normal USR all of
+Note28: For a successful symbol resolution using the normal USR all of
 the following are required:
 
    (1) Only if successful shall the process method return TRUE
@@ -3487,7 +3536,7 @@ the following are required:
          (*) e_usr_variable_type
          (*) e_usr_constant_type
 
-Note28: For a successful symbol resolution using the extended USR  all
+Note29: For a successful symbol resolution using the extended USR  all
 of the following are required:
 
    (1) Only if successful shall the process method return TRUE
@@ -3807,7 +3856,7 @@ assignment operator:
       .compile("x += 3",expression); // success
 
 
-Note29: In the  event of  a  base  function  being  disabled, one  can
+Note30: In the  event of  a  base  function  being  disabled, one  can
 redefine  the  base  function  using  the  standard  custom   function
 definition process.  In the  following example  the 'sin'  function is
 disabled then redefined as a function taking degree input.
@@ -3936,7 +3985,7 @@ call. In the event,  the call to return_invoked  is not true then  the
 non-return code  path was  executed and  the result  of the evaluation
 will be the result of the expression's value method.
 
-Note30: Processing of  the return  results is  similar to  that of the
+Note31: Processing of  the return  results is  similar to  that of the
 generic function call parameters.
 
 The results_context provides getter  methods for each of  the possible
@@ -4173,7 +4222,7 @@ demonstrated by the following example:
    }
 
 
-Note31: There are five distinct error modes in ExprTk which denote the
+Note32: There are five distinct error modes in ExprTk which denote the
 class of an error. These classes are as follows:
 
    (a) Syntax
@@ -4213,7 +4262,7 @@ find,  within  the  symbol_table,  symbols  representing  variables or
 functions, to being unable to create new variables in the symbol_table
 via the 'unknown symbol resolver' mechanism.
 
-Note32: The function compositor  also supports  error message handling
+Note33: The function compositor  also supports  error message handling
 similar to how it is  done via the parser. The  following demonstrates
 how after a failed function  composition the associated errors can  be
 enumerated.
@@ -4391,14 +4440,14 @@ follows:
      printf("An error occurred.");
 
 
-Note33: When  either the  'collect_variables'  or  'collect_functions'
+Note34: When  either the  'collect_variables'  or  'collect_functions'
 free functions return  true - that  does not necessarily  indicate the
 expression itself is  valid. It is  still possible that  when compiled
 the expression may have certain  'type' related errors - though  it is
 highly likely  that no  semantic errors  will occur  if either  return
 true.
 
-Note34: The default interface provided for both the  collect_variables
+Note35: The default interface provided for both the  collect_variables
 and collect_functions  free_functions, assumes  that expressions  will
 only be  utilising the  ExprTk reserved  functions (eg:  abs, cos, min
 etc). When user defined functions are  to be used in an expression,  a
@@ -4732,7 +4781,7 @@ as follows:
    }
 
 
-Note35: The  lifetime of  any parser  or expression  instance must not
+Note36: The  lifetime of  any parser  or expression  instance must not
 exceed that of any VARTC instance that has been registered with it.
 
 When a vector access violation occurs, the registered VARTC instance's
@@ -4764,7 +4813,7 @@ point perform various actions such as:
   3. Remedy the access_ptr to allow for the evaluation to continue
 
 
-Note36: When employing option [3],  handle_runtime_violation needs  to
+Note37: When employing option [3],  handle_runtime_violation needs  to
 return  true,  otherwise  the  caller  will assume an unhandled access
 violation and default to using the base_ptr.
 
@@ -4803,7 +4852,7 @@ to the last value in the vector.
    }
 
 
-Note37: The return value  of true  in the above handler method signals
+Note38: The return value  of true  in the above handler method signals
 the caller to continue the vector access using the updated access_ptr.
 
 
@@ -4916,7 +4965,7 @@ members:
       expression.
 
 
-Note38: The  lifetime of  any parser  or expression  instance must not
+Note39: The  lifetime of  any parser  or expression  instance must not
 exceed that of any LRTC instance that has been registered with it.
 
 The following is an  example implementation of an  LRTC that
@@ -5938,22 +5987,23 @@ via the following:
    (38) exprtk_prime_sieve.cpp
    (39) exprtk_prime_sieve_vectorized.cpp
    (40) exprtk_pythagorean_triples.cpp
-   (41) exprtk_repl.cpp
-   (42) exprtk_riddle.cpp
-   (43) exprtk_rtc_overhead.cpp
-   (44) exprtk_sudoku_solver.cpp
-   (45) exprtk_sumofprimes.cpp
-   (46) exprtk_symtab_functions.cpp
-   (47) exprtk_testgen.cpp
-   (48) exprtk_tower_of_hanoi.cpp
-   (49) exprtk_truthtable_gen.cpp
-   (50) exprtk_vectorized_binomial_model.cpp
-   (51) exprtk_vectornorm.cpp
-   (52) exprtk_vector_benchmark.cpp
-   (53) exprtk_vector_benchmark_multithreaded.cpp
-   (54) exprtk_vector_resize_example.cpp
-   (55) exprtk_vector_resize_inline_example.cpp
-   (56) exprtk_wiener_process_pi.cpp
+   (41) exprtk_recursive_fibonacci.cpp
+   (42) exprtk_repl.cpp
+   (43) exprtk_riddle.cpp
+   (44) exprtk_rtc_overhead.cpp
+   (45) exprtk_sudoku_solver.cpp
+   (46) exprtk_sumofprimes.cpp
+   (47) exprtk_symtab_functions.cpp
+   (48) exprtk_testgen.cpp
+   (49) exprtk_tower_of_hanoi.cpp
+   (50) exprtk_truthtable_gen.cpp
+   (51) exprtk_vectorized_binomial_model.cpp
+   (52) exprtk_vectornorm.cpp
+   (53) exprtk_vector_benchmark.cpp
+   (54) exprtk_vector_benchmark_multithreaded.cpp
+   (55) exprtk_vector_resize_example.cpp
+   (56) exprtk_vector_resize_inline_example.cpp
+   (57) exprtk_wiener_process_pi.cpp
 
 
 Details for each of the above examples can be found here:

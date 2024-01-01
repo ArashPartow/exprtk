@@ -1,6 +1,8 @@
 MIT License
 
-Copyright (c) 1999-2023 Arash Partow
+Copyright (c) 1999-2024 Arash Partow
+
+https://www.partow.net/programming/exprtk/index.html
 
 Permission is hereby granted, free of charge, to any person  obtaining
 a  copy  of  this software  and  associated  documentation files  (the
