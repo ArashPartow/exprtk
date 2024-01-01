@@ -43436,8 +43436,8 @@ namespace exprtk
       #if defined(_MSC_VER) || defined(_WIN32) || defined(__WIN32__) || defined(WIN32)
       timer()
       : in_use_(false)
-      , start_time_{ 0 }
-      , stop_time_ { 0 }
+      , start_time_{ {0, 0} }
+      , stop_time_ { {0, 0} }
       {
          QueryPerformanceFrequency(&clock_frequency_);
       }
