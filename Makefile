@@ -2,14 +2,15 @@
 # **************************************************************
 # *         C++ Mathematical Expression Toolkit Library        *
 # *                                                            *
-# * Author: Arash Partow (1999-2023)                           *
+# * Author: Arash Partow (1999-2024)                           *
 # * URL: https://www.partow.net/programming/exprtk/index.html  *
 # *                                                            *
 # * Copyright notice:                                          *
 # * Free use of the Mathematical Expression Toolkit Library is *
 # * permitted under the guidelines and in accordance with the  *
 # * most current version of the MIT License.                   *
-# * http://www.opensource.org/licenses/MIT                     *
+# * https://www.opensource.org/licenses/MIT                    *
+# * SPDX-License-Identifier: MIT                               *
 # *                                                            *
 # **************************************************************
 #
@@ -17,7 +18,7 @@
 
 COMPILER         := -c++
 #COMPILER        := -clang++
-OPTIMIZATION_OPT := -O1
+OPTIMIZATION_OPT := -O2 -DNDEBUG
 BASE_OPTIONS     := -pedantic-errors -Wall -Wextra -Werror -Wno-long-long
 OPTIONS          := $(BASE_OPTIONS) $(OPTIMIZATION_OPT)
 LINKER_OPT       := -L/usr/lib -lstdc++ -lm
@@ -46,9 +47,9 @@ valgrind :
 		fi done;
 
 pgo: exprtk_benchmark.cpp exprtk.hpp
-	$(COMPILER) $(BASE_OPTIONS) -O3 -march=native -fprofile-generate -o exprtk_benchmark exprtk_benchmark.cpp $(LINKER_OPT)
+	$(COMPILER) $(BASE_OPTIONS) -O3 -DNDEBUG -march=native -fprofile-generate -o exprtk_benchmark exprtk_benchmark.cpp $(LINKER_OPT)
 	./exprtk_benchmark
-	$(COMPILER) $(BASE_OPTIONS) -O3 -march=native -fprofile-use -o exprtk_benchmark exprtk_benchmark.cpp $(LINKER_OPT)
+	$(COMPILER) $(BASE_OPTIONS) -O3 -DNDEBUG -march=native -fprofile-use -o exprtk_benchmark exprtk_benchmark.cpp $(LINKER_OPT)
 
 clean:
 	rm -f core.* *~ *.o *.bak *stackdump gmon.out *.gcda *.gcno *.gcnor *.gch

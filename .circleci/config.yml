@@ -19,6 +19,33 @@ jobs:
       - run: make all -j 2
       - run: ./exprtk_test
 
+  build_gcc_11:
+    docker:
+      - image: gcc:11
+    steps:
+      - checkout
+      - run: c++ --version
+      - run: make all -j 2
+      - run: ./exprtk_test
+
+  build_gcc_12:
+    docker:
+      - image: gcc:12
+    steps:
+      - checkout
+      - run: c++ --version
+      - run: make all -j 2
+      - run: ./exprtk_test
+
+  build_gcc_13:
+    docker:
+      - image: gcc:13
+    steps:
+      - checkout
+      - run: c++ --version
+      - run: make all -j 2
+      - run: ./exprtk_test
+
   build_gcc_latest:
     docker:
       - image: gcc:latest
@@ -32,6 +59,44 @@ workflows:
   version: 2
   build_and_test:
     jobs:
-      - build_gcc_09
-      - build_gcc_10
-      - build_gcc_latest
+      - build_gcc_09:
+          filters:
+            branches:
+              only:
+                - master
+                - release
+
+      - build_gcc_10:
+          filters:
+            branches:
+              only:
+                - master
+                - release
+
+      - build_gcc_11:
+          filters:
+            branches:
+              only:
+                - master
+                - release
+
+      - build_gcc_12:
+          filters:
+            branches:
+              only:
+                - master
+                - release
+
+      - build_gcc_13:
+          filters:
+            branches:
+              only:
+                - master
+                - release
+
+      - build_gcc_latest:
+          filters:
+            branches:
+              only:
+                - master
+                - release

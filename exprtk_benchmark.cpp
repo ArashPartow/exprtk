@@ -3,7 +3,7 @@
  *         C++ Mathematical Expression Toolkit Library        *
  *                                                            *
  * ExprTk vs Native Benchmarks                                *
- * Author: Arash Partow (1999-2023)                           *
+ * Author: Arash Partow (1999-2024)                           *
  * URL: https://www.partow.net/programming/exprtk/index.html  *
  *                                                            *
  * Copyright notice:                                          *
@@ -11,6 +11,7 @@
  * permitted under the guidelines and in accordance with the  *
  * most current version of the MIT License.                   *
  * https://www.opensource.org/licenses/MIT                    *
+ * SPDX-License-Identifier: MIT                               *
  *                                                            *
  **************************************************************
 */
@@ -18,7 +19,6 @@
 
 #include <cstdio>
 #include <cmath>
-#include <iostream>
 #include <fstream>
 #include <string>
 #include <deque>
@@ -26,26 +26,26 @@
 #include "exprtk.hpp"
 
 
-const std::string global_expression_list[]
-                     = {
-                          "(y + x)",
-                          "2 * (y + x)",
-                          "(2 * y + 2 * x)",
-                          "((1.23 * x^2) / y) - 123.123",
-                          "(y + x / y) * (x - y / x)",
-                          "x / ((x + y) + (x - y)) / y",
-                          "1 - ((x * y) + (y / x)) - 3",
-                          "(5.5 + x) + (2 * x - 2 / 3 * y) * (x / 3 + y / 4) + (y + 7.7)",
-                          "1.1x^1 + 2.2y^2 - 3.3x^3 + 4.4y^15 - 5.5x^23 + 6.6y^55",
-                          "sin(2 * x) + cos(pi / y)",
-                          "1 - sin(2 * x) + cos(pi / y)",
-                          "sqrt(111.111 - sin(2 * x) + cos(pi / y) / 333.333)",
-                          "(x^2 / sin(2 * pi / y)) - x / 2",
-                          "x + (cos(y - sin(2 / x * pi)) - sin(x - cos(2 * y / pi))) - y",
-                          "clamp(-1.0, sin(2 * pi * x) + cos(y / 2 * pi), +1.0)",
-                          "max(3.33, min(sqrt(1 - sin(2 * x) + cos(pi / y) / 3), 1.11))",
-                          "if((y + (x * 2.2)) <= (x + y + 1.1), x - y, x * y) + 2 * pi / x"
-                       };
+const std::string global_expression_list[] =
+   {
+      "(y + x)",
+      "2 * (y + x)",
+      "(2 * y + 2 * x)",
+      "((1.23 * x^2) / y) - 123.123",
+      "(y + x / y) * (x - y / x)",
+      "x / ((x + y) + (x - y)) / y",
+      "1 - ((x * y) + (y / x)) - 3",
+      "(5.5 + x) + (2 * x - 2 / 3 * y) * (x / 3 + y / 4) + (y + 7.7)",
+      "1.1x^1 + 2.2y^2 - 3.3x^3 + 4.4y^15 - 5.5x^23 + 6.6y^55",
+      "sin(2 * x) + cos(pi / y)",
+      "1 - sin(2 * x) + cos(pi / y)",
+      "sqrt(111.111 - sin(2 * x) + cos(pi / y) / 333.333)",
+      "(x^2 / sin(2 * pi / y)) - x / 2",
+      "x + (cos(y - sin(2 / x * pi)) - sin(x - cos(2 * y / pi))) - y",
+      "clamp(-1.0, sin(2 * pi * x) + cos(y / 2 * pi), +1.0)",
+      "max(3.33, min(sqrt(1 - sin(2 * x) + cos(pi / y) / 3), 1.11))",
+      "if((y + (x * 2.2)) <= (x + y + 1.1), x - y, x * y) + 2 * pi / x"
+   };
 
 const std::size_t global_expression_list_size = sizeof(global_expression_list) / sizeof(std::string);
 
@@ -323,7 +323,7 @@ int main(int argc, char* argv[])
    }
 
    {
-      std::cout << "--- EXPRTK ---" << std::endl;
+      printf("--- EXPRTK ---\n");
       for (std::size_t i = 0; i < compiled_expr_list.size(); ++i)
       {
          run_exprtk_benchmark(x,y,compiled_expr_list[i],global_expression_list[i]);
@@ -331,28 +331,28 @@ int main(int argc, char* argv[])
    }
 
    {
-      std::cout << "--- NATIVE ---" << std::endl;
-      run_native_benchmark(x,y,native<double>::func00,global_expression_list[ 0]);
-      run_native_benchmark(x,y,native<double>::func01,global_expression_list[ 1]);
-      run_native_benchmark(x,y,native<double>::func02,global_expression_list[ 2]);
-      run_native_benchmark(x,y,native<double>::func03,global_expression_list[ 3]);
-      run_native_benchmark(x,y,native<double>::func04,global_expression_list[ 4]);
-      run_native_benchmark(x,y,native<double>::func05,global_expression_list[ 5]);
-      run_native_benchmark(x,y,native<double>::func06,global_expression_list[ 6]);
-      run_native_benchmark(x,y,native<double>::func07,global_expression_list[ 7]);
-      run_native_benchmark(x,y,native<double>::func08,global_expression_list[ 8]);
-      run_native_benchmark(x,y,native<double>::func09,global_expression_list[ 9]);
-      run_native_benchmark(x,y,native<double>::func10,global_expression_list[10]);
-      run_native_benchmark(x,y,native<double>::func11,global_expression_list[11]);
-      run_native_benchmark(x,y,native<double>::func12,global_expression_list[12]);
-      run_native_benchmark(x,y,native<double>::func13,global_expression_list[13]);
-      run_native_benchmark(x,y,native<double>::func14,global_expression_list[14]);
-      run_native_benchmark(x,y,native<double>::func15,global_expression_list[15]);
-      run_native_benchmark(x,y,native<double>::func16,global_expression_list[16]);
+      printf("--- NATIVE ---\n");
+      run_native_benchmark(x, y, native<double>::func00,global_expression_list[ 0]);
+      run_native_benchmark(x, y, native<double>::func01,global_expression_list[ 1]);
+      run_native_benchmark(x, y, native<double>::func02,global_expression_list[ 2]);
+      run_native_benchmark(x, y, native<double>::func03,global_expression_list[ 3]);
+      run_native_benchmark(x, y, native<double>::func04,global_expression_list[ 4]);
+      run_native_benchmark(x, y, native<double>::func05,global_expression_list[ 5]);
+      run_native_benchmark(x, y, native<double>::func06,global_expression_list[ 6]);
+      run_native_benchmark(x, y, native<double>::func07,global_expression_list[ 7]);
+      run_native_benchmark(x, y, native<double>::func08,global_expression_list[ 8]);
+      run_native_benchmark(x, y, native<double>::func09,global_expression_list[ 9]);
+      run_native_benchmark(x, y, native<double>::func10,global_expression_list[10]);
+      run_native_benchmark(x, y, native<double>::func11,global_expression_list[11]);
+      run_native_benchmark(x, y, native<double>::func12,global_expression_list[12]);
+      run_native_benchmark(x, y, native<double>::func13,global_expression_list[13]);
+      run_native_benchmark(x, y, native<double>::func14,global_expression_list[14]);
+      run_native_benchmark(x, y, native<double>::func15,global_expression_list[15]);
+      run_native_benchmark(x, y, native<double>::func16,global_expression_list[16]);
    }
 
    {
-      std::cout << "--- PARSE ----" << std::endl;
+      printf("--- PARSE ----\n");
       run_parse_benchmark(symbol_table);
    }
 
@@ -396,7 +396,7 @@ double pgo_primer()
    return total;
 }
 
-std::size_t load_expression_file(const std::string& file_name, std::deque<std::string>& expression_list)
+inline std::size_t load_expression_file(const std::string& file_name, std::deque<std::string>& expression_list)
 {
    std::ifstream stream(file_name.c_str());
 
@@ -426,7 +426,7 @@ void perform_file_based_benchmark(const std::string& file_name, const std::size_
 
    if (0 == load_expression_file(file_name,expr_str_list))
    {
-      std::cout << "Failed to load any expressions from: " << file_name << "\n";
+      printf("Failed to load any expressions from: %s\n", file_name.c_str());
       return;
    }
 
@@ -445,6 +445,8 @@ void perform_file_based_benchmark(const std::string& file_name, const std::size_
    double y = 3.123456;
    double z = 4.123456;
    double w = 5.123456;
+
+   exprtk::rtl::vecops::package<double> vector_package;
 
    symbol_table.add_variable("a", a);
    symbol_table.add_variable("b", b);
@@ -480,6 +482,9 @@ void perform_file_based_benchmark(const std::string& file_name, const std::size_
    symbol_table.add_function("poly10", poly10);
    symbol_table.add_function("poly11", poly11);
    symbol_table.add_function("poly12", poly12);
+
+   symbol_table.add_package(vector_package);
+
 
    static double e = exprtk::details::numeric::constant::e;
    symbol_table.add_variable("e", e, true);

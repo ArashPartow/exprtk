@@ -2,8 +2,8 @@
  **************************************************************
  *         C++ Mathematical Expression Toolkit Library        *
  *                                                            *
- * Simple Example 4                                           *
- * Author: Arash Partow (1999-2023)                           *
+ * Simple Example 04                                          *
+ * Author: Arash Partow (1999-2024)                           *
  * URL: https://www.partow.net/programming/exprtk/index.html  *
  *                                                            *
  * Copyright notice:                                          *
@@ -11,6 +11,7 @@
  * permitted under the guidelines and in accordance with the  *
  * most current version of the MIT License.                   *
  * https://www.opensource.org/licenses/MIT                    *
+ * SPDX-License-Identifier: MIT                               *
  *                                                            *
  **************************************************************
 */
@@ -31,31 +32,32 @@ void fibonacci()
    typedef exprtk::function_compositor<T>  compositor_t;
    typedef typename compositor_t::function function_t;
 
+   T x = T(0);
+
    compositor_t compositor;
 
-   compositor
-      .add(
-      function_t( // define function: fibonacci(x)
-           "fibonacci",
-           " var w := 0;             "
-           " var y := 0;             "
-           " var z := 1;             "
-           " switch                  "
-           " {                       "
-           "   case x == 0 : 0;      "
-           "   case x == 1 : 1;      "
-           "   default     :         "
-           "    while ((x -= 1) > 0) "
-           "    {                    "
-           "      w := z;            "
-           "      z := z + y;        "
-           "      y := w;            "
-           "      z                  "
-           "    };                   "
-           " }                       ",
-           "x"));
-
-   T x = T(0);
+   compositor.add(
+      function_t("fibonacci")
+      .var("x")
+      .expression
+      (
+         " switch                      "
+         " {                           "
+         "    case x == 0 : 0;         "
+         "    case x == 1 : 1;         "
+         "    default     :            "
+         "    {                        "
+         "       var prev := 0;        "
+         "       var curr := 1;        "
+         "       while ((x -= 1) > 0)  "
+         "       {                     "
+         "          var temp := prev;  "
+         "          prev := curr;      "
+         "          curr += temp;      "
+         "       };                    "
+         "    };                       "
+         " }                           "
+      ));
 
    symbol_table_t& symbol_table = compositor.symbol_table();
    symbol_table.add_constants();

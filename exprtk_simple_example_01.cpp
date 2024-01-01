@@ -2,8 +2,8 @@
  **************************************************************
  *         C++ Mathematical Expression Toolkit Library        *
  *                                                            *
- * Simple Example 1                                           *
- * Author: Arash Partow (1999-2023)                           *
+ * Simple Example 01                                          *
+ * Author: Arash Partow (1999-2024)                           *
  * URL: https://www.partow.net/programming/exprtk/index.html  *
  *                                                            *
  * Copyright notice:                                          *
@@ -11,6 +11,7 @@
  * permitted under the guidelines and in accordance with the  *
  * most current version of the MIT License.                   *
  * https://www.opensource.org/licenses/MIT                    *
+ * SPDX-License-Identifier: MIT                               *
  *                                                            *
  **************************************************************
 */
@@ -30,7 +31,7 @@ void trig_function()
    typedef exprtk::parser<T>       parser_t;
 
    const std::string expression_string =
-                     "clamp(-1.0,sin(2 * pi * x) + cos(x / 2 * pi),+1.0)";
+      "clamp(-1.0, sin(2 * pi * x) + cos(x / 2 * pi), +1.0)";
 
    T x;
 
