@@ -3,7 +3,7 @@
  *         C++ Mathematical Expression Toolkit Library        *
  *                                                            *
  * Simple Example 19                                          *
- * Author: Arash Partow (1999-2023)                           *
+ * Author: Arash Partow (1999-2024)                           *
  * URL: https://www.partow.net/programming/exprtk/index.html  *
  *                                                            *
  * Copyright notice:                                          *
@@ -11,6 +11,7 @@
  * permitted under the guidelines and in accordance with the  *
  * most current version of the MIT License.                   *
  * https://www.opensource.org/licenses/MIT                    *
+ * SPDX-License-Identifier: MIT                               *
  *                                                            *
  **************************************************************
 */
@@ -38,11 +39,11 @@ public:
 
    randu()
    : exprtk::igeneric_function<T>("V|VTT")
-      /*
-         Overloads:
-         0. V   - vector
-         1. VTT - vector, r0, r1
-      */
+     /*
+        Overloads:
+        0. V   - vector
+        1. VTT - vector, r0, r1
+     */
    { ::srand(static_cast<unsigned int>(time(NULL))); }
 
    inline T operator()(const std::size_t& ps_index, parameter_list_t parameters)
@@ -52,10 +53,11 @@ public:
       std::size_t r0 = 0;
       std::size_t r1 = v.size() - 1;
 
+      using namespace exprtk::rtl::vecops::helper;
+
       if (
            (1 == ps_index) &&
-           !exprtk::rtl::vecops::helper::
-              load_vector_range<T>::process(parameters, r0, r1, 1, 2, 0)
+           !load_vector_range<T>::process(parameters, r0, r1, 1, 2, 0)
          )
          return T(0);
 
@@ -85,23 +87,23 @@ void vector_randu()
    typedef exprtk::parser<T>       parser_t;
 
    const std::string vecrandu_program =
-                " var noise[6] := [0];                     "
-                "                                          "
-                " if (randu(noise,0,5) == false)           "
-                " {                                        "
-                "   println('Failed to generate noise');   "
-                "   return [false];                        "
-                " }                                        "
-                "                                          "
-                " var noisy[6] := signal + (noise - 1/2);  "
-                "                                          "
-                " for (var i := 0; i < noisy[]; i += 1)    "
-                " {                                        "
-                "   println('noisy[',i,'] = ', noisy[i]);  "
-                " }                                        "
-                "                                          "
-                " println('avg: ', avg(noisy));            "
-                "                                          ";
+      " var noise[6] := [0];                          "
+      "                                               "
+      " if (randu(noise,0,5) == false)                "
+      " {                                             "
+      "    println('Failed to generate noise');       "
+      "    return [false];                            "
+      " };                                            "
+      "                                               "
+      " var noisy[noise[]] := signal + (noise - 1/2); "
+      "                                               "
+      " for (var i := 0; i < noisy[]; i += 1)         "
+      " {                                             "
+      "    println('noisy[',i,'] = ', noisy[i]);      "
+      " };                                            "
+      "                                               "
+      " println('avg: ', avg(noisy));                 "
+      "                                               ";
 
    T signal[] = { T(1.1), T(2.2), T(3.3), T(4.4), T(5.5), T(6.6), T(7.7) };
 

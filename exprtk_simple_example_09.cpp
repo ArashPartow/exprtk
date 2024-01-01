@@ -2,8 +2,8 @@
  **************************************************************
  *         C++ Mathematical Expression Toolkit Library        *
  *                                                            *
- * Simple Example 9                                           *
- * Author: Arash Partow (1999-2023)                           *
+ * Simple Example 09                                          *
+ * Author: Arash Partow (1999-2024)                           *
  * URL: https://www.partow.net/programming/exprtk/index.html  *
  *                                                            *
  * Copyright notice:                                          *
@@ -11,6 +11,7 @@
  * permitted under the guidelines and in accordance with the  *
  * most current version of the MIT License.                   *
  * https://www.opensource.org/licenses/MIT                    *
+ * SPDX-License-Identifier: MIT                               *
  *                                                            *
  **************************************************************
 */
@@ -41,76 +42,98 @@ void primes()
    compositor_t compositor(symbol_table);
 
    //Mode 1 - if statement based
-   compositor
-      .add(
-      function_t( // define function: is_prime_impl1(x,y)
-           "is_prime_impl1",
-           " if (y == 1,true,                "
-           "    if (0 == (x % y),false,      "
-           "       is_prime_impl1(x,y - 1))) ",
-           "x","y"));
+   compositor.add(
+      function_t("is_prime_impl1")
+      .vars("x", "y")
+      .expression
+      (
+         " if (y == 1,true,                "
+         "    if (0 == (x % y),false,      "
+         "       is_prime_impl1(x,y - 1))) "
+      ));
 
-   compositor
-      .add(
-      function_t( // define function: is_prime1(x)
-           "is_prime1",
-           " if (frac(x) != 0, false,                                "
-           "    if (x <= 0, false,                                   "
-           "       is_prime_impl1(x,min(x - 1,trunc(sqrt(x)) + 1)))) ",
-           "x"));
+   compositor.add(
+      function_t("is_prime1")
+      .var("x")
+      .expression
+      (
+         " if (frac(x) != 0)                                   "
+         "    return [false];                                  "
+         " else if (x <= 0)                                    "
+         "    return [false];                                  "
+         " else                                                "
+         "    is_prime_impl1(x,min(x - 1,trunc(sqrt(x)) + 1)); "
+      ));
 
    //Mode 2 - switch statement based
-   compositor
-      .add(
-      function_t( // define function: is_prime_impl2(x,y)
-           "is_prime_impl2",
-           " switch                                         "
-           " {                                              "
-           "   case y == 1       : true;                    "
-           "   case (x % y) == 0 : false;                   "
-           "   default           : is_prime_impl2(x,y - 1); "
-           " }                                              ",
-           "x","y"));
+   compositor.add(
+      function_t("is_prime_impl2")
+      .vars("x", "y")
+      .expression
+      (
+         " switch                                          "
+         " {                                               "
+         "    case y == 1       : true;                    "
+         "    case (x % y) == 0 : false;                   "
+         "    default           : is_prime_impl2(x,y - 1); "
+         " }                                               "
+      ));
 
-   compositor
-      .add(
-      function_t( // define function: is_prime2(x)
-           "is_prime2",
-           " switch                                                                 "
-           " {                                                                      "
-           "   case x <= 0       : false;                                           "
-           "   case frac(x) != 0 : false;                                           "
-           "   default           : is_prime_impl2(x,min(x - 1,trunc(sqrt(x)) + 1)); "
-           " }                                                                      ",
-           "x"));
+   compositor.add(
+      function_t("is_prime2")
+      .var("x")
+      .expression
+      (
+         " switch                                                                  "
+         " {                                                                       "
+         "    case x <= 0       : false;                                           "
+         "    case frac(x) != 0 : false;                                           "
+         "    default           : is_prime_impl2(x,min(x - 1,trunc(sqrt(x)) + 1)); "
+         " }                                                                       "
+      ));
 
-   //Mode 3 - switch statement and while-loop based
-   compositor
-      .add(
-      function_t( // define function: is_prime_impl3(x,y)
-           "is_prime_impl3",
-           " while (y > 0)                            "
-           " {                                        "
-           "   switch                                 "
-           "   {                                      "
-           "     case y == 1       : ~(y := 0,true);  "
-           "     case (x % y) == 0 : ~(y := 0,false); "
-           "     default           : y := y - 1;      "
-           "   }                                      "
-           " }                                        ",
-           "x","y"));
-
-   compositor
-      .add(
-      function_t( // define function: is_prime3(x)
-           "is_prime3",
-           " switch                                                                 "
-           " {                                                                      "
-           "   case x <= 0       : false;                                           "
-           "   case frac(x) != 0 : false;                                           "
-           "   default           : is_prime_impl3(x,min(x - 1,trunc(sqrt(x)) + 1)); "
-           " }                                                                      ",
-           "x"));
+   //Mode 3 - switch statement and for-loop based
+   compositor.add(
+      function_t("is_prime3")
+      .var("x")
+      .expression
+      (
+         " switch                                              "
+         " {                                                   "
+         "    case x <= 1       : return [false];              "
+         "    case frac(x) != 0 : return [false];              "
+         "    case x == 2       : return [true ];              "
+         " };                                                  "
+         "                                                     "
+         " var prime_lut[27] :=                                "
+         " {                                                   "
+         "      2,   3,   5,   7,  11,  13,  17,  19,  23,     "
+         "     29,  31,  37,  41,  43,  47,  53,  59,  61,     "
+         "     67,  71,  73,  79,  83,  89,  97, 101, 103      "
+         " };                                                  "
+         "                                                     "
+         " var upper_bound := min(x - 1, trunc(sqrt(x)) + 1);  "
+         "                                                     "
+         " for (var i := 0; i < prime_lut[]; i += 1)           "
+         " {                                                   "
+         "    if (prime_lut[i] >= upper_bound)                 "
+         "       return [true];                                "
+         "    else if ((x % prime_lut[i]) == 0)                "
+         "       return [false];                               "
+         " };                                                  "
+         "                                                     "
+         " var lower_bound := prime_lut[prime_lut[] - 1] + 2;  "
+         "                                                     "
+         " for (var i := lower_bound; i < upper_bound; i += 2) "
+         " {                                                   "
+         "    if ((x % i) == 0)                                "
+         "    {                                                "
+         "       return [false];                               "
+         "    }                                                "
+         " };                                                  "
+         "                                                     "
+         " return [true];                                      "
+      ));
 
    std::string expression_str1 = "is_prime1(x)";
    std::string expression_str2 = "is_prime2(x)";
@@ -125,11 +148,11 @@ void primes()
 
    parser_t parser;
 
-   parser.compile(expression_str1,expression1);
-   parser.compile(expression_str2,expression2);
-   parser.compile(expression_str3,expression3);
+   parser.compile(expression_str1, expression1);
+   parser.compile(expression_str2, expression2);
+   parser.compile(expression_str3, expression3);
 
-   for (std::size_t i = 0; i < 100; ++i)
+   for (std::size_t i = 0; i < 15000; ++i)
    {
       x = static_cast<T>(i);
 
@@ -137,11 +160,16 @@ void primes()
       const T result2 = expression2.value();
       const T result3 = expression3.value();
 
-      printf("%03d  Result1: %c  Result2: %c  Result3: %c\n",
+      const bool results_concur = (result1 == result2) &&
+                                  (result1 == result3) ;
+
+      printf("%03d  Result1: %c  Result2: %c  Result3: %c  "
+             "Results Concur: %c\n",
              static_cast<unsigned int>(i),
              (result1 == T(1)) ? 'T' : 'F',
              (result2 == T(1)) ? 'T' : 'F',
-             (result3 == T(1)) ? 'T' : 'F');
+             (result3 == T(1)) ? 'T' : 'F',
+             (results_concur)  ? 'T' : 'F');
    }
 }
 

@@ -2,8 +2,8 @@
  **************************************************************
  *         C++ Mathematical Expression Toolkit Library        *
  *                                                            *
- * Simple Example 8                                           *
- * Author: Arash Partow (1999-2023)                           *
+ * Simple Example 08                                          *
+ * Author: Arash Partow (1999-2024)                           *
  * URL: https://www.partow.net/programming/exprtk/index.html  *
  *                                                            *
  * Copyright notice:                                          *
@@ -11,6 +11,7 @@
  * permitted under the guidelines and in accordance with the  *
  * most current version of the MIT License.                   *
  * https://www.opensource.org/licenses/MIT                    *
+ * SPDX-License-Identifier: MIT                               *
  *                                                            *
  **************************************************************
 */
@@ -28,27 +29,29 @@ void composite()
    typedef exprtk::symbol_table<T>         symbol_table_t;
    typedef exprtk::expression<T>           expression_t;
    typedef exprtk::parser<T>               parser_t;
-   typedef exprtk::parser_error::type      error_t;
+   typedef exprtk::parser_error::type      err_t;
    typedef exprtk::function_compositor<T>  compositor_t;
    typedef typename compositor_t::function function_t;
 
-   compositor_t compositor;
-
    T x = T(1);
    T y = T(2);
+
+   compositor_t compositor;
 
    symbol_table_t& symbol_table = compositor.symbol_table();
    symbol_table.add_constants();
    symbol_table.add_variable("x",x);
    symbol_table.add_variable("y",y);
 
-   compositor
-      .add(
-      function_t("f","sin(x / pi)","x"));          // f(x) = sin(x / pi)
+   compositor.add(
+      function_t("f")     // f(x) = sin(x / pi)
+      .var("x")
+      .expression( "sin(x / pi)" ));
 
-   compositor
-      .add(
-      function_t("g","3*[f(x) + f(y)]","x","y"));  // g(x,y) = 3[f(x) + f(y)]
+   compositor.add(
+      function_t("g")     // g(x,y) = 3[f(x) + f(y)]
+      .vars("x", "y")
+      .expression( "3*[f(x) + f(y)]" ));
 
    std::string expression_string = "g(1 + f(x), f(y) / 2)";
 
@@ -65,7 +68,7 @@ void composite()
 
       for (std::size_t i = 0; i < parser.error_count(); ++i)
       {
-         const error_t error = parser.get_error(i);
+         const err_t error = parser.get_error(i);
 
          printf("Error: %02d  Position: %02d Type: [%14s] Msg: %s\tExpression: %s\n",
                 static_cast<unsigned int>(i),

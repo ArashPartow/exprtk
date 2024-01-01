@@ -3,7 +3,7 @@
  *         C++ Mathematical Expression Toolkit Library        *
  *                                                            *
  * Simple Example 14                                          *
- * Author: Arash Partow (1999-2023)                           *
+ * Author: Arash Partow (1999-2024)                           *
  * URL: https://www.partow.net/programming/exprtk/index.html  *
  *                                                            *
  * Copyright notice:                                          *
@@ -11,6 +11,7 @@
  * permitted under the guidelines and in accordance with the  *
  * most current version of the MIT License.                   *
  * https://www.opensource.org/licenses/MIT                    *
+ * SPDX-License-Identifier: MIT                               *
  *                                                            *
  **************************************************************
 */
@@ -29,15 +30,15 @@ void stddev_example()
    typedef exprtk::parser<T>     parser_t;
 
    const std::string stddev_program =
-                  " var x[25] := {                     "
-                  "                 1,  2,  3,  4,  5, "
-                  "                 6,  7,  8,  9, 10, "
-                  "                11, 12, 13, 14, 15, "
-                  "                16, 17, 18, 19, 20, "
-                  "                21, 22, 23, 24, 25  "
-                  "              };                    "
-                  "                                    "
-                  " sqrt(sum([x - avg(x)]^2) / x[])    ";
+      " var x[25] := {                     "
+      "                 1,  2,  3,  4,  5, "
+      "                 6,  7,  8,  9, 10, "
+      "                11, 12, 13, 14, 15, "
+      "                16, 17, 18, 19, 20, "
+      "                21, 22, 23, 24, 25  "
+      "              };                    "
+      "                                    "
+      " sqrt(sum([x - avg(x)]^2) / x[])    ";
 
    expression_t expression;
 

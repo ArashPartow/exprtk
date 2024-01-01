@@ -2,8 +2,8 @@
  **************************************************************
  *         C++ Mathematical Expression Toolkit Library        *
  *                                                            *
- * Simple Example 2                                           *
- * Author: Arash Partow (1999-2023)                           *
+ * Simple Example 02                                          *
+ * Author: Arash Partow (1999-2024)                           *
  * URL: https://www.partow.net/programming/exprtk/index.html  *
  *                                                            *
  * Copyright notice:                                          *
@@ -11,6 +11,7 @@
  * permitted under the guidelines and in accordance with the  *
  * most current version of the MIT License.                   *
  * https://www.opensource.org/licenses/MIT                    *
+ * SPDX-License-Identifier: MIT                               *
  *                                                            *
  **************************************************************
 */
@@ -29,15 +30,15 @@ void square_wave()
    typedef exprtk::expression<T>   expression_t;
    typedef exprtk::parser<T>       parser_t;
 
-   const std::string expr_string =
-                  "a*(4/pi)*"
-                  "((1 /1)*sin( 2*pi*f*t)+(1 /3)*sin( 6*pi*f*t)+"
-                  " (1 /5)*sin(10*pi*f*t)+(1 /7)*sin(14*pi*f*t)+"
-                  " (1 /9)*sin(18*pi*f*t)+(1/11)*sin(22*pi*f*t)+"
-                  " (1/13)*sin(26*pi*f*t)+(1/15)*sin(30*pi*f*t)+"
-                  " (1/17)*sin(34*pi*f*t)+(1/19)*sin(38*pi*f*t)+"
-                  " (1/21)*sin(42*pi*f*t)+(1/23)*sin(46*pi*f*t)+"
-                  " (1/25)*sin(50*pi*f*t)+(1/27)*sin(54*pi*f*t))";
+   const std::string expression_string =
+      "a *(4 / pi) * "
+      "((1 /  1) * sin( 2 * pi * f * t) + (1 /  3) * sin( 6 * pi * f * t) + "
+      " (1 /  5) * sin(10 * pi * f * t) + (1 /  7) * sin(14 * pi * f * t) + "
+      " (1 /  9) * sin(18 * pi * f * t) + (1 / 11) * sin(22 * pi * f * t) + "
+      " (1 / 13) * sin(26 * pi * f * t) + (1 / 15) * sin(30 * pi * f * t) + "
+      " (1 / 17) * sin(34 * pi * f * t) + (1 / 19) * sin(38 * pi * f * t) + "
+      " (1 / 21) * sin(42 * pi * f * t) + (1 / 23) * sin(46 * pi * f * t) + "
+      " (1 / 25) * sin(50 * pi * f * t) + (1 / 27) * sin(54 * pi * f * t))  ";
 
    static const T pi = T(3.141592653589793238462643383279502);
 
@@ -55,7 +56,7 @@ void square_wave()
    expression.register_symbol_table(symbol_table);
 
    parser_t parser;
-   parser.compile(expr_string,expression);
+   parser.compile(expression_string,expression);
 
    const T delta = (T(4) * pi) / T(1000);
 

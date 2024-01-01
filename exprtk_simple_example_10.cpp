@@ -3,7 +3,7 @@
  *         C++ Mathematical Expression Toolkit Library        *
  *                                                            *
  * Simple Example 10                                          *
- * Author: Arash Partow (1999-2023)                           *
+ * Author: Arash Partow (1999-2024)                           *
  * URL: https://www.partow.net/programming/exprtk/index.html  *
  *                                                            *
  * Copyright notice:                                          *
@@ -11,6 +11,7 @@
  * permitted under the guidelines and in accordance with the  *
  * most current version of the MIT License.                   *
  * https://www.opensource.org/licenses/MIT                    *
+ * SPDX-License-Identifier: MIT                               *
  *                                                            *
  **************************************************************
 */
@@ -41,28 +42,29 @@ void newton_sqrt()
 
    compositor_t compositor(symbol_table);
 
-   compositor
-      .add(
-      function_t( // define function: newton_sqrt(x)
-           "newton_sqrt",
-           " switch                                                "
-           " {                                                     "
-           "   case x < 0  : null;                                 "
-           "   case x == 0 : 0;                                    "
-           "   case x == 1 : 1;                                    "
-           "   default:                                            "
-           "   ~{                                                  "
-           "      var z := 100;                                    "
-           "      var sqrt_x := x / 2;                             "
-           "      repeat                                           "
-           "        if (equal(sqrt_x^2, x))                        "
-           "          break[sqrt_x];                               "
-           "        else                                           "
-           "          sqrt_x := (1 / 2) * (sqrt_x + (x / sqrt_x)); "
-           "      until ((z -= 1) <= 0);                           "
-           "    };                                                 "
-           " }                                                     ",
-           "x"));
+   compositor.add(
+      function_t("newton_sqrt")
+      .var("x")
+      .expression
+      (
+         " switch                                                   "
+         " {                                                        "
+         "    case x < 0  : null;                                   "
+         "    case x == 0 : 0;                                      "
+         "    case x == 1 : 1;                                      "
+         "    default:                                              "
+         "    {                                                     "
+         "       var z := 100;                                      "
+         "       var sqrt_x := x / 2;                               "
+         "       repeat                                             "
+         "          if (equal(sqrt_x^2, x))                         "
+         "             break[sqrt_x];                               "
+         "          else                                            "
+         "             sqrt_x := (1 / 2) * (sqrt_x + (x / sqrt_x)); "
+         "       until ((z -= 1) <= 0);                             "
+         "    };                                                    "
+         " }                                                        "
+      ));
 
    const std::string expression_str = "newton_sqrt(x)";
 
@@ -72,16 +74,19 @@ void newton_sqrt()
    parser_t parser;
    parser.compile(expression_str,expression);
 
-   for (std::size_t i = 0; i < 100; ++i)
+   for (std::size_t i = 0; i < 1000; ++i)
    {
       x = static_cast<T>(i);
 
       const T result = expression.value();
+      const T real   = std::sqrt(x);
+      const T error  = std::abs(result - real);
 
-      printf("sqrt(%03d) - Result: %15.13f\tReal: %15.13f\n",
+      printf("sqrt(%03d) - Result: %15.13f\tReal: %15.13f\tError: %18.16f\n",
              static_cast<unsigned int>(i),
              result,
-             std::sqrt(x));
+             real,
+             error);
    }
 }
 
