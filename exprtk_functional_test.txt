@@ -10512,3 +10512,19 @@ equal(~{ var xx[1000   ] := [1:1]; sqrt(sum([xx - avg(xx)]^2) / xx[]) } , 000288
 equal(~{ var xx[10000  ] := [1:1]; sqrt(sum([xx - avg(xx)]^2) / xx[]) } , 002886.75133151437205672070778500749723447196977023066362870)
 equal(~{ var xx[100000 ] := [1:1]; sqrt(sum([xx - avg(xx)]^2) / xx[]) } , 028867.51345803791255244729022199884500125204178136741699959)
 equal(~{ var xx[1000000] := [1:1]; sqrt(sum([xx - avg(xx)]^2) / xx[]) } , 288675.13459466854468727694772545961625902290853716567468578)
+equal(true, ~{ const var n := 1; var v[n] := [1:1]; var o[n] := [0]; max_elemwise(o, v, 0); v == o});
+equal(true, ~{ const var n := 2; var v[n] := [1:1]; var o[n] := [0]; max_elemwise(o, v, 0); v == o});
+equal(true, ~{ const var n := 3; var v[n] := [1:1]; var o[n] := [0]; max_elemwise(o, v, 0); v == o});
+equal(true, ~{ const var n := 4; var v[n] := [1:1]; var o[n] := [0]; max_elemwise(o, v, 0); v == o});
+equal(true, ~{ const var n := 5; var v[n] := [1:1]; var o[n] := [0]; max_elemwise(o, v, 0); v == o});
+equal(true, ~{ const var n := 1; var v[n] := [1:1]; var o[n] := [n + 1]; min_elemwise(o, v, n + 1); v == o});
+equal(true, ~{ const var n := 2; var v[n] := [1:1]; var o[n] := [n + 1]; min_elemwise(o, v, n + 1); v == o});
+equal(true, ~{ const var n := 3; var v[n] := [1:1]; var o[n] := [n + 1]; min_elemwise(o, v, n + 1); v == o});
+equal(true, ~{ const var n := 4; var v[n] := [1:1]; var o[n] := [n + 1]; min_elemwise(o, v, n + 1); v == o});
+equal(true, ~{ const var n := 5; var v[n] := [1:1]; var o[n] := [n + 1]; min_elemwise(o, v, n + 1); v == o});
+equal(true, ~{ const var n := 10; var v[n] := [1:1]; var o[n] := [0]; var p[n] := { 0, 0, 0, 4, 5, 6, 7, 8, 0,  0}; max_elemwise(o, v, 3, 7, 0) == 1 and all_true((o == p)) })
+equal(true, ~{ const var n := 10; var v[n] := [1:1]; var o[n] := [0]; var p[n] := { 1, 2, 3, 4, 5, 0, 0, 0, 0,  0}; max_elemwise(o, v, 0, 4, 0) == 1 and all_true((o == p)) })
+equal(true, ~{ const var n := 10; var v[n] := [1:1]; var o[n] := [0]; var p[n] := { 0, 0, 0, 0, 5, 6, 7, 8, 9, 10}; max_elemwise(o, v, 4, 9, 0) == 1 and all_true((o == p)) })
+equal(true, ~{ const var n := 10; var q := n + 10; var v[n] := [1:1]; var o[n] := [n + 10]; var p[n] := { q, q, q, 4, 5, 6, 7, 8, q,  q }; min_elemwise(o, v, 3, 7, q) == 1 and all_true((o == p)) })
+equal(true, ~{ const var n := 10; var q := n + 10; var v[n] := [1:1]; var o[n] := [n + 10]; var p[n] := { 1, 2, 3, 4, 5, q, q, q, q,  q }; min_elemwise(o, v, 0, 4, q) == 1 and all_true((o == p)) })
+equal(true, ~{ const var n := 10; var q := n + 10; var v[n] := [1:1]; var o[n] := [n + 10]; var p[n] := { q, q, q, q, 5, 6, 7, 8, 9, 10 }; min_elemwise(o, v, 4, 9, q) == 1 and all_true((o == p)) })
