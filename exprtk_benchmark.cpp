@@ -3,7 +3,7 @@
  *         C++ Mathematical Expression Toolkit Library        *
  *                                                            *
  * ExprTk vs Native Benchmarks                                *
- * Author: Arash Partow (1999-2024)                           *
+ * Author: Arash Partow (1999-2025)                           *
  * URL: https://www.partow.net/programming/exprtk/index.html  *
  *                                                            *
  * Copyright notice:                                          *
@@ -404,7 +404,6 @@ inline std::size_t load_expression_file(const std::string& file_name, std::deque
 
    std::string buffer;
    buffer.reserve(1024);
-   std::size_t line_count = 0;
 
    while (std::getline(stream,buffer))
    {
@@ -413,11 +412,10 @@ inline std::size_t load_expression_file(const std::string& file_name, std::deque
       else if ('#' == buffer[0])
          continue;
 
-      ++line_count;
       expression_list.push_back(buffer);
    }
 
-   return line_count;
+   return expression_list.size();
 }
 
 void perform_file_based_benchmark(const std::string& file_name, const std::size_t& rounds)

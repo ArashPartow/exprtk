@@ -122,7 +122,7 @@ version of the MIT License.
 
    (1) https://www.opensource.org/licenses/MIT
    (2) SPDX-License-Identifier: MIT
-   (3) SPDX-FileCopyrightText : Copyright (C) 1999-2024 Arash Partow
+   (3) SPDX-FileCopyrightText : Copyright (C) 1999-2025 Arash Partow
 
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
@@ -439,13 +439,13 @@ of C++ compilers:
 |          | matches respectively.                                   |
 |          | (eg: x ilike y or 'a1B2c3D4e5F6g7H' ilike 'a?d*h')      |
 +----------+---------------------------------------------------------+
-| [r0:r1]  | The closed interval[r0,r1] of the specified string.     |
+| [r0:r1]  | The half-open interval [r0,r1) of the specified string. |
 |          | eg: Given a string x with a value of 'abcdefgh' then:   |
-|          | 1. x[1:4] == 'bcde'                                     |
-|          | 2. x[ :4] == x[:8 / 2] == 'abcde'                       |
+|          | 1. x[1:5] == 'bcde'                                     |
+|          | 2. x[ :5] == x[:8 / 2 + 1] == 'abcde'                   |
 |          | 3. x[2 + 1: ] == x[3:] =='defgh'                        |
 |          | 4. x[ : ] == x[:] == 'abcdefgh'                         |
-|          | 5. x[4/2:3+1] == x[2:4] == 'cde'                        |
+|          | 5. x[4/2:3+2] == x[2:5] == 'cde'                        |
 |          |                                                         |
 |          | Note: Both r0 and r1 are assumed to be integers, where  |
 |          | r0 <= r1. They may also be the result of an expression, |
@@ -821,8 +821,8 @@ forms of undefined behaviour.
 
 
 A compiled expression that references variables from a symbol_table is
-dependent on  that symbol_table  instance and  the variables  it holds
-being valid.
+said to be dependent on  that symbol_table instance and the  variables
+it holds being valid.
 
    typedef exprtk::symbol_table<double> symbol_table_t;
    typedef exprtk::expression<double>   expression_t;
@@ -2612,7 +2612,7 @@ particular parameter sequence can be performed.
       typedef typename exprtk::igeneric_function<T>::parameter_list_t
                                                      parameter_list_t;
 
-      moo()
+      roo()
       : exprtk::igeneric_function<T>("SVTT|SS|TTV|S?V*S")
       {}
 
@@ -3055,12 +3055,12 @@ associated assignments:
    (5) None          x + y + z
 
 
-Note23: In  expression 4,  both variables  'w' and  'z' are denoted as
+Note23: In  Expression 4,  both variables  'w' and  'z' are denoted as
 being assignments even though only one of them can ever be modified at
-the time of evaluation. Furthermore the determination of which of  the
-two variables the modification will occur upon can only be known  with
-certainty at evaluation time and not beforehand, hence both are listed
-as being candidates for assignment.
+the time of  evaluation. Furthermore determining  of which of  the two
+variables the  modification will  occur upon  can only  be known  with
+certainty at evaluation time  (aka runtime) and not  beforehand, hence
+both are listed as being candidates for assignment.
 
 The following builds upon the previous example demonstrating the usage
 of the DEC in determining the 'assignments' of the given expression:
@@ -4408,18 +4408,19 @@ file I/O package is made available for the given expression:
 
 (3) Vector Operations functions:
 
-   (a) all_true     (b) all_false
-   (c) any_true     (d) any_false
-   (e) assign       (f) count
-   (g) copy         (h) reverse
-   (i) rotate-left  (j) rotate-right
-   (k) shift-left   (l) shift-right
-   (m) sort         (n) nth_element
-   (o) iota         (p) sumk
-   (q) axpy         (r) axpby
-   (s) axpyz        (t) axpbyz
-   (u) axpbz        (v) dot
-   (w) dotk         (x) diff
+   (00) all_true     (01) all_false
+   (02) any_true     (03) any_false
+   (04) assign       (05) count
+   (06) copy         (07) reverse
+   (08) rotate-left  (09) rotate-right
+   (10) shift-left   (11) shift-right
+   (12) sort         (13) nth_element
+   (14) iota         (15) sumk
+   (16) axpy         (17) axpby
+   (18) axpyz        (19) axpbyz
+   (20) axpbz        (21) dot
+   (22) dotk         (23) diff
+   (24) select       (25) min/max_elementwise
 
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
@@ -4742,9 +4743,10 @@ is as follows:
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
 [SECTION 24 - RUNTIME CHECKS]
-The  ExprTk library   provides the ability  to perform runtime  checks
-during expression evaluation so as  to ensure memory access  violation
-errors  are  caught and  handled  without causing further  issues. The
+The  ExprTk library  provides the  ability to  perform runtime  checks
+during expression evaluation so as to ensure situations such as memory
+access violation, compilation stack-overflow and evaluation time limit
+errors  are caught  and handled  without causing  further issues.  The
 checks typically cover:
 
    1. Vector access and handling
@@ -4965,13 +4967,13 @@ registered with the associated parser:
    typedef exprtk::parser<T> parser_t;
    typedef exprtk::loop_runtime_check loop_runtime_check_t;
 
-   my_loop_rtc loop_rtc;
+   my_loop_rtc loop_runtime_check;
    loop_runtime_check.loop_set = loop_runtime_check_t::e_all_loops;
    loop_runtime_check.max_loop_iterations = 100000;
 
    parser_t parser;
 
-   parser.register_loop_runtime_check(loop_rtc);
+   parser.register_loop_runtime_check(loop_runtime_check);
 
 
 The following is an example of how one could derive from and implement
@@ -4987,7 +4989,7 @@ a custom loop_runtime_check:
       }
 
       void handle_runtime_violation
-         (const exprtk::violation_context&) override
+         (const violation_context&) override
       {
          throw std::runtime_error("Loop runtime violation.");
       }
@@ -5074,7 +5076,7 @@ will never exceed a given amount of execution time.
    .
    .
    .
-   using std::chrono;
+   using namespace std::chrono;
    const auto max_duration = seconds(25);
 
    try
@@ -5155,7 +5157,8 @@ as follows:
          return true;
       }
 
-      using time_point_t = std::chrono::time_point<std::chrono::steady_clock>;
+      using namespace std::chrono;
+      using time_point_t = time_point<steady_clock>;
 
       void set_timeout_time(const time_point_t& timeout_tp)
       {
@@ -5183,9 +5186,10 @@ outline of what will be needed:
    parser.
       register_compilation_timeout_check(compilation_timeout_check);
 
-   const auto max_duration = std::chrono::seconds(5);
-   const auto timeout_tp   =
-      std::chrono::steady_clock::now() + max_duration;
+   using namespace std::chrono;
+
+   const auto max_duration = seconds(5);
+   const auto timeout_tp   = steady_clock::now() + max_duration;
 
    compilation_timeout_check.set_timeout_time(timeout_tp);
 
@@ -5316,16 +5320,18 @@ timeouts occurring.
    parser.
       register_compilation_timeout_check(compilation_timeout_check);
 
+   using namespace std::chrono;
+
    const auto compile_timeout_tp = []()
    {
-      const auto max_duration = std::chrono::seconds(5);
-      return std::chrono::steady_clock::now() + max_duration;
+      const auto max_duration = seconds(5);
+      return steady_clock::now() + max_duration;
    };
 
    const auto loop_timeout_tp = []()
    {
-      const auto max_duration = std::chrono::seconds(10);
-      return std::chrono::steady_clock::now() + max_duration;
+      const auto max_duration = seconds(10);
+      return steady_clock::now() + max_duration;
    };
 
    const std::vector<std::string> expressions =
@@ -5525,7 +5531,7 @@ into account when using ExprTk:
 
  (02) Supported types  are float,  double, long  double and MPFR/GMP.
       Generally any user defined numerical type that supports all the
-      basic floating  point arithmetic  operations: -,+,*,/,^,%  etc;
+      basic floating point arithmetic operations: -, +, *,/,^, % etc;
       unary and binary operations: sin,cos,min,max,equal etc and  any
       other ExprTk dependent operations can be used to specialise the
       various components: expression, parser and symbol_table.
@@ -5561,7 +5567,7 @@ into account when using ExprTk:
       storage capacity.
 
  (09) The  life-time of  objects registered  with or  created from  a
-      specific symbol-table must  span at least  the lifetime of  the
+      specific symbol-table must, at least, span the lifetime of  the
       symbol  table  instance  and  all  compiled  expressions  which
       utilise objects, such as variables, strings, vectors,  function
       compositor  functions  and  functions  of  that   symbol-table,
@@ -5999,63 +6005,65 @@ via the following:
    (03) exprtk_binomial_coefficient.cpp
    (04) exprtk_bsm_benchmark.cpp
    (05) exprtk_calc.cpp
-   (06) exprtk_collatz.cpp
-   (07) exprtk_compilation_timeout.cpp
-   (08) exprtk_degree_trigonometry_example.cpp
-   (09) exprtk_exprgen.cpp
-   (00) exprtk_extract_dependents.cpp
-   (11) exprtk_e_10kdigits.cpp
-   (12) exprtk_factorize_fermat.cpp
-   (13) exprtk_factorize_pollard.cpp
-   (14) exprtk_fizzbuzz.cpp
-   (15) exprtk_funcall_benchmark.cpp
-   (16) exprtk_game_of_life.cpp
-   (17) exprtk_gcd.cpp
-   (18) exprtk_gnuplot.cpp
-   (19) exprtk_gnuplot_multi.cpp
-   (10) exprtk_groups_examples.cpp
-   (21) exprtk_immutable_symbol_table_example.cpp
-   (22) exprtk_import_packages.cpp
-   (23) exprtk_instruction_primer.cpp
-   (24) exprtk_jump_diffusion_process.cpp
-   (25) exprtk_loop_timeout_rtc.cpp
-   (26) exprtk_magic_square.cpp
-   (27) exprtk_mandelbrot.cpp
-   (28) exprtk_max_subarray_sum.cpp
-   (29) exprtk_maze_generator.cpp
-   (20) exprtk_miller_rabin_primality_test.cpp
-   (31) exprtk_montecarlo_e.cpp
-   (32) exprtk_montecarlo_option_pricing_model.cpp
-   (33) exprtk_montecarlo_pi.cpp
-   (34) exprtk_naive_primes.cpp
-   (35) exprtk_normal_random_marsaglia_method.cpp
-   (36) exprtk_nqueens_problem.cpp
-   (37) exprtk_nthroot_bisection.cpp
-   (38) exprtk_ornstein_uhlenbeck_process.cpp
-   (39) exprtk_pascals_triangle.cpp
-   (30) exprtk_pi_10kdigits.cpp
-   (41) exprtk_prime_sieve.cpp
-   (42) exprtk_prime_sieve_vectorized.cpp
-   (43) exprtk_pyramid.cpp
-   (44) exprtk_pythagorean_triples.cpp
-   (45) exprtk_recursive_fibonacci.cpp
-   (46) exprtk_repl.cpp
-   (47) exprtk_riddle.cpp
-   (48) exprtk_rtc_overhead.cpp
-   (49) exprtk_sudoku_solver.cpp
-   (50) exprtk_sumofprimes.cpp
-   (51) exprtk_symtab_functions.cpp
-   (52) exprtk_testgen.cpp
-   (53) exprtk_tower_of_hanoi.cpp
-   (54) exprtk_truthtable_gen.cpp
-   (55) exprtk_vectorized_binomial_model.cpp
-   (56) exprtk_vectornorm.cpp
-   (57) exprtk_vector_benchmark.cpp
-   (58) exprtk_vector_benchmark_multithreaded.cpp
-   (59) exprtk_vector_resize_example.cpp
-   (60) exprtk_vector_resize_inline_example.cpp
-   (61) exprtk_wiener_process_pi.cpp
-
+   (06) exprtk_chladni_contour.cpp
+   (07) exprtk_collatz.cpp
+   (08) exprtk_compilation_timeout.cpp
+   (09) exprtk_degree_trigonometry_example.cpp
+   (00) exprtk_exprgen.cpp
+   (11) exprtk_extract_dependents.cpp
+   (12) exprtk_e_10kdigits.cpp
+   (13) exprtk_factorize_fermat.cpp
+   (14) exprtk_factorize_pollard.cpp
+   (15) exprtk_fizzbuzz.cpp
+   (16) exprtk_funcall_benchmark.cpp
+   (17) exprtk_game_of_life.cpp
+   (18) exprtk_gcd.cpp
+   (19) exprtk_gnuplot.cpp
+   (10) exprtk_gnuplot_multi.cpp
+   (21) exprtk_groups_examples.cpp
+   (22) exprtk_immutable_symbol_table_example.cpp
+   (23) exprtk_import_packages.cpp
+   (24) exprtk_instruction_primer.cpp
+   (25) exprtk_julia_set_fractal.cpp
+   (26) exprtk_jump_diffusion_process.cpp
+   (27) exprtk_loop_timeout_rtc.cpp
+   (28) exprtk_magic_square.cpp
+   (29) exprtk_mandelbrot.cpp
+   (20) exprtk_max_subarray_sum.cpp
+   (31) exprtk_maze_generator.cpp
+   (32) exprtk_miller_rabin_primality_test.cpp
+   (33) exprtk_montecarlo_e.cpp
+   (34) exprtk_montecarlo_option_pricing_model.cpp
+   (35) exprtk_montecarlo_pi.cpp
+   (36) exprtk_naive_primes.cpp
+   (37) exprtk_normal_random_marsaglia_method.cpp
+   (38) exprtk_nqueens_problem.cpp
+   (39) exprtk_nthroot_bisection.cpp
+   (30) exprtk_ornstein_uhlenbeck_process.cpp
+   (41) exprtk_pascals_triangle.cpp
+   (42) exprtk_pi_10kdigits.cpp
+   (43) exprtk_prime_sieve.cpp
+   (44) exprtk_prime_sieve_vectorized.cpp
+   (45) exprtk_pyramid.cpp
+   (46) exprtk_pythagorean_triples.cpp
+   (47) exprtk_radial_contour.cpp
+   (48) exprtk_recursive_fibonacci.cpp
+   (49) exprtk_repl.cpp
+   (50) exprtk_riddle.cpp
+   (51) exprtk_rtc_overhead.cpp
+   (52) exprtk_sudoku_solver.cpp
+   (53) exprtk_sumofprimes.cpp
+   (54) exprtk_symtab_functions.cpp
+   (55) exprtk_testgen.cpp
+   (56) exprtk_tower_of_hanoi.cpp
+   (57) exprtk_truthtable_gen.cpp
+   (58) exprtk_vectorized_binomial_model.cpp
+   (59) exprtk_vectornorm.cpp
+   (60) exprtk_vector_benchmark.cpp
+   (61) exprtk_vector_benchmark_multithreaded.cpp
+   (62) exprtk_vector_resize_example.cpp
+   (63) exprtk_vector_resize_inline_example.cpp
+   (64) exprtk_wiener_process_pi.cpp
 
 Details for each of the above examples can be found here:
 
