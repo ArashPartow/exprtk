@@ -1,6 +1,6 @@
 MIT License
 
-Copyright (c) 1999-2024 Arash Partow
+Copyright (c) 1999-2025 Arash Partow
 
 https://www.partow.net/programming/exprtk/index.html
 
