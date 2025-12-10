@@ -7133,7 +7133,7 @@ namespace exprtk
 
             switch (operation_)
             {
-               case e_inrange : return (arg1 < arg0) ? T(0) : ((arg1 > arg2) ? T(0) : T(1));
+               case e_inrange : return (arg1 < arg0) ? T(0) : ((arg1 < arg2) ? T(1) : T(0));
 
                case e_clamp   : return (arg1 < arg0) ? arg0 : (arg1 > arg2 ? arg2 : arg1);
 

@@ -843,6 +843,7 @@ static const test_t global_test_list[] =
    test_t("clamp(-1,-1.5,+1.0) + clamp(-1,+1.5,+1.0)",0.0),
    test_t("inrange(-2,1,+2) == ((-2 <= 1) and (1 <= +2))",1.0),
    test_t("inrange(-2,1,+2) == if(({-2 <= 1} and [1 <= +2]),1.0,0.0)",1.0),
+   test_t("inrange(0, 0/0, 100)", 0.0),
    test_t("sgn( 0)", 0.0),
    test_t("sgn(+3)",+1.0),
    test_t("sgn(-3)",-1.0),

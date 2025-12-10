@@ -43,6 +43,7 @@ const std::string global_expression_list[] =
       "(x^2 / sin(2 * pi / y)) - x / 2",
       "x + (cos(y - sin(2 / x * pi)) - sin(x - cos(2 * y / pi))) - y",
       "clamp(-1.0, sin(2 * pi * x) + cos(y / 2 * pi), +1.0)",
+      "inrange(-1.0, sin(2 * pi * x) + cos(y / 2 * pi), +1.0)",
       "max(3.33, min(sqrt(1 - sin(2 * x) + cos(pi / y) / 3), 1.11))",
       "if((y + (x * 2.2)) <= (x + y + 1.1), x - y, x * y) + 2 * pi / x"
    };
