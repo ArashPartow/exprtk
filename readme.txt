@@ -64,7 +64,7 @@ arithmetic operations, functions and processes:
                        round, roundn, sgn, sqrt, sum, swap, trunc
 
  (06) Trigonometry:    acos, acosh, asin, asinh, atan, atanh,  atan2,
-                       cos,  cosh, cot,  csc, sec,  sin, sinc,  sinh,
+                       cos,  cosh, cot, coth, csc, sec,  sin, sinc,  sinh,
                        tan, tanh, hypot, rad2deg, deg2grad,  deg2rad,
                        grad2deg
 
@@ -392,6 +392,8 @@ of C++ compilers:
 | cosh     | Hyperbolic cosine of x.  (eg: cosh(x))                  |
 +----------+---------------------------------------------------------+
 | cot      | Cotangent of x.  (eg: cot(x))                           |
++----------+---------------------------------------------------------+
+| coth     | Hyperbolic cotangent of x. (eg: coth(x))                |
 +----------+---------------------------------------------------------+
 | csc      | Cosecant of x.  (eg: csc(x))                            |
 +----------+---------------------------------------------------------+
