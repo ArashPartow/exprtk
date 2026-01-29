@@ -452,7 +452,7 @@ namespace exprtk
       {
          "abs", "acos",  "acosh", "and",  "asin", "asinh",  "assert",
          "atan", "atanh",  "atan2", "avg",  "break", "case",  "ceil",
-         "clamp", "continue", "const",  "cos", "cosh", "cot",  "csc",
+         "clamp", "continue", "const",  "cos", "cosh", "cot", "coth", "csc",
          "default",  "deg2grad", "deg2rad",  "equal", "erf",  "erfc",
          "exp", "expm1", "false", "floor", "for", "frac", "grad2deg",
          "hypot", "iclamp", "if",  "else", "ilike", "in",  "inrange",
@@ -470,7 +470,7 @@ namespace exprtk
       static const std::string base_function_list[] =
       {
          "abs", "acos",  "acosh", "asin",  "asinh", "atan",  "atanh",
-         "atan2",  "avg",  "ceil",  "clamp",  "cos",  "cosh",  "cot",
+         "atan2",  "avg",  "ceil",  "clamp",  "cos",  "cosh",  "cot", "coth",
          "csc",  "equal",  "erf",  "erfc",  "exp",  "expm1", "floor",
          "frac", "hypot", "iclamp",  "like", "log", "log10",  "log2",
          "logn", "log1p", "mand", "max", "min", "mod", "mor",  "mul",
@@ -1437,6 +1437,7 @@ namespace exprtk
             template <typename T> inline T   tan_impl(const T v, real_type_tag) { return std::tan  (v); }
             template <typename T> inline T  tanh_impl(const T v, real_type_tag) { return std::tanh (v); }
             template <typename T> inline T   cot_impl(const T v, real_type_tag) { return T(1) / std::tan(v); }
+	    template <typename T> inline T  coth_impl(const T v, real_type_tag) { return T(1) / std::tanh(v); }
             template <typename T> inline T   sec_impl(const T v, real_type_tag) { return T(1) / std::cos(v); }
             template <typename T> inline T   csc_impl(const T v, real_type_tag) { return T(1) / std::sin(v); }
             template <typename T> inline T   r2d_impl(const T v, real_type_tag) { return (v * T(numeric::constant::_180_pi)); }
@@ -1477,6 +1478,7 @@ namespace exprtk
             template <typename T> inline T   tan_impl(const T  , int_type_tag) { return std::numeric_limits<T>::quiet_NaN(); }
             template <typename T> inline T  tanh_impl(const T  , int_type_tag) { return std::numeric_limits<T>::quiet_NaN(); }
             template <typename T> inline T   cot_impl(const T  , int_type_tag) { return std::numeric_limits<T>::quiet_NaN(); }
+	    template <typename T> inline T  coth_impl(const T  , int_type_tag) { return std::numeric_limits<T>::quiet_NaN(); }
             template <typename T> inline T   sec_impl(const T  , int_type_tag) { return std::numeric_limits<T>::quiet_NaN(); }
             template <typename T> inline T   csc_impl(const T  , int_type_tag) { return std::numeric_limits<T>::quiet_NaN(); }
 
@@ -1740,6 +1742,7 @@ namespace exprtk
          exprtk_define_unary_function(tan  )
          exprtk_define_unary_function(tanh )
          exprtk_define_unary_function(cot  )
+	 exprtk_define_unary_function(coth )
          exprtk_define_unary_function(sec  )
          exprtk_define_unary_function(csc  )
          exprtk_define_unary_function(r2d  )
@@ -5146,14 +5149,14 @@ namespace exprtk
          e_neg     , e_pos     , e_round   , e_roundn  ,
          e_root    , e_sqrt    , e_sin     , e_sinc    ,
          e_sinh    , e_sec     , e_csc     , e_tan     ,
-         e_tanh    , e_cot     , e_clamp   , e_iclamp  ,
+         e_tanh    , e_cot     , e_coth    , e_clamp   , e_iclamp  ,
          e_inrange , e_sgn     , e_r2d     , e_d2r     ,
          e_d2g     , e_g2d     , e_hypot   , e_notl    ,
          e_erf     , e_erfc    , e_ncdf    , e_frac    ,
          e_trunc   , e_assign  , e_addass  , e_subass  ,
          e_mulass  , e_divass  , e_modass  , e_in      ,
          e_like    , e_ilike   , e_multi   , e_smulti  ,
-         e_swap    ,
+         e_swap,
 
          // Do not add new functions/operators after this point.
          e_sf00 = 1000, e_sf01 = 1001, e_sf02 = 1002, e_sf03 = 1003,
@@ -5537,6 +5540,7 @@ namespace exprtk
                   case e_tan   : return numeric::tan  (arg);
                   case e_tanh  : return numeric::tanh (arg);
                   case e_cot   : return numeric::cot  (arg);
+                  case e_coth  : return numeric::coth (arg);
                   case e_sec   : return numeric::sec  (arg);
                   case e_csc   : return numeric::csc  (arg);
                   case e_r2d   : return numeric::r2d  (arg);
@@ -5694,7 +5698,7 @@ namespace exprtk
             e_log10         , e_log2          , e_log1p       , e_neg          ,
             e_pos           , e_round         , e_sin         , e_sinc         ,
             e_sinh          , e_sqrt          , e_tan         , e_tanh         ,
-            e_cot           , e_sec           , e_csc         , e_r2d          ,
+            e_cot           , e_coth          , e_sec         , e_csc         , e_r2d          ,
             e_d2r           , e_d2g           , e_g2d         , e_notl         ,
             e_sgn           , e_erf           , e_erfc        , e_ncdf         ,
             e_frac          , e_trunc         , e_uvouv       , e_vov          ,
@@ -15650,6 +15654,7 @@ namespace exprtk
       exprtk_define_unary_op(cos  )
       exprtk_define_unary_op(cosh )
       exprtk_define_unary_op(cot  )
+      exprtk_define_unary_op(coth )
       exprtk_define_unary_op(csc  )
       exprtk_define_unary_op(d2g  )
       exprtk_define_unary_op(d2r  )
@@ -19671,6 +19676,7 @@ namespace exprtk
          register_op("tan"       , e_tan     , 1)
          register_op("tanh"      , e_tanh    , 1)
          register_op("cot"       , e_cot     , 1)
+	 register_op("coth"      , e_coth    , 1)
          register_op("rad2deg"   , e_r2d     , 1)
          register_op("deg2rad"   , e_d2r     , 1)
          register_op("deg2grad"  , e_d2g     , 1)
@@ -31981,7 +31987,7 @@ namespace exprtk
                    (details::e_sin   == operation) || (details::e_sinc  == operation) ||
                    (details::e_sinh  == operation) || (details::e_sqrt  == operation) ||
                    (details::e_tan   == operation) || (details::e_tanh  == operation) ||
-                   (details::e_cot   == operation) || (details::e_sec   == operation) ||
+                   (details::e_cot   == operation) || (details::e_coth == operation)  || (details::e_sec   == operation) ||
                    (details::e_csc   == operation) || (details::e_r2d   == operation) ||
                    (details::e_d2r   == operation) || (details::e_d2g   == operation) ||
                    (details::e_g2d   == operation) || (details::e_notl  == operation) ||
@@ -33413,6 +33419,7 @@ namespace exprtk
          case_stmt(details::e_tan   , details::tan_op  ) \
          case_stmt(details::e_tanh  , details::tanh_op ) \
          case_stmt(details::e_cot   , details::cot_op  ) \
+	 case_stmt(details::e_coth  , details::coth_op ) \
          case_stmt(details::e_sec   , details::sec_op  ) \
          case_stmt(details::e_csc   , details::csc_op  ) \
          case_stmt(details::e_r2d   , details::r2d_op  ) \
@@ -41930,6 +41937,7 @@ namespace exprtk
          register_unary_op(details::e_tan   , details::tan_op  )
          register_unary_op(details::e_tanh  , details::tanh_op )
          register_unary_op(details::e_cot   , details::cot_op  )
+	 register_unary_op(details::e_coth  , details::coth_op )
          register_unary_op(details::e_sec   , details::sec_op  )
          register_unary_op(details::e_csc   , details::csc_op  )
          register_unary_op(details::e_r2d   , details::r2d_op  )
