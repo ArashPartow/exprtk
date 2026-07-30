@@ -52,6 +52,7 @@
 #include <stack>
 #include <stdexcept>
 #include <string>
+#include <string_view>
 #include <utility>
 #include <vector>
 
@@ -192,7 +193,7 @@ namespace exprtk
          return std::tolower(c1) == std::tolower(c2);
       }
 
-      inline bool imatch(const std::string& s1, const std::string& s2)
+      inline bool imatch(const std::string& s1, const std::string_view& s2)
       {
          if (s1.size() == s2.size())
          {
@@ -240,7 +241,7 @@ namespace exprtk
          return c1 == c2;
       }
 
-      inline bool imatch(const std::string& s1, const std::string& s2)
+      inline bool imatch(const std::string& s1, const std::string_view& s2)
       {
          return s1 == s2;
       }
@@ -437,88 +438,93 @@ namespace exprtk
          std::string data_;
       };
 
-      static const std::string reserved_words[] =
+      inline constexpr std::string_view operator"" _s(char const* s, size_t sz)
       {
-         "assert",  "break", "case", "continue", "const",  "default",
-         "false", "for", "if", "else", "ilike", "in", "like",  "and",
-         "nand",  "nor",  "not",  "null",  "or",  "repeat", "return",
-         "shl",  "shr",  "swap",  "switch",  "true",  "until", "var",
-         "while", "xnor", "xor", "&", "|"
+        return std::string_view(s, sz);
+      }
+
+      static constexpr std::string_view reserved_words[] =
+      {
+         "assert"_s,  "break"_s, "case"_s, "continue"_s, "const"_s,  "default"_s,
+         "false"_s, "for"_s, "if"_s, "else"_s, "ilike"_s, "in"_s, "like"_s,  "and"_s,
+         "nand"_s,  "nor"_s,  "not"_s,  "null"_s,  "or"_s,  "repeat"_s, "return"_s,
+         "shl"_s,  "shr"_s,  "swap"_s,  "switch"_s,  "true"_s,  "until"_s, "var"_s,
+         "while"_s, "xnor"_s, "xor"_s, "&"_s, "|"_s
       };
 
-      static const std::size_t reserved_words_size = sizeof(reserved_words) / sizeof(std::string);
+      static constexpr std::size_t reserved_words_size = sizeof(reserved_words) / sizeof(std::string_view);
 
-      static const std::string reserved_symbols[] =
+      static constexpr std::string_view reserved_symbols[] =
       {
-         "abs", "acos",  "acosh", "and",  "asin", "asinh",  "assert",
-         "atan", "atanh",  "atan2", "avg",  "break", "case",  "ceil",
-         "clamp", "continue", "const",  "cos", "cosh", "cot",  "csc",
-         "default",  "deg2grad", "deg2rad",  "equal", "erf",  "erfc",
-         "exp", "expm1", "false", "floor", "for", "frac", "grad2deg",
-         "hypot", "iclamp", "if",  "else", "ilike", "in",  "inrange",
-         "like",  "log",  "log10", "log2",  "logn",  "log1p", "mand",
-         "max", "min",  "mod", "mor",  "mul", "ncdf",  "nand", "nor",
-         "not",   "not_equal",   "null",   "or",   "pow",  "rad2deg",
-         "repeat", "return", "root", "round", "roundn", "sec", "sgn",
-         "shl", "shr", "sin", "sinc", "sinh", "sqrt", "sum",  "swap",
-         "switch", "tan",  "tanh", "true",  "trunc", "until",  "var",
-         "while", "xnor", "xor", "&", "|"
+         "abs"_s, "acos"_s,  "acosh"_s, "and"_s,  "asin"_s, "asinh"_s,  "assert"_s,
+         "atan"_s, "atanh"_s,  "atan2"_s, "avg"_s,  "break"_s, "case"_s,  "ceil"_s,
+         "clamp"_s, "continue"_s, "const"_s,  "cos"_s, "cosh"_s, "cot"_s,  "csc"_s,
+         "default"_s,  "deg2grad"_s, "deg2rad"_s,  "equal"_s, "erf"_s,  "erfc"_s,
+         "exp"_s, "expm1"_s, "false"_s, "floor"_s, "for"_s, "frac"_s, "grad2deg"_s,
+         "hypot"_s, "iclamp"_s, "if"_s,  "else"_s, "ilike"_s, "in"_s,  "inrange"_s,
+         "like"_s,  "log"_s,  "log10"_s, "log2"_s,  "logn"_s,  "log1p"_s, "mand"_s,
+         "max"_s, "min"_s,  "mod"_s, "mor"_s,  "mul"_s, "ncdf"_s,  "nand"_s, "nor"_s,
+         "not"_s,   "not_equal"_s,   "null"_s,   "or"_s,   "pow"_s,  "rad2deg"_s,
+         "repeat"_s, "return"_s, "root"_s, "round"_s, "roundn"_s, "sec"_s, "sgn"_s,
+         "shl"_s, "shr"_s, "sin"_s, "sinc"_s, "sinh"_s, "sqrt"_s, "sum"_s,  "swap"_s,
+         "switch"_s, "tan"_s,  "tanh"_s, "true"_s,  "trunc"_s, "until"_s,  "var"_s,
+         "while"_s, "xnor"_s, "xor"_s, "&"_s, "|"_s
       };
 
-      static const std::size_t reserved_symbols_size = sizeof(reserved_symbols) / sizeof(std::string);
+      static constexpr std::size_t reserved_symbols_size = sizeof(reserved_symbols) / sizeof(std::string_view);
 
-      static const std::string base_function_list[] =
+      static constexpr std::string_view base_function_list[] =
       {
-         "abs", "acos",  "acosh", "asin",  "asinh", "atan",  "atanh",
-         "atan2",  "avg",  "ceil",  "clamp",  "cos",  "cosh",  "cot",
-         "csc",  "equal",  "erf",  "erfc",  "exp",  "expm1", "floor",
-         "frac", "hypot", "iclamp",  "like", "log", "log10",  "log2",
-         "logn", "log1p", "mand", "max", "min", "mod", "mor",  "mul",
-         "ncdf",  "pow",  "root",  "round",  "roundn",  "sec", "sgn",
-         "sin", "sinc", "sinh", "sqrt", "sum", "swap", "tan", "tanh",
-         "trunc",  "not_equal",  "inrange",  "deg2grad",   "deg2rad",
-         "rad2deg", "grad2deg"
+         "abs"_s, "acos"_s,  "acosh"_s, "asin"_s,  "asinh"_s, "atan"_s,  "atanh"_s,
+         "atan2"_s,  "avg"_s,  "ceil"_s,  "clamp"_s,  "cos"_s,  "cosh"_s,  "cot"_s,
+         "csc"_s,  "equal"_s,  "erf"_s,  "erfc"_s,  "exp"_s,  "expm1"_s, "floor"_s,
+         "frac"_s, "hypot"_s, "iclamp"_s,  "like"_s, "log"_s, "log10"_s,  "log2"_s,
+         "logn"_s, "log1p"_s, "mand"_s, "max"_s, "min"_s, "mod"_s, "mor"_s,  "mul"_s,
+         "ncdf"_s,  "pow"_s,  "root"_s,  "round"_s,  "roundn"_s,  "sec"_s, "sgn"_s,
+         "sin"_s, "sinc"_s, "sinh"_s, "sqrt"_s, "sum"_s, "swap"_s, "tan"_s, "tanh"_s,
+         "trunc"_s,  "not_equal"_s,  "inrange"_s,  "deg2grad"_s,   "deg2rad"_s,
+         "rad2deg"_s, "grad2deg"_s
       };
 
-      static const std::size_t base_function_list_size = sizeof(base_function_list) / sizeof(std::string);
+      static constexpr std::size_t base_function_list_size = sizeof(base_function_list) / sizeof(std::string_view);
 
-      static const std::string logic_ops_list[] =
+      static constexpr std::string_view logic_ops_list[] =
       {
-         "and", "nand", "nor", "not", "or",  "xnor", "xor", "&", "|"
+         "and"_s, "nand"_s, "nor"_s, "not"_s, "or"_s,  "xnor"_s, "xor"_s, "&"_s, "|"_s
       };
 
-      static const std::size_t logic_ops_list_size = sizeof(logic_ops_list) / sizeof(std::string);
+      static constexpr std::size_t logic_ops_list_size = sizeof(logic_ops_list) / sizeof(std::string_view);
 
-      static const std::string cntrl_struct_list[] =
+      static constexpr std::string_view cntrl_struct_list[] =
       {
-         "if", "switch", "for", "while", "repeat", "return"
+         "if"_s, "switch"_s, "for"_s, "while"_s, "repeat"_s, "return"_s
       };
 
-      static const std::size_t cntrl_struct_list_size = sizeof(cntrl_struct_list) / sizeof(std::string);
+      static constexpr std::size_t cntrl_struct_list_size = sizeof(cntrl_struct_list) / sizeof(std::string_view);
 
-      static const std::string arithmetic_ops_list[] =
+      static constexpr std::string_view arithmetic_ops_list[] =
       {
-         "+", "-", "*", "/", "%", "^"
+         "+"_s, "-"_s, "*"_s, "/"_s, "%"_s, "^"_s
       };
 
-      static const std::size_t arithmetic_ops_list_size = sizeof(arithmetic_ops_list) / sizeof(std::string);
+      static constexpr std::size_t arithmetic_ops_list_size = sizeof(arithmetic_ops_list) / sizeof(std::string_view);
 
-      static const std::string assignment_ops_list[] =
+      static constexpr std::string_view assignment_ops_list[] =
       {
-         ":=", "+=", "-=",
-         "*=", "/=", "%="
+         ":="_s, "+="_s, "-="_s,
+         "*="_s, "/="_s, "%="_s
       };
 
-      static const std::size_t assignment_ops_list_size = sizeof(assignment_ops_list) / sizeof(std::string);
+      static constexpr std::size_t assignment_ops_list_size = sizeof(assignment_ops_list) / sizeof(std::string_view);
 
-      static const std::string inequality_ops_list[] =
+      static constexpr std::string_view inequality_ops_list[] =
       {
-         "<",  "<=", "==",
-         "=",  "!=", "<>",
-         ">=",  ">"
+         "<"_s,  "<="_s, "=="_s,
+         "="_s,  "!="_s, "<>"_s,
+         ">="_s,  ">"_s
       };
 
-      static const std::size_t inequality_ops_list_size = sizeof(inequality_ops_list) / sizeof(std::string);
+      static constexpr std::size_t inequality_ops_list_size = sizeof(inequality_ops_list) / sizeof(std::string_view);
 
       inline bool is_reserved_word(const std::string& symbol)
       {
@@ -3548,9 +3554,9 @@ namespace exprtk
             : lexer::token_inserter(2)
             {}
 
-            inline void ignore_symbol(const std::string& symbol)
+            inline void ignore_symbol(const std::string_view& symbol)
             {
-               ignore_set_.insert(symbol);
+               ignore_set_.emplace(symbol);
             }
 
             inline int insert(const lexer::token& t0, const lexer::token& t1, lexer::token& new_token) exprtk_override
@@ -20671,12 +20677,12 @@ namespace exprtk
             {
                for (std::size_t i = 0; i < details::reserved_words_size; ++i)
                {
-                  reserved_symbol_table_.insert(details::reserved_words[i]);
+                  reserved_symbol_table_.emplace(details::reserved_words[i]);
                }
 
                for (std::size_t i = 0; i < details::reserved_symbols_size; ++i)
                {
-                  reserved_symbol_table_.insert(details::reserved_symbols[i]);
+                  reserved_symbol_table_.emplace(details::reserved_symbols[i]);
                }
             }
 
